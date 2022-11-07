@@ -21,8 +21,6 @@ resource "azurerm_subnet" "this" {
   resource_group_name  = local.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = var.gameserver_vnet_address_space
-
-  tags = local.tags
 }
 
 resource "azurerm_network_interface" "this" {

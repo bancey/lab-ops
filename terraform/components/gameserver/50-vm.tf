@@ -13,12 +13,12 @@ resource "random_string" "username" {
 
 resource "azurerm_linux_virtual_machine" "example" {
   name                = "example-machine"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
+  location            = local.resource_group_location
+  resource_group_name = local.resource_group_name
   size                = "Standard_D4s_v4"
   admin_username      = random_string.username.result
   network_interface_ids = [
-    azurerm_network_interface.example.id,
+    azurerm_network_interface.this.id
   ]
 
   admin_ssh_key {
