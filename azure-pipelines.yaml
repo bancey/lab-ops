@@ -21,8 +21,6 @@ parameters:
         dependsOn: []
 
 variables:
-  - name: timeoutInMinutes
-    value: 60
   - name: agentImage
     value: ubuntu-20.04
   - name: terraformVersion
@@ -37,7 +35,6 @@ stages:
           condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
           pool:
             vmImage: $(agentImage)
-          timeoutInMinutes: $(timeoutInMinutes)
           steps:
             - template: pipelines/terraform-init.yaml
               parameters:
@@ -54,7 +51,6 @@ stages:
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
           pool:
             vmImage: $(agentImage)
-          timeoutInMinutes: $(timeoutInMinutes)
           steps:
             - template: pipelines/terraform-init.yaml
               parameters:
