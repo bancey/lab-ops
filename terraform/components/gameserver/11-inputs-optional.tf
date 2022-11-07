@@ -15,3 +15,9 @@ variable "tags" {
   type        = map(string)
   default     = null
 }
+
+variable "gameserver_vnet_address_space" {
+  description = "The address space of the virtual network"
+  type        = list(string)
+  default     = ["10.100.10.0/16"]
+}
