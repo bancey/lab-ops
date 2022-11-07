@@ -1,0 +1,26 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: workingDirectory
+    type: string
+  - name: variableFilePath
+    type: string
+  - name: parallelism
+    type: number
+    default: null
+  - name: env
+    type: object
+    default: {}
+
+steps:
+  - task: TerraformCLI@0
+    displayName: Terraform apply
+    inputs:
+      command: apply
+      ${{ if ne(parameters.parallelism, null) }}:
+        commandOptions: -parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }}
+      ${{ else }}:
+        commandOptions: -var-file ${{ parameters.variableFilePath }}
+      workingDirectory: ${{ parameters.workingDirectory }}
+      environmentServiceName: ${{ parameters.serviceConnection }}
+    env: ${{ parameters.env }}

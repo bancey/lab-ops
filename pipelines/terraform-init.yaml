@@ -1,0 +1,34 @@
+parameters:
+  - name: terraformVersion
+    type: string
+  - name: storageAccount
+    type: string
+  - name: workingDirectory
+    type: string
+  - name: azureRmKey
+    type: string
+  - name: downloadUrl
+    type: string
+    default: null
+
+steps:
+  - task: TerraformInstaller@0
+    displayName: Terraform install
+    inputs:
+      terraformVersion: ${{ parameters.terraformVersion }}
+      ${{ if ne(parameters.downloadUrl, null) }}:
+        downloadUrl: ${{ parameters.downloadUrl }}
+  - task: TerraformCLI@0
+    displayName: Terraform initialize
+    inputs:
+      command: init
+      workingDirectory: ${{ parameters.workingDirectory }}
+      backendType: azurerm
+      ensurebackend: true
+      backendServiceArm: 'MSDN Sub'
+      backendAzureRmResourceGroupName: tfstate-rg
+      backendAzureRmResourceGroupLocation: uksouth
+      backendAzureRmStorageAccountName: ${{ parameters.storageAccount }}
+      backendAzureRmStorageAccountSku: Standard_LRS
+      backendAzureRmContainerName: tfstate
+      backendAzureRmKey: ${{ parameters.azureRmKey }}.tfstate

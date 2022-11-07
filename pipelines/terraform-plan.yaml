@@ -1,0 +1,26 @@
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: workingDirectory
+    type: string
+  - name: variableFilePath
+    type: string
+  - name: env
+    type: object
+    default: {}
+
+steps:
+  - task: TerraformCLI@0
+    displayName: Terraform validate
+    inputs:
+      command: validate
+      workingDirectory: ${{ parameters.workingDirectory }}
+  - task: TerraformCLI@0
+    displayName: Terraform plan
+    inputs:
+      command: plan
+      workingDirectory: ${{ parameters.workingDirectory }}
+      environmentServiceName: ${{ parameters.serviceConnection }}
+      publishPlanResults: $(System.StageDisplayName)
+      commandOptions: -var-file ${{ parameters.variableFilePath }}
+    env: ${{ parameters.env }}
