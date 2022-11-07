@@ -7,7 +7,7 @@ parameters:
     type: string
   - name: parallelism
     type: number
-    default:
+    default: -1
   - name: env
     type: object
     default: {}
@@ -17,7 +17,7 @@ steps:
     displayName: Terraform apply
     inputs:
       command: apply
-      ${{ if parameters.parallelism }}:
+      ${{ if ne(parameters.parallelism, -1) }}:
         commandOptions: -parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }}
       ${{ else }}:
         commandOptions: -var-file ${{ parameters.variableFilePath }}
