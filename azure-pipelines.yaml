@@ -14,8 +14,8 @@ parameters:
       - deployment: prod_gameserver
         environment: prod
         component: gameserver
-        serviceConnection: prod_gameserver
-        storageAccount: gameb33943408bd1f9ac
+        serviceConnection: 'MSDN Sub'
+        storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: true
         dependsOn: []
