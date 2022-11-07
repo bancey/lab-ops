@@ -3,7 +3,7 @@ locals {
     var.tags,
     {
       "application" = "gameserver",
-      "environment" = var.environment,
+      "environment" = var.env,
     }
   )
 }
