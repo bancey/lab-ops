@@ -9,14 +9,14 @@ parameters:
     type: string
   - name: downloadUrl
     type: string
-    default: null
+    default:
 
 steps:
   - task: TerraformInstaller@0
     displayName: Terraform install
     inputs:
       terraformVersion: ${{ parameters.terraformVersion }}
-      ${{ if ne(parameters.downloadUrl, null) }}:
+      ${{ if parameters.downloadUrl }}:
         downloadUrl: ${{ parameters.downloadUrl }}
   - task: TerraformCLI@0
     displayName: Terraform initialize

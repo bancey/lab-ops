@@ -7,7 +7,7 @@ parameters:
     type: string
   - name: parallelism
     type: number
-    default: null
+    default:
   - name: env
     type: object
     default: {}
@@ -17,7 +17,7 @@ steps:
     displayName: Terraform destroy
     inputs:
       command: destroy
-      ${{ if ne(parameters.parallelism, null) }}:
+      ${{ if parameters.parallelism }}:
         commandOptions: -parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }}
       ${{ else }}:
         commandOptions: -var-file ${{ parameters.variableFilePath }}
