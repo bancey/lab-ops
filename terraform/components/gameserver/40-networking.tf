@@ -59,3 +59,8 @@ resource "azurerm_network_interface" "this" {
 
   tags = local.tags
 }
+
+resource "azurerm_network_interface_security_group_association" "this" {
+  network_interface_id      = azurerm_network_interface.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
+}
