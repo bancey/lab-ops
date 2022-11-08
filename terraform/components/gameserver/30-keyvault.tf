@@ -69,7 +69,7 @@ resource "random_string" "username" {
     resource_group = local.resource_group_name
   }
 
-  length = 12
+  length  = 12
   special = false
 }
 
