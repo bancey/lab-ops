@@ -2,7 +2,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   name                = "${var.gameserver_name}-${var.env}-vm"
   location            = local.resource_group_location
   resource_group_name = local.resource_group_name
-  size                = "Standard_D4s_v4"
+  size                = "Standard_D4as_v5"
   admin_username      = random_string.username.result
   network_interface_ids = [
     azurerm_network_interface.this.id
