@@ -1,18 +1,5 @@
-resource "tls_private_key" "this" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "random_string" "username" {
-  keepers = {
-    resource_group = local.resource_group_name
-  }
-
-  length = 12
-}
-
-resource "azurerm_linux_virtual_machine" "example" {
-  name                = "example-machine"
+resource "azurerm_linux_virtual_machine" "this" {
+  name                = "${var.gameserver_name}-${var.env}-vm"
   location            = local.resource_group_location
   resource_group_name = local.resource_group_name
   size                = "Standard_D4s_v4"
@@ -34,7 +21,16 @@ resource "azurerm_linux_virtual_machine" "example" {
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
+    sku       = "22.04-LTS"
     version   = "latest"
   }
+}
+
+resource "azurerm_dev_test_global_vm_shutdown_schedule" "this" {
+  virtual_machine_id = azurerm_linux_virtual_machine.this.id
+  location           = local.resource_group_location
+  enabled            = true
+
+  daily_recurrence_time = "0000"
+  timezone              = "GMT Standard Time"
 }
