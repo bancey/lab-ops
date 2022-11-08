@@ -7,3 +7,8 @@ variable "env" {
   description = "The name of the environment"
   type        = string
 }
+
+variable "admin_access_ip" {
+  description = "The IP to allow SSH connections from"
+  type        = string
+}
