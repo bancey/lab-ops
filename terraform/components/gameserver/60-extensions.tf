@@ -7,7 +7,7 @@ resource "azurerm_virtual_machine_extension" "customscript" {
   auto_upgrade_minor_version = false
   protected_settings         = <<PROTECTED_SETTINGS
   {
-    "script": "${base64encode(file("${path.module}/bootstrap.sh"))}",
+    "script": "${local.base64_encoded_script}",
   }
   PROTECTED_SETTINGS
 }
