@@ -1,0 +1,72 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+
+pr:
+  - master
+  
+parameters:
+  - name: environment_components
+    type: object
+    default:
+      - deployment: prod_gameserver
+        environment: prod
+        component: gameserver
+        serviceConnection: 'MSDN Sub'
+        storageAccount: gamec96560353b1a4d1a
+        destroy: false
+        deploy: true
+        dependsOn: []
+
+variables:
+  - name: agentImage
+    value: ubuntu-20.04
+  - name: terraformVersion
+    value: 1.3.4    
+
+stages:
+  - ${{ each deployment in parameters.environment_components }}:
+    - stage: ${{ deployment.deployment }}
+      dependsOn: ${{ deployment.dependsOn }}
+      jobs:
+        - job: TerraformPlan
+          condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+          pool:
+            vmImage: $(agentImage)
+          steps:
+            - template: pipelines/terraform-init.yaml
+              parameters:
+                terraformVersion: $(terraformVersion)
+                storageAccount: ${{ deployment.storageAccount}}
+                workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                azureRmKey: ${{ deployment.deployment }}
+            - template: pipelines/terraform-plan.yaml
+              parameters:
+                serviceConnection: ${{ deployment.serviceConnection }}
+                workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+        - job: TerraformApply
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+          pool:
+            vmImage: $(agentImage)
+          steps:
+            - template: pipelines/terraform-init.yaml
+              parameters:
+                terraformVersion: $(terraformVersion)
+                storageAccount: ${{ deployment.storageAccount}}
+                workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                azureRmKey: ${{ deployment.deployment }}
+            - ${{ if eq(deployment.destroy, true) }}:
+              - template: pipelines/terraform-destroy.yaml
+                parameters:
+                  serviceConnection: ${{ deployment.serviceConnection }}
+                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                  variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+            - ${{ if eq(deployment.deploy, true) }}:
+              - template: pipelines/terraform-apply.yaml
+                parameters:
+                  serviceConnection: ${{ deployment.serviceConnection }}
+                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                  variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
