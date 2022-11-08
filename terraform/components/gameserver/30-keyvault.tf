@@ -70,6 +70,7 @@ resource "random_string" "username" {
   }
 
   length = 12
+  special = false
 }
 
 resource "azurerm_key_vault_secret" "username" {
