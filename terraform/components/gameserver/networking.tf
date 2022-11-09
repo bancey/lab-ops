@@ -8,6 +8,16 @@ resource "azurerm_public_ip" "this" {
   tags = local.tags
 }
 
+module "dns_record" {
+  source = "../../modules/dns-record"
+  count  = var.gameserver_count
+
+  subdomain   = "${var.gameserver_name}${count.index + 1}-${var.env}"
+  record_type = "A"
+  ttl         = "60"
+  ip_address  = azurerm_public_ip.this[count.index].ip_address
+}
+
 resource "azurerm_virtual_network" "this" {
   name                = "${var.gameserver_name}-${var.env}-vnet"
   location            = local.resource_group_location
