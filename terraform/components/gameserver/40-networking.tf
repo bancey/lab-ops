@@ -51,7 +51,7 @@ resource "azurerm_network_security_rule" "Allow_443" {
   priority                    = 1010
   direction                   = "Inbound"
   access                      = "Allow"
-  protocol                    = "Tcp"
+  protocol                    = "*"
   source_port_range           = "*"
   destination_port_range      = "443"
   destination_address_prefix  = "*"
@@ -65,7 +65,7 @@ resource "azurerm_network_security_rule" "Allow_8080" {
   priority                    = 1010
   direction                   = "Inbound"
   access                      = "Allow"
-  protocol                    = "Any"
+  protocol                    = "*"
   source_port_range           = "*"
   destination_port_range      = "8080"
   destination_address_prefix  = "*"
@@ -79,7 +79,7 @@ resource "azurerm_network_security_rule" "Allow_2022" {
   priority                    = 1010
   direction                   = "Inbound"
   access                      = "Allow"
-  protocol                    = "Any"
+  protocol                    = "*"
   source_port_range           = "*"
   destination_port_range      = "2022"
   destination_address_prefix  = "*"
