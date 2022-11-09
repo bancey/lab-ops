@@ -21,3 +21,9 @@ variable "gameserver_vnet_address_space" {
   type        = list(string)
   default     = ["10.100.0.0/16"]
 }
+
+variable "gameserver_count" {
+  description = "The number of game servers to deploy"
+  type        = number
+  default     = 1
+}
