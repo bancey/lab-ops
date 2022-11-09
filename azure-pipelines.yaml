@@ -50,6 +50,10 @@ stages:
                 variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                 env:
                   TF_VAR_admin_access_ip: $(admin_ip)
+                  TF_VAR_ovh_endpoint: $(ovh_endpoint)
+                  TF_VAR_ovh_application_key: $(ovh_application_key)
+                  TF_VAR_ovh_application_secret: $(ovh_application_secret)
+                  TF_VAR_ovh_consumer_key: $(ovh_consumer_key)
         - job: TerraformApply
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
           pool:
@@ -69,6 +73,10 @@ stages:
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   env:
                     TF_VAR_admin_access_ip: $(admin_ip)
+                    TF_VAR_ovh_endpoint: $(ovh_endpoint)
+                    TF_VAR_ovh_application_key: $(ovh_application_key)
+                    TF_VAR_ovh_application_secret: $(ovh_application_secret)
+                    TF_VAR_ovh_consumer_key: $(ovh_consumer_key)
             - ${{ if eq(deployment.deploy, true) }}:
               - template: pipelines/terraform-apply.yaml
                 parameters:
@@ -77,3 +85,7 @@ stages:
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   env:
                     TF_VAR_admin_access_ip: $(admin_ip)
+                    TF_VAR_ovh_endpoint: $(ovh_endpoint)
+                    TF_VAR_ovh_application_key: $(ovh_application_key)
+                    TF_VAR_ovh_application_secret: $(ovh_application_secret)
+                    TF_VAR_ovh_consumer_key: $(ovh_consumer_key)
