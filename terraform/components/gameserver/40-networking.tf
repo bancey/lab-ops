@@ -44,6 +44,48 @@ resource "azurerm_network_security_rule" "Allow_SSH" {
   source_address_prefix       = var.admin_access_ip
 }
 
+resource "azurerm_network_security_rule" "Allow_443" {
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = local.resource_group_name
+  name                        = "Allow443"
+  priority                    = 1010
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "443"
+  destination_address_prefix  = "*"
+  source_address_prefix       = var.admin_access_ip
+}
+
+resource "azurerm_network_security_rule" "Allow_8080" {
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = local.resource_group_name
+  name                        = "Allow8080"
+  priority                    = 1010
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Any"
+  source_port_range           = "*"
+  destination_port_range      = "8080"
+  destination_address_prefix  = "*"
+  source_address_prefix       = var.admin_access_ip
+}
+
+resource "azurerm_network_security_rule" "Allow_2022" {
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = local.resource_group_name
+  name                        = "Allow2022"
+  priority                    = 1010
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Any"
+  source_port_range           = "*"
+  destination_port_range      = "2022"
+  destination_address_prefix  = "*"
+  source_address_prefix       = var.admin_access_ip
+}
+
 resource "azurerm_network_interface" "this" {
   name                = "${var.gameserver_name}-${var.env}-nic"
   location            = local.resource_group_location
