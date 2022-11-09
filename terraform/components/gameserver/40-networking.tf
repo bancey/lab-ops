@@ -1,5 +1,6 @@
 resource "azurerm_public_ip" "this" {
-  name                = "${var.gameserver_name}-${var.env}-pip"
+  count               = var.gameserver_count
+  name                = "${var.gameserver_name}-${var.env}-pip${count.index + 1}"
   location            = local.resource_group_location
   resource_group_name = local.resource_group_name
   allocation_method   = "Static"
@@ -87,7 +88,8 @@ resource "azurerm_network_security_rule" "Allow_2022" {
 }
 
 resource "azurerm_network_interface" "this" {
-  name                = "${var.gameserver_name}-${var.env}-nic"
+  count               = var.gameserver_count
+  name                = "${var.gameserver_name}-${var.env}-nic${count.index + 1}"
   location            = local.resource_group_location
   resource_group_name = local.resource_group_name
 
@@ -96,13 +98,14 @@ resource "azurerm_network_interface" "this" {
     subnet_id                     = azurerm_subnet.this.id
     private_ip_address_allocation = "Dynamic"
 
-    public_ip_address_id = azurerm_public_ip.this.id
+    public_ip_address_id = azurerm_public_ip.this[count.index].id
   }
 
   tags = local.tags
 }
 
 resource "azurerm_network_interface_security_group_association" "this" {
-  network_interface_id      = azurerm_network_interface.this.id
+  count                     = var.gameserver_count
+  network_interface_id      = azurerm_network_interface.this[count.index].id
   network_security_group_id = azurerm_network_security_group.this.id
 }

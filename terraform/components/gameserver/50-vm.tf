@@ -1,11 +1,12 @@
 resource "azurerm_linux_virtual_machine" "this" {
-  name                = "${var.gameserver_name}-${var.env}-vm"
+  count               = var.gameserver_count
+  name                = "${var.gameserver_name}-${var.env}-vm${count.index + 1}"
   location            = local.resource_group_location
   resource_group_name = local.resource_group_name
   size                = "Standard_D4as_v5"
   admin_username      = random_string.username.result
   network_interface_ids = [
-    azurerm_network_interface.this.id
+    azurerm_network_interface.this[count.index].id
   ]
 
   admin_ssh_key {
@@ -28,7 +29,8 @@ resource "azurerm_linux_virtual_machine" "this" {
 }
 
 resource "azurerm_dev_test_global_vm_shutdown_schedule" "this" {
-  virtual_machine_id = azurerm_linux_virtual_machine.this.id
+  count              = var.gameserver_count
+  virtual_machine_id = azurerm_linux_virtual_machine.this[count.index].id
   location           = local.resource_group_location
   enabled            = true
 

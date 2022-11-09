@@ -1,2 +1,2 @@
-gameserver_name = "mc01"
+gameserver_name = "pteronode"
 env             = "prod"
