@@ -62,7 +62,7 @@ resource "azurerm_network_security_rule" "Allow_8080" {
   network_security_group_name = azurerm_network_security_group.this.name
   resource_group_name         = local.resource_group_name
   name                        = "Allow8080"
-  priority                    = 1010
+  priority                    = 1020
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "*"
@@ -76,7 +76,7 @@ resource "azurerm_network_security_rule" "Allow_2022" {
   network_security_group_name = azurerm_network_security_group.this.name
   resource_group_name         = local.resource_group_name
   name                        = "Allow2022"
-  priority                    = 1010
+  priority                    = 1030
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "*"
