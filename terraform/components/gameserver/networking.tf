@@ -97,6 +97,34 @@ resource "azurerm_network_security_rule" "Allow_2022" {
   source_address_prefix       = var.admin_access_ip
 }
 
+resource "azurerm_network_security_rule" "Allow_80" {
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = local.resource_group_name
+  name                        = "Allow80"
+  priority                    = 1040
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "80"
+  destination_address_prefix  = "*"
+  source_address_prefix       = "*"
+}
+
+resource "azurerm_network_security_rule" "Allow_GameServer_Ports" {
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = local.resource_group_name
+  name                        = "AllowGameServerPorts"
+  priority                    = 1050
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "27000-27100"
+  destination_address_prefix  = "*"
+  source_address_prefix       = "*"
+}
+
 resource "azurerm_network_interface" "this" {
   count               = var.gameserver_count
   name                = "${var.gameserver_name}-${var.env}-nic${count.index + 1}"
