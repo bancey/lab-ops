@@ -11,7 +11,7 @@ resource "null_resource" "update-script" {
 
 resource "azurerm_virtual_machine_extension" "customscript" {
   depends_on = [
-    null_resource.update-script[count.index]
+    null_resource.update-script
   ]
   count                      = var.gameserver_count
   name                       = "BootstrapVM"
