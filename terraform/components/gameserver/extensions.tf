@@ -8,7 +8,7 @@ resource "azurerm_virtual_machine_extension" "customscript" {
   auto_upgrade_minor_version = false
   protected_settings         = <<PROTECTED_SETTINGS
   {
-    "script": "${base64encode(templatefile("${path.module}/bootstrap${count.index + 1}.sh", { domain = "${var.gameserver_name}${count.index + 1}-${var.env}"}))}"
+    "script": "${base64encode(templatefile("${path.module}/bootstrap.sh", { domain = "${var.gameserver_name}${count.index + 1}-${var.env}"}))}"
   }
   PROTECTED_SETTINGS
 }
