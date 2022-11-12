@@ -50,6 +50,8 @@ stages:
                 variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                 env:
                   TF_VAR_admin_access_ip: $(admin_ip)
+                  TF_VAR_pterodactyl_panel_ip: $(admin_ip)
+                  TF_VAR_gameserver_ports: $(gameserver_ports)
                   TF_VAR_ovh_endpoint: $(ovh_endpoint)
                   TF_VAR_ovh_application_key: $(ovh_application_key)
                   TF_VAR_ovh_application_secret: $(ovh_application_secret)
@@ -73,6 +75,8 @@ stages:
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   env:
                     TF_VAR_admin_access_ip: $(admin_ip)
+                    TF_VAR_pterodactyl_panel_ip: $(admin_ip)
+                    TF_VAR_gameserver_ports: $(gameserver_ports)
                     TF_VAR_ovh_endpoint: $(ovh_endpoint)
                     TF_VAR_ovh_application_key: $(ovh_application_key)
                     TF_VAR_ovh_application_secret: $(ovh_application_secret)
@@ -85,6 +89,8 @@ stages:
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   env:
                     TF_VAR_admin_access_ip: $(admin_ip)
+                    TF_VAR_pterodactyl_panel_ip: $(admin_ip)
+                    TF_VAR_gameserver_ports: $(gameserver_ports)
                     TF_VAR_ovh_endpoint: $(ovh_endpoint)
                     TF_VAR_ovh_application_key: $(ovh_application_key)
                     TF_VAR_ovh_application_secret: $(ovh_application_secret)
