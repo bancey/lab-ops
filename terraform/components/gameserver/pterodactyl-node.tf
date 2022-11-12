@@ -10,7 +10,7 @@ module "pterodactyl_node" {
   vm_image_offer      = "0001-com-ubuntu-server-focal"
   vm_image_sku        = "20_04-lts-gen2"
   vm_image_version    = "latest"
-  vm_domain_name      = "${var.gameserver_name}${count.index + 1}.bancey.xyz"
+  vm_domain_name      = "${var.gameserver_name}${count.index + 1}-${var.env}.bancey.xyz"
   publicly_accessible = true
 
   nsg_rules = {
