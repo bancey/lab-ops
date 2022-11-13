@@ -1,21 +1,24 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=e19f25af50c44355226f934e949a792f44055bd3"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=3c65f634134c62e375f0a4aee186477060620845"
 
   depends_on = [
     module.dns_record
   ]
 
-  count                        = var.gameserver_count
-  name                         = "${var.gameserver_name}${count.index + 1}"
-  env                          = var.env
-  location                     = var.location
-  vm_size                      = "Standard_D4as_v5"
-  vm_image_publisher           = "canonical"
-  vm_image_offer               = "0001-com-ubuntu-server-focal"
-  vm_image_sku                 = "20_04-lts-gen2"
-  vm_image_version             = "latest"
-  vm_domain_name               = "${var.gameserver_name}${count.index + 1}-${var.env}.bancey.xyz"
-  existing_public_ip_id        = azurerm_public_ip.this[count.index].id
+  count              = var.gameserver_count
+  name               = "${var.gameserver_name}${count.index + 1}"
+  env                = var.env
+  location           = var.location
+  vm_size            = "Standard_D4as_v5"
+  vm_image_publisher = "canonical"
+  vm_image_offer     = "0001-com-ubuntu-server-focal"
+  vm_image_sku       = "20_04-lts-gen2"
+  vm_image_version   = "latest"
+  vm_domain_name     = "${var.gameserver_name}${count.index + 1}-${var.env}.bancey.xyz"
+  existing_public_ip = {
+    name                = azurerm_public_ip.this[count.index].name
+    resource_group_name = azurerm_resource_group.gameserver.name
+  }
   existing_resource_group_name = azurerm_resource_group.gameserver.name
   publicly_accessible          = true
 
