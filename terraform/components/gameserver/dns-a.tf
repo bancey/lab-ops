@@ -5,5 +5,5 @@ module "dns_record" {
   subdomain   = "${var.gameserver_name}${count.index + 1}-${var.env}"
   record_type = "A"
   ttl         = "0"
-  ip_address  = module.pterodactyl_node[count.index].public_ip
+  ip_address  = azurerm_public_ip.this.ip_address
 }
