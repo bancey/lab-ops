@@ -5,17 +5,18 @@ module "pterodactyl_node" {
     module.dns_record
   ]
 
-  count               = var.gameserver_count
-  name                = "${var.gameserver_name}${count.index + 1}"
-  env                 = var.env
-  location            = var.location
-  vm_size             = "Standard_D4as_v5"
-  vm_image_publisher  = "canonical"
-  vm_image_offer      = "0001-com-ubuntu-server-focal"
-  vm_image_sku        = "20_04-lts-gen2"
-  vm_image_version    = "latest"
-  vm_domain_name      = "${var.gameserver_name}${count.index + 1}-${var.env}.bancey.xyz"
-  publicly_accessible = true
+  count                 = var.gameserver_count
+  name                  = "${var.gameserver_name}${count.index + 1}"
+  env                   = var.env
+  location              = var.location
+  vm_size               = "Standard_D4as_v5"
+  vm_image_publisher    = "canonical"
+  vm_image_offer        = "0001-com-ubuntu-server-focal"
+  vm_image_sku          = "20_04-lts-gen2"
+  vm_image_version      = "latest"
+  vm_domain_name        = "${var.gameserver_name}${count.index + 1}-${var.env}.bancey.xyz"
+  existing_public_ip_id = azurerm_public_ip.this[count.index].id
+  publicly_accessible   = true
 
   nsg_rules = {
     # Required to allow certbot to generate SSL certificates
