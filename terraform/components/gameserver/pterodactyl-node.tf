@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=f3d316dc0e3b26b31dd43b6d00ebc4c795227211"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=906031cdfeada03bd8b0ebef5c255bec4e772ff2"
 
   depends_on = [
     module.dns_record
