@@ -11,7 +11,7 @@ parameters:
   - name: environment_components
     type: object
     default:
-      - deployment: az-prod_gameserver
+      - deployment: az_prod_gameserver
         environment: az-prod
         component: gameserver
         serviceConnection: 'MSDN Sub'
