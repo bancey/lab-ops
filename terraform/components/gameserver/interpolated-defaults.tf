@@ -6,3 +6,38 @@ locals {
     "environment" = var.env,
   }
 }
+
+data "azurerm_key_vault" "vault" {
+  name                = "bancey-vault"
+  resource_group_name = "common"
+}
+
+data "azurerm_key_vault_secret" "ovh_endpoint" {
+  name         = "OVH-Endpoint"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "ovh_consumer_key" {
+  name         = "OVH-Consumer-Key"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "ovh_application_secret" {
+  name         = "OVH-Application-Secret"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "ovh_application_key" {
+  name         = "OVH-Application-Key"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "game_server_ports" {
+  name         = "Game-Server-Ports"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "public_ip" {
+  name         = "Home-Public-IP"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}

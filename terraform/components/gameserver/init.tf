@@ -26,8 +26,8 @@ provider "azurerm" {
 }
 
 provider "ovh" {
-  endpoint           = var.ovh_endpoint
-  application_key    = var.ovh_application_key
-  application_secret = var.ovh_application_secret
-  consumer_key       = var.ovh_consumer_key
+  endpoint           = data.azurerm_key_vault_secret.ovh_endpoint.value
+  application_key    = data.azurerm_key_vault_secret.ovh_application_key.value
+  application_secret = data.azurerm_key_vault_secret.ovh_application_secret.value
+  consumer_key       = data.azurerm_key_vault_secret.ovh_consumer_key.value
 }

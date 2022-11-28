@@ -80,7 +80,7 @@ module "pterodactyl_node" {
       access                     = "Allow"
       protocol                   = "Tcp"
       source_port_range          = "*"
-      destination_port_range     = var.gameserver_ports
+      destination_port_range     = data.azurerm_key_vault_secret.game_server_ports.value
       source_address_prefix      = "*"
       destination_address_prefix = "*"
     }
