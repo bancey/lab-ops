@@ -1,2 +1,2 @@
 gameserver_name = "pteronode"
-env             = "prod"
+env             = "az-prod"
