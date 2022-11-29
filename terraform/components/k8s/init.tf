@@ -10,7 +10,7 @@ terraform {
     }
   }
 
-  backend "azurerm" {}
+  #backend "azurerm" {}
 }
 
 provider "azurerm" {
@@ -21,4 +21,5 @@ provider "proxmox" {
   pm_api_url          = data.azurerm_key_vault_secret.proxmox_url.value
   pm_api_token_id     = data.azurerm_key_vault_secret.proxmox_token_id.value
   pm_api_token_secret = data.azurerm_key_vault_secret.proxmox_token_secret.value
+  pm_tls_insecure     = true
 }
