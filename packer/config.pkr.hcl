@@ -59,9 +59,8 @@ variable "username" {
   default = "bancey"
 }
 
-variable "password" {
-  type      = string
-  sensitive = true
+variable "ssh_private_key_file" {
+  type = string
 }
 
 variable "http_directory" {
@@ -72,6 +71,10 @@ variable "http_directory" {
 variable "files_directory" {
   type    = string
   default = "files"
+}
+
+variable "boot_command" {
+  type = list(string)
 }
 
 variable "primary_provisioner_commands" {
@@ -97,10 +100,9 @@ source "proxmox" "proxmox-template" {
   vm_name              = var.vm_name
   template_description = var.template_description
 
-  iso_file = "local:iso/ubuntu-22.04.1-live-server-amd64.iso"
-  #iso_url          = var.iso_url
-  #iso_checksum     = var.iso_checksum
-  #iso_storage_pool = "local"
+  iso_url          = var.iso_url
+  iso_checksum     = var.iso_checksum
+  iso_storage_pool = "local"
   unmount_iso      = true
 
   # VM System Settings
@@ -137,22 +139,15 @@ source "proxmox" "proxmox-template" {
   cloud_init_storage_pool = "local-lvm"
 
   # PACKER Boot Commands
-  boot_command = [
-    "c",
-    "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ",
-    "<enter><wait>",
-    "initrd /casper/initrd<enter><wait>",
-    "boot<enter>"
-  ]
-  boot_wait = "5s"
+  boot_command = var.boot_command
+  boot_wait    = "5s"
 
   http_directory = "${path.cwd}/${var.http_directory}"
   http_interface = "WiFi"
 
-  ssh_username = var.username
-  #ssh_password = var.password
-  ssh_private_key_file = "C:/Users/alexb/.ssh/id_rsa"
-  ssh_timeout  = "20m"
+  ssh_username         = "${var.username}"
+  ssh_private_key_file = "${var.ssh_private_key_file}"
+  ssh_timeout          = "20m"
 }
 
 # Build Definition to create the VM Template

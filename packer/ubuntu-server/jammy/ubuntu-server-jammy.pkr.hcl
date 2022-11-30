@@ -1,13 +1,22 @@
 proxmox_api_url = "https://192.168.80.11:8006/api2/json"
-node = "baldr"
+node = "wanda"
 vm_id = 900
 vm_name = "ubuntu-jammy-template"
 template_description = "Ubuntu 22.04 (Jammy) Server Template"
 iso_url = "https://releases.ubuntu.com/22.04.1/ubuntu-22.04.1-live-server-amd64.iso"
 iso_checksum = "10f19c5b2b8d6db711582e0e27f5116296c34fe4b313ba45f9b201a5007056cb"
-username = "packer"
+username = "bancey"
+ssh_private_key_file = "C:/Users/alexb/.ssh/id_rsa"
 http_directory = "ubuntu-server/jammy/http"
 files_directory = "ubuntu-server/jammy/files"
+
+boot_command = [
+  "c",
+  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ",
+  "<enter><wait>",
+  "initrd /casper/initrd<enter><wait>",
+  "boot<enter>"
+]
 
 primary_provisioner_commands = [
   "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
