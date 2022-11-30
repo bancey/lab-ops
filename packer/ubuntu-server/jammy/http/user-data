@@ -1,0 +1,31 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_GB
+  keyboard:
+    layout: en
+  ssh:
+    install-server: true
+    allow-pw: true
+    disable_root: true
+    ssh_quiet_keygen: true
+    allow_public_ssh_keys: true
+  packages:
+    - qemu-guest-agent
+    - sudo
+  storage:
+    layout:
+      name: direct
+    swap:
+      size: 0
+  user-data:
+    package_upgrade: false
+    timezone: Europe/London
+    users:
+      - name: bancey
+        groups: [adm, sudo]
+        lock-passwd: false
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        shell: /bin/bash
+        ssh_authorized_keys:
+          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDM6YQbnTJYYO6ANWiTwAU6LYLgwPkOu5sbDiUCYJt0dYgYUHzRa1cQsVE2ooLlmxwtHuL/8tjQtajL/HCaqr+XF41inGw3rz4cIXsQreRwudJNdP9Ba+2eaLxKJ2UzNi6S7J89Bw/og02leb+OdCZSJDYG9J6xr+8/Ndsga5xeiJr8Jht55199bKLviuLYjoO39GAiZzmu08WMA34P/grZyakkuMFlWXQNyABHpN6xnxQ3O6OqDd7F942MnTrM2xChbM/XXtPKLmRhPdbxqHHLYeLxv/xFA3MnOhI+G0izA/7JsT+0104wioZH+F8Ck9HzoJrLyjZLTLYzv4JydLWGtOjbLOD6jCd4cPlt4z28DqsulRqSrc5A3zMu3fhNjKBfWC3oH0rTrFcm1nc+U60Fois7/T9+3KSjH9YuR/7sLIxeQ74X8cr5d+9pkp34ffb5fVilAln426Tts6kzIEY8kuKT1nAGwuPKlTXvLpn4V9G2s9ugqSvJz5YYNL5r5es= alexb@Bancey-W11
