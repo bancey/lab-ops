@@ -46,17 +46,17 @@ variable "iso_checksum" {
 
 variable "vm_cores" {
   type    = number
-  default = 1
+  default = 2
 }
 
 variable "vm_memory" {
   type    = number
-  default = 2048
+  default = 4098
 }
 
 variable "username" {
   type    = string
-  default = "packer"
+  default = "bancey"
 }
 
 variable "password" {
@@ -97,9 +97,10 @@ source "proxmox" "proxmox-template" {
   vm_name              = var.vm_name
   template_description = var.template_description
 
-  iso_url          = var.iso_url
-  iso_checksum     = var.iso_checksum
-  iso_storage_pool = "local"
+  iso_file = "local:iso/ubuntu-22.04.1-live-server-amd64.iso"
+  #iso_url          = var.iso_url
+  #iso_checksum     = var.iso_checksum
+  #iso_storage_pool = "local"
   unmount_iso      = true
 
   # VM System Settings
@@ -108,7 +109,7 @@ source "proxmox" "proxmox-template" {
   # VM Hard Disk Settings
   scsi_controller = "virtio-scsi-pci"
 
-  os = "126"
+  os = "l26"
 
   disks {
     disk_size         = "20G"
@@ -137,20 +138,20 @@ source "proxmox" "proxmox-template" {
 
   # PACKER Boot Commands
   boot_command = [
-    "<esc><wait>",
-    "e<wait>",
-    "<down><down><down><end>",
-    "<bs><bs><bs><bs><wait>",
-    "autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ ---<wait>",
-    "<f10><wait>"
+    "c",
+    "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ",
+    "<enter><wait>",
+    "initrd /casper/initrd<enter><wait>",
+    "boot<enter>"
   ]
-  boot      = "c"
   boot_wait = "5s"
 
   http_directory = "${path.cwd}/${var.http_directory}"
+  http_interface = "WiFi"
 
   ssh_username = var.username
-  ssh_password = var.password
+  #ssh_password = var.password
+  ssh_private_key_file = "C:/Users/alexb/.ssh/id_rsa"
   ssh_timeout  = "20m"
 }
 
