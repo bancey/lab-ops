@@ -19,6 +19,7 @@ steps:
       SecretsFilter: "*"
       RunAsPreJob: true
   - task: AzureCLI@2
+    displayName: Download Packer Private Key
     inputs:
       azureSubscription: ${{ parameters.serviceConnection }}
       scriptType: 'bash'
@@ -40,6 +41,15 @@ steps:
         enableTransforms: false
         enableTelemetry: false
   - task: CmdLine@2
+    displayName: Run Packer Validate
+    inputs:
+      script: |
+        packer -version
+        packer init ${{ parameters.packerConfigFile }}
+        packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+  - task: CmdLine@2
+    displayName: Run Packer Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       script: |
         packer -version
