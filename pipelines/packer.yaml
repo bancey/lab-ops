@@ -35,7 +35,7 @@ steps:
   - task: CmdLine@2
     inputs:
       script: |
+        cat ~/.ssh/id_rsa.pub
         packer -version
         packer init ${{ parameters.packerConfigFile }}
-        echo 'packer validate -var-file="${{ parameters.packerVarsFile }}" -var "proxmox_api_token_id=$(Wanda-Proxmox-Token-ID)" -var "proxmox_api_token_secret=$(Wanda-Proxmox-Token-Secret)" ${{ parameters.packerConfigFile }}'
-        packer validate -var-file="${{ parameters.packerVarsFile }}" -var "proxmox_api_token_id=$(Wanda-Proxmox-Token-ID)" -var "proxmox_api_token_secret=$(Wanda-Proxmox-Token-Secret)" ${{ parameters.packerConfigFile }}
+        packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
