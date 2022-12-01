@@ -54,4 +54,4 @@ steps:
       script: |
         packer -version
         packer init ${{ parameters.packerConfigFile }}
-        packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+        packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}

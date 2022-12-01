@@ -31,7 +31,7 @@ stages:
     jobs:
       - job: Packer
         pool:
-          vmImage: $(agentImage)
+          name: SelfHostedDocker
         steps:
           - template: pipelines/packer.yaml
             parameters:
