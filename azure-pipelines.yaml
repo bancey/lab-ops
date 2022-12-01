@@ -37,6 +37,10 @@ stages:
             parameters:
               packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
               packerConfigFile: $(System.DefaultWorkingDirectory)/packer/config.pkr.hcl
+              configFiles:
+                - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+                - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/http/*
+                - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/files/*
               keyVaultName: "bancey-vault"
               serviceConnection: "MSDN Sub"
   - ${{ each deployment in parameters.environment_components }}:

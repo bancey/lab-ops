@@ -7,6 +7,9 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
+  - name: configFiles
+    type: object
+    default: []
 
 steps:
   - task: AzureKeyVault@2
@@ -15,19 +18,20 @@ steps:
       KeyVaultName: ${{ parameters.keyVaultName }}
       SecretsFilter: "*"
       RunAsPreJob: true
-  - task: replacetokens@3
-    displayName: "Populate files with values from KeyVault"
-    inputs:
-      targetFiles: ${{ parameters.packerVarsFile }}
-      encoding: auto
-      writeBOM: true
-      actionOnMissing: fail
-      keepToken: true
-      tokenPrefix: $(
-      tokenSuffix: )
-      useLegacyPattern: false
-      enableTransforms: false
-      enableTelemetry: false
+  - ${{ each file in parameters.configFiles }}:
+    - task: replacetokens@3
+      displayName: "Populate files with values from KeyVault"
+      inputs:
+        targetFiles: ${{ file }}
+        encoding: auto
+        writeBOM: true
+        actionOnMissing: fail
+        keepToken: true
+        tokenPrefix: $(
+        tokenSuffix: )
+        useLegacyPattern: false
+        enableTransforms: false
+        enableTelemetry: false
   - task: CmdLine@2
     inputs:
       script: |
