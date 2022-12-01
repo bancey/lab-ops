@@ -166,12 +166,11 @@ build {
   }
 
   provisioner "file" {
-    source      = "${path.cwd}/${var.files_directory}/99-pve.cfg"
-    destination = "/tmp/99-pve.cfg"
+    source      = "${path.cwd}/${var.files_directory}"
+    destination = "/tmp"
   }
 
   provisioner "shell" {
     inline = var.secondary_provisioner_commands
   }
-
 }
