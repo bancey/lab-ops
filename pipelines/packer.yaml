@@ -42,7 +42,6 @@ steps:
   - task: CmdLine@2
     inputs:
       script: |
-        cat ~/.ssh/id_rsa.pub
         packer -version
         packer init ${{ parameters.packerConfigFile }}
         packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
