@@ -18,6 +18,13 @@ steps:
       KeyVaultName: ${{ parameters.keyVaultName }}
       SecretsFilter: "*"
       RunAsPreJob: true
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az keyvault secret download --name Packer-Private-Key --vault-name ${{ parameters.keyVaultName }} --file $(System.DefaultWorkingDirectory)/packer_private_key
   - ${{ each file in parameters.configFiles }}:
     - task: replacetokens@3
       displayName: "Populate files with values from KeyVault"
