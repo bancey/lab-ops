@@ -16,7 +16,7 @@ steps:
   - task: replacetokens@3
     displayName: "Populate files with values from KeyVault"
     inputs:
-      targetFiles: $(Build.SourcesDirectory)/**/*-vars.pkr.hcl
+      targetFiles: ${{ parameters.packerVarsFile }}
       encoding: auto
       writeBOM: true
       actionOnMissing: fail
@@ -30,3 +30,4 @@ steps:
     inputs:
       script: |
         packer -version
+        packer validate -var-file="${{ parameters.packerVarsFile }}" -var "proxmox_api_token_id=$(Wanda-Proxmox-Token-ID)" -var "proxmox_api_token_secret=$(Wanda-Proxmox-Token-Secret)" .\config.pkr.hcl
