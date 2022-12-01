@@ -35,7 +35,7 @@ stages:
         steps:
           - template: pipelines/packer.yaml
             parameters:
-              packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubunut-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+              packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
               packerConfigFile: $(System.DefaultWorkingDirectory)/packer/config.pkr.hcl
               keyVaultName: "bancey-vault"
               serviceConnection: "MSDN Sub"
