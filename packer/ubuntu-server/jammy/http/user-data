@@ -26,7 +26,7 @@ autoinstall:
     swap:
       size: 0
   user-data:
-    package_upgrade: false
+    package_upgrade: true
     timezone: Europe/London
     users:
       - name: bancey

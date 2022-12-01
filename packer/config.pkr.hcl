@@ -68,6 +68,11 @@ variable "http_directory" {
   default = "http"
 }
 
+variable "http_interface" {
+  type    = string
+  default = null
+}
+
 variable "files_directory" {
   type    = string
   default = "files"
@@ -143,7 +148,7 @@ source "proxmox" "proxmox-template" {
   boot_wait    = "5s"
 
   http_directory = "${path.cwd}/${var.http_directory}"
-  http_interface = "WiFi"
+  http_interface = var.http_interface
 
   ssh_username         = "${var.username}"
   ssh_private_key_file = "${var.ssh_private_key_file}"

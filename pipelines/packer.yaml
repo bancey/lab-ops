@@ -1,0 +1,32 @@
+parameters:
+  - name: packerVarsFile
+    type: string
+  - name: keyVaultName
+    type: string
+  - name: serviceConnection
+    type: string
+
+steps:
+  - task: AzureKeyVault@2
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      KeyVaultName: ${{ parameters.keyVaultName }}
+      SecretsFilter: "*"
+      RunAsPreJob: true
+  - task: replacetokens@3
+    displayName: "Populate files with values from KeyVault"
+    inputs:
+      targetFiles: $(Build.SourcesDirectory)/**/*-vars.pkr.hcl
+      encoding: auto
+      writeBOM: true
+      actionOnMissing: fail
+      keepToken: true
+      tokenPrefix: $(
+      tokenSuffix: )
+      useLegacyPattern: false
+      enableTransforms: false
+      enableTelemetry: false
+  - task: CmdLine@2
+    inputs:
+      script: |
+        packer -version
