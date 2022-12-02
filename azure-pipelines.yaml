@@ -50,7 +50,7 @@ variables:
   - name: agentImage
     value: ubuntu-20.04
   - name: terraformVersion
-    value: 1.3.4
+    value: 1.3.6
 
 stages:
   - ${{ each deployment in parameters.packer_components }}:
