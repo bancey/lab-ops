@@ -87,7 +87,7 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                   azureRmKey: ${{ deployment.deployment }}
                   ${{ if eq(deployment.local, true) }}:
-                    downloadUrl: 'https://releases.hashicorp.com/terraform/${{ parameters.terraformVersion }}/terraform_${{ parameters.terraformVersion }}_linux_arm64.zip'
+                    downloadUrl: 'https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip'
               - template: pipelines/terraform-plan.yaml
                 parameters:
                   serviceConnection: ${{ deployment.serviceConnection }}
@@ -108,7 +108,7 @@ stages:
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                   azureRmKey: ${{ deployment.deployment }}
                   ${{ if eq(deployment.local, true) }}:
-                    downloadUrl: 'https://releases.hashicorp.com/terraform/${{ parameters.terraformVersion }}/terraform_${{ parameters.terraformVersion }}_linux_arm64.zip'
+                    downloadUrl: 'https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip'
               - ${{ if eq(deployment.destroy, true) }}:
                   - template: pipelines/terraform-destroy.yaml
                     parameters:
