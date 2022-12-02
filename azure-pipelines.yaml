@@ -26,6 +26,7 @@ parameters:
         storageAccount: wanda1a85dd9018454b4
         destroy: false
         deploy: true
+        local: true
         dependsOn: packer_jammy
   - name: packer_components
     type: object
@@ -74,7 +75,10 @@ stages:
           - job: TerraformPlan
             condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
             pool:
-              vmImage: $(agentImage)
+              ${{ if eq(deployment.local, true) }}:
+                name: SelfHostedDocker
+              ${{ else }}:
+                vmImage: $(agentImage)
             steps:
               - template: pipelines/terraform-init.yaml
                 parameters:
@@ -90,7 +94,10 @@ stages:
           - job: TerraformApply
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
             pool:
-              vmImage: $(agentImage)
+              ${{ if eq(deployment.local, true) }}:
+                name: SelfHostedDocker
+              ${{ else }}:
+                vmImage: $(agentImage)
             steps:
               - template: pipelines/terraform-init.yaml
                 parameters:

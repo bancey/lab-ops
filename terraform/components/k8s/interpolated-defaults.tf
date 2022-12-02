@@ -6,16 +6,16 @@ data "azurerm_key_vault" "vault" {
 }
 
 data "azurerm_key_vault_secret" "proxmox_url" {
-  name         = "Baldr-Proxmox-URL"
+  name         = "Wanda-Proxmox-URL"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
 data "azurerm_key_vault_secret" "proxmox_token_id" {
-  name         = "Baldr-Proxmox-Token-ID"
+  name         = "Wanda-Proxmox-Token-ID"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
 data "azurerm_key_vault_secret" "proxmox_token_secret" {
-  name         = "Baldr-Proxmox-Token-Secret"
+  name         = "Wanda-Proxmox-Token-Secret"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
