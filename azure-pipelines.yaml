@@ -19,6 +19,14 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: k8s_infra
+        environment: wanda
+        component: k8s
+        serviceConnection: "MSDN Sub"
+        storageAccount: wanda1a85dd9018454b4
+        destroy: false
+        deploy: true
+        dependsOn: packer_jammy
   - name: packer_components
     type: object
     default:
