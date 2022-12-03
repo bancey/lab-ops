@@ -1,19 +1,24 @@
-variable "subdomain" {
-  description = "The subdomain"
+variable "target_node" {
   type        = string
+  description = "The Proxmox node to deploy the VM to."
 }
 
-variable "record_type" {
-  description = "The type of DNS record"
+variable "vm_name" {
   type        = string
+  description = "The name of the virtual machine."
 }
 
-variable "ttl" {
-  description = "The TTL of the DNS record"
-  type        = string
+variable "cpu_cores" {
+  type        = number
+  description = "The number of CPU cores."
+}
+
+variable "memory" {
+  type        = number
+  description = "The amount of RAM."
 }
 
 variable "ip_address" {
-  description = "The target IP address of the DNS record"
   type        = string
+  description = "IP Address of the VM."
 }
