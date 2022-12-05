@@ -1,0 +1,24 @@
+variable "target_node" {
+  type        = string
+  description = "The Proxmox node to deploy the VM to."
+}
+
+variable "vm_name" {
+  type        = string
+  description = "The name of the virtual machine."
+}
+
+variable "cpu_cores" {
+  type        = number
+  description = "The number of CPU cores."
+}
+
+variable "memory" {
+  type        = number
+  description = "The amount of RAM."
+}
+
+variable "ip_address" {
+  type        = string
+  description = "IP Address of the VM."
+}

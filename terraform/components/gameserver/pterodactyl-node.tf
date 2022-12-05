@@ -41,7 +41,7 @@ module "pterodactyl_node" {
       protocol                   = "Tcp"
       source_port_range          = "*"
       destination_port_range     = "22"
-      source_address_prefix      = var.admin_access_ip
+      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
       destination_address_prefix = "*"
     }
     Allow443 : {
@@ -51,7 +51,7 @@ module "pterodactyl_node" {
       protocol                   = "Tcp"
       source_port_range          = "*"
       destination_port_range     = "443"
-      source_address_prefix      = var.pterodactyl_panel_ip
+      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
       destination_address_prefix = "*"
     }
     Allow8080 : {
@@ -61,7 +61,7 @@ module "pterodactyl_node" {
       protocol                   = "Tcp"
       source_port_range          = "*"
       destination_port_range     = "8080"
-      source_address_prefix      = var.pterodactyl_panel_ip
+      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
       destination_address_prefix = "*"
     }
     Allow2022 : {
@@ -71,7 +71,7 @@ module "pterodactyl_node" {
       protocol                   = "Tcp"
       source_port_range          = "*"
       destination_port_range     = "2022"
-      source_address_prefix      = var.pterodactyl_panel_ip
+      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
       destination_address_prefix = "*"
     }
     AllowGameServerPorts : {
@@ -80,7 +80,7 @@ module "pterodactyl_node" {
       access                     = "Allow"
       protocol                   = "Tcp"
       source_port_range          = "*"
-      destination_port_range     = var.gameserver_ports
+      destination_port_range     = data.azurerm_key_vault_secret.game_server_ports.value
       source_address_prefix      = "*"
       destination_address_prefix = "*"
     }

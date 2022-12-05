@@ -2,15 +2,15 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.14.0"
+      version = "3.33.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~>3.0"
+      version = "3.4.3"
     }
     tls = {
       source  = "hashicorp/tls"
-      version = "~>4.0"
+      version = "4.0.4"
     }
     ovh = {
       source  = "ovh/ovh"
@@ -26,8 +26,8 @@ provider "azurerm" {
 }
 
 provider "ovh" {
-  endpoint           = var.ovh_endpoint
-  application_key    = var.ovh_application_key
-  application_secret = var.ovh_application_secret
-  consumer_key       = var.ovh_consumer_key
+  endpoint           = data.azurerm_key_vault_secret.ovh_endpoint.value
+  application_key    = data.azurerm_key_vault_secret.ovh_application_key.value
+  application_secret = data.azurerm_key_vault_secret.ovh_application_secret.value
+  consumer_key       = data.azurerm_key_vault_secret.ovh_consumer_key.value
 }
