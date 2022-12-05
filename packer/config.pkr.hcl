@@ -149,6 +149,8 @@ source "proxmox" "proxmox-template" {
 
   http_directory = "${path.cwd}/${var.http_directory}"
   http_interface = var.http_interface
+  http_min_port  = 8146
+  http_max_port  = 8146
 
   ssh_username         = "${var.username}"
   ssh_private_key_file = "${var.ssh_private_key_file}"

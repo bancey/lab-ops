@@ -1,20 +1,20 @@
-proxmox_api_url = "https://192.168.80.11:8006/api2/json"
-proxmox_api_token_id = "$(Wanda-Proxmox-Token-ID)"
+proxmox_api_url          = "https://192.168.80.11:8006/api2/json"
+proxmox_api_token_id     = "$(Wanda-Proxmox-Token-ID)"
 proxmox_api_token_secret = "$(Wanda-Proxmox-Token-Secret)"
-node = "wanda"
-vm_id = 901
-vm_name = "ubuntu-focal-template"
-template_description = "Ubuntu 20.04 (Focal) Server Template"
-iso_url = "https://releases.ubuntu.com/20.04/ubuntu-20.04.3-live-server-amd64.iso"
-iso_checksum = "5035be37a7e9abbdc09f0d257f3e33416c1a0fb322ba860d42d74aa75c3468d4"
-username = "$(VM-Template-Username)"
-ssh_private_key_file = "$(System.DefaultWorkingDirectory)/packer_private_key"
-http_directory = "packer/ubuntu-server/http"
-files_directory = "packer/ubuntu-server/files"
+node                     = "wanda"
+vm_id                    = 901
+vm_name                  = "ubuntu-focal-template"
+template_description     = "Ubuntu 20.04 (Focal) Server Template"
+iso_url                  = "https://mirrors.vinters.com/ubuntu-releases/20.04.5/ubuntu-20.04.5-live-server-amd64.iso"
+iso_checksum             = "5035be37a7e9abbdc09f0d257f3e33416c1a0fb322ba860d42d74aa75c3468d4"
+username                 = "$(VM-Template-Username)"
+ssh_private_key_file     = "$(System.DefaultWorkingDirectory)/packer_private_key"
+http_directory           = "packer/ubuntu-server/http"
+files_directory          = "packer/ubuntu-server/files"
 
 boot_command = [
   "c",
-  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' ",
+  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://$(ADO-Agent-Host-IP):{{ .HTTPPort }}/' ",
   "<enter><wait>",
   "initrd /casper/initrd<enter><wait>",
   "boot<enter>"
