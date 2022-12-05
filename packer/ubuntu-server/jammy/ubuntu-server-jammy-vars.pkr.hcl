@@ -13,11 +13,27 @@ http_directory           = "packer/ubuntu-server/http"
 files_directory          = "packer/ubuntu-server/files"
 
 boot_command = [
+  " <wait>",
+  " <wait>",
+  " <wait>",
+  " <wait>",
+  " <wait>",
   "c",
-  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://$(ADO-Agent-Host-IP):{{ .HTTPPort }}/' ",
+  "<wait>",
+  "set gfxpayload=keep",
   "<enter><wait>",
-  "initrd /casper/initrd<enter><wait>",
-  "boot<enter>"
+  "linux /casper/vmlinuz <wait>",
+  " autoinstall<wait>",
+  " ds=nocloud-net<wait>",
+  "\\;s=http://<wait>",
+  "$(ADO-Agent-Host-IP)<wait>",
+  ":{{.HTTPPort}}/<wait>",
+  " ---",
+  "<enter><wait>",
+  " initrd /casper/<wait>",
+  "/initrd<wait>",
+  "<enter><wait>",
+  "boot<enter><wait>"
 ]
 
 primary_provisioner_commands = [

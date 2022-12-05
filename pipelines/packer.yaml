@@ -49,7 +49,7 @@ steps:
         packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
   - task: CmdLine@2
     displayName: Run Packer Build
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       script: |
         packer -version
