@@ -33,6 +33,7 @@ parameters:
     default:
       - deployment: packer_jammy
         packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+        runBuild: false
         configFiles:
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*

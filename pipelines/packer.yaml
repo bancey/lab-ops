@@ -10,6 +10,9 @@ parameters:
   - name: configFiles
     type: object
     default: []
+  - name: runBuild
+    type: boolean
+    default: true
 
 steps:
   - task: AzureKeyVault@2
@@ -47,11 +50,12 @@ steps:
         packer -version
         packer init ${{ parameters.packerConfigFile }}
         packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
-  - task: CmdLine@2
-    displayName: Run Packer Build
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-    inputs:
-      script: |
-        packer -version
-        packer init ${{ parameters.packerConfigFile }}
-        packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+  - ${{ if eq(true, parameters.runBuild) }}:
+    - task: CmdLine@2
+      displayName: Run Packer Build
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      inputs:
+        script: |
+          packer -version
+          packer init ${{ parameters.packerConfigFile }}
+          packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
