@@ -145,6 +145,7 @@ source "proxmox" "proxmox-template" {
 
   # PACKER Boot Commands
   boot_command = var.boot_command
+  boot         = "c"
   boot_wait    = "20s"
 
   http_directory = "${path.cwd}/${var.http_directory}"

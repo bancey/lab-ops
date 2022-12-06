@@ -33,18 +33,12 @@ parameters:
     default:
       - deployment: packer_jammy
         packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+        runBuild: false
         configFiles:
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
         dependsOn: []
-      - deployment: packer_focal
-        packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/focal/ubuntu-server-focal-vars.pkr.hcl
-        configFiles:
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/focal/ubuntu-server-focal-vars.pkr.hcl
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
-        dependsOn: packer_jammy
 
 variables:
   - name: agentImage
@@ -68,6 +62,7 @@ stages:
                 configFiles: ${{ deployment.configFiles }}
                 keyVaultName: "bancey-vault"
                 serviceConnection: "MSDN Sub"
+                runBuild: ${{ deployment.runBuild }}
   - ${{ each deployment in parameters.environment_components }}:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}

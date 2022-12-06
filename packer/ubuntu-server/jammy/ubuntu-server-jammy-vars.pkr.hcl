@@ -13,25 +13,41 @@ http_directory           = "packer/ubuntu-server/http"
 files_directory          = "packer/ubuntu-server/files"
 
 boot_command = [
+  " <wait>",
+  " <wait>",
+  " <wait>",
+  " <wait>",
+  " <wait>",
   "c",
-  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://$(ADO-Agent-Host-IP):{{ .HTTPPort }}/' ",
+  "<wait>",
+  "set gfxpayload=keep",
   "<enter><wait>",
-  "initrd /casper/initrd<enter><wait>",
-  "boot<enter>"
+  "linux /casper/vmlinuz <wait>",
+  " autoinstall<wait>",
+  " ds=nocloud-net<wait>",
+  "\\;s=http://<wait>",
+  "$(ADO-Agent-Host-IP)<wait>",
+  ":{{.HTTPPort}}/<wait>",
+  " ---",
+  "<enter><wait>",
+  " initrd /casper/<wait>",
+  "/initrd<wait>",
+  "<enter><wait>",
+  "boot<enter><wait>"
 ]
 
 primary_provisioner_commands = [
   "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
   "sudo rm /etc/ssh/ssh_host_*",
   "sudo truncate -s 0 /etc/machine-id",
-  "sudo apt -y autoremove --purge",
-  "sudo apt -y clean",
-  "sudo apt -y autoclean",
+  "sudo apt-get -y autoremove --purge",
+  "sudo apt-get -y clean",
+  "sudo apt-get -y autoclean",
   "sudo cloud-init clean",
   "sudo rm -f /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg",
   "sudo sync"
 ]
 
 secondary_provisioner_commands = [
-  "sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg"
+  "sudo cp /tmp/files/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg"
 ]
