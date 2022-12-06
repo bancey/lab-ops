@@ -38,13 +38,6 @@ parameters:
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
         dependsOn: []
-      - deployment: packer_focal
-        packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/focal/ubuntu-server-focal-vars.pkr.hcl
-        configFiles:
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/focal/ubuntu-server-focal-vars.pkr.hcl
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
-        dependsOn: packer_jammy
 
 variables:
   - name: agentImage
