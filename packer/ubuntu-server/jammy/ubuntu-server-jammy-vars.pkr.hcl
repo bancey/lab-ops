@@ -49,5 +49,6 @@ primary_provisioner_commands = [
 ]
 
 secondary_provisioner_commands = [
+  "ls /tmp"
   "sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg"
 ]
