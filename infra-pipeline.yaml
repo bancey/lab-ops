@@ -3,6 +3,11 @@ trigger:
   branches:
     include:
       - master
+  paths:
+    include:
+      - terraform
+      - pipelines/terraform-*.yaml
+      - infra-pipeline.yaml
 
 pr:
   - master
@@ -27,7 +32,7 @@ parameters:
         destroy: false
         deploy: true
         local: true
-        dependsOn: packer_jammy
+        dependsOn: []
       - deployment: migration
         environment: wanda
         component: migration
@@ -36,17 +41,6 @@ parameters:
         destroy: false
         deploy: true
         local: true
-        dependsOn: packer_jammy
-  - name: packer_components
-    type: object
-    default:
-      - deployment: packer_jammy
-        packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
-        runBuild: false
-        configFiles:
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
-          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
         dependsOn: []
 
 variables:
@@ -56,22 +50,6 @@ variables:
     value: 1.3.6
 
 stages:
-  - ${{ each deployment in parameters.packer_components }}:
-    - stage: ${{ deployment.deployment }}
-      dependsOn: ${{ deployment.dependsOn }}
-      jobs:
-        - job: Packer
-          pool:
-            name: SelfHostedDocker
-          steps:
-            - template: pipelines/packer.yaml
-              parameters:
-                packerVarsFile: ${{ deployment.packerVarsFile }}
-                packerConfigFile: $(System.DefaultWorkingDirectory)/packer/config.pkr.hcl
-                configFiles: ${{ deployment.configFiles }}
-                keyVaultName: "bancey-vault"
-                serviceConnection: "MSDN Sub"
-                runBuild: ${{ deployment.runBuild }}
   - ${{ each deployment in parameters.environment_components }}:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
