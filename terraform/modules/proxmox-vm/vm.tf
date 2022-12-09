@@ -3,7 +3,7 @@ resource "proxmox_vm_qemu" "your-vm" {
   vmid        = var.vm_id
   name        = var.vm_name
   onboot      = var.start_on_boot
-  startup     = "order=${var.startup_order}"
+  startup     = "order=${var.startup_order},up=${var.startup_delay}"
   clone       = "ubuntu-jammy-template"
   agent       = var.qemu_agent_installed
   cores       = var.cpu_cores

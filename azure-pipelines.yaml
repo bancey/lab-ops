@@ -28,6 +28,15 @@ parameters:
         deploy: true
         local: true
         dependsOn: packer_jammy
+      - deployment: migration
+        environment: wanda
+        component: migration
+        serviceConnection: "MSDN Sub"
+        storageAccount: migrationdb1edbf3cb1
+        destroy: false
+        deploy: true
+        local: true
+        dependsOn: packer_jammy
   - name: packer_components
     type: object
     default:
