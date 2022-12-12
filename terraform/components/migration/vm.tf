@@ -1,4 +1,4 @@
-module "thor-replica" {
+module "migration" {
   source = "../../modules/proxmox-vm"
 
   target_node    = "wanda"
@@ -7,5 +7,4 @@ module "thor-replica" {
   cpu_cores      = 2
   memory         = 8192
   ip_address     = "192.168.80.20"
-  startup_order  = 15
 }
