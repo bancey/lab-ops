@@ -8,6 +8,11 @@ variable "vm_name" {
   description = "The name of the virtual machine."
 }
 
+variable "vm_description" {
+  type        = string
+  description = "The description of the virtual machine."
+}
+
 variable "cpu_cores" {
   type        = number
   description = "The number of CPU cores."

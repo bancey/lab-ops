@@ -2,6 +2,7 @@ resource "proxmox_vm_qemu" "your-vm" {
   target_node = var.target_node
   vmid        = var.vm_id
   name        = var.vm_name
+  desc        = var.vm_description
   onboot      = var.start_on_boot
   startup     = "order=${var.startup_order},up=${var.startup_delay}"
   clone       = "ubuntu-jammy-template"
