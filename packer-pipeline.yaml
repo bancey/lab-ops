@@ -1,0 +1,49 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - packer
+      - pipelines/packer.yaml
+      - packer-pipeline.yaml
+
+pr:
+  - master
+
+parameters:
+  - name: packer_components
+    type: object
+    default:
+      - deployment: packer_jammy
+        packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+        runBuild: false
+        configFiles:
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
+        dependsOn: []
+
+variables:
+  - name: agentImage
+    value: ubuntu-20.04
+
+stages:
+  - ${{ each deployment in parameters.packer_components }}:
+    - stage: ${{ deployment.deployment }}
+      dependsOn: ${{ deployment.dependsOn }}
+      jobs:
+        - job: Packer
+          pool:
+            name: SelfHostedDocker
+          steps:
+            - template: pipelines/packer.yaml
+              parameters:
+                packerVarsFile: ${{ deployment.packerVarsFile }}
+                packerConfigFile: $(System.DefaultWorkingDirectory)/packer/config.pkr.hcl
+                configFiles: ${{ deployment.configFiles }}
+                keyVaultName: "bancey-vault"
+                serviceConnection: "MSDN Sub"
+                runBuild: ${{ deployment.runBuild }}
+  

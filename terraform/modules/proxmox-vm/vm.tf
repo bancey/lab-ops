@@ -2,8 +2,9 @@ resource "proxmox_vm_qemu" "your-vm" {
   target_node = var.target_node
   vmid        = var.vm_id
   name        = var.vm_name
+  desc        = var.vm_description
   onboot      = var.start_on_boot
-  startup     = "order=${var.startup_order}"
+  startup     = "order=${var.startup_order},up=${var.startup_delay}"
   clone       = "ubuntu-jammy-template"
   agent       = var.qemu_agent_installed
   cores       = var.cpu_cores
@@ -16,5 +17,11 @@ resource "proxmox_vm_qemu" "your-vm" {
   network {
     bridge = "vmbr0"
     model  = "virtio"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      disk
+    ]
   }
 }

@@ -16,6 +16,12 @@ variable "startup_order" {
   default     = 10
 }
 
+variable "startup_delay" {
+  type        = number
+  description = "The delay in seconds to start the VM with."
+  default     = 120
+}
+
 variable "qemu_agent_installed" {
   type        = number
   description = "Is the QEMU agent installed?"
