@@ -1,4 +1,4 @@
-resource "proxmox_vm_qemu" "your-vm" {
+resource "proxmox_vm_qemu" "vm" {
   target_node = var.target_node
   vmid        = var.vm_id
   name        = var.vm_name
