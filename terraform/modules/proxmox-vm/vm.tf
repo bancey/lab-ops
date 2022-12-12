@@ -17,4 +17,19 @@ resource "proxmox_vm_qemu" "your-vm" {
     bridge = "vmbr0"
     model  = "virtio"
   }
+
+  lifecycle {
+    ignore_changes = [
+      disk.backup,
+      disk.cache,
+      disk.file,
+      disk.format,
+      disk.iops,
+      disk.iops_max,
+      disk.iops_max_length,
+      disk.iops_rd,
+      disk.iops_rd_max,
+      disk.iops_rd_max_length,
+    ]
+  }
 }
