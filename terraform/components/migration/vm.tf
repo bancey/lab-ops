@@ -2,7 +2,7 @@ module "thor-replica" {
   source = "../../modules/proxmox-vm"
 
   target_node    = "wanda"
-  vm_name        = "thor-replica"
+  vm_name        = "thor replica"
   vm_description = "Temporary migration VM to allow me to decommission the physical host."
   cpu_cores      = 2
   memory         = 8192
