@@ -3,7 +3,8 @@ module "master" {
   source = "../../modules/proxmox-vm"
 
   target_node    = "wanda"
-  vm_name        = "master"
+  vm_name        = "master${count.index}"
+  vm_id          = local.master_start_vm_id + count.index
   vm_description = "k8s control plane"
   cpu_cores      = 2
   memory         = 4096
@@ -16,6 +17,7 @@ module "nodes" {
 
   target_node    = "wanda"
   vm_name        = "node${count.index}"
+  vm_id          = local.node_start_vm_id + count.index
   vm_description = "k8s worker node"
   cpu_cores      = 2
   memory         = 4096
