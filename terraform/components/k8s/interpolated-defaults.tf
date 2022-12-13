@@ -1,6 +1,6 @@
 locals {
-  master_start_vm_id = 100
-  node_start_vm_id   = 120
+  master_start_vm_id = 200
+  node_start_vm_id   = 220
 }
 
 data "azurerm_client_config" "current" {}

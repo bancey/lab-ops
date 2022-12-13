@@ -37,11 +37,12 @@ parameters:
         environment: wanda
         component: migration
         serviceConnection: "MSDN Sub"
-        storageAccount: migrationdb1edbf3cb1
+        storageAccount: wanda1a85dd9018454b4
         destroy: false
         deploy: true
         local: true
-        dependsOn: []
+        dependsOn:
+          - k8s_infra
 
 variables:
   - name: agentImage
