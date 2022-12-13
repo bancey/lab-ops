@@ -1,4 +1,5 @@
 module "master" {
+  count  = var.master_count
   source = "../../modules/proxmox-vm"
 
   target_node    = "wanda"
@@ -6,27 +7,17 @@ module "master" {
   vm_description = "k8s control plane"
   cpu_cores      = 2
   memory         = 4096
-  ip_address     = "192.168.80.16"
+  ip_address     = cidrhost(var.master_cidr, count.index)
 }
 
-module "node0" {
+module "nodes" {
+  count  = var.node_count
   source = "../../modules/proxmox-vm"
 
   target_node    = "wanda"
-  vm_name        = "node0"
+  vm_name        = "node${count.index}"
   vm_description = "k8s worker node"
   cpu_cores      = 2
   memory         = 4096
-  ip_address     = "192.168.80.17"
-}
-
-module "node1" {
-  source = "../../modules/proxmox-vm"
-
-  target_node    = "wanda"
-  vm_name        = "node1"
-  vm_description = "k8s worker node"
-  cpu_cores      = 2
-  memory         = 4096
-  ip_address     = "192.168.80.18"
+  ip_address     = cidrhost(var.nodes_cidr, count.index)
 }

@@ -7,4 +7,5 @@ module "migration" {
   cpu_cores      = 2
   memory         = 8192
   ip_address     = "192.168.80.20"
+  startup_order  = 15
 }
