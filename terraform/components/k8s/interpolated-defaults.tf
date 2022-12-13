@@ -1,3 +1,8 @@
+locals {
+  master_start_vm_id = 100
+  node_start_vm_id   = 120
+}
+
 data "azurerm_client_config" "current" {}
 
 data "azurerm_key_vault" "vault" {

@@ -3,6 +3,7 @@ module "migration" {
 
   target_node    = "wanda"
   vm_name        = "migration"
+  vm_id          = 101
   vm_description = "Temporary migration VM to allow me to decommission the physical host."
   cpu_cores      = 2
   memory         = 8192
