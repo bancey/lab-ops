@@ -12,7 +12,7 @@ resource "proxmox_vm_qemu" "vm" {
   cpu         = "host"
   memory      = var.memory
   os_type     = "cloud-init"
-  ipconfig0   = "ip=${var.ip_address}/32,gw=192.168.80.1"
+  ipconfig0   = "ip=${var.ip_address}/24,gw=${var.geteway_ip_address}"
 
   network {
     bridge = "vmbr0"

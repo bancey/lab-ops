@@ -33,3 +33,9 @@ variable "cpu_sockets" {
   description = "The number of CPU sockets."
   default     = 1
 }
+
+variable "gateway_ip_address" {
+  type        = string
+  description = "The IP address of the gateway."
+  default     = "192.168.80.1"
+}
