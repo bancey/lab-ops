@@ -43,6 +43,16 @@ parameters:
         local: true
         dependsOn:
           - k8s_infra
+      - deployment: pteronode
+        environment: wanda
+        component: pteronode
+        serviceConnection: "MSDN Sub"
+        storageAccount: wanda1a85dd9018454b4
+        destroy: false
+        deploy: true
+        local: true
+        dependsOn:
+          - k8s_infra
 
 variables:
   - name: agentImage
