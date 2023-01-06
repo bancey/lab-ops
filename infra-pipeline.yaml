@@ -16,6 +16,14 @@ parameters:
   - name: environment_components
     type: object
     default:
+      - deployment: dns
+        environment: dns
+        component: dns
+        serviceConnection: "MSDN Sub"
+        storageAccount: dns175090c1a7c944d1
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: az_prod_gameserver
         environment: az-prod
         component: gameserver

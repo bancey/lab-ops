@@ -1,15 +1,17 @@
 terraform {
   required_providers {
-    ovh = {
-      source  = "ovh/ovh"
-      version = "0.25.0"
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "3.37.0"
+    }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "3.31.0"
     }
   }
 }
 
-provider "ovh" {
-  endpoint           = var.ovh_endpoint
-  application_key    = var.ovh_application_key
-  application_secret = var.ovh_application_secret
-  consumer_key       = var.ovh_consumer_key
+provider "cloudflare" {
+  alias     = "lab"
+  api_token = data.azurerm_key_vault_secret.cloudflare_lab_api_token.value
 }
