@@ -9,6 +9,12 @@ terraform {
       version = "3.31.0"
     }
   }
+
+  backend "azurerm" {}
+}
+
+provider "azurerm" {
+  features {}
 }
 
 provider "cloudflare" {
