@@ -18,6 +18,5 @@ provider "azurerm" {
 }
 
 provider "cloudflare" {
-  alias     = "lab"
   api_token = data.azurerm_key_vault_secret.cloudflare_lab_api_token.value
 }
