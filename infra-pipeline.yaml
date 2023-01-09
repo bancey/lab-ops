@@ -96,18 +96,9 @@ stages:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
         jobs:
-          - ${{ if eq(deployment.local, true) }}:
-            - job: Test
-              pool:
-                name: SelfHostedDocker
-              variables:
-                isOnline: $[ stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'] ]
-              steps:
-                - script: |
-                    echo "$(isOnline)"
           - job: TerraformPlan
             ${{ if eq(deployment.local, true) }}:
-              condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckEnvIsOnline_${{ deployment.environment }}.outputs['CheckEnvIsOnline_${{ deployment.environment }}.online'], 'true'))
+              condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
             ${{ else }}:  
               condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
             pool:
