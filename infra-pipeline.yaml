@@ -57,7 +57,6 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - k8s_infra
       - deployment: pteronode
         environment: wanda
         component: pteronode
@@ -68,7 +67,6 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - k8s_infra
 
 variables:
   - name: agentImage
