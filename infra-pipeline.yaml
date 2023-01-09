@@ -84,7 +84,7 @@ stages:
               name: SelfHostedDocker
             steps:
               - script: |
-                  if nc -z ${{ env.address }} 443 2>/dev/null; then
+                  if nc -z ${{ env.address }} 22 2>/dev/null; then
                     echo "${{ env.address }} ✓"
                     echo "##vso[task.setvariable variable=online;isOutput=true]true"
                   else
