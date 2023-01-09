@@ -81,7 +81,7 @@ stages:
         jobs:
           - job: CheckEnvIsOnline_${{ env.name }}
             pool:
-              name: "Self Hosted"
+              name: SelfHostedDocker
             steps:
               - script: |
                   if nc -z ${{ env.address }} 22 2>/dev/null; then
