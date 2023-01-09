@@ -79,7 +79,7 @@ stages:
       - stage: CheckEnvIsOnline_${{ env.name }}
         dependsOn: []
         jobs:
-          - job: CheckEnvIsOnline_${{ env.name }}
+          - job: CheckEnvIsOnline
             pool:
               name: SelfHostedDocker
             steps:
@@ -102,7 +102,7 @@ stages:
                 name: SelfHostedDocker
               steps:
                 - script: |
-                    echo "$[stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline_${{ deployment.environment }}.outputs['checkOnline.online']]"
+                    echo "$[stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online']]"
           - job: TerraformPlan
             ${{ if eq(deployment.local, true) }}:
               condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckEnvIsOnline_${{ deployment.environment }}.outputs['CheckEnvIsOnline_${{ deployment.environment }}.online'], 'true'))
