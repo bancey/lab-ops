@@ -46,7 +46,7 @@ parameters:
         deploy: true
         local: true
         dependsOn:
-          - CheckEnvIsOnline
+          - CheckEnvIsOnline_wanda
       - deployment: migration
         environment: wanda
         component: migration
@@ -56,7 +56,7 @@ parameters:
         deploy: true
         local: true
         dependsOn:
-          - CheckEnvIsOnline
+          - CheckEnvIsOnline_wanda
           - k8s_infra
       - deployment: pteronode
         environment: wanda
@@ -67,7 +67,7 @@ parameters:
         deploy: true
         local: true
         dependsOn:
-          - CheckEnvIsOnline
+          - CheckEnvIsOnline_wanda
           - k8s_infra
 
 variables:
