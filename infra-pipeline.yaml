@@ -91,14 +91,23 @@ stages:
                     echo "${{ env.address }} ✗"
                     echo "##vso[task.setvariable variable=online;isOutput=true]false"
                   fi
+                name: checkOnline
   - ${{ each deployment in parameters.environment_components }}:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
-        ${{ if eq(deployment.local, true) }}:
-          condition: and(succeeded(), eq(dependencies.CheckEnvIsOnline_${{ deployment.environment }}.outputs['CheckEnvIsOnline_${{ deployment.environment }}.online'], 'true'))
         jobs:
+          - ${{ if eq(deployment.local, true) }}:
+            - job: Test
+              pool:
+                name: SelfHostedDocker
+              steps:
+                - script: |
+                    echo "$[stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline_${{ deployment.environment }}.outputs['checkOnline.online']]"
           - job: TerraformPlan
-            condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+            ${{ if eq(deployment.local, true) }}:
+              condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckEnvIsOnline_${{ deployment.environment }}.outputs['CheckEnvIsOnline_${{ deployment.environment }}.online'], 'true'))
+            ${{ else }}:  
+              condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
             pool:
               ${{ if eq(deployment.local, true) }}:
                 name: SelfHostedDocker
