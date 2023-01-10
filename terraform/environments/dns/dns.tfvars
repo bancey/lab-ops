@@ -17,6 +17,12 @@ cloudflare_records = {
     proxied = true
     ttl     = 1
   },
+  "traefik.tyr" = {
+    value   = "@"
+    type    = "CNAME"
+    proxied = true
+    ttl     = 1
+  },
   "loki" = {
     value   = "@"
     type    = "CNAME"
@@ -30,6 +36,18 @@ cloudflare_records = {
     ttl     = 1
   },
   "whales" = {
+    value   = "@"
+    type    = "CNAME"
+    proxied = true
+    ttl     = 1
+  },
+  "request" = {
+    value   = "@"
+    type    = "CNAME"
+    proxied = true
+    ttl     = 1
+  },
+  "plex" = {
     value   = "@"
     type    = "CNAME"
     proxied = true
