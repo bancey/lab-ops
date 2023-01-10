@@ -12,18 +12,18 @@ data "azurerm_key_vault" "vault" {
   resource_group_name = "common"
 }
 
-data "azurerm_key_vault_secret" "cloudflare_lab_zone_id" {
-  name         = "Cloudflare-Lab-Zone-ID"
+data "azurerm_key_vault_secret" "cloudflare_main_zone_id" {
+  name         = "Cloudflare-Main-Zone-ID"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "cloudflare_lab_zone_name" {
-  name         = "Cloudflare-Lab-Zone-Name"
+data "azurerm_key_vault_secret" "cloudflare_main_zone_name" {
+  name         = "Cloudflare-Main-Zone-Name"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "cloudflare_lab_api_token" {
-  name         = "Cloudflare-Lab-API-Token"
+data "azurerm_key_vault_secret" "cloudflare_main_api_token" {
+  name         = "Cloudflare-Main-API-Token"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 

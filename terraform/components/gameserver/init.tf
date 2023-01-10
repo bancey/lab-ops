@@ -30,7 +30,7 @@ provider "azurerm" {
 }
 
 provider "cloudflare" {
-  api_token = data.azurerm_key_vault_secret.cloudflare_lab_api_token.value
+  api_token = data.azurerm_key_vault_secret.cloudflare_main_api_token.value
 }
 
 provider "ovh" {
