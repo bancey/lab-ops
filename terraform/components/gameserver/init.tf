@@ -16,16 +16,9 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "3.31.0"
     }
-<<<<<<< Updated upstream
-    ovh = {
-      source  = "ovh/ovh"
-      version = "0.26.0"
-    }
-=======
->>>>>>> Stashed changes
   }
 
-  backend "azurerm" {}
+  #backend "azurerm" {}
 }
 
 provider "azurerm" {
