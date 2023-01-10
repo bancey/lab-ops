@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/tls"
       version = "4.0.4"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "3.31.0"
+    }
     ovh = {
       source  = "ovh/ovh"
       version = "0.25.0"
@@ -23,6 +27,10 @@ terraform {
 
 provider "azurerm" {
   features {}
+}
+
+provider "cloudflare" {
+  api_token = data.azurerm_key_vault_secret.cloudflare_main_api_token.value
 }
 
 provider "ovh" {
