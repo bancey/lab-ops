@@ -1,18 +1,10 @@
-resource "cloudflare_record" "root" {
-  zone_id = data.azurerm_key_vault_secret.cloudflare_lab_zone_id.value
-  name    = "@"
-  value   = data.azurerm_key_vault_secret.public_ip.value
-  type    = "A"
-  proxied = true
-  ttl     = 300
-}
+resource "cloudflare_record" "records" {
+  for_each = var.cloudflare_records
 
-resource "cloudflare_record" "cnames" {
-  count   = length(var.cloudflare_cname_record_names)
   zone_id = data.azurerm_key_vault_secret.cloudflare_lab_zone_id.value
-  name    = var.cloudflare_cname_record_names[count.index]
-  value   = "@"
-  type    = "CNAME"
-  proxied = true
-  ttl     = 300
+  name    = each.key
+  value   = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value
+  type    = each.value.type
+  proxied = each.value.proxied
+  ttl     = each.value.ttl
 }
