@@ -27,26 +27,6 @@ data "azurerm_key_vault_secret" "cloudflare_main_api_token" {
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "ovh_endpoint" {
-  name         = "OVH-Endpoint"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
-
-data "azurerm_key_vault_secret" "ovh_consumer_key" {
-  name         = "OVH-Consumer-Key"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
-
-data "azurerm_key_vault_secret" "ovh_application_secret" {
-  name         = "OVH-Application-Secret"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
-
-data "azurerm_key_vault_secret" "ovh_application_key" {
-  name         = "OVH-Application-Key"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
-
 data "azurerm_key_vault_secret" "game_server_ports" {
   name         = "Game-Server-Ports"
   key_vault_id = data.azurerm_key_vault.vault.id

@@ -1,5 +1,10 @@
 module "pterodactyl_node" {
-  source             = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=743b422b3288364bcdbde6530dc28c81c5078ebd"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=3f754484ac5d490f6cdfa8644703787dab35b8f9"
+
+  depends_on = [
+    cloudflare_record.records
+  ]
+
   count              = var.gameserver_count
   name               = "${var.gameserver_name}${count.index + 1}"
   env                = var.env

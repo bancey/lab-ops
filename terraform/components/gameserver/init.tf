@@ -16,10 +16,6 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "3.31.0"
     }
-    ovh = {
-      source  = "ovh/ovh"
-      version = "0.26.0"
-    }
   }
 
   backend "azurerm" {}
@@ -31,11 +27,4 @@ provider "azurerm" {
 
 provider "cloudflare" {
   api_token = data.azurerm_key_vault_secret.cloudflare_main_api_token.value
-}
-
-provider "ovh" {
-  endpoint           = data.azurerm_key_vault_secret.ovh_endpoint.value
-  application_key    = data.azurerm_key_vault_secret.ovh_application_key.value
-  application_secret = data.azurerm_key_vault_secret.ovh_application_secret.value
-  consumer_key       = data.azurerm_key_vault_secret.ovh_consumer_key.value
 }
