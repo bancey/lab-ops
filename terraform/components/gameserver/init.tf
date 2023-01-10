@@ -12,9 +12,9 @@ terraform {
       source  = "hashicorp/tls"
       version = "4.0.4"
     }
-    ovh = {
-      source  = "ovh/ovh"
-      version = "0.25.0"
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "3.31.0"
     }
   }
 
@@ -25,9 +25,6 @@ provider "azurerm" {
   features {}
 }
 
-provider "ovh" {
-  endpoint           = data.azurerm_key_vault_secret.ovh_endpoint.value
-  application_key    = data.azurerm_key_vault_secret.ovh_application_key.value
-  application_secret = data.azurerm_key_vault_secret.ovh_application_secret.value
-  consumer_key       = data.azurerm_key_vault_secret.ovh_consumer_key.value
+provider "cloudflare" {
+  api_token = data.azurerm_key_vault_secret.cloudflare_lab_api_token.value
 }

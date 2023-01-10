@@ -12,23 +12,18 @@ data "azurerm_key_vault" "vault" {
   resource_group_name = "common"
 }
 
-data "azurerm_key_vault_secret" "ovh_endpoint" {
-  name         = "OVH-Endpoint"
+data "azurerm_key_vault_secret" "cloudflare_lab_zone_id" {
+  name         = "Cloudflare-Lab-Zone-ID"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "ovh_consumer_key" {
-  name         = "OVH-Consumer-Key"
+data "azurerm_key_vault_secret" "cloudflare_lab_zone_name" {
+  name         = "Cloudflare-Lab-Zone-Name"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "ovh_application_secret" {
-  name         = "OVH-Application-Secret"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
-
-data "azurerm_key_vault_secret" "ovh_application_key" {
-  name         = "OVH-Application-Key"
+data "azurerm_key_vault_secret" "cloudflare_lab_api_token" {
+  name         = "Cloudflare-Lab-API-Token"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
