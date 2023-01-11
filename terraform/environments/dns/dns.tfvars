@@ -17,7 +17,7 @@ cloudflare_records = {
     proxied = true
     ttl     = 1
   },
-  "traefik.tyr" = {
+  "traefik-tyr" = {
     value   = "@"
     type    = "CNAME"
     proxied = true
@@ -48,6 +48,12 @@ cloudflare_records = {
     ttl     = 1
   },
   "plex" = {
+    value   = "@"
+    type    = "CNAME"
+    proxied = true
+    ttl     = 1
+  },
+  "wf" = {
     value   = "@"
     type    = "CNAME"
     proxied = true
