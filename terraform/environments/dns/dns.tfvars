@@ -17,12 +17,6 @@ cloudflare_records = {
     proxied = true
     ttl     = 1
   },
-  "traefik-tyr" = {
-    value   = "@"
-    type    = "CNAME"
-    proxied = true
-    ttl     = 1
-  },
   "loki" = {
     value   = "@"
     type    = "CNAME"
@@ -54,6 +48,12 @@ cloudflare_records = {
     ttl     = 1
   },
   "wf" = {
+    value   = "@"
+    type    = "CNAME"
+    proxied = true
+    ttl     = 1
+  },
+  "pterodactyl" = {
     value   = "@"
     type    = "CNAME"
     proxied = true
