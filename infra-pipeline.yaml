@@ -72,6 +72,7 @@ parameters:
         playbook: wings-node.yaml
         local: true
         dependsOn:
+          - CheckEnvIsOnline_wanda
           - pteronode
 
 variables:
