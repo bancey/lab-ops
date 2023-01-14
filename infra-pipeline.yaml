@@ -67,6 +67,12 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: pteronode_ansible
+        environment: wanda
+        playbook: wings-node.yaml
+        local: true
+        dependsOn:
+          - pteronode
 
 variables:
   - name: agentImage
@@ -96,60 +102,84 @@ stages:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
         jobs:
-          - job: TerraformPlan
-            ${{ if eq(deployment.local, true) }}:
-              condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-            ${{ else }}:  
+          - ${{ if ne(deployment.component, '') }}:
+            - job: TerraformPlan
+              ${{ if eq(deployment.local, true) }}:
+                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+              ${{ else }}:
+                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+              pool:
+                ${{ if eq(deployment.local, true) }}:
+                  name: SelfHostedDocker
+                ${{ else }}:
+                  vmImage: $(agentImage)
+              steps:
+                - template: pipelines/terraform-init.yaml
+                  parameters:
+                    terraformVersion: $(terraformVersion)
+                    storageAccount: ${{ deployment.storageAccount}}
+                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                    azureRmKey: ${{ deployment.deployment }}
+                    ${{ if eq(deployment.local, true) }}:
+                      downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
+                - template: pipelines/terraform-plan.yaml
+                  parameters:
+                    serviceConnection: ${{ deployment.serviceConnection }}
+                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                    variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+            - job: TerraformApply
+              ${{ if eq(deployment.local, true) }}:
+                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+              ${{ else }}:
+                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+              pool:
+                ${{ if eq(deployment.local, true) }}:
+                  name: SelfHostedDocker
+                ${{ else }}:
+                  vmImage: $(agentImage)
+              steps:
+                - template: pipelines/terraform-init.yaml
+                  parameters:
+                    terraformVersion: $(terraformVersion)
+                    storageAccount: ${{ deployment.storageAccount}}
+                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                    azureRmKey: ${{ deployment.deployment }}
+                    ${{ if eq(deployment.local, true) }}:
+                      downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
+                - ${{ if eq(deployment.destroy, true) }}:
+                    - template: pipelines/terraform-destroy.yaml
+                      parameters:
+                        serviceConnection: ${{ deployment.serviceConnection }}
+                        workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                        variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                - ${{ if eq(deployment.deploy, true) }}:
+                    - template: pipelines/terraform-apply.yaml
+                      parameters:
+                        serviceConnection: ${{ deployment.serviceConnection }}
+                        workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                        variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                        ${{ if eq(deployment.local, true) }}:
+                          parallelism: 2
+          - ${{ if ne(deployment.playbook, '') }}:
+            - job: AnsibleCheck
               condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-            pool:
-              ${{ if eq(deployment.local, true) }}:
-                name: SelfHostedDocker
-              ${{ else }}:
-                vmImage: $(agentImage)
-            steps:
-              - template: pipelines/terraform-init.yaml
-                parameters:
-                  terraformVersion: $(terraformVersion)
-                  storageAccount: ${{ deployment.storageAccount}}
-                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                  azureRmKey: ${{ deployment.deployment }}
-                  ${{ if eq(deployment.local, true) }}:
-                    downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
-              - template: pipelines/terraform-plan.yaml
-                parameters:
-                  serviceConnection: ${{ deployment.serviceConnection }}
-                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                  variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-          - job: TerraformApply
-            ${{ if eq(deployment.local, true) }}:
-              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-            ${{ else }}:  
+              pool:
+                ${{ if eq(deployment.local, true) }}:
+                  name: SelfHostedDocker
+                ${{ else }}:
+                  vmImage: $(agentImage)
+              steps:
+                - script: |
+                    ansible-playbook --syntax-check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                    ansible-playbook --check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+            - job: AnsibleRun
               condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-            pool:
-              ${{ if eq(deployment.local, true) }}:
-                name: SelfHostedDocker
-              ${{ else }}:
-                vmImage: $(agentImage)
-            steps:
-              - template: pipelines/terraform-init.yaml
-                parameters:
-                  terraformVersion: $(terraformVersion)
-                  storageAccount: ${{ deployment.storageAccount}}
-                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                  azureRmKey: ${{ deployment.deployment }}
-                  ${{ if eq(deployment.local, true) }}:
-                    downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
-              - ${{ if eq(deployment.destroy, true) }}:
-                  - template: pipelines/terraform-destroy.yaml
-                    parameters:
-                      serviceConnection: ${{ deployment.serviceConnection }}
-                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-              - ${{ if eq(deployment.deploy, true) }}:
-                  - template: pipelines/terraform-apply.yaml
-                    parameters:
-                      serviceConnection: ${{ deployment.serviceConnection }}
-                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                      ${{ if eq(deployment.local, true) }}:
-                        parallelism: 2
+              pool:
+                ${{ if eq(deployment.local, true) }}:
+                  name: SelfHostedDocker
+                ${{ else }}:
+                  vmImage: $(agentImage)
+              steps:
+                - script: |
+                    ansible-playbook --syntax-check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                    ansible-playbook --check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
