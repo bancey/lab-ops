@@ -104,89 +104,110 @@ stages:
         dependsOn: ${{ deployment.dependsOn }}
         jobs:
           - ${{ if ne(deployment.component, '') }}:
-            - job: TerraformPlan
-              ${{ if eq(deployment.local, true) }}:
-                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-              ${{ else }}:
-                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-              pool:
+              - job: TerraformPlan
                 ${{ if eq(deployment.local, true) }}:
-                  name: SelfHostedDocker
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
-                  vmImage: $(agentImage)
-              steps:
-                - template: pipelines/terraform-init.yaml
-                  parameters:
-                    terraformVersion: $(terraformVersion)
-                    storageAccount: ${{ deployment.storageAccount}}
-                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                    azureRmKey: ${{ deployment.deployment }}
-                    ${{ if eq(deployment.local, true) }}:
-                      downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
-                - template: pipelines/terraform-plan.yaml
-                  parameters:
-                    serviceConnection: ${{ deployment.serviceConnection }}
-                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                    variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-            - job: TerraformApply
-              ${{ if eq(deployment.local, true) }}:
-                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-              ${{ else }}:
-                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-              pool:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+                pool:
+                  ${{ if eq(deployment.local, true) }}:
+                    name: SelfHostedDocker
+                  ${{ else }}:
+                    vmImage: $(agentImage)
+                steps:
+                  - template: pipelines/terraform-init.yaml
+                    parameters:
+                      terraformVersion: $(terraformVersion)
+                      storageAccount: ${{ deployment.storageAccount}}
+                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                      azureRmKey: ${{ deployment.deployment }}
+                      ${{ if eq(deployment.local, true) }}:
+                        downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
+                  - template: pipelines/terraform-plan.yaml
+                    parameters:
+                      serviceConnection: ${{ deployment.serviceConnection }}
+                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+              - job: TerraformApply
                 ${{ if eq(deployment.local, true) }}:
-                  name: SelfHostedDocker
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
-                  vmImage: $(agentImage)
-              steps:
-                - template: pipelines/terraform-init.yaml
-                  parameters:
-                    terraformVersion: $(terraformVersion)
-                    storageAccount: ${{ deployment.storageAccount}}
-                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                    azureRmKey: ${{ deployment.deployment }}
-                    ${{ if eq(deployment.local, true) }}:
-                      downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
-                - ${{ if eq(deployment.destroy, true) }}:
-                    - template: pipelines/terraform-destroy.yaml
-                      parameters:
-                        serviceConnection: ${{ deployment.serviceConnection }}
-                        workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                        variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                - ${{ if eq(deployment.deploy, true) }}:
-                    - template: pipelines/terraform-apply.yaml
-                      parameters:
-                        serviceConnection: ${{ deployment.serviceConnection }}
-                        workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                        variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                        ${{ if eq(deployment.local, true) }}:
-                          parallelism: 2
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+                pool:
+                  ${{ if eq(deployment.local, true) }}:
+                    name: SelfHostedDocker
+                  ${{ else }}:
+                    vmImage: $(agentImage)
+                steps:
+                  - template: pipelines/terraform-init.yaml
+                    parameters:
+                      terraformVersion: $(terraformVersion)
+                      storageAccount: ${{ deployment.storageAccount}}
+                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                      azureRmKey: ${{ deployment.deployment }}
+                      ${{ if eq(deployment.local, true) }}:
+                        downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
+                  - ${{ if eq(deployment.destroy, true) }}:
+                      - template: pipelines/terraform-destroy.yaml
+                        parameters:
+                          serviceConnection: ${{ deployment.serviceConnection }}
+                          workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                          variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                  - ${{ if eq(deployment.deploy, true) }}:
+                      - template: pipelines/terraform-apply.yaml
+                        parameters:
+                          serviceConnection: ${{ deployment.serviceConnection }}
+                          workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                          variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                          ${{ if eq(deployment.local, true) }}:
+                            parallelism: 2
           - ${{ if ne(deployment.playbook, '') }}:
-            - job: AnsibleCheck
-              ${{ if eq(deployment.local, true) }}:
-                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-              ${{ else }}:
-                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-              pool:
+              - job: AnsibleCheck
                 ${{ if eq(deployment.local, true) }}:
-                  name: SelfHostedDocker
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
-                  vmImage: $(agentImage)
-              steps:
-                - script: |
-                    ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
-                    ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
-            - job: AnsibleRun
-              ${{ if eq(deployment.local, true) }}:
-                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-              ${{ else }}:
-                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-              pool:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+                pool:
+                  ${{ if eq(deployment.local, true) }}:
+                    name: SelfHostedDocker
+                  ${{ else }}:
+                    vmImage: $(agentImage)
+                steps:
+                  - task: AzureCLI@2
+                    inputs:
+                      azureSubscription: "MSDN Sub"
+                      scriptType: "bash"
+                      scriptLocation: "inlineScript"
+                      inlineScript: |
+                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        ssh-add -l
+                        ssh-add $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        ssh-add -l
+                  - script: |
+                      ssh-add -l
+                      ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                      ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+              - job: AnsibleRun
                 ${{ if eq(deployment.local, true) }}:
-                  name: SelfHostedDocker
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
-                  vmImage: $(agentImage)
-              steps:
-                - script: |
-                    ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
-                    ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+                pool:
+                  ${{ if eq(deployment.local, true) }}:
+                    name: SelfHostedDocker
+                  ${{ else }}:
+                    vmImage: $(agentImage)
+                steps:
+                  - task: AzureCLI@2
+                    inputs:
+                      azureSubscription: "MSDN Sub"
+                      scriptType: "bash"
+                      scriptLocation: "inlineScript"
+                      inlineScript: |
+                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        ssh-add -l
+                        ssh-add $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        ssh-add -l
+                  - script: |
+                      ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                      ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
