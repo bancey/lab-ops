@@ -174,8 +174,8 @@ stages:
                   vmImage: $(agentImage)
               steps:
                 - script: |
-                    ansible-playbook --syntax-check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
-                    ansible-playbook --check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                    ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                    ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
             - job: AnsibleRun
               ${{ if eq(deployment.local, true) }}:
                 condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
@@ -188,5 +188,5 @@ stages:
                   vmImage: $(agentImage)
               steps:
                 - script: |
-                    ansible-playbook --syntax-check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
-                    ansible-playbook --check $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                    ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
+                    ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
