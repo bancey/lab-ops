@@ -180,6 +180,7 @@ stages:
                       scriptLocation: "inlineScript"
                       inlineScript: |
                         az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        eval `ssh-agent -s`
                         ssh-add -l
                         ssh-add $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
                         ssh-add -l
@@ -205,6 +206,7 @@ stages:
                       scriptLocation: "inlineScript"
                       inlineScript: |
                         az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        eval `ssh-agent -s`
                         ssh-add -l
                         ssh-add $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
                         ssh-add -l
