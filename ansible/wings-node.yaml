@@ -38,3 +38,25 @@
         name: docker-ce
         state: latest
         update_cache: true
+    - name: Enable and start docker
+      systemd:
+        name: docker
+        enabled: yes
+    - name: Download wings
+      get_url:
+        url: "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64"
+        dest: /usr/local/bin/wings
+    - name: Make wings executable
+      file:
+        dest: /usr/local/bin/wings
+        mode: u+x
+      when: not ansible_check_mode
+    - name: Download wings systemd service
+      get_url:
+        url: "https://raw.githubusercontent.com/bancey/terraform-module-pterodactyl-node/develop/provision/wings.service"
+        dest: /etc/systemd/system/wings.service
+    - name: Enable and start wings
+      systemd:
+        name: wings
+        enabled: yes
+      when: not ansible_check_mode
