@@ -2,7 +2,7 @@ module "pteronode" {
   source = "../../modules/proxmox-vm"
 
   target_node    = "wanda"
-  vm_name        = "pterodactyl-node"
+  vm_name        = "wings1"
   vm_id          = 300
   vm_description = "A Pterodactyl Node"
   cpu_cores      = 1
