@@ -44,12 +44,17 @@
         enabled: yes
     - name: Download wings
       get_url:
-        url: "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64"                                                   
+        url: "https://github.com/pterodactyl/wings/releases/latest/download/wings_linux_amd64"
         dest: /usr/local/bin/wings
+    - name: Check if wings binary exists
+      stat:
+        path: /usr/local/bin
+      register: wings_binary_file
     - name: Make wings executable
       file:
         dest: /usr/local/bin/wings
         mode: u+x
+      when: wings_binary_file.stats.exists == true
     - name: Download wings systemd service
       get_url:
         url: "https://raw.githubusercontent.com/bancey/terraform-module-pterodactyl-node/develop/provision/wings.service"
