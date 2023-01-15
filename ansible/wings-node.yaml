@@ -54,7 +54,7 @@
       file:
         dest: /usr/local/bin/wings
         mode: u+x
-      when: wings_binary_file.stats.exists == true
+      when: wings_binary_file.stat.exists == true
     - name: Download wings systemd service
       get_url:
         url: "https://raw.githubusercontent.com/bancey/terraform-module-pterodactyl-node/develop/provision/wings.service"
