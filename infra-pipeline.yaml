@@ -174,7 +174,7 @@ stages:
                     vmImage: $(agentImage)
                 steps:
                   - task: AzureCLI@2
-                    displayName: Download & Install Private Key
+                    displayName: Check Ansible Playbooks
                     inputs:
                       azureSubscription: "MSDN Sub"
                       scriptType: "bash"
@@ -186,13 +186,9 @@ stages:
                         ssh-add -l
                         ssh-add $(Build.StagingDirectory)/id_rsa
                         ssh-add -l
-                  - script: |
-                      eval `ssh-agent -s`
-                      ssh-add -l
-                      ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
-                      ansible-playbook --check --inventory hosts.yaml ${{ deployment.playbook }}
-                    workingDirectory: $(System.DefaultWorkingDirectory)/ansible
-                    displayName: Check Ansible Playbooks
+                        ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --check --inventory hosts.yaml ${{ deployment.playbook }}
+                      workingDirectory: $(System.DefaultWorkingDirectory)/ansible
               - job: AnsibleRun
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
@@ -205,7 +201,7 @@ stages:
                     vmImage: $(agentImage)
                 steps:
                   - task: AzureCLI@2
-                    displayName: Download & Install Private Key
+                    displayName: Run Ansible
                     inputs:
                       azureSubscription: "MSDN Sub"
                       scriptType: "bash"
@@ -217,8 +213,6 @@ stages:
                         ssh-add -l
                         ssh-add $(Build.StagingDirectory)/id_rsa
                         ssh-add -l
-                  - script: |
-                      ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
-                      ansible-playbook --inventory hosts.yaml ${{ deployment.playbook }}
-                    workingDirectory: $(System.DefaultWorkingDirectory)/ansible
-                    displayName: Run Ansible
+                        ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --inventory hosts.yaml ${{ deployment.playbook }}
+                      workingDirectory: $(System.DefaultWorkingDirectory)/ansible
