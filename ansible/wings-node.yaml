@@ -1,4 +1,8 @@
-- hosts: wings
+- name: Update system and install pterodactly wings pre-requisites
+  hosts: wings
+  become: true
+  become_user: root
+  become_method: sudo
   tasks:
     - name: Install aptitude
       apt:
