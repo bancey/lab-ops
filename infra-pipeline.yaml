@@ -179,10 +179,10 @@ stages:
                       scriptType: "bash"
                       scriptLocation: "inlineScript"
                       inlineScript: |
-                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add -l
-                        ssh-add $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        ssh-add $(Build.StagingDirectory)/id_rsa
                         ssh-add -l
                   - script: |
                       ssh-add -l
@@ -205,10 +205,10 @@ stages:
                       scriptType: "bash"
                       scriptLocation: "inlineScript"
                       inlineScript: |
-                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add -l
-                        ssh-add $(System.DefaultWorkingDirectory)/ansible/keys/id_rsa
+                        ssh-add $(Build.StagingDirectory)/id_rsa
                         ssh-add -l
                   - script: |
                       ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml $(System.DefaultWorkingDirectory)/ansible/${{ deployment.playbook }}
