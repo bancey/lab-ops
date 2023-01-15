@@ -187,6 +187,7 @@ stages:
                         ssh-add $(Build.StagingDirectory)/id_rsa
                         ssh-add -l
                   - script: |
+                      eval `ssh-agent -s`
                       ssh-add -l
                       ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
                       ansible-playbook --check --inventory hosts.yaml ${{ deployment.playbook }}
