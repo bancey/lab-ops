@@ -5,3 +5,4 @@ all:
       hosts:
         wings1:
           ansible_host: 192.168.80.21
+          ansible_user: bancey
