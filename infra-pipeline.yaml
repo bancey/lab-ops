@@ -180,6 +180,7 @@ stages:
                       scriptLocation: "inlineScript"
                       inlineScript: |
                         az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(Build.StagingDirectory)/id_rsa
+                        chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add -l
                         ssh-add $(Build.StagingDirectory)/id_rsa
@@ -206,6 +207,7 @@ stages:
                       scriptLocation: "inlineScript"
                       inlineScript: |
                         az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(Build.StagingDirectory)/id_rsa
+                        chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add -l
                         ssh-add $(Build.StagingDirectory)/id_rsa
