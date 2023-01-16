@@ -19,9 +19,8 @@ resource "proxmox_vm_qemu" "vm" {
     model  = "virtio"
   }
 
-  lifecycle {
-    ignore_changes = [
-      disk
-    ]
+  disk {
+    type = "scsi"
+    size = var.disk_size
   }
 }

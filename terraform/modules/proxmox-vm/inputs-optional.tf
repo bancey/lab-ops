@@ -39,3 +39,9 @@ variable "gateway_ip_address" {
   description = "The IP address of the gateway."
   default     = "192.168.80.1"
 }
+
+variable "disk_size" {
+  type        = string
+  description = "The size of the disk."
+  default     = "10G"
+}
