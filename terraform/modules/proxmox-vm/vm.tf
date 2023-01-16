@@ -18,9 +18,4 @@ resource "proxmox_vm_qemu" "vm" {
     bridge = "vmbr0"
     model  = "virtio"
   }
-
-  disk {
-    type = "scsi"
-    size = var.disk_size
-  }
 }
