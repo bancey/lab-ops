@@ -18,4 +18,10 @@ resource "proxmox_vm_qemu" "vm" {
     bridge = "vmbr0"
     model  = "virtio"
   }
+
+  lifecycle {
+    ignore_changes = [
+      disk
+    ]
+  }
 }
