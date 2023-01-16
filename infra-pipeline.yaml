@@ -40,7 +40,7 @@ parameters:
         dependsOn: []
       - deployment: k8s_infra
         environment: wanda
-        component: k8s
+        component: kubernetes
         serviceConnection: "MSDN Sub"
         storageAccount: wanda1a85dd9018454b4
         destroy: false
