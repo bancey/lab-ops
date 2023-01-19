@@ -75,6 +75,13 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - pteronode
+      - deployment: k8s_ansible
+        environment: wanda
+        playbook: k3s/site.yml
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - k8s_infra
 
 variables:
   - name: agentImage
