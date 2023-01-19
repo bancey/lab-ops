@@ -183,7 +183,7 @@ stages:
                     vmImage: $(agentImage)
                 steps:
                   - checkout: self
-                    submodules: true 
+                    submodules: true
                   - task: AzureCLI@2
                     displayName: Check Ansible Playbooks
                     inputs:
@@ -195,8 +195,8 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
-                        ansible-playbook --check --inventory hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
                         workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
                       ${{ else }}:
@@ -212,6 +212,8 @@ stages:
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
+                  - checkout: self
+                    submodules: true
                   - task: AzureCLI@2
                     displayName: Run Ansible
                     inputs:
@@ -223,6 +225,9 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
-                        ansible-playbook --inventory hosts.yaml ${{ deployment.playbook }}
-                      workingDirectory: $(System.DefaultWorkingDirectory)/ansible
+                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                      ${{ if ne(deployment.workingDirectory, '') }}:
+                        workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
+                      ${{ else }}:
+                        workingDirectory: $(System.DefaultWorkingDirectory)/ansible
