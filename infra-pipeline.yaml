@@ -193,7 +193,7 @@ stages:
                   - task: replacetokens@3
                     displayName: "Populate host.yaml with values from KeyVault"
                     inputs:
-                      targetFiles: $(System.DefaultWorkingDirectory)/ansible/host.yaml
+                      targetFiles: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
                       encoding: auto
                       writeBOM: true
                       actionOnMissing: fail
