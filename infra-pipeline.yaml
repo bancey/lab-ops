@@ -48,6 +48,13 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: k8s_ansible
+        environment: wanda
+        playbook: k3s/site.yml
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - k8s_infra
       - deployment: migration
         environment: wanda
         component: migration
@@ -75,13 +82,6 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - pteronode
-      - deployment: k8s_ansible
-        environment: wanda
-        playbook: k3s/site.yml
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - k8s_infra
 
 variables:
   - name: agentImage
@@ -181,6 +181,8 @@ stages:
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
+                  - checkout: self
+                    submodules: true
                   - task: AzureCLI@2
                     displayName: Check Ansible Playbooks
                     inputs:
