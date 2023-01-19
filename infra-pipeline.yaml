@@ -214,8 +214,8 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
                         workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
                       ${{ else }}:
@@ -244,8 +244,8 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
                         workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
                       ${{ else }}:
