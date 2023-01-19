@@ -1,6 +1,28 @@
 all:
   hosts:
   children:
+    k3s-masters:
+      hosts:
+        master0:
+          ansible_host: 192.168.80.64
+          ansible_user: bancey
+        master1:
+          ansible_host: 192.168.80.65
+          ansible_user: bancey
+        master2:
+          ansible_host: 192.168.80.66
+          ansible_user: bancey
+    k3s-workers:
+      hosts:
+        worker0:
+          ansible_host: 192.168.80.72
+          ansible_user: bancey
+        worker1:
+          ansible_host: 192.168.80.73
+          ansible_user: bancey
+        worker2:
+          ansible_host: 192.168.80.74
+          ansible_user: bancey
     wings:
       hosts:
         wings1:
