@@ -184,6 +184,25 @@ stages:
                 steps:
                   - checkout: self
                     submodules: true
+                  - task: AzureKeyVault@2
+                    inputs:
+                      azureSubscription: "MSDN Sub"
+                      KeyVaultName: "bancey-vault"
+                      SecretsFilter: "*"
+                      RunAsPreJob: false
+                  - task: replacetokens@3
+                    displayName: "Populate host.yaml with values from KeyVault"
+                    inputs:
+                      targetFiles: $(System.DefaultWorkingDirectory)/ansible/host.yaml
+                      encoding: auto
+                      writeBOM: true
+                      actionOnMissing: fail
+                      keepToken: true
+                      tokenPrefix: $(
+                      tokenSuffix: )
+                      useLegacyPattern: false
+                      enableTransforms: false
+                      enableTelemetry: false
                   - task: AzureCLI@2
                     displayName: Check Ansible Playbooks
                     inputs:
