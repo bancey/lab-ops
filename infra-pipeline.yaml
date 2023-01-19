@@ -38,7 +38,7 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: ado-agents
+      - deployment: ado_agents_infra
         environment: wanda
         component: ado-agents
         serviceConnection: "MSDN Sub"
