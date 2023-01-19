@@ -223,8 +223,8 @@ stages:
                             ansible-galaxy install -r $REQUIREMENTS_FILE
                         fi
 
-                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
                         workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
                       ${{ else }}:
@@ -242,6 +242,25 @@ stages:
                 steps:
                   - checkout: self
                     submodules: true
+                  - task: AzureKeyVault@2
+                    inputs:
+                      azureSubscription: "MSDN Sub"
+                      KeyVaultName: "bancey-vault"
+                      SecretsFilter: "*"
+                      RunAsPreJob: false
+                  - task: replacetokens@3
+                    displayName: "Populate host.yaml with values from KeyVault"
+                    inputs:
+                      targetFiles: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
+                      encoding: auto
+                      writeBOM: true
+                      actionOnMissing: fail
+                      keepToken: true
+                      tokenPrefix: $(
+                      tokenSuffix: )
+                      useLegacyPattern: false
+                      enableTransforms: false
+                      enableTelemetry: false
                   - task: AzureCLI@2
                     displayName: Run Ansible
                     inputs:
@@ -253,8 +272,16 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                        ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        
+                        REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
+                        echo "Requirements file: $REQUIREMENTS_FILE"
+
+                        if [ ! -z "$REQUIREMENTS_FILE" ]; then
+                            ansible-galaxy install -r $REQUIREMENTS_FILE
+                        fi
+
+                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
                         workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
                       ${{ else }}:
