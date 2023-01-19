@@ -38,6 +38,16 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: ado-agents
+        environment: wanda
+        component: ado-agents
+        serviceConnection: "MSDN Sub"
+        storageAccount: wanda1a85dd9018454b4
+        destroy: false
+        deploy: true
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
       - deployment: k8s_infra
         environment: wanda
         component: kubernetes
