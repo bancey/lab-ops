@@ -50,7 +50,8 @@ parameters:
           - CheckEnvIsOnline_wanda
       - deployment: k8s_ansible
         environment: wanda
-        playbook: k3s/site.yml
+        playbook: site.yml
+        workingDirectory: ansible/k3s
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -182,7 +183,7 @@ stages:
                     vmImage: $(agentImage)
                 steps:
                   - checkout: self
-                    submodules: true
+                    submodules: true 
                   - task: AzureCLI@2
                     displayName: Check Ansible Playbooks
                     inputs:
@@ -196,7 +197,10 @@ stages:
                         ssh-add $(Build.StagingDirectory)/id_rsa
                         ansible-playbook --syntax-check --inventory hosts.yaml ${{ deployment.playbook }}
                         ansible-playbook --check --inventory hosts.yaml ${{ deployment.playbook }}
-                      workingDirectory: $(System.DefaultWorkingDirectory)/ansible
+                      ${{ if ne(deployment.workingDirectory, '') }}:
+                        workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
+                      ${{ else }}:
+                        workingDirectory: $(System.DefaultWorkingDirectory)/ansible
               - job: AnsibleRun
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
