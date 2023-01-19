@@ -52,6 +52,7 @@ parameters:
         environment: wanda
         playbook: site.yml
         workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -214,6 +215,14 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
+                        
+                        REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
+                        echo "Requirements file: $REQUIREMENTS_FILE"
+
+                        if [ ! -z "$REQUIREMENTS_FILE" ]; then
+                            ansible-galaxy install -r $REQUIREMENTS_FILE
+                        fi
+
                         ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                         ANSIBLE_ENABLE_TASK_DEBUGGER=True ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
