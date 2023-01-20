@@ -1,0 +1,7 @@
+- name: Update system and setup ADO agents
+  hosts: wings
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+    - install-docker
