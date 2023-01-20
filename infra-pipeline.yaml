@@ -48,6 +48,13 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: pteronode_ansible
+        environment: wanda
+        playbook: wings-node.yaml
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - virtual_machines
       - deployment: k8s_infra
         environment: wanda
         component: kubernetes
@@ -67,33 +74,6 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - k8s_infra
-      - deployment: migration
-        environment: wanda
-        component: migration
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-      - deployment: pteronode
-        environment: wanda
-        component: pteronode
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-      - deployment: pteronode_ansible
-        environment: wanda
-        playbook: wings-node.yaml
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - pteronode
 
 variables:
   - name: agentImage
