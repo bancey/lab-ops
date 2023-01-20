@@ -38,9 +38,9 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: ado_agents_infra
+      - deployment: virtual_machines
         environment: wanda
-        component: ado-agents
+        component: virtual-machines
         serviceConnection: "MSDN Sub"
         storageAccount: wanda1a85dd9018454b4
         destroy: false

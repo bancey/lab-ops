@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "3.39.1"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "3.32.0"
+    }
   }
 
   backend "azurerm" {}
@@ -22,4 +26,8 @@ provider "proxmox" {
   pm_api_token_id     = data.azurerm_key_vault_secret.proxmox_token_id.value
   pm_api_token_secret = data.azurerm_key_vault_secret.proxmox_token_secret.value
   pm_tls_insecure     = true
+}
+
+provider "cloudflare" {
+  api_token = data.azurerm_key_vault_secret.cloudflare_lab_api_token.value
 }
