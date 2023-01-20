@@ -48,7 +48,7 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      - deployment: pteronode_ansible
+      - deployment: wings_ansible
         environment: wanda
         playbook: wings-node.yaml
         local: true

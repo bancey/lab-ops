@@ -22,5 +22,5 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
       publishPlanResults: $(System.StageDisplayName)
-      commandOptions: -var-file ${{ parameters.variableFilePath }}
+      commandOptions: -var-file ${{ parameters.variableFilePath }} -compact-warnings
     env: ${{ parameters.env }}
