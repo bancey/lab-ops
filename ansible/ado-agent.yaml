@@ -1,5 +1,15 @@
 - name: Update system and setup ADO agents
   hosts: wings
+  vars_prompt:
+    - name: ado_url
+      prompt: "ADO URL"
+      private: no
+    - name: ado_pool
+      prompt: "ADO Pool"
+      private: no
+    - name: ado_token
+      prompt: "ADO Token"
+      private: yes
   become: true
   become_user: root
   become_method: sudo
