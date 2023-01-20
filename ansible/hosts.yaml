@@ -7,14 +7,20 @@ all:
       children:
         master:
           hosts:
-            192.168.80.64:
-            192.168.80.65:
-            192.168.80.66:
+            master0:
+              ansible_host: 192.168.80.64
+            master1:
+              ansible_host: 192.168.80.65
+            master2:
+              ansible_host: 192.168.80.66
         node:
           hosts:
-            192.168.80.72:
-            192.168.80.73:
-            192.168.80.74:
+            node0:
+              ansible_host: 192.168.80.72
+            node1:
+              ansible_host: 192.168.80.73
+            node2:
+              ansible_host: 192.168.80.74
       vars:
         k3s_version: v1.24.9+k3s1
         systemd_dir: /etc/systemd/system
@@ -43,3 +49,11 @@ all:
       hosts:
         wings1:
           ansible_host: 192.168.80.21
+    ado_agents:
+      hosts:
+        ado_agents:
+          ansible_host: 192.168.80.22
+      vars:
+        ado_url: "https://dev.azure.com/bancey"
+        ado_pool: "SelfHostedDocker"
+        ado_token: "$(ADO-Token)"

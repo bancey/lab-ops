@@ -48,13 +48,20 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: ado_agents_ansible
+        environment: wanda
+        playbook: ado-agent.yaml
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - virtual_machines
       - deployment: wings_ansible
         environment: wanda
         playbook: wings-node.yaml
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - virtual_machines
+          - ado_agents_ansible
       - deployment: k8s_infra
         environment: wanda
         component: kubernetes
