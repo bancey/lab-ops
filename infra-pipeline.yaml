@@ -38,6 +38,32 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: virtual_machines
+        environment: wanda
+        component: virtual-machines
+        serviceConnection: "MSDN Sub"
+        storageAccount: wanda1a85dd9018454b4
+        destroy: false
+        deploy: true
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+      - deployment: ado_agents_ansible
+        environment: wanda
+        playbook: ado-agent.yaml
+        addresses: "192.168.80.22"
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - virtual_machines
+      - deployment: wings_ansible
+        environment: wanda
+        playbook: wings-node.yaml
+        addresses: "192.168.80.21"
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - ado_agents_ansible
       - deployment: k8s_infra
         environment: wanda
         component: kubernetes
@@ -48,42 +74,15 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      - deployment: k8s_ansible
-        environment: wanda
-        playbook: site.yml
-        workingDirectory: ansible/k3s
-        requirementsFile: collections/requirements.yml
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - k8s_infra
-      - deployment: migration
-        environment: wanda
-        component: migration
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-      - deployment: pteronode
-        environment: wanda
-        component: pteronode
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-      - deployment: pteronode_ansible
-        environment: wanda
-        playbook: wings-node.yaml
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - pteronode
+      #- deployment: k8s_ansible
+      #  environment: wanda
+      #  playbook: site.yml
+      #  workingDirectory: ansible/k3s
+      #  requirementsFile: collections/requirements.yml
+      #  local: true
+      #  dependsOn:
+      #    - CheckEnvIsOnline_wanda
+      #    - k8s_infra
 
 variables:
   - name: agentImage
@@ -100,15 +99,9 @@ stages:
             pool:
               name: SelfHostedDocker
             steps:
-              - script: |
-                  if nc -z ${{ env.address }} 22 2>/dev/null; then
-                    echo "${{ env.address }} ✓"
-                    echo "##vso[task.setvariable variable=online;isOutput=true]true"
-                  else
-                    echo "${{ env.address }} ✗"
-                    echo "##vso[task.setvariable variable=online;isOutput=true]false"
-                  fi
-                name: checkOnline
+              - template: pipelines/check-host-online.yaml
+                parameters:
+                  addresses: ${{ env.address }}
   - ${{ each deployment in parameters.environment_components }}:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
@@ -172,7 +165,7 @@ stages:
                           ${{ if eq(deployment.local, true) }}:
                             parallelism: 2
           - ${{ if ne(deployment.playbook, '') }}:
-              - job: AnsibleCheck
+              - job: CheckAnsibleHostsOnline
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
@@ -182,6 +175,21 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
+                steps:
+                  - template: pipelines/check-host-online.yaml
+                    parameters:
+                      addresses: ${{ deployment.addresses }}
+              - job: AnsibleCheck
+                ${{ if eq(deployment.local, true) }}:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), and(eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true')))
+                ${{ else }}:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+                pool:
+                  ${{ if eq(deployment.local, true) }}:
+                    name: SelfHostedDocker
+                  ${{ else }}:
+                    vmImage: $(agentImage)
+                dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - checkout: self
                     submodules: true
@@ -215,7 +223,7 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        
+
                         REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
                         echo "Requirements file: $REQUIREMENTS_FILE"
 
@@ -272,7 +280,7 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        
+
                         REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
                         echo "Requirements file: $REQUIREMENTS_FILE"
 

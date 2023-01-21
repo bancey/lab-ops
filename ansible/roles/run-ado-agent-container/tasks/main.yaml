@@ -1,0 +1,12 @@
+---
+- name: Create ADO agent container
+  docker_container:
+    name: "{{ container_name }}"
+    image: "{{ container_image }}"
+    state: started
+    network_mode: host
+    env:
+      AZP_URL: "{{ ado_url }}"
+      AZP_AGENT: "{{ ado_agent }}"
+      AZP_POOL: "{{ ado_pool }}"
+      AZP_TOKEN: "{{ ado_token }}"

@@ -18,9 +18,9 @@ steps:
     inputs:
       command: apply
       ${{ if ne(parameters.parallelism, -1) }}:
-        commandOptions: -parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }}
+        commandOptions: -parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings
       ${{ else }}:
-        commandOptions: -var-file ${{ parameters.variableFilePath }}
+        commandOptions: -var-file ${{ parameters.variableFilePath }} -compact-warnings
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
     env: ${{ parameters.env }}

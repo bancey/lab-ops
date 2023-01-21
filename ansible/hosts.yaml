@@ -15,11 +15,11 @@ all:
               ansible_host: 192.168.80.66
         node:
           hosts:
-            worker0:
+            node0:
               ansible_host: 192.168.80.72
-            worker1:
+            node1:
               ansible_host: 192.168.80.73
-            worker2:
+            node2:
               ansible_host: 192.168.80.74
       vars:
         k3s_version: v1.24.9+k3s1
@@ -49,3 +49,11 @@ all:
       hosts:
         wings1:
           ansible_host: 192.168.80.21
+    ado_agents:
+      hosts:
+        ado_agent_vm:
+          ansible_host: 192.168.80.22
+      vars:
+        ado_url: "https://dev.azure.com/bancey"
+        ado_pool: "SelfHostedDocker"
+        ado_token: "$(ADO-Token)"
