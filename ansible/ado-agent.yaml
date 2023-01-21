@@ -1,15 +1,5 @@
 - name: Update system and setup ADO agents
   hosts: wings
-  vars_prompt:
-    - name: ado_url
-      prompt: "ADO URL"
-      private: no
-    - name: ado_pool
-      prompt: "ADO Pool"
-      private: no
-    - name: ado_token
-      prompt: "ADO Token"
-      private: yes
   become: true
   become_user: root
   become_method: sudo
@@ -18,15 +8,15 @@
     - role: run-ado-agent-container
       vars:
         container_name: "agent0"
-        container_image: "bancey/ado-agent"
+        container_image: "bancey/ado-agent:latest"
         ado_url: "{{ ado_url }}"
         ado_agent: "amd64-agent0"
         ado_pool: "{{ ado_pool }}"
         ado_token: "{{ ado_token }}"
     - role: run-ado-agent-container
       vars:
-        container_name: "agent0"
-        container_image: "bancey/ado-agent"
+        container_name: "agent1"
+        container_image: "bancey/ado-agent:latest"
         ado_url: "{{ ado_url }}"
         ado_agent: "amd64-agent1"
         ado_pool: "{{ ado_pool }}"
