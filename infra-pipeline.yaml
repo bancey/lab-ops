@@ -51,6 +51,7 @@ parameters:
       - deployment: ado_agents_ansible
         environment: wanda
         playbook: ado-agent.yaml
+        addresses: "192.168.80.22"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -99,7 +100,7 @@ stages:
             steps:
               - template: pipelines/check-host-online.yaml
                 parameters:
-                  address: ${{ env.address }}
+                  addresses: ${{ env.address }}
   - ${{ each deployment in parameters.environment_components }}:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
@@ -176,7 +177,7 @@ stages:
                 steps:
                   - template: pipelines/check-host-online.yaml
                     parameters:
-                      address: ${{ deployment.address }}
+                      addresses: ${{ deployment.address }}
               - job: AnsibleCheck
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
