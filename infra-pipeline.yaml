@@ -97,15 +97,9 @@ stages:
             pool:
               name: SelfHostedDocker
             steps:
-              - script: |
-                  if nc -z ${{ env.address }} 22 2>/dev/null; then
-                    echo "${{ env.address }} ✓"
-                    echo "##vso[task.setvariable variable=online;isOutput=true]true"
-                  else
-                    echo "${{ env.address }} ✗"
-                    echo "##vso[task.setvariable variable=online;isOutput=true]false"
-                  fi
-                name: checkOnline
+              - template: pipelines/check-host-online.yaml
+                parameters:
+                  address: ${{ env.address }}
   - ${{ each deployment in parameters.environment_components }}:
       - stage: ${{ deployment.deployment }}
         dependsOn: ${{ deployment.dependsOn }}
@@ -169,6 +163,20 @@ stages:
                           ${{ if eq(deployment.local, true) }}:
                             parallelism: 2
           - ${{ if ne(deployment.playbook, '') }}:
+              - job: CheckAnsibleHostsOnline
+                ${{ if eq(deployment.local, true) }}:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+                ${{ else }}:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+                pool:
+                  ${{ if eq(deployment.local, true) }}:
+                    name: SelfHostedDocker
+                  ${{ else }}:
+                    vmImage: $(agentImage)
+                steps:
+                  - template: pipelines/check-host-online.yaml
+                    parameters:
+                      address: ${{ deployment.address }}
               - job: AnsibleCheck
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
@@ -180,15 +188,21 @@ stages:
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
+                  - template: pipelines/check-host-online.yaml
+                    parameters:
+                      address: ${{ deployment.address }}
                   - checkout: self
                     submodules: true
+                    condition: eq(checkOnline.online, 'true')
                   - task: AzureKeyVault@2
+                    condition: eq(checkOnline.online, 'true')
                     inputs:
                       azureSubscription: "MSDN Sub"
                       KeyVaultName: "bancey-vault"
                       SecretsFilter: "*"
                       RunAsPreJob: false
                   - task: replacetokens@3
+                    condition: eq(checkOnline.online, 'true')
                     displayName: "Populate host.yaml with values from KeyVault"
                     inputs:
                       targetFiles: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
@@ -202,6 +216,7 @@ stages:
                       enableTransforms: false
                       enableTelemetry: false
                   - task: AzureCLI@2
+                    condition: eq(checkOnline.online, 'true')
                     displayName: Check Ansible Playbooks
                     inputs:
                       azureSubscription: "MSDN Sub"
@@ -212,7 +227,7 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        
+
                         REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
                         echo "Requirements file: $REQUIREMENTS_FILE"
 
@@ -269,7 +284,7 @@ stages:
                         chmod 600 $(Build.StagingDirectory)/id_rsa
                         eval `ssh-agent -s`
                         ssh-add $(Build.StagingDirectory)/id_rsa
-                        
+
                         REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
                         echo "Requirements file: $REQUIREMENTS_FILE"
 
