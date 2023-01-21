@@ -174,7 +174,6 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
-                dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - template: pipelines/check-host-online.yaml
                     parameters:
