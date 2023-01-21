@@ -177,7 +177,7 @@ stages:
                 steps:
                   - template: pipelines/check-host-online.yaml
                     parameters:
-                      addresses: ${{ deployment.address }}
+                      addresses: ${{ deployment.addresses }}
               - job: AnsibleCheck
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
@@ -191,7 +191,7 @@ stages:
                 steps:
                   - template: pipelines/check-host-online.yaml
                     parameters:
-                      address: ${{ deployment.address }}
+                      addresses: ${{ deployment.addresses }}
                   - checkout: self
                     submodules: true
                     condition: eq(checkOnline.online, 'true')
