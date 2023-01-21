@@ -164,20 +164,6 @@ stages:
                           ${{ if eq(deployment.local, true) }}:
                             parallelism: 2
           - ${{ if ne(deployment.playbook, '') }}:
-              - job: CheckAnsibleHostsOnline
-                ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-                ${{ else }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-                pool:
-                  ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
-                  ${{ else }}:
-                    vmImage: $(agentImage)
-                steps:
-                  - template: pipelines/check-host-online.yaml
-                    parameters:
-                      addresses: ${{ deployment.addresses }}
               - job: AnsibleCheck
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
@@ -188,22 +174,23 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
+                dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - template: pipelines/check-host-online.yaml
                     parameters:
                       addresses: ${{ deployment.addresses }}
                   - checkout: self
                     submodules: true
-                    condition: eq(checkOnline.online, 'true')
+                    condition: eq(online, 'true')
                   - task: AzureKeyVault@2
-                    condition: eq(checkOnline.online, 'true')
+                    condition: eq(online, 'true')
                     inputs:
                       azureSubscription: "MSDN Sub"
                       KeyVaultName: "bancey-vault"
                       SecretsFilter: "*"
                       RunAsPreJob: false
                   - task: replacetokens@3
-                    condition: eq(checkOnline.online, 'true')
+                    condition: eq(online, 'true')
                     displayName: "Populate host.yaml with values from KeyVault"
                     inputs:
                       targetFiles: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
@@ -217,7 +204,7 @@ stages:
                       enableTransforms: false
                       enableTelemetry: false
                   - task: AzureCLI@2
-                    condition: eq(checkOnline.online, 'true')
+                    condition: eq(online, 'true')
                     displayName: Check Ansible Playbooks
                     inputs:
                       azureSubscription: "MSDN Sub"
