@@ -21,11 +21,11 @@ steps:
           echo "##vso[task.setvariable variable=online;isOutput=true]false"
         fi
       else
-        if nc -z ${{ parameters.address }} 22 2>/dev/null; then
-          echo "${{ parameters.address }} ✓"
+        if nc -z ${{ parameters.addresses }} 22 2>/dev/null; then
+          echo "${{ parameters.addresses }} ✓"
           echo "##vso[task.setvariable variable=online;isOutput=true]true"
         else
-          echo "${{ parameters.address }} ✗"
+          echo "${{ parameters.addresses }} ✗"
           echo "##vso[task.setvariable variable=online;isOutput=true]false"
         fi
       fi
