@@ -59,6 +59,7 @@ parameters:
       - deployment: wings_ansible
         environment: wanda
         playbook: wings-node.yaml
+        addresses: "192.168.80.21"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
