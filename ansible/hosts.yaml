@@ -51,7 +51,7 @@ all:
           ansible_host: 192.168.80.21
     ado_agents:
       hosts:
-        ado_agents:
+        ado_agent_vm:
           ansible_host: 192.168.80.22
       vars:
         ado_url: "https://dev.azure.com/bancey"
