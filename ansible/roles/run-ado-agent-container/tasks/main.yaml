@@ -1,4 +1,8 @@
 ---
+- name: Install Python Docker SDK
+  pip:
+    name: docker
+    state: present
 - name: Pull Docker image
   docker_image:
     name: "{{ container_image }}"
