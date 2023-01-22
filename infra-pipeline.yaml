@@ -245,6 +245,7 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
+                dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - checkout: self
                     submodules: true
