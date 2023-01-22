@@ -12,6 +12,12 @@
     name: "{{ container_image }}"
     source: pull
   when: ('python3-pip' in ansible_facts.packages and ansible_check_mode) or not ansible_check_mode
+- name: debug
+  ansible.builtin.debug:
+    msg: "{{ ado_url }}"
+- name: debug
+  ansible.builtin.debug:
+    msg: "{{ ado_pool }}"
 - name: Create ADO agent container
   docker_container:
     name: "{{ container_name }}"
