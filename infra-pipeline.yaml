@@ -211,7 +211,7 @@ stages:
                       enableTransforms: false
                       enableTelemetry: false
                   - task: AzureCLI@2
-                    displayName: Check Ansible Playbooks
+                    displayName: Check Ansible Playbook
                     inputs:
                       azureSubscription: "MSDN Sub"
                       scriptType: "bash"
@@ -269,7 +269,7 @@ stages:
                       enableTransforms: false
                       enableTelemetry: false
                   - task: AzureCLI@2
-                    displayName: Run Ansible
+                    displayName: Run Ansible Playbook
                     inputs:
                       azureSubscription: "MSDN Sub"
                       scriptType: "bash"
@@ -287,8 +287,7 @@ stages:
                             ansible-galaxy install -r $REQUIREMENTS_FILE
                         fi
 
-                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
+                        ansible-playbook --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
                       ${{ if ne(deployment.workingDirectory, '') }}:
                         workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
                       ${{ else }}:
