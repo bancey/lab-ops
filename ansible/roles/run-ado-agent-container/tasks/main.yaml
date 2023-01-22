@@ -2,16 +2,17 @@
 - name: "Check if NGINX is installed"
   package_facts:
     manager: "auto"
+  when: ansible_check_mode
 - name: Install Python Docker SDK
   pip:
     name: docker
     state: present
-  when: "'python3-pip' in ansible_facts.packages"
+  when: ('python3-pip' in ansible_facts.packages and ansible_check_mode) or not ansible_check_mode
 - name: Pull Docker image
   docker_image:
     name: "{{ container_image }}"
     source: pull
-  when: "'python3-pip' in ansible_facts.packages"
+  when: ('python3-pip' in ansible_facts.packages and ansible_check_mode) or not ansible_check_mode
 - name: Create ADO agent container
   docker_container:
     name: "{{ container_name }}"
@@ -23,4 +24,4 @@
       AZP_AGENT: "{{ ado_agent }}"
       AZP_POOL: "{{ ado_pool }}"
       AZP_TOKEN: "{{ ado_token }}"
-  when: "'python3-pip' in ansible_facts.packages"
+  when: ('python3-pip' in ansible_facts.packages and ansible_check_mode) or not ansible_check_mode
