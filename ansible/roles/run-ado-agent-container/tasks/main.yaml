@@ -1,5 +1,5 @@
 ---
-- name: "Check if NGINX is installed"
+- name: "Get installed packages"
   package_facts:
     manager: "auto"
 - name: Install Python Docker SDK

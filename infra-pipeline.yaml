@@ -61,6 +61,7 @@ parameters:
         playbook: wings-node.yaml
         addresses: "192.168.80.21"
         local: true
+        agentArch: 
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
