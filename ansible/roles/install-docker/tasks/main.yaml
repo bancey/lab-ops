@@ -28,12 +28,15 @@
   apt_repository:
     repo: deb https://download.docker.com/linux/ubuntu jammy stable
     state: present
+  register: docker_repo
 - name: Update apt and install docker-ce
   apt:
     name: docker-ce
     state: latest
     update_cache: true
+  when: not (docker_repo.changed and ansible_check_mode)
 - name: Enable and start docker
   systemd:
     name: docker
     enabled: yes
+  when: not (docker_repo.changed and ansible_check_mode)

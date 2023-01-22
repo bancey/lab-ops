@@ -167,9 +167,7 @@ stages:
           - ${{ if ne(deployment.playbook, '') }}:
               - job: CheckAnsibleHostsOnline
                 ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-                ${{ else }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+                  condition: and(succeeded(), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
                     name: SelfHostedDocker
@@ -239,7 +237,7 @@ stages:
                         workingDirectory: $(System.DefaultWorkingDirectory)/ansible
               - job: AnsibleRun
                 ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true')))
                 ${{ else }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
@@ -247,6 +245,7 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
+                dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - checkout: self
                     submodules: true
