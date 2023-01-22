@@ -9,10 +9,10 @@
       vars:
         container_name: "agent0"
         container_image: "bancey/ado-agent:latest"
-        ado_url: {{ ado_url }}
+        ado_url: "{{ ado_url }}"
         ado_agent: "amd64-agent0"
-        ado_pool: {{ ado_pool  }}
-        ado_token: {{ ado_token }}
+        ado_pool: "{{ ado_pool  }}"
+        ado_token: "{{ ado_token }}"
     #- role: run-ado-agent-container
     #  vars:
     #    container_name: "agent1"
