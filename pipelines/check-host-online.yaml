@@ -6,12 +6,13 @@ steps:
   - script: |
       if [[ "${{ parameters.addresses }}" == *","* ]]; then
         OUTPUT=true
-        for address in ${${{ parameters.addresses }}//,/ }
+        readarray -d , -t addressArr <<<"${{ parameters.addresses }}"
+        for (( n=0; n < ${#addressArr[*]}; n++ ))
         do
-          if nc -z $address 22 2>/dev/null; then
-            echo "$address ✓"
+          if nc -z ${addressArr[n]} 22 2>/dev/null; then
+            echo "${addressArr[n]} ✓"
           else
-            echo "$address ✗"
+            echo "${addressArr[n]} ✗"
             OUTPUT=false
           fi
         done

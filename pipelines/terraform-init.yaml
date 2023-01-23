@@ -1,23 +1,20 @@
 parameters:
-  - name: terraformVersion
-    type: string
   - name: storageAccount
     type: string
   - name: workingDirectory
     type: string
   - name: azureRmKey
     type: string
-  - name: downloadUrl
-    type: string
-    default:
 
 steps:
-  - task: TerraformInstaller@0
-    displayName: Terraform install
-    inputs:
-      terraformVersion: ${{ parameters.terraformVersion }}
-      ${{ if parameters.downloadUrl }}:
-        downloadUrl: ${{ parameters.downloadUrl }}
+  - script: |
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b  ~/.local/bin 0.13.1300
+      set -x
+      echo '##vso[task.prependpath]$(HOME)/.local/bin'
+      export PATH=$HOME/.local/bin:$PATH
+      tfswitch -b ~/.local/bin/terraform
+    displayName: Install tfswitch
+    workingDirectory: ${{ parameters.workingDirectory }}
   - task: TerraformCLI@0
     displayName: Terraform initialize
     inputs:
@@ -25,7 +22,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       backendType: azurerm
       ensurebackend: true
-      backendServiceArm: 'MSDN Sub'
+      backendServiceArm: "MSDN Sub"
       backendAzureRmResourceGroupName: tfstate-rg
       backendAzureRmResourceGroupLocation: uksouth
       backendAzureRmStorageAccountName: ${{ parameters.storageAccount }}
