@@ -8,13 +8,11 @@ parameters:
 
 steps:
   - script: |
-      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b  ~/_work/_tool/tfswitch
+      mkdir -p $(Agent.ToolsDirectory)/tfswitch
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b  $(Agent.ToolsDirectory)/tfswitch
       set -x
-      # Make sure ~/.local/bin is set for both root and non-root based agents (self-hosted etc)
-      # Prepend PATH for other ADO tasks
-      echo '##vso[task.prependpath]$(HOME)/_work/_tool/tfswitch'
-      # Prepend PATH for current ADO task
-      export PATH=$HOME/_work/_tool/tfswitch:$PATH
+      echo '##vso[task.prependpath]$(Agent.ToolsDirectory)/tfswitch'
+      export PATH=$(Agent.ToolsDirectory)/tfswitch:$PATH
       tfswitch -b
     displayName: Install tfswitch
     workingDirectory: ${{ parameters.workingDirectory }}
