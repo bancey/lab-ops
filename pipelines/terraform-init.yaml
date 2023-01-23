@@ -8,11 +8,12 @@ parameters:
 
 steps:
   - script: |
-      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b '~/.local/bin'
+      mkdir -p $(Agent.TempDirectory)/bin
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b '$(Agent.TempDirectory)/bin/terraform'
       set -x
-      echo '##vso[task.prependpath]$(HOME)/.local/bin'
-      export PATH=$HOME/.local/bin:$PATH
-      tfswitch
+      echo '##vso[task.prependpath]$(Agent.TempDirectory)/bin'
+      export PATH=$(Agent.TempDirectory)/bin:$PATH
+      tfswitch -b ~/.local/bin/terraform
     displayName: Install tfswitch
     workingDirectory: ${{ parameters.workingDirectory }}
   - task: TerraformCLI@0
