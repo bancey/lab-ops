@@ -38,7 +38,7 @@
       set_fact:
         raspberry_pi: true
       when:
-        grep_cpuinfo_raspberrypi.rc == 0 or grep_device_tree_model_raspberrypi.rc == 0
+        (grep_cpuinfo_raspberrypi.rc == 0 and grep_cpuinfo_raspberrypi.skipped == false) or (grep_device_tree_model_raspberrypi.rc == 0 and grep_device_tree_model_raspberrypi.skipped == false)
     - name: show output
       debug:
         var: raspberry_pi
