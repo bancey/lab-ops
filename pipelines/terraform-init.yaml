@@ -10,7 +10,7 @@ steps:
   - script: |
       mkdir -p $(Agent.TempDirectory)/bin
       ls -la $(Agent.TempDirectory)
-      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b '$(Agent.TempDirectory)/bin/terraform'
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b $(Agent.TempDirectory)/bin/terraform 0.13.1300
       set -x
       echo '##vso[task.prependpath]$(Agent.TempDirectory)/bin'
       export PATH=$(Agent.TempDirectory)/bin:$PATH
