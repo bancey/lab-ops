@@ -9,6 +9,7 @@ parameters:
 steps:
   - script: |
       mkdir -p $(Agent.TempDirectory)/bin
+      ls -la $(Agent.TempDirectory)
       curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b '$(Agent.TempDirectory)/bin/terraform'
       set -x
       echo '##vso[task.prependpath]$(Agent.TempDirectory)/bin'
