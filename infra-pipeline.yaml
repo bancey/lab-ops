@@ -61,7 +61,7 @@ parameters:
         playbook: wings-node.yaml
         addresses: "192.168.80.21"
         local: true
-        agentArch: 
+        agentArch: X64
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
@@ -75,15 +75,17 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      #- deployment: k8s_ansible
-      #  environment: wanda
-      #  playbook: site.yml
-      #  workingDirectory: ansible/k3s
-      #  requirementsFile: collections/requirements.yml
-      #  local: true
-      #  dependsOn:
-      #    - CheckEnvIsOnline_wanda
-      #    - k8s_infra
+      - deployment: k8s_ansible
+        environment: wanda
+        playbook: site.yml
+        workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
+        local: true
+        agentArch: X64
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - ado_agents_ansible
+          - k8s_infra
 
 variables:
   - name: agentImage
@@ -186,6 +188,8 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
+                  ${{ if ne(deployment.agentArch, '') }}:
+                    demands: Agent.OSArchitecture -equals ${{ deployment.agentArch }}
                 dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - checkout: self
@@ -244,6 +248,8 @@ stages:
                     name: SelfHostedDocker
                   ${{ else }}:
                     vmImage: $(agentImage)
+                  ${{ if ne(deployment.agentArch, '') }}:
+                    demands: Agent.OSArchitecture -equals ${{ deployment.agentArch }}
                 dependsOn: CheckAnsibleHostsOnline
                 steps:
                   - checkout: self
