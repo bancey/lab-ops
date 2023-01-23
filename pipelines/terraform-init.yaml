@@ -9,7 +9,7 @@ parameters:
 steps:
   - script: |
       mkdir -p $(Agent.ToolsDirectory)/tfswitch
-      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b  $(Agent.ToolsDirectory)/tfswitch
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b  $(Agent.ToolsDirectory)/tfswitch/
       set -x
       echo '##vso[task.prependpath]$(Agent.ToolsDirectory)/tfswitch'
       export PATH=$(Agent.ToolsDirectory)/tfswitch:$PATH
