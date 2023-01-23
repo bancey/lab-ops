@@ -8,13 +8,11 @@ parameters:
 
 steps:
   - script: |
-      mkdir -p $(Agent.TempDirectory)/bin/terraform
-      ls -la $(Agent.TempDirectory)
-      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b $(Agent.TempDirectory)/bin 0.13.1300
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b  ~/.local/bin 0.13.1300
       set -x
-      echo '##vso[task.prependpath]$(Agent.TempDirectory)/bin'
-      export PATH=$(Agent.TempDirectory)/bin:$PATH
-      tfswitch -b $(Agent.TempDirectory)/bin/terraform
+      echo '##vso[task.prependpath]$(HOME)/.local/bin'
+      export PATH=$HOME/.local/bin:$PATH
+      tfswitch -b ~/.local/bin/terraform
     displayName: Install tfswitch
     workingDirectory: ${{ parameters.workingDirectory }}
   - task: TerraformCLI@0
@@ -24,7 +22,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       backendType: azurerm
       ensurebackend: true
-      backendServiceArm: 'MSDN Sub'
+      backendServiceArm: "MSDN Sub"
       backendAzureRmResourceGroupName: tfstate-rg
       backendAzureRmResourceGroupLocation: uksouth
       backendAzureRmStorageAccountName: ${{ parameters.storageAccount }}
