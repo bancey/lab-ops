@@ -80,6 +80,7 @@ parameters:
         playbook: site.yml
         workingDirectory: ansible/k3s
         requirementsFile: collections/requirements.yml
+        addresses: "192.168.80.64,192.168.80.65,192.168.80.66,192.168.80.72,192.168.80.73,192.168.80.74"
         local: true
         agentArch: X64
         dependsOn:
