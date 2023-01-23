@@ -125,8 +125,6 @@ stages:
                       storageAccount: ${{ deployment.storageAccount}}
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       azureRmKey: ${{ deployment.deployment }}
-                      ${{ if eq(deployment.local, true) }}:
-                        downloadUrl: "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_arm64.zip"
                   - template: pipelines/terraform-plan.yaml
                     parameters:
                       serviceConnection: ${{ deployment.serviceConnection }}
