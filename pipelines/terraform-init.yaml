@@ -14,7 +14,7 @@ steps:
       set -x
       echo '##vso[task.prependpath]$(Agent.TempDirectory)/bin'
       export PATH=$(Agent.TempDirectory)/bin:$PATH
-      tfswitch -b $(Agent.TempDirectory)/bin
+      tfswitch -b $(Agent.TempDirectory)/bin/terraform
     displayName: Install tfswitch
     workingDirectory: ${{ parameters.workingDirectory }}
   - task: TerraformCLI@0
