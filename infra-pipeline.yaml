@@ -61,7 +61,14 @@ parameters:
         playbook: wings-node.yaml
         addresses: "192.168.80.21"
         local: true
-        agentArch: X64
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - ado_agents_ansible
+      - deployment: migration_ansible
+        environment: wanda
+        playbook: migration-vm.yaml
+        addresses: "192.168.80.20"
+        local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
@@ -82,7 +89,6 @@ parameters:
         requirementsFile: collections/requirements.yml
         addresses: "192.168.80.64,192.168.80.65,192.168.80.66,192.168.80.72,192.168.80.73,192.168.80.74"
         local: true
-        agentArch: X64
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible

@@ -57,3 +57,7 @@ all:
         ado_url: "https://dev.azure.com/bancey"
         ado_pool: "SelfHostedDocker"
         ado_token: "$(ADO-Token)"
+    migration:
+      hosts:
+        migration_vm:
+          ansible_host: 192.168.80.20
