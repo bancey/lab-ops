@@ -17,3 +17,10 @@
         container_name: "agent1"
         container_image: "bancey/ado-agent"
         ado_agent: "amd64-agent1"
+  tasks:
+    - name: Test for raspberry pi /proc/cpuinfo
+      command: grep -E "Raspberry Pi|BCM2708|BCM2709|BCM2835|BCM2836" /proc/cpuinfo
+      register: grep_cpuinfo_raspberrypi
+    - name: show output
+      debug:
+        var: grep_cpuinfo_raspberrypi
