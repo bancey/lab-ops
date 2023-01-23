@@ -1,23 +1,23 @@
 parameters:
-  - name: terraformVersion
-    type: string
   - name: storageAccount
     type: string
   - name: workingDirectory
     type: string
   - name: azureRmKey
     type: string
-  - name: downloadUrl
-    type: string
-    default:
 
 steps:
-  - task: TerraformInstaller@0
-    displayName: Terraform install
-    inputs:
-      terraformVersion: ${{ parameters.terraformVersion }}
-      ${{ if parameters.downloadUrl }}:
-        downloadUrl: ${{ parameters.downloadUrl }}
+  - script: |
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -b  ~/_work/_tool/tfswitch
+      set -x
+      # Make sure ~/.local/bin is set for both root and non-root based agents (self-hosted etc)
+      # Prepend PATH for other ADO tasks
+      echo '##vso[task.prependpath]$(HOME)/_work/_tool/tfswitch'
+      # Prepend PATH for current ADO task
+      export PATH=$HOME/_work/_tool/tfswitch:$PATH
+      tfswitch -b
+    displayName: Install tfswitch
+    workingDirectory: ${{ parameters.workingDirectory }}
   - task: TerraformCLI@0
     displayName: Terraform initialize
     inputs:
