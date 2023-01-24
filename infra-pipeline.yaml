@@ -18,7 +18,7 @@ parameters:
     type: object
     default:
       - name: wanda
-        address: "192.168.80.11"
+        address: "10.151.14.11"
   - name: environment_components
     type: object
     default:
