@@ -44,7 +44,7 @@ all:
         kube_vip_tag_version: "v0.5.7"
         metal_lb_speaker_tag_version: "v0.13.7"
         metal_lb_controller_tag_version: "v0.13.7"
-        metal_lb_ip_range: "10.151.15.100-10.151.15.235"
+        metal_lb_ip_range: "10.151.14.100-10.151.14.235"
     wings:
       hosts:
         wings1:
