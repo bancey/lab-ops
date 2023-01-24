@@ -11,6 +11,7 @@ module "virtual_machines" {
   ip_address          = each.value.ip_address
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
+  vlan_tag            = each.value.vlan_tag
   startup_order       = each.value.startup_order
   startup_delay       = each.value.startup_delay
 }
