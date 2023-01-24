@@ -10,5 +10,5 @@ module "k3s_vm" {
   memory              = 4096
   ip_address          = count.index >= var.master_count ? cidrhost(var.node_cidr, (count.index - var.node_count)) : cidrhost(var.master_cidr, count.index)
   gateway_ip_address  = count.index >= var.master_count ? var.node_gateway_ip_address : var.master_gateway_ip_address
-  network_bridge_name = "vmbr1"
+  network_bridge_name = "vmbr0"
 }
