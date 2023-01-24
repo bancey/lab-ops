@@ -1,7 +1,7 @@
 variable "master_cidr" {
   type        = string
   description = "The IPv4 address of the master node."
-  default     = "10.151.14.32/20"
+  default     = "10.151.14.32/30"
 }
 
 variable "master_gateway_ip_address" {
