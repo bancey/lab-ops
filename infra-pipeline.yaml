@@ -18,7 +18,7 @@ parameters:
     type: object
     default:
       - name: wanda
-        address: "192.168.80.11"
+        address: "10.151.14.11"
   - name: environment_components
     type: object
     default:
@@ -51,7 +51,7 @@ parameters:
       - deployment: ado_agents_ansible
         environment: wanda
         playbook: ado-agent.yaml
-        addresses: "192.168.80.22"
+        addresses: "10.151.15.21"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -59,9 +59,16 @@ parameters:
       - deployment: wings_ansible
         environment: wanda
         playbook: wings-node.yaml
-        addresses: "192.168.80.21"
+        addresses: "10.151.15.20"
         local: true
-        agentArch: X64
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - ado_agents_ansible
+      - deployment: migration_ansible
+        environment: wanda
+        playbook: migration-vm.yaml
+        addresses: "10.151.14.21"
+        local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
@@ -80,9 +87,8 @@ parameters:
         playbook: site.yml
         workingDirectory: ansible/k3s
         requirementsFile: collections/requirements.yml
-        addresses: "192.168.80.64,192.168.80.65,192.168.80.66,192.168.80.72,192.168.80.73,192.168.80.74"
+        addresses: "10.151.14.32,10.151.14.33,10.151.14.34,10.151.14.36,10.151.14.37,10.151.14.38"
         local: true
-        agentArch: X64
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible

@@ -39,3 +39,15 @@ variable "gateway_ip_address" {
   description = "The IP address of the gateway."
   default     = "192.168.80.1"
 }
+
+variable "network_bridge_name" {
+  type        = string
+  description = "The name of the network bridge to use."
+  default     = "vmbr0"
+}
+
+variable "vlan_tag" {
+  type        = string
+  description = "The VLAN tag to apply to the network interface."
+  default     = "-1"
+}

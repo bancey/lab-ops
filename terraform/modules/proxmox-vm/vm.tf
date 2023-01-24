@@ -15,8 +15,9 @@ resource "proxmox_vm_qemu" "vm" {
   ipconfig0   = "ip=${var.ip_address}/24,gw=${var.gateway_ip_address}"
 
   network {
-    bridge = "vmbr0"
+    bridge = var.network_bridge_name
     model  = "virtio"
+    tag    = var.vlan_tag
   }
 
   lifecycle {
