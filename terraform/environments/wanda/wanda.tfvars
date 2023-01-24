@@ -11,6 +11,7 @@ virtual_machines = {
     ip_address          = "10.151.14.21",
     gateway_ip_address  = "10.151.14.1",
     network_bridge_name = "vmbr0",
+    vlan_tag            = "-1",
     startup_order       = 1,
     startup_delay       = 1,
     cname_required      = false
