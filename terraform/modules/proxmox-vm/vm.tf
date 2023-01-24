@@ -17,6 +17,7 @@ resource "proxmox_vm_qemu" "vm" {
   network {
     bridge = var.network_bridge_name
     model  = "virtio"
+    tag    = var.vlan_tag
   }
 
   lifecycle {

@@ -45,3 +45,9 @@ variable "network_bridge_name" {
   description = "The name of the network bridge to use."
   default     = "vmbr0"
 }
+
+variable "vlan_tag" {
+  type        = string
+  description = "The VLAN tag to apply to the network interface."
+  default     = "-1"
+}
