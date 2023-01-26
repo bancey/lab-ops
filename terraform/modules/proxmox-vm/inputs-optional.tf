@@ -51,3 +51,9 @@ variable "vlan_tag" {
   description = "The VLAN tag to apply to the network interface."
   default     = "-1"
 }
+
+variable "resource_pool" {
+  type        = string
+  description = "The resource pool to use."
+  default     = null
+}

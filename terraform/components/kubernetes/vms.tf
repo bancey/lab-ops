@@ -12,4 +12,5 @@ module "k3s_vm" {
   gateway_ip_address  = count.index >= var.master_count ? var.node_gateway_ip_address : var.master_gateway_ip_address
   network_bridge_name = var.network_bridge_name
   vlan_tag            = var.vlan_tag
+  resource_pool       = "k8s"
 }
