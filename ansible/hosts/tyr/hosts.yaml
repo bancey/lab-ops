@@ -1,0 +1,39 @@
+all:
+  vars:
+    ansible_user: ubuntu
+  hosts:
+  children:
+    k3s_cluster:
+      children:
+        master:
+          hosts:
+            master-rpi0:
+              ansible_host: 10.151.17.2
+        node:
+          hosts:
+            node-rpi0:
+              ansible_host: 10.151.17.16
+      vars:
+        k3s_version: v1.24.9+k3s1
+        systemd_dir: /etc/systemd/system
+        system_timezone: "Europe/London"
+        flannel_iface: "eth0"
+        apiserver_endpoint: "10.151.17.15"
+        k3s_token: "$(K3S-Token)"
+        k3s_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
+        k3s_master_taint: "{{ true if groups['node'] | default([]) | length >= 1 else false }}"
+        extra_args: >-
+          --flannel-iface={{ flannel_iface }}
+          --node-ip={{ k3s_node_ip }}
+        extra_server_args: >-
+          {{ extra_args }}
+          {{ '--node-taint node-role.kubernetes.io/master=true:NoSchedule' if k3s_master_taint else '' }}
+          --tls-san {{ apiserver_endpoint }}
+          --disable servicelb
+          --disable traefik
+        extra_agent_args: >-
+          {{ extra_args }}
+        kube_vip_tag_version: "v0.5.7"
+        metal_lb_speaker_tag_version: "v0.13.7"
+        metal_lb_controller_tag_version: "v0.13.7"
+        metal_lb_ip_range: "10.151.16.50-10.151.16.240"

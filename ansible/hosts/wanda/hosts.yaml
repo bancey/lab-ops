@@ -8,25 +8,25 @@ all:
         master:
           hosts:
             master0:
-              ansible_host: 10.151.14.32
+              ansible_host: 10.151.16.2
             master1:
-              ansible_host: 10.151.14.33
+              ansible_host: 10.151.16.3
             master2:
-              ansible_host: 10.151.14.34
+              ansible_host: 10.151.16.4
         node:
           hosts:
             node0:
-              ansible_host: 10.151.14.36
+              ansible_host: 10.151.16.16
             node1:
-              ansible_host: 10.151.14.37
+              ansible_host: 10.151.16.17
             node2:
-              ansible_host: 10.151.14.38
+              ansible_host: 10.151.16.18
       vars:
         k3s_version: v1.24.9+k3s1
         systemd_dir: /etc/systemd/system
         system_timezone: "Europe/London"
         flannel_iface: "eth0"
-        apiserver_endpoint: "10.151.14.31"
+        apiserver_endpoint: "10.151.16.15"
         k3s_token: "$(K3S-Token)"
         k3s_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
         k3s_master_taint: "{{ true if groups['node'] | default([]) | length >= 1 else false }}"
@@ -44,15 +44,15 @@ all:
         kube_vip_tag_version: "v0.5.7"
         metal_lb_speaker_tag_version: "v0.13.7"
         metal_lb_controller_tag_version: "v0.13.7"
-        metal_lb_ip_range: "10.151.14.100-10.151.14.235"
+        metal_lb_ip_range: "10.151.16.50-10.151.16.240"
     wings:
       hosts:
         wings1:
-          ansible_host: 10.151.15.20
+          ansible_host: 10.151.14.30
     ado_agents:
       hosts:
         ado_agent_vm:
-          ansible_host: 10.151.15.21
+          ansible_host: 10.151.14.31
       vars:
         ado_url: "https://dev.azure.com/bancey"
         ado_pool: "SelfHostedDocker"
