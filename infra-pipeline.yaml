@@ -87,7 +87,6 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - ado_agents_ansible
           - k8s_infra
       - deployment: rpi_k8s_ansible
         environment: yggdrasil
