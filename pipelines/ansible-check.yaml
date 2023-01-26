@@ -1,0 +1,41 @@
+parameters:
+  - name: hostsFilePath
+    type: string
+  - name: requirementsFile
+    type: string
+    default: ''
+  - name: playbook
+    type: string
+  - name: workingDirectory
+    type: string
+  - name: keyVaultName
+    type: string
+  - name: privateKeySecretName
+    type: string
+  - name: serviceConnection
+    type: string
+
+steps:
+  - template: ansible-prepare.yaml
+    parameters:
+      replaceTokens: true
+      keyVaultName: ${{ parameters.keyVaultName }}}
+      privateKeySecretName: ${{ parameters.privateKeySecretName }}
+      serviceConnection: ${{ parameters.serviceConnection}}
+      hostsFilePath: ${{ parameters.hostsFilePath }}
+  - script: |
+      REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
+      echo "Requirements file: $REQUIREMENTS_FILE"
+
+      if [ ! -z "$REQUIREMENTS_FILE" ]; then
+        ansible-galaxy install -r $REQUIREMENTS_FILE
+      fi
+
+      ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
+      ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
+    displayName: Check Ansible Playbook
+    ${{ if ne(parameters.workingDirectory, '') }}:
+      workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.workingDirectory }}
+    ${{ else }}:
+      workingDirectory: $(System.DefaultWorkingDirectory)/ansible
+ 
