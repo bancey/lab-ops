@@ -98,14 +98,14 @@ parameters:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
           - k8s_infra
-      #- deployment: rpi_k8s_ansible
-      #  environment: yggdrasil
-      #  playbook: site.yml
-      #  workingDirectory: ansible/k3s
-      #  requirementsFile: collections/requirements.yml
-      #  addresses: "10.151.16.2,10.151.16.16"
-      #  local: true
-      #  dependsOn: []
+      - deployment: rpi_k8s_ansible
+        environment: yggdrasil
+        playbook: site.yml
+        workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
+        addresses: "10.151.16.2,10.151.16.16"
+        local: true
+        dependsOn: []
 
 variables:
   - name: agentImage
@@ -183,7 +183,7 @@ stages:
               - ${{ if ne(deployment.addresses, '') }}:
                 - job: CheckAnsibleHostsOnline
                   ${{ if and(eq(deployment.local, true), ne(deployment.envCheckStageName, '')) }}:
-                    condition: and(succeeded(), eq(stageDependencies.${{ parameters.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+                    condition: and(succeeded(), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                   pool:
                     ${{ if eq(deployment.local, true) }}:
                       name: SelfHostedDocker
