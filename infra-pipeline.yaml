@@ -98,14 +98,14 @@ parameters:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
           - k8s_infra
-      - deployment: rpi_k8s_ansible
-        environment: yggdrasil
-        playbook: site.yml
-        workingDirectory: ansible/k3s
-        requirementsFile: collections/requirements.yml
-        addresses: "10.151.16.2,10.151.16.16"
-        local: true
-        dependsOn: []
+      #- deployment: rpi_k8s_ansible
+      #  environment: yggdrasil
+      #  playbook: site.yml
+      #  workingDirectory: ansible/k3s
+      #  requirementsFile: collections/requirements.yml
+      #  addresses: "10.151.16.2,10.151.16.16"
+      #  local: true
+      #  dependsOn: []
 
 variables:
   - name: agentImage
