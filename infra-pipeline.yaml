@@ -49,15 +49,6 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      - deployment: ado_agents_ansible
-        environment: wanda
-        envCheckStageName: CheckEnvIsOnline_wanda
-        playbook: ado-agent.yaml
-        addresses: "10.151.14.31"
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - virtual_machines
       - deployment: wings_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
@@ -66,7 +57,7 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - ado_agents_ansible
+          - virtual_machines
       - deployment: migration_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
@@ -75,7 +66,7 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - ado_agents_ansible
+          - virtual_machines
       - deployment: k8s_infra
         environment: wanda
         component: kubernetes

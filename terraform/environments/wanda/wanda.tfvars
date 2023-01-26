@@ -29,19 +29,5 @@ virtual_machines = {
     startup_order       = 1,
     startup_delay       = 1,
     cname_required      = true
-  },
-  ado-agents = {
-    node                = "wanda",
-    vm_id               = 301,
-    vm_description      = "A VM for Azure DevOps agents.",
-    cpu_cores           = 2,
-    memory              = 4096,
-    ip_address          = "10.151.14.31",
-    gateway_ip_address  = "10.151.14.1",
-    network_bridge_name = "vmbr0",
-    vlan_tag            = "-1",
-    startup_order       = 1,
-    startup_delay       = 1,
-    cname_required      = false
   }
 }
