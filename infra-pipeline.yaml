@@ -8,6 +8,7 @@ trigger:
       - terraform
       - ansible
       - pipelines/terraform-*.yaml
+      - pipelines/ansible-*.yaml
       - infra-pipeline.yaml
 
 pr:
@@ -191,7 +192,7 @@ stages:
               - job: AnsibleCheck
                 ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
-                ${{ else if ne(deployment.addresses, '') }}:
+                ${{ elseif ne(deployment.addresses, '') }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -215,7 +216,7 @@ stages:
               - job: AnsibleRun
                 ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
-                ${{ else if ne(deployment.addresses, '') }}:
+                ${{ elseif ne(deployment.addresses, '') }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
