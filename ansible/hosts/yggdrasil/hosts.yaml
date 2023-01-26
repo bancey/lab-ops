@@ -8,17 +8,17 @@ all:
         master:
           hosts:
             master-rpi0:
-              ansible_host: 10.151.17.2
+              ansible_host: 10.151.16.2
         node:
           hosts:
             node-rpi0:
-              ansible_host: 10.151.17.16
+              ansible_host: 10.151.16.16
       vars:
-        k3s_version: v1.24.9+k3s1
+        k3s_version: v1.25.5+k3s2
         systemd_dir: /etc/systemd/system
         system_timezone: "Europe/London"
         flannel_iface: "eth0"
-        apiserver_endpoint: "10.151.17.15"
+        apiserver_endpoint: "10.151.16.15"
         k3s_token: "$(K3S-Token)"
         k3s_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
         k3s_master_taint: "{{ true if groups['node'] | default([]) | length >= 1 else false }}"
@@ -33,7 +33,7 @@ all:
           --disable traefik
         extra_agent_args: >-
           {{ extra_args }}
-        kube_vip_tag_version: "v0.5.7"
+        kube_vip_tag_version: "v0.5.8"
         metal_lb_speaker_tag_version: "v0.13.7"
         metal_lb_controller_tag_version: "v0.13.7"
         metal_lb_ip_range: "10.151.16.50-10.151.16.240"

@@ -51,7 +51,7 @@ parameters:
       - deployment: ado_agents_ansible
         environment: wanda
         playbook: ado-agent.yaml
-        addresses: "10.151.15.21"
+        addresses: "10.151.14.31"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -59,7 +59,7 @@ parameters:
       - deployment: wings_ansible
         environment: wanda
         playbook: wings-node.yaml
-        addresses: "10.151.15.20"
+        addresses: "10.151.14.30"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -87,12 +87,20 @@ parameters:
         playbook: site.yml
         workingDirectory: ansible/k3s
         requirementsFile: collections/requirements.yml
-        addresses: "10.151.14.32,10.151.14.33,10.151.14.34,10.151.14.36,10.151.14.37,10.151.14.38"
+        addresses: "10.151.15.2,10.151.15.3,10.151.15.4,10.151.15.16,10.151.15.17,10.151.15.18"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
           - ado_agents_ansible
           - k8s_infra
+      - deployment: rpi_k8s_ansible
+        environment: yggdrasil
+        playbook: site.yml
+        workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
+        addresses: "10.151.16.2,10.151.16.16"
+        local: true
+        dependsOn: []
 
 variables:
   - name: agentImage
