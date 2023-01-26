@@ -18,7 +18,7 @@ parameters:
     type: string
 
 
-steps:
+jobs:
   - ${{ if ne(parameters.hostAddresses, '') }}:
     - job: CheckAnsibleHostsOnline
       ${{ if and(eq(parameters.local, true), ne(parameters.envCheckStageName, '')) }}:
