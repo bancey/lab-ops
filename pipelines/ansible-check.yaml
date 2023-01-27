@@ -24,6 +24,9 @@ steps:
       serviceConnection: ${{ parameters.serviceConnection}}
       hostsFilePath: ${{ parameters.hostsFilePath }}
   - script: |
+      ssh-add -l
+      eval `ssh-agent -s`
+      ssh-add -l
       REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
       echo "Requirements file: $REQUIREMENTS_FILE"
 

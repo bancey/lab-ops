@@ -45,3 +45,4 @@ steps:
         chmod 600 $(Build.StagingDirectory)/id_rsa
         eval `ssh-agent -s`
         ssh-add $(Build.StagingDirectory)/id_rsa
+        ssh-add -l
