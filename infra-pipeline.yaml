@@ -8,6 +8,7 @@ trigger:
       - terraform
       - ansible
       - pipelines/terraform-*.yaml
+      - pipelines/ansible-*.yaml
       - infra-pipeline.yaml
 
 pr:
@@ -48,30 +49,24 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      - deployment: ado_agents_ansible
+      - deployment: wings_ansible
         environment: wanda
-        playbook: ado-agent.yaml
-        addresses: "10.151.15.21"
+        envCheckStageName: CheckEnvIsOnline_wanda
+        playbook: wings-node.yaml
+        addresses: "10.151.14.30"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
           - virtual_machines
-      - deployment: wings_ansible
-        environment: wanda
-        playbook: wings-node.yaml
-        addresses: "10.151.15.20"
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - ado_agents_ansible
       - deployment: migration_ansible
         environment: wanda
+        envCheckStageName: CheckEnvIsOnline_wanda
         playbook: migration-vm.yaml
         addresses: "10.151.14.21"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - ado_agents_ansible
+          - virtual_machines
       - deployment: k8s_infra
         environment: wanda
         component: kubernetes
@@ -84,15 +79,23 @@ parameters:
           - CheckEnvIsOnline_wanda
       - deployment: k8s_ansible
         environment: wanda
+        envCheckStageName: CheckEnvIsOnline_wanda
         playbook: site.yml
         workingDirectory: ansible/k3s
         requirementsFile: collections/requirements.yml
-        addresses: "10.151.14.32,10.151.14.33,10.151.14.34,10.151.14.36,10.151.14.37,10.151.14.38"
+        addresses: "10.151.15.2,10.151.15.3,10.151.15.4,10.151.15.16,10.151.15.17,10.151.15.18"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - ado_agents_ansible
           - k8s_infra
+      - deployment: rpi_k8s_ansible
+        environment: yggdrasil
+        playbook: site.yml
+        workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
+        addresses: "10.151.16.2,10.151.16.16"
+        local: true
+        dependsOn: []
 
 variables:
   - name: agentImage
@@ -105,7 +108,7 @@ stages:
         jobs:
           - job: CheckEnvIsOnline
             pool:
-              name: SelfHostedDocker
+              name: Local
             steps:
               - template: pipelines/check-host-online.yaml
                 parameters:
@@ -122,7 +125,7 @@ stages:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
@@ -143,7 +146,7 @@ stages:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
@@ -167,134 +170,60 @@ stages:
                           ${{ if eq(deployment.local, true) }}:
                             parallelism: 2
           - ${{ if ne(deployment.playbook, '') }}:
-              - job: CheckAnsibleHostsOnline
-                ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-                pool:
-                  ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
-                  ${{ else }}:
-                    vmImage: $(agentImage)
-                steps:
-                  - template: pipelines/check-host-online.yaml
-                    parameters:
-                      addresses: ${{ deployment.addresses }}
+              - ${{ if ne(deployment.addresses, '') }}:
+                - job: CheckAnsibleHostsOnline
+                  ${{ if and(eq(deployment.local, true), ne(deployment.envCheckStageName, '')) }}:
+                    condition: and(succeeded(), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+                  pool:
+                    ${{ if eq(deployment.local, true) }}:
+                      name: Local
+                    ${{ else }}:
+                      vmImage: $(agentImage)
               - job: AnsibleCheck
-                ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), and(eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true')))
+                ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
+                ${{ elseif ne(deployment.addresses, '') }}:
+                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
-                  ${{ if ne(deployment.agentArch, '') }}:
-                    demands: Agent.OSArchitecture -equals ${{ deployment.agentArch }}
-                dependsOn: CheckAnsibleHostsOnline
+                ${{ if ne(deployment.addresses, '') }}:
+                  dependsOn: CheckAnsibleHostsOnline
                 steps:
-                  - checkout: self
-                    submodules: true
-                  - task: AzureKeyVault@2
-                    inputs:
-                      azureSubscription: "MSDN Sub"
-                      KeyVaultName: "bancey-vault"
-                      SecretsFilter: "*"
-                      RunAsPreJob: false
-                  - task: replacetokens@3
-                    displayName: "Populate host.yaml with values from KeyVault"
-                    inputs:
-                      targetFiles: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
-                      encoding: auto
-                      writeBOM: true
-                      actionOnMissing: fail
-                      keepToken: true
-                      tokenPrefix: $(
-                      tokenSuffix: )
-                      useLegacyPattern: false
-                      enableTransforms: false
-                      enableTelemetry: false
-                  - task: AzureCLI@2
-                    displayName: Check Ansible Playbook
-                    inputs:
-                      azureSubscription: "MSDN Sub"
-                      scriptType: "bash"
-                      scriptLocation: "inlineScript"
-                      inlineScript: |
-                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(Build.StagingDirectory)/id_rsa
-                        chmod 600 $(Build.StagingDirectory)/id_rsa
-                        eval `ssh-agent -s`
-                        ssh-add $(Build.StagingDirectory)/id_rsa
-
-                        REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
-                        echo "Requirements file: $REQUIREMENTS_FILE"
-
-                        if [ ! -z "$REQUIREMENTS_FILE" ]; then
-                            ansible-galaxy install -r $REQUIREMENTS_FILE
-                        fi
-
-                        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                      ${{ if ne(deployment.workingDirectory, '') }}:
-                        workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
-                      ${{ else }}:
-                        workingDirectory: $(System.DefaultWorkingDirectory)/ansible
+                  - template: pipelines/ansible-check.yaml
+                    parameters:
+                      hostsFilePath: ansible/${{ deployment.environment }}/hosts.yaml
+                      requirementsFile: ${{ deployment.requirementsFile }}
+                      playbook: ${{ deployment.playbook }}
+                      workingDirectory: ${{ deployment.workingDirectory }}
+                      keyVaultName: bancey-vault
+                      privateKeySecretName: Packer-Private-Key
+                      serviceCOnnection: MSDN Sub
               - job: AnsibleRun
-                ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true')))
+                ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
+                ${{ elseif ne(deployment.addresses, '') }}:
+                  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
-                  ${{ if ne(deployment.agentArch, '') }}:
-                    demands: Agent.OSArchitecture -equals ${{ deployment.agentArch }}
-                dependsOn: CheckAnsibleHostsOnline
+                ${{ if ne(deployment.addresses, '') }}:
+                  dependsOn: CheckAnsibleHostsOnline
                 steps:
-                  - checkout: self
-                    submodules: true
-                  - task: AzureKeyVault@2
-                    inputs:
-                      azureSubscription: "MSDN Sub"
-                      KeyVaultName: "bancey-vault"
-                      SecretsFilter: "*"
-                      RunAsPreJob: false
-                  - task: replacetokens@3
-                    displayName: "Populate host.yaml with values from KeyVault"
-                    inputs:
-                      targetFiles: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
-                      encoding: auto
-                      writeBOM: true
-                      actionOnMissing: fail
-                      keepToken: true
-                      tokenPrefix: $(
-                      tokenSuffix: )
-                      useLegacyPattern: false
-                      enableTransforms: false
-                      enableTelemetry: false
-                  - task: AzureCLI@2
-                    displayName: Run Ansible Playbook
-                    inputs:
-                      azureSubscription: "MSDN Sub"
-                      scriptType: "bash"
-                      scriptLocation: "inlineScript"
-                      inlineScript: |
-                        az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(Build.StagingDirectory)/id_rsa
-                        chmod 600 $(Build.StagingDirectory)/id_rsa
-                        eval `ssh-agent -s`
-                        ssh-add $(Build.StagingDirectory)/id_rsa
-
-                        REQUIREMENTS_FILE="${{ deployment.requirementsFile }}"
-                        echo "Requirements file: $REQUIREMENTS_FILE"
-
-                        if [ ! -z "$REQUIREMENTS_FILE" ]; then
-                            ansible-galaxy install -r $REQUIREMENTS_FILE
-                        fi
-
-                        ansible-playbook --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ deployment.playbook }}
-                      ${{ if ne(deployment.workingDirectory, '') }}:
-                        workingDirectory: $(System.DefaultWorkingDirectory)/${{ deployment.workingDirectory }}
-                      ${{ else }}:
-                        workingDirectory: $(System.DefaultWorkingDirectory)/ansible
+                  - template: pipelines/ansible-run.yaml
+                    parameters:
+                      hostsFilePath: ansible/${{ deployment.environment }}/hosts.yaml
+                      requirementsFile: ${{ deployment.requirementsFile }}
+                      playbook: ${{ deployment.playbook }}
+                      workingDirectory: ${{ deployment.workingDirectory }}
+                      keyVaultName: bancey-vault
+                      privateKeySecretName: Packer-Private-Key
+                      serviceCOnnection: MSDN Sub
