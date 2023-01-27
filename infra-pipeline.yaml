@@ -179,6 +179,10 @@ stages:
                       name: Local
                     ${{ else }}:
                       vmImage: $(agentImage)
+                  steps:
+                    - template: pipelines/check-host-online.yaml
+                      parameters:
+                        addresses: ${{ deployment.addresses }}
               - job: AnsibleCheck
                 ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
