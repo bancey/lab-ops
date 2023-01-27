@@ -8,7 +8,7 @@ all:
         master:
           hosts:
             master-rpi0:
-              ansible_host: 10.151.16.2
+              ansible_host: 10.151.16.8
         node:
           hosts:
             node-rpi0:
