@@ -19,7 +19,7 @@ steps:
   - template: ansible-prepare.yaml
     parameters:
       replaceTokens: true
-      keyVaultName: ${{ parameters.keyVaultName }}}
+      keyVaultName: ${{ parameters.keyVaultName }}
       privateKeySecretName: ${{ parameters.privateKeySecretName }}
       serviceConnection: ${{ parameters.serviceConnection}}
       hostsFilePath: ${{ parameters.hostsFilePath }}
