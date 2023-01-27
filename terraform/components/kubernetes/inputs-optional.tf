@@ -1,7 +1,7 @@
 variable "master_cidr" {
   type        = string
   description = "The IPv4 address of the master node."
-  default     = "10.151.15.2/28"
+  default     = "10.151.15.8/29"
 }
 
 variable "master_gateway_ip_address" {
@@ -19,7 +19,7 @@ variable "master_count" {
 variable "node_cidr" {
   type        = string
   description = "The IPv4 address of the first worker node."
-  default     = "10.151.15.16/28"
+  default     = "10.151.15.16/29"
 }
 
 variable "node_gateway_ip_address" {
