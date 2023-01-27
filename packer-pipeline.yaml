@@ -25,10 +25,6 @@ parameters:
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
         dependsOn: []
 
-variables:
-  - name: agentImage
-    value: ubuntu-20.04
-
 stages:
   - ${{ each deployment in parameters.packer_components }}:
     - stage: ${{ deployment.deployment }}
@@ -36,7 +32,7 @@ stages:
       jobs:
         - job: Packer
           pool:
-            name: SelfHostedDocker
+            name: Local
           steps:
             - template: pipelines/packer.yaml
               parameters:
