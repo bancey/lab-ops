@@ -108,7 +108,7 @@ stages:
         jobs:
           - job: CheckEnvIsOnline
             pool:
-              name: SelfHostedDocker
+              name: Local
             steps:
               - template: pipelines/check-host-online.yaml
                 parameters:
@@ -125,7 +125,7 @@ stages:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
@@ -146,7 +146,7 @@ stages:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
                 steps:
@@ -176,7 +176,7 @@ stages:
                     condition: and(succeeded(), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                   pool:
                     ${{ if eq(deployment.local, true) }}:
-                      name: SelfHostedDocker
+                      name: Local
                     ${{ else }}:
                       vmImage: $(agentImage)
               - job: AnsibleCheck
@@ -188,7 +188,7 @@ stages:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
                 ${{ if ne(deployment.addresses, '') }}:
@@ -212,7 +212,7 @@ stages:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   ${{ if eq(deployment.local, true) }}:
-                    name: SelfHostedDocker
+                    name: Local
                   ${{ else }}:
                     vmImage: $(agentImage)
                 ${{ if ne(deployment.addresses, '') }}:
