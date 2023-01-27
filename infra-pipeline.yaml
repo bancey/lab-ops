@@ -83,7 +83,7 @@ parameters:
         playbook: site.yml
         workingDirectory: ansible/k3s
         requirementsFile: collections/requirements.yml
-        addresses: "10.151.15.2,10.151.15.3,10.151.15.4,10.151.15.16,10.151.15.17,10.151.15.18"
+        addresses: "10.151.15.8,10.151.15.9,10.151.15.10,10.151.15.16,10.151.15.17"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
@@ -93,7 +93,7 @@ parameters:
         playbook: site.yml
         workingDirectory: ansible/k3s
         requirementsFile: collections/requirements.yml
-        addresses: "10.151.16.2,10.151.16.16"
+        addresses: "10.151.16.8,10.151.16.16"
         local: true
         dependsOn: []
 
