@@ -43,6 +43,3 @@ steps:
       inlineScript: |
         az keyvault secret download --name ${{ parameters.privateKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/id_rsa
         chmod 600 $(Build.StagingDirectory)/id_rsa
-        eval `ssh-agent -s`
-        ssh-add $(Build.StagingDirectory)/id_rsa
-        ssh-add -l
