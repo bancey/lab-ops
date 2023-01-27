@@ -8,19 +8,17 @@ all:
         master:
           hosts:
             master0:
-              ansible_host: 10.151.15.2
+              ansible_host: 10.151.15.8
             master1:
-              ansible_host: 10.151.15.3
+              ansible_host: 10.151.15.9
             master2:
-              ansible_host: 10.151.15.4
+              ansible_host: 10.151.15.10
         node:
           hosts:
             node0:
               ansible_host: 10.151.15.16
             node1:
               ansible_host: 10.151.15.17
-            node2:
-              ansible_host: 10.151.15.18
       vars:
         k3s_version: v1.25.5+k3s2
         systemd_dir: /etc/systemd/system

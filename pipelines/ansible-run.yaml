@@ -31,8 +31,8 @@ steps:
         ansible-galaxy install -r $REQUIREMENTS_FILE
       fi
 
-      ansible-playbook --inventory $(System.DefaultWorkingDirectory)/ansible/hosts.yaml ${{ parameters.playbook }}
-    displayName: Check Ansible Playbook
+      ansible-playbook --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
+    displayName: Run Ansible Playbook
     ${{ if ne(parameters.workingDirectory, '') }}:
       workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.workingDirectory }}
     ${{ else }}:

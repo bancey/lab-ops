@@ -200,7 +200,7 @@ stages:
                 steps:
                   - template: pipelines/ansible-check.yaml
                     parameters:
-                      hostsFilePath: ansible/${{ deployment.environment }}/hosts.yaml
+                      hostsFilePath: ansible/hosts/${{ deployment.environment }}/hosts.yaml
                       requirementsFile: ${{ deployment.requirementsFile }}
                       playbook: ${{ deployment.playbook }}
                       workingDirectory: ${{ deployment.workingDirectory }}
@@ -224,7 +224,7 @@ stages:
                 steps:
                   - template: pipelines/ansible-run.yaml
                     parameters:
-                      hostsFilePath: ansible/${{ deployment.environment }}/hosts.yaml
+                      hostsFilePath: ansible/hosts/${{ deployment.environment }}/hosts.yaml
                       requirementsFile: ${{ deployment.requirementsFile }}
                       playbook: ${{ deployment.playbook }}
                       workingDirectory: ${{ deployment.workingDirectory }}
