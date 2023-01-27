@@ -26,7 +26,6 @@ steps:
   - script: |
       eval `ssh-agent -s`
       ssh-add $(Build.StagingDirectory)/id_rsa
-      ssh-add -l
       REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
       echo "Requirements file: $REQUIREMENTS_FILE"
 
