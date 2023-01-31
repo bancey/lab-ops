@@ -1,0 +1,24 @@
+- name: Update system and setup ADO agents
+  hosts: k3s_cluster
+  become: true
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: Install required system packages
+      apt:
+        pkg:
+          - open-iscsi
+          - nfs-common
+          - bash
+          - curl
+          - findmnt
+          - grep
+          - awk
+          - blkid
+          - lsblk
+        state: latest
+        update_cache: true
+    - name: Upgrade all packages
+      apt:
+        name: "*"
+        state: latest

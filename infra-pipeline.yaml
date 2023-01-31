@@ -77,6 +77,15 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: k8s_prep_ansible
+        environment: wanda
+        envCheckStageName: CheckEnvIsOnline_wanda
+        playbook: k3s-prep.yaml
+        addresses: "10.151.15.8,10.151.15.9,10.151.15.10,10.151.15.16,10.151.15.17"
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_wanda
+          - k8s_infra
       - deployment: k8s_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
@@ -87,7 +96,14 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - k8s_infra
+          - k8s_prep_ansible
+      - deployment: rpi_k8s_prep_ansible
+        environment: yggdrasil
+        envCheckStageName: CheckEnvIsOnline_wanda
+        playbook: k3s-prep.yaml
+        addresses: "10.151.16.8,10.151.16.16"
+        local: true
+        dependsOn: []         
       - deployment: rpi_k8s_ansible
         environment: yggdrasil
         playbook: site.yml
@@ -95,7 +111,8 @@ parameters:
         requirementsFile: collections/requirements.yml
         addresses: "10.151.16.8,10.151.16.16"
         local: true
-        dependsOn: []
+        dependsOn:
+          - rpi_k8s_prep_ansible
 
 variables:
   - name: agentImage
