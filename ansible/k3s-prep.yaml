@@ -1,0 +1,19 @@
+- name: Install required software on K3s cluster hosts
+  hosts: k3s_cluster
+  become: true
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: Install required system packages
+      apt:
+        pkg:
+          - open-iscsi
+          - nfs-common
+          - curl
+          - grep
+        state: latest
+        update_cache: true
+    - name: Upgrade all packages
+      apt:
+        name: "*"
+        state: latest
