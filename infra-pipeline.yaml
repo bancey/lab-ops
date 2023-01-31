@@ -99,7 +99,6 @@ parameters:
           - k8s_prep_ansible
       - deployment: rpi_k8s_prep_ansible
         environment: yggdrasil
-        envCheckStageName: CheckEnvIsOnline_wanda
         playbook: k3s-prep.yaml
         addresses: "10.151.16.8,10.151.16.16"
         local: true
