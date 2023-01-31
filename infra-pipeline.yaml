@@ -23,22 +23,6 @@ parameters:
   - name: environment_components
     type: object
     default:
-      - deployment: dns
-        environment: dns
-        component: dns
-        serviceConnection: "MSDN Sub"
-        storageAccount: dns175090c1a7c944d1
-        destroy: false
-        deploy: true
-        dependsOn: []
-      - deployment: az_prod_gameserver
-        environment: az-prod
-        component: gameserver
-        serviceConnection: "MSDN Sub"
-        storageAccount: gamec96560353b1a4d1a
-        destroy: false
-        deploy: true
-        dependsOn: []
       - deployment: virtual_machines
         environment: wanda
         component: virtual-machines
@@ -112,6 +96,22 @@ parameters:
         local: true
         dependsOn:
           - rpi_k8s_prep_ansible
+      - deployment: dns
+        environment: dns
+        component: dns
+        serviceConnection: "MSDN Sub"
+        storageAccount: dns175090c1a7c944d1
+        destroy: false
+        deploy: true
+        dependsOn: []
+      - deployment: az_prod_gameserver
+        environment: az-prod
+        component: gameserver
+        serviceConnection: "MSDN Sub"
+        storageAccount: gamec96560353b1a4d1a
+        destroy: false
+        deploy: true
+        dependsOn: []
 
 variables:
   - name: agentImage
