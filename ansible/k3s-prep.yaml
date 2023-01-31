@@ -1,4 +1,4 @@
-- name: Update system and setup ADO agents
+- name: Install required software on K3s cluster hosts
   hosts: k3s_cluster
   become: true
   become_user: root
@@ -9,13 +9,8 @@
         pkg:
           - open-iscsi
           - nfs-common
-          - bash
           - curl
-          - findmnt
           - grep
-          - awk
-          - blkid
-          - lsblk
         state: latest
         update_cache: true
     - name: Upgrade all packages
