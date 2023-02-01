@@ -21,7 +21,6 @@ all:
         apiserver_endpoint: "10.151.16.15"
         k3s_token: "$(K3S-Token)"
         k3s_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
-        k3s_master_taint: "{{ true if groups['node'] | default([]) | length >= 1 else false }}"
         extra_args: >-
           --flannel-iface={{ flannel_iface }}
           --node-ip={{ k3s_node_ip }}
