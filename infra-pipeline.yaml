@@ -104,6 +104,14 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: az_test_gameserver
+        environment: az-test
+        component: gameserver
+        serviceConnection: "MSDN Sub"
+        storageAccount: gamec96560353b1a4d1a
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: az_prod_gameserver
         environment: az-prod
         component: gameserver
