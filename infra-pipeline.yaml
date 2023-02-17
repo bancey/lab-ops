@@ -110,7 +110,7 @@ parameters:
         serviceConnection: "MSDN Sub"
         storageAccount: gamec96560353b1a4d1a
         destroy: false
-        deploy: true
+        deploy: false
         dependsOn: []
       - deployment: az_prod_gameserver
         environment: az-prod
