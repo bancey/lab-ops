@@ -1,0 +1,19 @@
+- name: Update system, install docker and setup & configure HAProxy
+  hosts: thanos
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+    - install-docker
+    - role: run-ado-agent-container
+      name: "run-ado-agent-container (agent0)"
+      vars:
+        container_name: "agent0"
+        container_image: "bancey/ado-agent"
+        ado_agent: "amd64-agent0"
+    - role: run-ado-agent-container
+      name: "run-ado-agent-container (agent0)"
+      vars:
+        container_name: "agent1"
+        container_image: "bancey/ado-agent"
+        ado_agent: "amd64-agent1"
