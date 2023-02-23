@@ -16,18 +16,18 @@ virtual_machines = {
     startup_delay       = 1,
     cname_required      = false
   },
-  wings1 = {
-    node                = "wanda",
-    vm_id               = 300,
-    vm_description      = "A Pterodactyl node.",
-    cpu_cores           = 2,
-    memory              = 12288,
-    ip_address          = "10.151.14.30",
-    gateway_ip_address  = "10.151.14.1",
-    network_bridge_name = "vmbr0",
-    vlan_tag            = "-1",
-    startup_order       = 1,
-    startup_delay       = 1,
-    cname_required      = true
-  }
+  #wings1 = {
+  #  node                = "wanda",
+  #  vm_id               = 300,
+  #  vm_description      = "A Pterodactyl node.",
+  #  cpu_cores           = 2,
+  #  memory              = 12288,
+  #  ip_address          = "10.151.14.30",
+  #  gateway_ip_address  = "10.151.14.1",
+  #  network_bridge_name = "vmbr0",
+  #  vlan_tag            = "-1",
+  #  startup_order       = 1,
+  #  startup_delay       = 1,
+  #  cname_required      = true
+  #}
 }

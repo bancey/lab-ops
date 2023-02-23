@@ -33,15 +33,15 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      - deployment: wings_ansible
-        environment: wanda
-        envCheckStageName: CheckEnvIsOnline_wanda
-        playbook: wings-node.yaml
-        addresses: "10.151.14.30"
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - virtual_machines
+      #- deployment: wings_ansible
+      #  environment: wanda
+      #  envCheckStageName: CheckEnvIsOnline_wanda
+      #  playbook: wings-node.yaml
+      #  addresses: "10.151.14.30"
+      #  local: true
+      #  dependsOn:
+      #    - CheckEnvIsOnline_wanda
+      #    - virtual_machines
       - deployment: migration_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
