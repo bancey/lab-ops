@@ -20,6 +20,8 @@ parameters:
     default:
       - name: wanda
         address: "10.151.14.11"
+      - name: thanos
+        address: "10.151.14.5"
   - name: environment_components
     type: object
     default:
@@ -86,7 +88,7 @@ parameters:
         playbook: k3s-prep.yaml
         addresses: "10.151.16.8,10.151.16.16"
         local: true
-        dependsOn: []         
+        dependsOn: []
       - deployment: rpi_k8s_ansible
         environment: yggdrasil
         playbook: site.yml
@@ -96,6 +98,13 @@ parameters:
         local: true
         dependsOn:
           - rpi_k8s_prep_ansible
+      - deployment: thanos_ansible
+        environment: thanos
+        playbook: thanos.yaml
+        addresses: "10.151.14.5"
+        local: true
+        dependsOn:
+          - CheckEnvIsOnline_thanos
       - deployment: dns
         environment: dns
         component: dns
