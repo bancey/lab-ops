@@ -1,12 +1,5 @@
 ---
-- name: run the site in a docker container
-  docker:
-    name: haproxy
-    image: "bancey/haproxy:latest"
-    state: reloaded
-    publish_all_ports: yes
-    use_tls: encrypt
-- name: "Get installed packages"
+- name: Get installed packages
   package_facts:
     manager: "auto"
 - name: Install Python Docker SDK
