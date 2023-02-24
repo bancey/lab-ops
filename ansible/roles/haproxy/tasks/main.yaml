@@ -8,7 +8,9 @@
     state: present
   when: ('python3-pip' in ansible_facts.packages and ansible_check_mode) or not ansible_check_mode
 - name: upload the config directory
-  synchronize: src=config dest=/tmp
+  ansible.builtin.copy:
+    src: ./config
+    dest: /tmp
 - name: Build HAProxy Image
   community.docker.docker_image:
     build:
