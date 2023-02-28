@@ -1,0 +1,8 @@
+- name: Update system, install docker and setup & configure HAProxy
+  hosts: thanos
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+    - install-docker
+    - haproxy
