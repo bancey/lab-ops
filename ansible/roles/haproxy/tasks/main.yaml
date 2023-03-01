@@ -28,6 +28,7 @@
     ports:
       - "80:80"
       - "443:443"
+      - "8404:8404"
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0
   when: ('python3-pip' in ansible_facts.packages and ansible_check_mode) or not ansible_check_mode
