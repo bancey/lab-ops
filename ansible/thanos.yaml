@@ -5,3 +5,28 @@
   become_method: sudo
   roles:
     - install-docker
+  tasks:
+    - name: create config directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0775
+      loop:
+        - /opt/adguard
+        - /opt/adguard/config
+        - /opt/adguard/work
+        - /opt/rpi_database
+        - /opt/wanda_database
+        - /opt/compose
+    - name: upload the config directory
+      ansible.builtin.copy:
+        src: ./config/thanos/
+        dest: /opt/compose
+     - name: replace variables
+      lineinfile: 
+        path: /opt/compose/.env
+        regexp: some-regex
+        line: some-value
+        backrefs: yes
