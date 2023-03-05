@@ -1,18 +1,4 @@
-trigger:
-  batch: true
-  branches:
-    include:
-      - master
-  paths:
-    include:
-      - terraform
-      - ansible
-      - pipelines/terraform-*.yaml
-      - pipelines/ansible-*.yaml
-      - infra-pipeline.yaml
-
-pr:
-  - master
+trigger: none
 
 parameters:
   - name: local_environments
@@ -20,14 +6,12 @@ parameters:
     default:
       - name: wanda
         address: "10.151.14.11"
-      - name: thanos
-        address: "10.151.14.5"
   - name: environment_components
     type: object
     default:
-      - deployment: virtual_machines
+      - deployment: k8s_infra
         environment: wanda
-        component: virtual-machines
+        component: kubernetes
         serviceConnection: "MSDN Sub"
         storageAccount: wanda1a85dd9018454b4
         destroy: false
@@ -35,55 +19,45 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      #- deployment: wings_ansible
-      #  environment: wanda
-      #  envCheckStageName: CheckEnvIsOnline_wanda
-      #  playbook: wings-node.yaml
-      #  addresses: "10.151.14.30"
-      #  local: true
-      #  dependsOn:
-      #    - CheckEnvIsOnline_wanda
-      #    - virtual_machines
-      - deployment: migration_ansible
+      - deployment: k8s_prep_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
-        playbook: migration-vm.yaml
-        addresses: "10.151.14.21"
+        playbook: k3s-prep.yaml
+        addresses: "10.151.15.8,10.151.15.9,10.151.15.10,10.151.15.16,10.151.15.17"
+        deploy: false
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - virtual_machines
-      - deployment: thanos_ansible
-        environment: thanos
-        playbook: thanos.yaml
-        addresses: "10.151.14.5"
+          - k8s_infra
+      - deployment: k8s_ansible
+        environment: wanda
+        envCheckStageName: CheckEnvIsOnline_wanda
+        playbook: site.yml
+        workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
+        addresses: "10.151.15.8,10.151.15.9,10.151.15.10,10.151.15.16,10.151.15.17"
+        deploy: false
         local: true
         dependsOn:
-          - CheckEnvIsOnline_thanos
-      - deployment: dns
-        environment: dns
-        component: dns
-        serviceConnection: "MSDN Sub"
-        storageAccount: dns175090c1a7c944d1
-        destroy: false
-        deploy: true
-        dependsOn: []
-      - deployment: az_test_gameserver
-        environment: az-test
-        component: gameserver
-        serviceConnection: "MSDN Sub"
-        storageAccount: gamec96560353b1a4d1a
-        destroy: false
+          - CheckEnvIsOnline_wanda
+          - k8s_prep_ansible
+      - deployment: rpi_k8s_prep_ansible
+        environment: yggdrasil
+        playbook: k3s-prep.yaml
+        addresses: "10.151.16.8,10.151.16.16"
         deploy: false
+        local: true
         dependsOn: []
-      - deployment: az_prod_gameserver
-        environment: az-prod
-        component: gameserver
-        serviceConnection: "MSDN Sub"
-        storageAccount: gamec96560353b1a4d1a
-        destroy: false
-        deploy: true
-        dependsOn: []
+      - deployment: rpi_k8s_ansible
+        environment: yggdrasil
+        playbook: site.yml
+        workingDirectory: ansible/k3s
+        requirementsFile: collections/requirements.yml
+        addresses: "10.151.16.8,10.151.16.16"
+        deploy: false
+        local: true
+        dependsOn:
+          - rpi_k8s_prep_ansible
 
 variables:
   - name: agentImage
