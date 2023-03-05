@@ -83,7 +83,8 @@ parameters:
         storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: true
-        dependsOn: []
+        dependsOn:
+          - az_test_gameserver
 
 variables:
   - name: agentImage
