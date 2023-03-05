@@ -35,5 +35,5 @@
         line: "{{ item.line }}"
       when: stat_result.stat.exists
       loop:
-        - { regexp: '/^|MySQLPass|$/', line: "{{ sql_pass }}" }
-        - { regexp: '/^|MySQLRootPass|$/', line: "{{ sql_root_pass }}" }
+        - { regexp: '/^|MySQLPass|$/', line: "MYSQLPASS={{ sql_pass }}" }
+        - { regexp: '/^|MySQLRootPass|$/', line: "MYSQLROOTPASS={{ sql_root_pass }}" }
