@@ -24,7 +24,7 @@
       ansible.builtin.copy:
         src: ./config/thanos/
         dest: /opt/compose
-     - name: replace variables
+    - name: replace variables
       lineinfile: 
         path: /opt/compose/.env
         regexp: some-regex
