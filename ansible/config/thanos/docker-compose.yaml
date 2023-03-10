@@ -44,3 +44,23 @@ services:
       - 8853:8853/udp
       - 5443:5443/tcp
       - 5443:5443/udp
+  azdevops0:
+    image: bancey/ado-agent:latest
+    container_name: thanosagent0
+    restart: always
+    network_mode: host
+    environment:
+      - AZP_URL=${DEVOPS_URL}
+      - AZP_AGENT_NAME=thanosagent0
+      - AZP_POOL=${POOL_NAME}
+      - AZP_TOKEN=${TOKEN}
+  azdevops1:
+    image: bancey/ado-agent:latest
+    container_name: thanosagent1
+    restart: always
+    network_mode: host
+    environment:
+      - AZP_URL=${DEVOPS_URL}
+      - AZP_AGENT_NAME=thanosagent1
+      - AZP_POOL=${POOL_NAME}
+      - AZP_TOKEN=${TOKEN}

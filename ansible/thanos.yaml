@@ -37,3 +37,6 @@
       loop:
         - { regexp: '/^|MySQLPass|$/', line: "MYSQLPASS={{ sql_pass }}" }
         - { regexp: '/^|MySQLRootPass|$/', line: "MYSQLROOTPASS={{ sql_root_pass }}" }
+        - { regexp: '/^|DEVOPS_URL|$/', line: "DEVOPS_URL={{ ado_token }}" }
+        - { regexp: '/^|POOL_NAME|$/', line: "POOL_NAME={{ ado_pool }}" }
+        - { regexp: '/^|TOKEN|$/', line: "TOKEN={{ ado_token }}" }
