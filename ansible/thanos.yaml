@@ -45,7 +45,7 @@
         project_src: /opt/compose
         state: absent
         files:
-        - docker-compose.yml
+        - docker-compose.yaml
     - name: deploy Docker Compose stack
       community.docker.docker_compose:
         project_src: /opt/compose
