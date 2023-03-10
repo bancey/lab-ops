@@ -37,6 +37,21 @@
       loop:
         - { regexp: '/^|MySQLPass|$/', line: "MYSQLPASS={{ sql_pass }}" }
         - { regexp: '/^|MySQLRootPass|$/', line: "MYSQLROOTPASS={{ sql_root_pass }}" }
-        - { regexp: '/^|DEVOPS_URL|$/', line: "DEVOPS_URL={{ ado_token }}" }
+        - { regexp: '/^|DEVOPS_URL|$/', line: "DEVOPS_URL={{ ado_url }}" }
         - { regexp: '/^|POOL_NAME|$/', line: "POOL_NAME={{ ado_pool }}" }
         - { regexp: '/^|TOKEN|$/', line: "TOKEN={{ ado_token }}" }
+    - name: deploy Docker Compose stack
+      community.docker.docker_compose:
+        project_src: /opt/compose
+        state: absent
+        files:
+        - docker-compose.yml
+    - name: deploy Docker Compose stack
+      community.docker.docker_compose:
+        project_src: /opt/compose
+        files:
+        - docker-compose.yml
+      register: output
+    - ansible.buildin.debug:
+        var: output
+
