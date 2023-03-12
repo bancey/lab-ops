@@ -1,4 +1,5 @@
 trigger: none
+pr: none
 
 parameters:
   - name: local_environments
@@ -41,23 +42,23 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - k8s_prep_ansible
-      - deployment: rpi_k8s_prep_ansible
-        environment: yggdrasil
-        playbook: k3s-prep.yaml
-        addresses: "10.151.16.8,10.151.16.16"
-        deploy: false
-        local: true
-        dependsOn: []
-      - deployment: rpi_k8s_ansible
-        environment: yggdrasil
-        playbook: site.yml
-        workingDirectory: ansible/k3s
-        requirementsFile: collections/requirements.yml
-        addresses: "10.151.16.8,10.151.16.16"
-        deploy: false
-        local: true
-        dependsOn:
-          - rpi_k8s_prep_ansible
+      #- deployment: rpi_k8s_prep_ansible
+      #  environment: yggdrasil
+      #  playbook: k3s-prep.yaml
+      #  addresses: "10.151.16.8,10.151.16.16"
+      #  deploy: false
+      #  local: true
+      #  dependsOn: []
+      #- deployment: rpi_k8s_ansible
+      #  environment: yggdrasil
+      #  playbook: site.yml
+      #  workingDirectory: ansible/k3s
+      #  requirementsFile: collections/requirements.yml
+      #  addresses: "10.151.16.8,10.151.16.16"
+      #  deploy: false
+      #  local: true
+      #  dependsOn:
+      #    - rpi_k8s_prep_ansible
 
 variables:
   - name: agentImage
