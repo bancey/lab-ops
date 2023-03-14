@@ -13,6 +13,6 @@ module "k3s_vm" {
   network_bridge_name = var.network_bridge_name
   vlan_tag            = var.vlan_tag
   resource_pool       = "k8s"
-  startup_delay       = 1
+  startup_delay       = 0
   startup_order       = 10
 }

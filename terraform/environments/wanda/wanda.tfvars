@@ -13,7 +13,7 @@ virtual_machines = {
     network_bridge_name = "vmbr0",
     vlan_tag            = "-1",
     startup_order       = 5,
-    startup_delay       = 120,
+    startup_delay       = 0,
     cname_required      = false
   },
   #wings1 = {
