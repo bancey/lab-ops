@@ -1,5 +1,5 @@
 master_count = 1
-node_count   = 3
+node_count   = 4
 
 virtual_machines = {
   migration = {
@@ -12,8 +12,8 @@ virtual_machines = {
     gateway_ip_address  = "10.151.14.1",
     network_bridge_name = "vmbr0",
     vlan_tag            = "-1",
-    startup_order       = 1,
-    startup_delay       = 1,
+    startup_order       = 5,
+    startup_delay       = 0,
     cname_required      = false
   },
   #wings1 = {
