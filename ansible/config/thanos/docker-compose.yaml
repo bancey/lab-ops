@@ -12,6 +12,8 @@ services:
       - MYSQL_DATABASE=rpi
       - MYSQL_USER=k3s
       - MYSQL_PASSWORD=${MYSQLPASS}
+    ports:
+      - 3306:3306
   wanda_database:
     image: mariadb:10.6
     container_name: wanda_database
@@ -24,6 +26,13 @@ services:
       - MYSQL_DATABASE=wanda
       - MYSQL_USER=k3s
       - MYSQL_PASSWORD=${MYSQLPASS}
+    ports:
+      - 3307:3306
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
   adguard:
     image: adguard/adguardhome
     container_name: adguard

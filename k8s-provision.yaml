@@ -24,7 +24,7 @@ parameters:
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
         playbook: k3s-prep.yaml
-        addresses: "10.151.15.8,10.151.15.9,10.151.15.10,10.151.15.16,10.151.15.17"
+        addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
         deploy: false
         local: true
         dependsOn:
@@ -33,10 +33,9 @@ parameters:
       - deployment: k8s_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
-        playbook: site.yml
-        workingDirectory: ansible/k3s
-        requirementsFile: collections/requirements.yml
-        addresses: "10.151.15.8,10.151.15.9,10.151.15.10,10.151.15.16,10.151.15.17"
+        playbook: k3s.yaml
+        requirementsFile: roles/requirements.yml
+        addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
         deploy: false
         local: true
         dependsOn:
