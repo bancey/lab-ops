@@ -1,4 +1,4 @@
-master_count = 1
+master_count = 3
 node_count   = 4
 
 virtual_machines = {
