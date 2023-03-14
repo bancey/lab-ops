@@ -3,7 +3,7 @@ module "k3s_vm" {
   source = "../../modules/proxmox-vm"
 
   target_node         = "wanda"
-  vm_name             = count.index >= var.master_count ? "node${count.index - var.master_count -1}" : "master${count.index}"
+  vm_name             = count.index >= var.master_count ? "node${(count.index - var.master_count -1)}" : "master${count.index}"
   vm_id               = count.index >= var.master_count ? local.node_start_vm_id + (count.index - var.master_count -1) : local.master_start_vm_id + count.index
   vm_description      = count.index >= var.master_count ? "k8s worker node" : "k8s control plane"
   cpu_cores           = 4
