@@ -15,3 +15,4 @@
     - role: xanmanning.k3s
       vars:
         k3s_become: true
+        k3s_use_unsupported_config: true
