@@ -13,3 +13,5 @@
       when: inventory_hostname in ['master0']
   roles:
     - role: xanmanning.k3s
+      vars:
+        k3s_become: true
