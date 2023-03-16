@@ -17,6 +17,7 @@
         k3s_become: true
         k3s_use_unsupported_config: true
         k3s_server:
+          node-ip: "{{ ansible_host }}"
           flannel-backend: "none"
           disable:
             - flannel
@@ -26,3 +27,5 @@
             - traefik
           disable-network-policy: true
           write-kubeconfig-mode: "0644"
+          cluster-cidr: "10.42.0.0/16"
+          service-cidr: "10.43.0.0/16"
