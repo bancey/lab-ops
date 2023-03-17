@@ -27,10 +27,6 @@
     - name: Get installed packages
       ansible.builtin.package_facts:
         manager: auto
-    - name: debug
-      ansible.builtin.debug:
-        var: ansible_facts.packages
-        verbosity: 4
     - name: Remove snap packages
       ansible.builtin.command: snap remove {{ item }}
       loop: ["lxd", "core20", "snapd"]
