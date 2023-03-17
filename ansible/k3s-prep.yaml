@@ -4,16 +4,40 @@
   become_user: root
   become_method: sudo
   tasks:
-    - name: Install required system packages
-      apt:
-        pkg:
-          - open-iscsi
-          - nfs-common
-          - curl
-          - grep
-        state: latest
-        update_cache: true
-    - name: Upgrade all packages
-      apt:
-        name: "*"
-        state: latest
+  - name: Install required system packages
+    ansible.builtin.apt:
+      pkg:
+        - open-iscsi
+        - nfs-common
+        - curl
+        - grep
+      state: latest
+      update_cache: true
+  - name: Remove packages
+    ansible.builtin.apt:
+      pkg:
+        - apparmor
+        - ufw
+        - unattended-upgrages
+      state: absent
+      autoremove: true
+  - name: Upgrade all packages
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
+  - name: Get installed packages
+    ansible.buildint.package_facts:
+      manager: auto
+  - name: Remove snap packages
+    ansible.builtin.command: snap remove {{ item }}
+    loop: ["lxd", "core20", "snapd"]
+    when: "'snapd' in ansible_facts.packages"
+  - name: Remove snap
+    ansible.builtin.apt
+      name: snapd
+      state: absent
+      autoremove: true
+  - name: Set timezone
+    community.general.timezone:
+      name: "Europe/London"
+
