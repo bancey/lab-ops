@@ -41,23 +41,22 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - k8s_prep_ansible
-      #- deployment: rpi_k8s_prep_ansible
-      #  environment: yggdrasil
-      #  playbook: k3s-prep.yaml
-      #  addresses: "10.151.16.8,10.151.16.16"
-      #  deploy: false
-      #  local: true
-      #  dependsOn: []
-      #- deployment: rpi_k8s_ansible
-      #  environment: yggdrasil
-      #  playbook: site.yml
-      #  workingDirectory: ansible/k3s
-      #  requirementsFile: collections/requirements.yml
-      #  addresses: "10.151.16.8,10.151.16.16"
-      #  deploy: false
-      #  local: true
-      #  dependsOn:
-      #    - rpi_k8s_prep_ansible
+      - deployment: rpi_k8s_prep_ansible
+        environment: yggdrasil
+        playbook: k3s-prep.yaml
+        addresses: "10.151.16.8,10.151.16.16"
+        deploy: false
+        local: true
+        dependsOn: []
+      - deployment: rpi_k8s_ansible
+        environment: yggdrasil
+        playbook: k3s.yaml
+        requirementsFile: roles/requirements.yml
+        addresses: "10.151.16.8,10.151.16.16"
+        deploy: false
+        local: true
+        dependsOn:
+          - rpi_k8s_prep_ansible
 
 variables:
   - name: agentImage
@@ -133,21 +132,21 @@ stages:
                             parallelism: 2
           - ${{ if ne(deployment.playbook, '') }}:
               - ${{ if ne(deployment.addresses, '') }}:
-                - job: CheckAnsibleHostsOnline
-                  ${{ if and(eq(deployment.local, true), ne(deployment.envCheckStageName, '')) }}:
-                    condition: and(succeeded(), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
-                  pool:
-                    ${{ if eq(deployment.local, true) }}:
-                      name: Local
-                    ${{ else }}:
-                      vmImage: $(agentImage)
-                  steps:
-                    - template: pipelines/check-host-online.yaml
-                      parameters:
-                        addresses: ${{ deployment.addresses }}
+                  - job: CheckAnsibleHostsOnline
+                    ? ${{ if and(eq(deployment.local, true), ne(deployment.envCheckStageName, '')) }}
+                    : condition: and(succeeded(), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+                    pool:
+                      ${{ if eq(deployment.local, true) }}:
+                        name: Local
+                      ${{ else }}:
+                        vmImage: $(agentImage)
+                    steps:
+                      - template: pipelines/check-host-online.yaml
+                        parameters:
+                          addresses: ${{ deployment.addresses }}
               - job: AnsibleCheck
-                ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
+                ? ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}
+                : condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ elseif ne(deployment.addresses, '') }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
@@ -170,27 +169,27 @@ stages:
                       privateKeySecretName: Packer-Private-Key
                       serviceCOnnection: MSDN Sub
               - ${{ if ne(deployment.deploy, false) }}:
-                - job: AnsibleRun
-                  ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}:
-                    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
-                  ${{ elseif ne(deployment.addresses, '') }}:
-                    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
-                  ${{ else }}:
-                    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-                  pool:
-                    ${{ if eq(deployment.local, true) }}:
-                      name: Local
+                  - job: AnsibleRun
+                    ? ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}
+                    : condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
+                    ${{ elseif ne(deployment.addresses, '') }}:
+                      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(dependencies.CheckAnsibleHostsOnline.outputs['checkOnline.online'], 'true'))
                     ${{ else }}:
-                      vmImage: $(agentImage)
-                  ${{ if ne(deployment.addresses, '') }}:
-                    dependsOn: CheckAnsibleHostsOnline
-                  steps:
-                    - template: pipelines/ansible-run.yaml
-                      parameters:
-                        hostsFilePath: ansible/hosts/${{ deployment.environment }}/hosts.yaml
-                        requirementsFile: ${{ deployment.requirementsFile }}
-                        playbook: ${{ deployment.playbook }}
-                        workingDirectory: ${{ deployment.workingDirectory }}
-                        keyVaultName: bancey-vault
-                        privateKeySecretName: Packer-Private-Key
-                        serviceCOnnection: MSDN Sub
+                      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+                    pool:
+                      ${{ if eq(deployment.local, true) }}:
+                        name: Local
+                      ${{ else }}:
+                        vmImage: $(agentImage)
+                    ${{ if ne(deployment.addresses, '') }}:
+                      dependsOn: CheckAnsibleHostsOnline
+                    steps:
+                      - template: pipelines/ansible-run.yaml
+                        parameters:
+                          hostsFilePath: ansible/hosts/${{ deployment.environment }}/hosts.yaml
+                          requirementsFile: ${{ deployment.requirementsFile }}
+                          playbook: ${{ deployment.playbook }}
+                          workingDirectory: ${{ deployment.workingDirectory }}
+                          keyVaultName: bancey-vault
+                          privateKeySecretName: Packer-Private-Key
+                          serviceCOnnection: MSDN Sub
