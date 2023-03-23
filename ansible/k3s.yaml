@@ -1,3 +1,4 @@
+---
 - name: Install K3S
   hosts: k3s_cluster
   become: true
@@ -10,7 +11,7 @@
       when: inventory_hostname in ['master0']
   tasks:
     - name: Install K3S
-      ansible.builtin.include_roles:
+      ansible.builtin.include_role:
         name: xanmanning.k3s
         public: true
       vars:
@@ -20,7 +21,7 @@
         k3s_use_unsupported_config: true
         k3s_server:
           node-ip: "{{ ansible_host }}"
-          flannel-backend: "none"
+          flannel-backend: none
           disable:
             - flannel
             - local-storage
@@ -29,8 +30,8 @@
             - traefik
           disable-network-policy: true
           write-kubeconfig-mode: "0644"
-          cluster-cidr: "10.42.0.0/16"
-          service-cidr: "10.43.0.0/16"
+          cluster-cidr: 10.42.0.0/16
+          service-cidr: 10.43.0.0/16
           datastore-endpoint: "{{ external_store_uri }}"
         k3s_server_manifests_urls:
           - url: https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
@@ -41,7 +42,6 @@
           - calico-install.yaml.j2
           - bgp-config.yaml.j2
           - metallb-config.yaml.j2
-
     - name: Delete Metallb Speaker Daemonset
       kubernetes.core.k8s:
         kubeconfig: /etc/rancher/k3s/k3s.yaml
@@ -49,13 +49,12 @@
         name: speaker
         namespace: metallb-system
         kind: DaemonSet
-
     - name: Remove deployed manifest templates
       ansible.builtin.file:
-        path: "{{ k3s_server_manifests_dir }}/{{ item | basename | regex_replace('\\.j2$', '') }}"
+        path: "{{ k3s_server_manifests_dir }}/{{ item | basename |
+          regex_replace('\\.j2$', '') }}"
         state: absent
       loop: "{{ k3s_server_manifests_templates | default([]) }}"
-
     - name: Remove deployed manifest urls
       ansible.builtin.file:
         path: "{{ k3s_server_manifests_dir }}/{{ item.filename }}"
