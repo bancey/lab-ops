@@ -7,11 +7,7 @@
     - name: Set master nodes to be a control node
       ansible.builtin.set_fact:
         k3s_control_node: true
-      when: inventory_hostname in ['master0']
-  roles:
-    - role: xanmanning.k3s
-      vars:
-        
+      when: inventory_hostname in ['master0'] 
  tasks:
     - name: Install K3S
       ansible.builtin.include_roles:
