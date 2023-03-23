@@ -1,0 +1,5 @@
+---
+collections:
+  - name: kubernetes.core
+roles:
+  - name: xanmanning.k3s

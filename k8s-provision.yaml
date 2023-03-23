@@ -34,7 +34,7 @@ parameters:
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
         playbook: k3s.yaml
-        requirementsFile: roles/requirements.yml
+        requirementsFile: requirements.yml
         addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
         deploy: false
         local: true
@@ -51,7 +51,7 @@ parameters:
       - deployment: rpi_k8s_ansible
         environment: yggdrasil
         playbook: k3s.yaml
-        requirementsFile: roles/requirements.yml
+        requirementsFile: requirements.yml
         addresses: "10.151.16.8,10.151.16.16"
         deploy: false
         local: true
