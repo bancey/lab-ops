@@ -50,6 +50,7 @@
         name: speaker
         namespace: metallb-system
         kind: DaemonSet
+      when: k3s_control_node
     - name: Remove deployed manifest templates
       ansible.builtin.file:
         path: "{{ k3s_server_manifests_dir }}/{{ item | basename |
