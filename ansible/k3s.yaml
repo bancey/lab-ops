@@ -3,9 +3,6 @@
   become: true
   become_user: root
   become_method: sudo
-  vars:
-    k3s_server:
-      datastore-endpoint: "{{ external_store_uri }}"
   pre_tasks:
     - name: Set master nodes to be a control node
       ansible.builtin.set_fact:
@@ -14,6 +11,8 @@
   roles:
     - role: xanmanning.k3s
       vars:
+        k3s_state: installed
+        k3s_load_balancer_cidr: "{{ load_balancer_cidr }}"
         k3s_become: true
         k3s_use_unsupported_config: true
         k3s_server:
@@ -29,8 +28,13 @@
           write-kubeconfig-mode: "0644"
           cluster-cidr: "10.42.0.0/16"
           service-cidr: "10.43.0.0/16"
+          datastore-endpoint: "{{ external_store_uri }}"
         k3s_server_manifests_urls:
           - url: https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
             filename: tigera-operator.yaml
+          - url: https://raw.githubusercontent.com/metallb/metallb/v0.13.9/config/manifests/metallb-native.yaml
+            filename: metallb-native.yaml
         k3s_server_manifests_templates:
           - calico-install.yaml.j2
+          - bgp-config.yaml.j2
+          - metallb-config.yaml.j2

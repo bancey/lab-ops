@@ -15,3 +15,4 @@ all:
               ansible_host: 10.151.16.16
       vars:
         external_store_uri: "$(RPI-K3S-Store-URI)"
+        load_balancer_cidr: "10.151.16.64/27"
