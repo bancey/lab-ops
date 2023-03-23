@@ -11,6 +11,8 @@
           - nfs-common
           - curl
           - grep
+          - python3-kubernetes
+          - python3-yaml
         state: latest
         update_cache: true
     - name: Remove packages
