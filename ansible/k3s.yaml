@@ -7,8 +7,8 @@
     - name: Set master nodes to be a control node
       ansible.builtin.set_fact:
         k3s_control_node: true
-      when: inventory_hostname in ['master0'] 
- tasks:
+      when: inventory_hostname in ['master0']
+  tasks:
     - name: Install K3S
       ansible.builtin.include_roles:
         name: xanmanning.k3s
@@ -41,6 +41,7 @@
           - calico-install.yaml.j2
           - bgp-config.yaml.j2
           - metallb-config.yaml.j2
+
     - name: Delete Metallb Speaker Daemonset
       kubernetes.core.k8s:
         kubeconfig: /etc/rancher/k3s/k3s.yaml
@@ -48,6 +49,7 @@
         name: speaker
         namespace: metallb-system
         kind: DaemonSet
+
     - name: Remove deployed manifest templates
       ansible.builtin.file:
         path: "{{ k3s_server_manifests_dir }}/{{ item | basename | regex_replace('\\.j2$', '') }}"
