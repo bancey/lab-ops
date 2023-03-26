@@ -41,16 +41,35 @@
             filename: metallb-native.yaml
         k3s_server_manifests_templates:
           - calico-install.yaml.j2
-          - bgp-config.yaml.j2
           - metallb-config.yaml.j2
-    - name: Delete Metallb Speaker Daemonset
-      kubernetes.core.k8s:
+    - name: Resource Readiness Check
+      run_once: true
+      kubernetes.core.k8s_info:
         kubeconfig: /etc/rancher/k3s/k3s.yaml
-        state: absent
-        name: speaker
-        namespace: metallb-system
-        kind: DaemonSet
-      when: k3s_control_node
+        kind: "{{ item.kind }}"
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace | default('') }}"
+        wait: true
+        wait_sleep: 10
+        wait_timeout: 360
+      loop:
+        - kind: Deployment
+          name: tigera-operator
+          namespace: tigera-operator
+        - kind: Installation
+          name: default
+        - kind: IPAddressPool
+          name: default
+          namespace: metallb-system
+        - kind: L2Advertisement
+          name: default
+          namespace: metallb-system
+      register: resource_check
+      when:
+        - k3s_server_manifests_templates | length > 0
+            or k3s_server_manifests_urls | length > 0
+        - k3s_control_node is defined
+        - k3s_control_node
     - name: Remove deployed manifest templates
       ansible.builtin.file:
         path: "{{ k3s_server_manifests_dir }}/{{ item | basename |

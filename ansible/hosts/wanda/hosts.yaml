@@ -17,7 +17,7 @@ all:
           ansible_host: 10.151.15.19
       vars:
         external_store_uri: "$(Wanda-K3S-Store-URI)"
-        load_balancer_cidr: "10.151.15.64/27"
+        metallb_ip_range: "10.151.15.50-10.151.15.200"
     wings:
       hosts:
         wings1:
