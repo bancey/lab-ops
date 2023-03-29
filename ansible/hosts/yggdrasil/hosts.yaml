@@ -7,11 +7,11 @@ all:
       children:
         master:
           hosts:
-            master-rpi0:
+            loki:
               ansible_host: 10.151.16.8
         node:
           hosts:
-            node-rpi0:
+            tyr:
               ansible_host: 10.151.16.16
       vars:
         external_store_uri: "$(RPI-K3S-Store-URI)"
