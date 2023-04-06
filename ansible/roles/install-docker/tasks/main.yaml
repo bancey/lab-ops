@@ -26,7 +26,7 @@
     state: present
 - name: Add Docker Repository
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu jammy stable
+    repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable
     state: present
   register: docker_repo
 - name: Update apt and install docker-ce
