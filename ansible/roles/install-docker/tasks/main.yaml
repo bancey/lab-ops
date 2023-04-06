@@ -21,9 +21,9 @@
     name: "*"
     state: latest
 - name: Add Docker GPG apt Key
-  apt_key:
+  get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+    dest: /etc/apt/keyrings/docker.gpg
 - name: Add Docker Repository
   apt_repository:
     repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable
