@@ -1,4 +1,5 @@
 ---
+- debug: var= ansible_architecture
 - name: Install aptitude
   apt:
     name: aptitude
