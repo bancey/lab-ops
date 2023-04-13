@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=3f754484ac5d490f6cdfa8644703787dab35b8f9"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=fix/vm-shutdown_schedule"
 
   depends_on = [
     cloudflare_record.records
@@ -21,6 +21,12 @@ module "pterodactyl_node" {
   }
   existing_resource_group_name = azurerm_resource_group.gameserver.name
   publicly_accessible          = true
+
+  vm_shutdown_schedule = {
+    enabled  = false
+    time     = "0000"
+    timezone = "GMT Standard Time"
+  }
 
   nsg_rules = {
     # Required to allow certbot to generate SSL certificates
