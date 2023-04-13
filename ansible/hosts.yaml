@@ -2,8 +2,14 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-  children:
-    k3s_cluster:
+    thanos:
+      ansible_host: 10.151.14.6
+      ado_url: "https://dev.azure.com/bancey"
+      ado_pool: "Local"
+      ado_token: "$(ADO-Token)"
+      sql_pass: "$(MySQL-Password)"
+      sql_root_pass: "$(MySQL-Root-Password)"
+    wanda_k3s_cluster:
       hosts:
         master0:
           ansible_host: 10.151.15.8
@@ -16,7 +22,6 @@ all:
         node3:
           ansible_host: 10.151.15.19
       vars:
-        external_store_uri: "$(Wanda-K3S-Store-URI)"
         metallb_ip_range: "10.151.15.50-10.151.15.200"
     wings:
       hosts:
@@ -34,3 +39,15 @@ all:
       hosts:
         migration_vm:
           ansible_host: 10.151.14.21
+    nuc_k3s_cluster:
+      children:
+        master:
+          hosts:
+            loki:
+              ansible_host: 10.151.16.8
+        node:
+          hosts:
+            tyr:
+              ansible_host: 10.151.16.16
+      vars:
+        metallb_ip_range: "10.151.16.50-10.151.16.200"

@@ -1,0 +1,10 @@
+- name: Install K3S
+  hosts: nuc_k3s_cluster
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+    - role: xanmanning.k3s
+      vars:
+        k3s_state: uninstalled
+        k3s_become: true
