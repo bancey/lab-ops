@@ -4,10 +4,6 @@
   become_user: root
   become_method: sudo
   gather_facts: true
-  pre_tasks:
-    - name: debug
-      ansible.builtin.debug:
-        var: ansible_architecture
   roles:
     - install-docker
   tasks:
