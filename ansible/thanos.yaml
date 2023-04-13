@@ -7,7 +7,7 @@
   pre_tasks:
     - name: debug
       ansible.builtin.debug:
-        var: ansible_archtecture
+        var: ansible_architecture
   roles:
     - install-docker
   tasks:
