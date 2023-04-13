@@ -46,6 +46,3 @@
         files:
         - docker-compose.yaml
       register: output
-    - ansible.builtin.debug:
-        var: output
-
