@@ -3,6 +3,8 @@
   become: true
   become_user: root
   become_method: sudo
+  pre_tasks:
+    - debug: var= ansible_architecture
   roles:
     - install-docker
   tasks:
