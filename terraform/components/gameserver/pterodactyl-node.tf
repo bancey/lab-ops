@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=fix/vm-shutdown_schedule"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=fix%2Fvm-shutdown_schedule"
 
   depends_on = [
     cloudflare_record.records
