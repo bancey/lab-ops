@@ -36,9 +36,7 @@ all:
         ado_pool: "SelfHostedDocker"
         ado_token: "$(ADO-Token)"
     migration:
-      hosts:
-        migration_vm:
-          ansible_host: 10.151.14.21
+      ansible_host: 10.151.14.21
     nuc_k3s_cluster:
       children:
         master:
