@@ -18,14 +18,13 @@
         - /opt/adguard
         - /opt/adguard/config
         - /opt/adguard/work
-        - /opt/rpi_database
         - /opt/wanda_database
         - /opt/compose
     - name: upload the config directory
       ansible.builtin.copy:
         src: ./config/thanos/
         dest: /opt/compose
-    - name: Check that the somefile.conf exists
+    - name: Check that the .env file exists
       stat:
         path: /opt/compose/.env
       register: stat_result
