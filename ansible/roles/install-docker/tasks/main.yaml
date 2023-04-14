@@ -23,6 +23,13 @@
   apt:
     name: "*"
     state: latest
+- name: Create /etc/apt/keyrings if it doesn't exist
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
 - name: Add Docker GPG apt Key
   get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
