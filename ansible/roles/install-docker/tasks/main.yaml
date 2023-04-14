@@ -44,7 +44,12 @@
   register: docker_repo
 - name: Update apt and install docker-ce
   apt:
-    name: docker-ce
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
     state: latest
     update_cache: true
   when: not (docker_repo.changed and ansible_check_mode)
