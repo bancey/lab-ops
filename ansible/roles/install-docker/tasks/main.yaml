@@ -29,7 +29,7 @@
     dest: /etc/apt/keyrings/docker.asc
 - name: Add Docker Repository
   apt_repository:
-    repo: "deb [arch={{ dpkg_arch }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable"
+    repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable"
     state: present
   register: docker_repo
 - name: Update apt and install docker-ce
