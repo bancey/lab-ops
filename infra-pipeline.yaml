@@ -45,16 +45,6 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-      - deployment: k8s_prep_ansible
-        environment: wanda
-        envCheckStageName: CheckEnvIsOnline_wanda
-        playbook: k3s-wanda.yaml
-        addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
-        deploy: false
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - k8s_infra
       - deployment: k8s_ansible
         environment: wanda
         envCheckStageName: CheckEnvIsOnline_wanda
@@ -62,26 +52,20 @@ parameters:
         requirementsFile: requirements.yml
         addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
         deploy: false
+        extraVars: "run_prep=true run_install=true"
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
-          - k8s_prep_ansible
-      - deployment: rpi_k8s_prep_ansible
-        environment: yggdrasil
-        playbook: k3s-nuc.yaml
-        addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
-        deploy: false
-        local: true
-        dependsOn: []
+          - k8s_infra
       - deployment: rpi_k8s_ansible
         environment: yggdrasil
         playbook: k3s-nuc.yaml
         requirementsFile: requirements.yml
         addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
         deploy: false
+        extraVars: "run_prep=true run_install=true"
         local: true
-        dependsOn:
-          - rpi_k8s_prep_ansible
+        dependsOn: []
       - deployment: thanos_ansible
         environment: thanos
         playbook: thanos.yaml
@@ -225,6 +209,7 @@ stages:
                       keyVaultName: bancey-vault
                       privateKeySecretName: Packer-Private-Key
                       serviceCOnnection: MSDN Sub
+                      extraVars: ${{ deployment.extraVars }}
               - ${{ if ne(deployment.deploy, false) }}:
                   - job: AnsibleRun
                     ? ${{ if and(ne(deployment.addresses, ''), ne(deployment.envCheckStageName, '')) }}
@@ -250,3 +235,4 @@ stages:
                           keyVaultName: bancey-vault
                           privateKeySecretName: Packer-Private-Key
                           serviceCOnnection: MSDN Sub
+                          extraVars: ${{ deployment.extraVars }}
