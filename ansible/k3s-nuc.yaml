@@ -75,6 +75,7 @@
             or k3s_server_manifests_urls | length > 0
         - k3s_control_node is defined
         - k3s_control_node
+        - not ansible_check_mode
     - name: Remove deployed manifest templates
       ansible.builtin.file:
         path: "{{ k3s_server_manifests_dir }}/{{ item | basename |
