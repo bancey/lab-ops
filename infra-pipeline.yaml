@@ -57,7 +57,7 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - k8s_infra
-      - deployment: rpi_k8s_ansible
+      - deployment: nuc_k8s_ansible
         environment: yggdrasil
         playbook: k3s-nuc.yaml
         requirementsFile: requirements.yml
