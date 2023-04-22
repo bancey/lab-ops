@@ -44,6 +44,8 @@
             filename: tigera-operator.yaml
           - url: https://raw.githubusercontent.com/metallb/metallb/v0.13.9/config/manifests/metallb-native.yaml
             filename: metallb-native.yaml
+          - url: https://raw.githubusercontent.com/longhorn/longhorn/v1.4.1/deploy/longhorn.yaml
+            filename: longhorn.yaml
         k3s_server_manifests_templates:
           - calico-install.yaml.j2
           - metallb-config.yaml.j2
