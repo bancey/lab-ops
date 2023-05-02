@@ -4,7 +4,7 @@ metadata:
   name: cluster
   namespace: flux-system
 spec:
-  interval: 10m0s
+  interval: 30s
   path: ./kubernetes/flux/clusters/nuc
   prune: true
   wait: false
