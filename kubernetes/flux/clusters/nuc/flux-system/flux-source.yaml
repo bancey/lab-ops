@@ -1,0 +1,16 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: lab-ops
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    branch: master
+  secretRef:
+    name: deploy-key
+  url: ssh://git@github.com/bancey/lab-ops
+  ignore: |
+    /*
+    !/kubernetes
