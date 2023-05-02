@@ -1,0 +1,21 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  bootstrap:
+    desc: Bootstrap flux with existing Deploy Key & sops-age key
+    preconditions:
+      - sh: test -d ./kubernetes/flux/clusters/{{.CLI_ARGS}}
+        msg: 'You must pass the name of the cluster to the cli args. e.g. task test -- nuc'
+    cmds:
+      - kubectl ctx {{.CLI_ARGS}}
+      - flux install --export > ./kubernetes/flux/clusters/{{.CLI_ARGS}}/flux-system/flux-components.yaml
+      - kubectl apply -f ./kubernetes/flux/clusters/{{.CLI_ARGS}}/flux-system/flux-components.yaml
+      - sops --decrypt ./kubernetes/bootstrap/sops-age-secret.sops.yaml | kubectl apply -f -
+      - sops --decrypt ./kubernetes/bootstrap/deploy-key.sops.yaml | kubectl apply -f -
+      - kubectl apply -f ./kubernetes/flux/clusters/{{.CLI_ARGS}}/flux-system/flux-source.yaml
+      - kubectl apply -f ./kubernetes/flux/clusters/{{.CLI_ARGS}}/flux-system/flux-cluster.yaml
