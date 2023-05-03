@@ -1,0 +1,69 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: traefik
+  namespace: flux-system
+spec:
+  path: ./kubernetes/infrastructure/traefik/app
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+    namespace: flux-system
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: traefik
+      namespace: traefik
+  interval: 30m
+  retryInterval: 1m
+  timeout: 30m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: traefik-middleware
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: traefik
+  path: ./kubernetes/infrastructure/traefik/middleware
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+    namespace: flux-system
+  interval: 30m
+  retryInterval: 1m
+  timeout: 30m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: traefik-dashboard
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: traefik
+  path: ./kubernetes/infrastructure/traefik/dashboard
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+    namespace: flux-system
+  interval: 30m
+  retryInterval: 1m
+  timeout: 30m

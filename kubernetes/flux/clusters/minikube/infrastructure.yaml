@@ -1,0 +1,32 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: cluster-infrastructure
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/infrastructure
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  patches:
+    - patch: |
+        - op: add
+          path: /spec/values/service/spec/loadBalancerIP
+          value: 10.151.16.50
+      target:
+        kind: HelmRelease
+        name: traefik
+    - patch: |
+       - op: add
+         path: /spec/routes/0/match
+         value: Host(`traefik.nuc`)
+      target:
+        kind: IngressRoute
+        name: traefik-dashboard
