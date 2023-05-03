@@ -11,6 +11,7 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+      namespace: flux-system
   sourceRef:
     kind: GitRepository
     name: lab-ops
@@ -38,6 +39,7 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+      namespace: flux-system
   sourceRef:
     kind: GitRepository
     name: lab-ops
@@ -60,6 +62,7 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+      namespace: flux-system
   sourceRef:
     kind: GitRepository
     name: lab-ops
