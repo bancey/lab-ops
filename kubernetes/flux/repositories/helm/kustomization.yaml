@@ -5,4 +5,5 @@ resources:
   - ./bancey.yaml
   - ./bitnami.yaml
   - ./podinfo.yaml
+  - ./traefik.yaml
   - ./weave.yaml
