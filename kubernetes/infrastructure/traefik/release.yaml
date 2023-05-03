@@ -7,11 +7,6 @@ metadata:
 spec:
   path: ./kubernetes/infrastructure/traefik/app
   prune: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-      namespace: flux-system
   sourceRef:
     kind: GitRepository
     name: lab-ops
@@ -35,11 +30,6 @@ spec:
     - name: traefik
   path: ./kubernetes/infrastructure/traefik/middleware
   prune: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-      namespace: flux-system
   sourceRef:
     kind: GitRepository
     name: lab-ops
@@ -58,11 +48,6 @@ spec:
     - name: traefik
   path: ./kubernetes/infrastructure/traefik/dashboard
   prune: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-      namespace: flux-system
   sourceRef:
     kind: GitRepository
     name: lab-ops
