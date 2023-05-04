@@ -19,7 +19,9 @@ spec:
     - patch: |
        - op: add
          path: /spec/routes/0/match
-         value: Host(`traefik.nuc`)
+         value: Host(`traefik.minikube`)
       target:
         kind: IngressRoute
         name: traefik-dashboard
+  patchesStrategicMerge:
+    - traefik-dashboard-patchs.yaml

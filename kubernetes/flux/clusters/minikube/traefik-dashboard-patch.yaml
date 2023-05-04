@@ -1,0 +1,15 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: traefik-dashboard
+spec:
+  interval: 120m
+  #patches:
+  #  - patch: |
+  #      - op: add
+  #        path: /spec/routes/0/match
+  #        value: Host(`traefik.minikube`)
+  #    target:
+  #      kind: IngressRoute
+  #      name: traefik-dashboard
