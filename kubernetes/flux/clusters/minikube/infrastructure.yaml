@@ -17,13 +17,6 @@ spec:
       name: sops-age
   patches:
     - patch: |
-        - op: add
-          path: /spec/values/service/spec/loadBalancerIP
-          value: 10.151.16.50
-      target:
-        kind: HelmRelease
-        name: traefik
-    - patch: |
        - op: add
          path: /spec/routes/0/match
          value: Host(`traefik.nuc`)
