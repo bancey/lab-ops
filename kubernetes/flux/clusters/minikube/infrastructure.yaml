@@ -24,4 +24,4 @@ spec:
         kind: IngressRoute
         name: traefik-dashboard
   patchesStrategicMerge:
-    - traefik-dashboard-patchs.yaml
+    - traefik-dashboard-patch.yaml
