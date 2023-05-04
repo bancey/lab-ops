@@ -48,6 +48,10 @@ spec:
     - name: traefik
   path: ./kubernetes/infrastructure/traefik/dashboard
   prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   sourceRef:
     kind: GitRepository
     name: lab-ops
