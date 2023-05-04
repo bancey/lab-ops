@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ./bancey.yaml
   - ./bitnami.yaml
+  - ./jetstack.yaml
   - ./podinfo.yaml
   - ./traefik.yaml
   - ./weave.yaml
