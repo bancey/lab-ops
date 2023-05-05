@@ -2,14 +2,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: cluster-infrastructure
+  name: cluster-infrastructure-controllers
   namespace: flux-system
 spec:
   interval: 10m0s
   sourceRef:
     kind: GitRepository
     name: lab-ops
-  path: ./kubernetes/infrastructure
+  path: ./kubernetes/infrastructure/controllers
   prune: true
   decryption:
     provider: sops
@@ -23,25 +23,28 @@ spec:
       target:
         kind: HelmRelease
         name: traefik
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: cluster-infrastructure-configs
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/infrastructure/config
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  patches:
     - patch: |
-        - op: add
-          path: /spec/routes/0/match
-          value: Host(`traefik.nuc`)
+       - op: add
+         path: /spec/routes/0/match
+         value: Host(`traefik.nuc`)
       target:
         kind: IngressRoute
         name: traefik-dashboard
-  patchesStrategicMerge:
-    - |-
-      apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-      kind: Kustomization
-      metadata:
-        name: traefik-dashboard
-      spec:
-        patches:
-          - patch: |
-              - op: add
-                path: /spec/routes/0/match
-                value: Host(`traefik.nuc`)
-            target:
-              kind: IngressRoute
-              name: traefik-dashboard
