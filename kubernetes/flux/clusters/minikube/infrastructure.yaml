@@ -22,6 +22,8 @@ metadata:
   name: cluster-infrastructure-configs
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: cluster-infrastructure-controllers
   interval: 10m0s
   sourceRef:
     kind: GitRepository
