@@ -8,6 +8,7 @@ spec:
     spec:
       version: "6.3.0"
   values:
+    replicaCount: 3
     ingress:
       enabled: true
       className: traefik
