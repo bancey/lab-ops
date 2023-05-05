@@ -7,3 +7,12 @@ spec:
   chart:
     spec:
       version: "6.3.0"
+  values:
+    ingress:
+      enabled: true
+      className: traefik
+      hosts:
+        - host: podinfo.nuc
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
