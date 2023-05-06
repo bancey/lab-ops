@@ -26,7 +26,7 @@ spec:
     - patch: |
        - op: add
          path: /spec/routes/0/match
-         value: Host(`weave.minikube`)
+         value: Host(`weave.nuc`)
       target:
         kind: IngressRoute
         name: weave-gitops
