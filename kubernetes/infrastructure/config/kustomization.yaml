@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - cloudflare-api-token-secret.sops.yaml
   - cert-manager-issuers.yaml
+  - longhorn-ingress-route.yaml
   - traefik-dashboard-auth-secret.sops.yaml
   - traefik-dashboard-auth.yaml
   - traefik-dashboard-ingress.yaml
