@@ -6,6 +6,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
+  dependsOn:
+    - name: cluster-infrastructure-configs
   path: ./kubernetes/apps/nuc
   prune: true
   sourceRef:

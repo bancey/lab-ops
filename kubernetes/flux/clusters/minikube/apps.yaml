@@ -5,6 +5,8 @@ metadata:
   name: cluster-apps
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: cluster-infrastructure-configs
   interval: 30m
   path: ./kubernetes/apps/minikube
   prune: true

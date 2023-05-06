@@ -30,13 +30,6 @@ spec:
       target:
         kind: IngressRoute
         name: weave-gitops
-    - patch: |
-       - op: add
-         path: /spec/routes/0/match
-         value: Host(`longhorn.nuc`)
-      target:
-        kind: IngressRoute
-        name: longhorn
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
