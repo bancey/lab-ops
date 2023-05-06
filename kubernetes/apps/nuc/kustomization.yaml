@@ -3,8 +3,10 @@ kind: Kustomization
 resources:
   - ../base/podinfo
   - ../base/longhorn
+  - ../base/smokeping
 patchesStrategicMerge:
   - podinfo-values.yaml
+  - smokeping-patches.yaml
 patches:
   - patch: |
       - op: add
