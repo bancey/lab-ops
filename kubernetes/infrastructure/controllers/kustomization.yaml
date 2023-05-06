@@ -6,3 +6,6 @@ resources:
   - cert-manager.yaml
   - traefik-namespace.yaml
   - traefik.yaml
+  - weave-gitops-auth.sops.yaml
+  - weave-gitops.yaml
+  - weave-ingress-route.yaml
