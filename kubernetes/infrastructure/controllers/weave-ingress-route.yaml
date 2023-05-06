@@ -12,9 +12,9 @@ spec:
   routes:
     - match: Host(`weave.local`)
       kind: Rule
-      services:
-        - name: ww-gitops-weave-gitops
-          port: 9001
       middlewares:
         - name: default-headers
           namespace: traefik
+      services:
+        - name: ww-gitops-weave-gitops
+          port: 9001
