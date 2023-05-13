@@ -144,3 +144,10 @@ metadata:
 spec:
   routes:
     - match: Host(`smokeping.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: smokeping
+          port: 80
+      middlewares:
+        - name: default-headers
+          namespace: traefik
