@@ -19,4 +19,4 @@ spec:
         - name: default-headers
           namespace: traefik
   tls:
-    secretName: smokeping-staging-tls
+    secretName: smokeping-tls
