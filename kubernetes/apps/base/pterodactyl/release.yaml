@@ -1,0 +1,20 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: pterodactyl
+  namespace: pterodactyl
+spec:
+  releaseName: pterodactyl
+  chart:
+    spec:
+      chart: pterodactyl-panel
+      sourceRef:
+        kind: HelmRepository
+        name: bancey
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3

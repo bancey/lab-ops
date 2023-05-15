@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: thanos-adguard-staging-tls
+  namespace: default
+spec:
+  secretName: thanos-adguard-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "adguard.heimelska.co.uk"
+  dnsNames:
+  - "adguard.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: thanos-adguard-tls
+  namespace: default
+spec:
+  secretName: thanos-adguard-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "adguard.heimelska.co.uk"
+  dnsNames:
+  - "adguard.heimelska.co.uk"

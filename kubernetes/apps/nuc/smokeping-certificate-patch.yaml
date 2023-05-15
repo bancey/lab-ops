@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: smokeping-staging-tls
+  namespace: default
+spec:
+  commonName: "smokeping.heimelska.co.uk"
+  dnsNames:
+  - "smokeping.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: smokeping-tls
+  namespace: default
+spec:
+  commonName: "smokeping.heimelska.co.uk"
+  dnsNames:
+  - "smokeping.heimelska.co.uk"
