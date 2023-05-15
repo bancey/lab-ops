@@ -6,3 +6,4 @@ resources:
   - namespace.yaml
   - thanos.yaml
   - thanos-certs.yaml
+  - wanda.yaml
