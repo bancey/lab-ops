@@ -28,3 +28,5 @@ spec:
       services:
         - name: wanda
           port: 443
+  tls:
+    secretName: wanda-pterodactyl-tls

@@ -7,3 +7,4 @@ resources:
   - thanos.yaml
   - thanos-certs.yaml
   - wanda.yaml
+  - wanda-certs.yaml
