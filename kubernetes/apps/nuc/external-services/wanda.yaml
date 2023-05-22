@@ -11,22 +11,22 @@ spec:
       port: 443
       targetPort: 443
   externalName: 10.151.15.50
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: wanda-podinfo
-  namespace: external-services
-  annotations: 
-    kubernetes.io/ingress.class: traefik-external
-spec:
-  entryPoints:
-    - websecure
-  routes:
-    - match: Host(`pterodactyl.heimelska.co.uk`)
-      kind: Rule
-      services:
-        - name: wanda
-          port: 443
-  tls:
-    secretName: wanda-pterodactyl-tls
+# ---
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: wanda-podinfo
+#   namespace: external-services
+#   annotations: 
+#     kubernetes.io/ingress.class: traefik-external
+# spec:
+#   entryPoints:
+#     - websecure
+#   routes:
+#     - match: Host(`pterodactyl.heimelska.co.uk`)
+#       kind: Rule
+#       services:
+#         - name: wanda
+#           port: 443
+#   tls:
+#     secretName: wanda-pterodactyl-tls
