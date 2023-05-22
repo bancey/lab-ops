@@ -36,7 +36,7 @@ spec:
       port: 443
   externalName: 10.151.14.10
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: wanda-proxmox
@@ -52,10 +52,11 @@ spec:
       services:
         - name: wanda-proxmox
           port: 8006
+          scheme: https
   tls:
     secretName: wanda-proxmox-staging-tls
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: wanda-mgmt
