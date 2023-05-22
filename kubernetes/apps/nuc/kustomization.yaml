@@ -4,11 +4,14 @@ resources:
   - ./external-services
   - ../base/longhorn
   - ../base/smokeping
-#  - ../base/pterodactyl
+  - ../base/pterodactyl
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
+#  - pterodactyl-certificate-patch.yaml
+#  - pterodactyl-ingress-route-patch.yaml
+#  - pterodactyl-patch.yaml
 patches:
   - patch: |
       - op: add

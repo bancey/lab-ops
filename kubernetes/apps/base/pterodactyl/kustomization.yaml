@@ -3,8 +3,13 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: pterodactyl
 resources:
-  - namespace.yaml
+  #- certificates.yaml
+  - db-pvc.yaml
+  #- ingress-route.yaml
   - mail-secret.sops.yaml
-  - release.yaml
-  - ingress-route.yaml
-  - certificates.yaml
+  - namespace.yaml
+  - pvc.yaml
+  - redis-pvc.yaml
+  #- release.yaml
+  
+  
