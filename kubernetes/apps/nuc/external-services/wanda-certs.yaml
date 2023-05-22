@@ -12,20 +12,20 @@ spec:
   commonName: "proxmox.heimelska.co.uk"
   dnsNames:
   - "proxmox.heimelska.co.uk"
-# ---
-# apiVersion: cert-manager.io/v1
-# kind: Certificate
-# metadata:
-#   name: wanda-proxmox-tls
-#   namespace: default
-# spec:
-#   secretName: wanda-proxmox-tls
-#   issuerRef:
-#     name: letsencrypt-production
-#     kind: ClusterIssuer
-#   commonName: "proxmox.heimelska.co.uk"
-#   dnsNames:
-#   - "proxmox.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wanda-proxmox-tls
+  namespace: default
+spec:
+  secretName: wanda-proxmox-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "proxmox.heimelska.co.uk"
+  dnsNames:
+  - "proxmox.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -40,18 +40,45 @@ spec:
   commonName: "wanda-mgmt.heimelska.co.uk"
   dnsNames:
   - "wanda-mgmt.heimelska.co.uk"
-# ---
-# apiVersion: cert-manager.io/v1
-# kind: Certificate
-# metadata:
-#   name: wanda-proxmox-tls
-#   namespace: default
-# spec:
-#   secretName: wanda-proxmox-tls
-#   issuerRef:
-#     name: letsencrypt-production
-#     kind: ClusterIssuer
-#   commonName: "proxmox.heimelska.co.uk"
-#   dnsNames:
-#   - "proxmox.heimelska.co.uk"
-
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wanda-mgmt-tls
+  namespace: default
+spec:
+  secretName: wanda-mgmt-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "wanda-mgmt.heimelska.co.uk"
+  dnsNames:
+  - "wanda-mgmt.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: storage-staging-tls
+  namespace: default
+spec:
+  secretName: storage-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "storage.heimelska.co.uk"
+  dnsNames:
+  - "storage.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: storage-tls
+  namespace: default
+spec:
+  secretName: storage-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "storage.heimelska.co.uk"
+  dnsNames:
+  - "storage.heimelska.co.uk"
