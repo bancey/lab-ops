@@ -20,7 +20,8 @@ spec:
   type: ExternalName
   ports:
     - name: proxmox
-      port: 8006
+      port: 443
+      targetPort: 8006
   externalName: 10.151.14.11
 ---
 apiVersion: v1
@@ -50,7 +51,7 @@ spec:
       kind: Rule
       services:
         - name: wanda-proxmox
-          port: 8006
+          port: 443
   tls:
     secretName: wanda-proxmox-staging-tls
 ---
