@@ -6,17 +6,11 @@ resources:
   - ../base/smokeping
   - ../base/pterodactyl
 patchesStrategicMerge:
+  - longhorn-certificate-patch.yaml
+  - longhorn-ingress-route-patch.yaml
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
   - pterodactyl-certificate-patch.yaml
   - pterodactyl-ingress-route-patch.yaml
   - pterodactyl-patch.yaml
-patches:
-  - patch: |
-      - op: add
-        path: /spec/routes/0/match
-        value: Host(`longhorn.heimelska.co.uk`)
-    target:
-      kind: IngressRoute
-      name: longhorn
