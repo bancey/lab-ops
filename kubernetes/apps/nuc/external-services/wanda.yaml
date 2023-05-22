@@ -50,7 +50,7 @@ spec:
       kind: Rule
       services:
         - name: wanda-proxmox
-          port: 443
+          port: 8006
   tls:
     secretName: wanda-proxmox-staging-tls
 ---
