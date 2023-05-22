@@ -16,7 +16,7 @@ patches:
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`longhorn.nuc`)
+        value: Host(`longhorn.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: longhorn

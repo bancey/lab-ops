@@ -1,28 +1,57 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wanda-proxmox-staging-tls
+  namespace: default
+spec:
+  secretName: wanda-proxmox-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "proxmox.heimelska.co.uk"
+  dnsNames:
+  - "proxmox.heimelska.co.uk"
 # ---
 # apiVersion: cert-manager.io/v1
 # kind: Certificate
 # metadata:
-#   name: wanda-pterodactyl-staging-tls
+#   name: wanda-proxmox-tls
 #   namespace: default
 # spec:
-#   secretName: wanda-pterodactyl-staging-tls
-#   issuerRef:
-#     name: letsencrypt-staging
-#     kind: ClusterIssuer
-#   commonName: "pterodactyl.heimelska.co.uk"
-#   dnsNames:
-#   - "pterodactyl.heimelska.co.uk"
-# ---
-# apiVersion: cert-manager.io/v1
-# kind: Certificate
-# metadata:
-#   name: wanda-pterodactyl-tls
-#   namespace: default
-# spec:
-#   secretName: wanda-pterodactyl-tls
+#   secretName: wanda-proxmox-tls
 #   issuerRef:
 #     name: letsencrypt-production
 #     kind: ClusterIssuer
-#   commonName: "pterodactyl.heimelska.co.uk"
+#   commonName: "proxmox.heimelska.co.uk"
 #   dnsNames:
-#   - "pterodactyl.heimelska.co.uk"
+#   - "proxmox.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wanda-mgmt-staging-tls
+  namespace: default
+spec:
+  secretName: wanda-mgmt-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "wanda-mgmt.heimelska.co.uk"
+  dnsNames:
+  - "wanda-mgmt.heimelska.co.uk"
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: wanda-proxmox-tls
+#   namespace: default
+# spec:
+#   secretName: wanda-proxmox-tls
+#   issuerRef:
+#     name: letsencrypt-production
+#     kind: ClusterIssuer
+#   commonName: "proxmox.heimelska.co.uk"
+#   dnsNames:
+#   - "proxmox.heimelska.co.uk"
+

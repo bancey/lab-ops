@@ -2,31 +2,73 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: wanda
+  name: wanda-k8s
   namespace: external-services
 spec:
   type: ExternalName
   ports:
     - name: https
       port: 443
-      targetPort: 443
   externalName: 10.151.15.50
-# ---
-# apiVersion: traefik.containo.us/v1alpha1
-# kind: IngressRoute
-# metadata:
-#   name: wanda-podinfo
-#   namespace: external-services
-#   annotations: 
-#     kubernetes.io/ingress.class: traefik-external
-# spec:
-#   entryPoints:
-#     - websecure
-#   routes:
-#     - match: Host(`pterodactyl.heimelska.co.uk`)
-#       kind: Rule
-#       services:
-#         - name: wanda
-#           port: 443
-#   tls:
-#     secretName: wanda-pterodactyl-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wanda-proxmox
+  namespace: external-services
+spec:
+  type: ExternalName
+  ports:
+    - name: proxmox
+      port: 8006
+  externalName: 10.151.14.11
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wanda-mgmt
+  namespace: external-services
+spec:
+  type: ExternalName
+  ports:
+    - name: https
+      port: 443
+  externalName: 10.151.14.10
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wanda-proxmox
+  namespace: external-services
+  annotations: 
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`proxmox.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: wanda-proxmox
+          port: 443
+  tls:
+    secretName: wanda-proxmox-staging-tls
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wanda-mgmt
+  namespace: external-services
+  annotations: 
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`wanda-mgmt.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: wanda-mgmt
+          port: 443
+  tls:
+    secretName: wanda-mgmt-staging-tls

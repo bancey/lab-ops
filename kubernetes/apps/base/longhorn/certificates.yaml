@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: longhorn-staging-tls
+  namespace: default
+spec:
+  secretName: longhorn-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "longhorn-fqdn"
+  dnsNames:
+  - "longhorn-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: longhorn-tls
+  namespace: default
+spec:
+  secretName: longhorn-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "longhorn-fqdn"
+  dnsNames:
+  - "longhorn-fqdn"

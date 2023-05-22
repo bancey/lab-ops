@@ -18,3 +18,5 @@ spec:
       middlewares:
         - name: default-headers
           namespace: traefik
+  tls:
+    secretName: longhorn-tls
