@@ -18,3 +18,33 @@ spec:
   install:
     remediation:
       retries: 3
+  values:
+    appConfig:
+      mailSecretRef: "pterodactyl-mail-secret"
+      appServiceAuthor: "abance@bancey.xyz"
+    mariadb:
+      enabled: true
+      global:
+        storageClass: "longhorn"
+      primary:
+        persistence:
+          existingClaim: "pterodactyl-db-pvc"
+      secondary:
+        persistence:
+          size: 2Gi
+      image:
+        tag: 10.5.19-debian-11-r19
+    redis:
+      enabled: true
+      global:
+        storageClass: "longhorn"
+      master:
+        persistence:
+          existingClaim: "pterodactyl-redis-pvc"
+      replica:
+        persistence:
+          size: 2Gi
+    ingress:
+      enabled: false
+    persistence:
+      existingClaim: "pterodactyl-pvc"

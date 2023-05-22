@@ -11,31 +11,3 @@ spec:
   values:
     appConfig:
       url: "https://pterodactyl.heimelska.co.uk"
-      mailSecretRef: "pterodactyl-mail-secret"
-      appServiceAuthor: "abance@bancey.xyz"
-    mariadb:
-      enabled: true
-      global:
-        storageClass: "longhorn"
-      primary:
-        persistence:
-          existingClaim: "pterodactyl-mariadb-pvc-nfs-static"
-      secondary:
-        persistence:
-          size: 2Gi
-      image:
-        tag: 10.5.19-debian-11-r19
-    redis:
-      enabled: true
-      global:
-        storageClass: "longhorn"
-      master:
-        persistence:
-          existingClaim: "pterodactyl-redis-pvc-nfs-static"
-      replica:
-        persistence:
-          size: 2Gi
-    ingress:
-      enabled: false
-    persistence:
-      existingClaim: "pterodactyl-pvc-nfs-static"

@@ -9,9 +9,9 @@ patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
-#  - pterodactyl-certificate-patch.yaml
-#  - pterodactyl-ingress-route-patch.yaml
-#  - pterodactyl-patch.yaml
+  - pterodactyl-certificate-patch.yaml
+  - pterodactyl-ingress-route-patch.yaml
+  - pterodactyl-patch.yaml
 patches:
   - patch: |
       - op: add
