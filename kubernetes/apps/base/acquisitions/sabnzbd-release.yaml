@@ -1,0 +1,29 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: sabnzbd
+  namespace: acquisition
+spec:
+  releaseName: sabnzbd
+  chart:
+    spec:
+      version: 0.1.1
+      chart: sabnzbd
+      sourceRef:
+        kind: HelmRepository
+        name: bancey
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  values:
+    persistence:
+      config:
+        enabled: true
+        claimName: sabnzbd-config-pvc-nfs-static
+      downloads:
+        enabled: true
+        claimName: sabnzbd-downloads-pvc-nfs-static
