@@ -15,20 +15,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  patchesStrategicMerge:
-    - |-
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: nfs
-      $patch: delete
-    - |-
-      apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      metadata:
-        name: csi-driver-nfs
-        namespace: nfs
-      $patch: delete
   patches:
     - patch: |
         - op: add
@@ -44,6 +30,14 @@ spec:
       target:
         kind: IngressRoute
         name: weave-gitops
+    - patch: delete
+      target:
+        kind: Namespace
+        name: nfs
+    - patch: delete
+      target:
+        kind: HelmRelease
+        name: csi-driver-nfs
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
