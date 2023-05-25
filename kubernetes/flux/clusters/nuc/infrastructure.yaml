@@ -16,7 +16,8 @@ spec:
     secretRef:
       name: sops-age
   patchesStrategicMerge:
-    - delete-csi-driver-nfs-patch.yaml
+    - delete-csi-driver-nfs-release-patch.yaml
+    - delete-csi-driver-nfs-namespace-patch.yaml
   patches:
     - patch: |
         - op: add
