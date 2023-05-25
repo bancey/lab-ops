@@ -4,7 +4,9 @@ kind: Kustomization
 resources:
   - ./bancey.yaml
   - ./bitnami.yaml
+  - ./csi-driver-nfs.yaml
   - ./jetstack.yaml
+  - ./kube-plex.yaml
   - ./podinfo.yaml
   - ./traefik.yaml
   - ./weave.yaml

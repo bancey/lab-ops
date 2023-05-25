@@ -1,0 +1,34 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: radarr
+  namespace: acquisition
+spec:
+  releaseName: radarr
+  chart:
+    spec:
+      version: 0.1.0
+      chart: xarr
+      sourceRef:
+        kind: HelmRepository
+        name: bancey
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: lscr.io/linuxserver/radarr
+      tag: "4.3.2"
+    config:
+      port: 7878
+    persistence:
+      config:
+        enabled: true
+        claimName: radarr-config-pvc-nfs-static
+      data:
+        enabled: true
+        claimName: radarr-data-pvc-nfs-static
