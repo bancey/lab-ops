@@ -27,6 +27,7 @@ spec:
     kind: HelmRelease
     metadata:
       name: csi-driver-nfs
+      namespace: nfs
     $patch: delete
   patches:
     - patch: |
