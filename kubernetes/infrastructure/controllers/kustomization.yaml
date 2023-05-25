@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - cert-manager-namespace.yaml
   - cert-manager.yaml
+  - csi-driver-nfs-namespace.yaml
+  - csi-driver-nfs-release.yaml
   - traefik-namespace.yaml
   - traefik.yaml
   - weave-gitops-auth.sops.yaml
