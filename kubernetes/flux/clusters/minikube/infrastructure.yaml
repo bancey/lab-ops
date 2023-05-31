@@ -23,11 +23,25 @@ spec:
       target:
         kind: IngressRoute
         name: weave-gitops
+    - patch: |
+        $patch: delete
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: cert-manager
+      target:
+        kind: Namespace
+        name: cert-manager
+    - patch: |
+        $patch: delete
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: cert-manager
+      target:
+        kind: HelmRelease
+        name: cert-manager
   healthChecks:
-    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      name: cert-manager
-      namespace: cert-manager
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
       name: traefik

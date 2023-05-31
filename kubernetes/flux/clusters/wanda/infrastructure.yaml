@@ -53,8 +53,8 @@ spec:
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
-      name: cert-manager
-      namespace: cert-manager
+      name: csi-driver-nfs
+      namespace: nfs
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
       name: traefik
