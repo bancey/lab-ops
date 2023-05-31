@@ -90,3 +90,31 @@ spec:
       target:
         kind: IngressRoute
         name: traefik-dashboard
+    - patch: |
+        $patch: delete
+        apiVersion: cert-manager.io/v1
+        kind: ClusterIssuer
+        metadata:
+          name: letsencrypt-production
+      target:
+        kind: ClusterIssuer
+        name: letsencrypt-production
+    - patch: |
+        $patch: delete
+        apiVersion: cert-manager.io/v1
+        kind: ClusterIssuer
+        metadata:
+          name: letsencrypt-staging
+      target:
+        kind: ClusterIssuer
+        name: letsencrypt-staging
+    - patch: |
+        $patch: delete
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: cloudflare-api-token-secret
+          namespace: cert-manager
+      target:
+        kind: Secret
+        name: cloudflare-api-token-secret
