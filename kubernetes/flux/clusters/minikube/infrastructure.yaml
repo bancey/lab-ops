@@ -41,6 +41,24 @@ spec:
       target:
         kind: HelmRelease
         name: cert-manager
+    - patch: |
+        $patch: delete
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: nfs
+      target:
+        kind: Namespace
+        name: nfs
+    - patch: |
+        $patch: delete
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: csi-driver-nfs
+      target:
+        kind: HelmRelease
+        name: csi-driver-nfs
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
