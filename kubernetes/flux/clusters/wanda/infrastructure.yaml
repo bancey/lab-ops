@@ -21,14 +21,14 @@ spec:
     - patch: |
         - op: add
           path: /spec/values/service/spec/loadBalancerIP
-          value: 10.151.16.50
+          value: 10.151.15.50
       target:
         kind: HelmRelease
         name: traefik
     - patch: |
         - op: add
           path: /spec/routes/0/match
-          value: Host(`weave.nuc`)
+          value: Host(`weave.wanda`)
       target:
         kind: IngressRoute
         name: weave-gitops
@@ -37,19 +37,19 @@ spec:
         apiVersion: v1
         kind: Namespace
         metadata:
-          name: nfs
+          name: cert-manager
       target:
         kind: Namespace
-        name: nfs
+        name: cert-manager
     - patch: |
         $patch: delete
         apiVersion: helm.toolkit.fluxcd.io/v2beta1
         kind: HelmRelease
         metadata:
-          name: csi-driver-nfs
+          name: cert-manager
       target:
         kind: HelmRelease
-        name: csi-driver-nfs
+        name: cert-manager
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
