@@ -20,8 +20,4 @@ resource "proxmox_vm_qemu" "vm" {
     model  = "virtio"
     tag    = var.vlan_tag
   }
-
-  disk {
-    storage = var.storage
-  }
 }
