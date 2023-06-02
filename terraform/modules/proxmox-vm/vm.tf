@@ -21,4 +21,10 @@ resource "proxmox_vm_qemu" "vm" {
     model  = "virtio"
     tag    = var.vlan_tag
   }
+
+  lifecycle {
+    ignore_changes = [
+      disk
+    ]
+  }
 }
