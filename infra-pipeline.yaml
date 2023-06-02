@@ -221,6 +221,8 @@ stages:
                     pool:
                       ${{ if eq(deployment.local, true) }}:
                         name: Local
+                        demands:
+                          - KUBERNETES_SERVICE_HOST
                       ${{ else }}:
                         vmImage: $(agentImage)
                     ${{ if ne(deployment.addresses, '') }}:
