@@ -15,4 +15,5 @@ module "k3s_vm" {
   resource_pool       = "k8s"
   startup_delay       = 0
   startup_order       = 10
+  storage             = "data0"
 }
