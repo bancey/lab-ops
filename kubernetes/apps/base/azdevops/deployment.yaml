@@ -37,8 +37,6 @@ spec:
           volumeMounts:
             - mountPath: /var/run/docker.sock
               name: docker-volume
-          args:
-            - "--once"
       volumes:
         - name: docker-volume
           hostPath:
