@@ -59,7 +59,7 @@ variable "resource_pool" {
 }
 
 variable "storage" {
-  type = string
+  type        = string
   description = "The storage pool to use."
-  default = "local"
+  default     = "local"
 }

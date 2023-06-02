@@ -1,7 +1,7 @@
 locals {
   master_start_vm_id = 200
   node_start_vm_id   = 220
-  vm_count = var.master_count + var.node_count
+  vm_count           = var.master_count + var.node_count
 }
 
 data "azurerm_client_config" "current" {}
