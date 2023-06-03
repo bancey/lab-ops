@@ -178,7 +178,7 @@ stages:
                           ${{ if eq(deployment.local, true) }}:
                             parallelism: 2
                           env:
-                            - TF_LOG: TRACE
+                            TF_LOG: TRACE
           - ${{ if ne(deployment.playbook, '') }}:
               - ${{ if ne(deployment.addresses, '') }}:
                   - job: CheckAnsibleHostsOnline
