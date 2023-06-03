@@ -20,4 +20,14 @@ resource "proxmox_vm_qemu" "vm" {
     model  = "virtio"
     tag    = var.vlan_tag
   }
+
+  disk {
+    size         = 20
+    type         = "virtio"
+    storage      = var.storage
+    storage_type = "rbd"
+    iothread     = 1
+    ssd          = 1
+    discard      = "on"
+  }
 }
