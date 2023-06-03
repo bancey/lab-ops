@@ -18,7 +18,6 @@
         - /opt/adguard
         - /opt/adguard/config
         - /opt/adguard/work
-        - /opt/wanda_database
         - /opt/compose
     - name: upload the config directory
       ansible.builtin.copy:
