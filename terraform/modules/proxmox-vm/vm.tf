@@ -22,12 +22,11 @@ resource "proxmox_vm_qemu" "vm" {
   }
 
   disk {
-    size         = 20
-    type         = "virtio"
-    storage      = var.storage
-    storage_type = "rbd"
-    iothread     = 1
-    ssd          = 1
-    discard      = "on"
+    size    = 20
+    type    = "virtio"
+    storage = var.storage
+    aio     = "native"
+    ssd     = 1
+    discard = "on"
   }
 }
