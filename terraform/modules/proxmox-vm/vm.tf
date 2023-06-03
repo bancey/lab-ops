@@ -14,6 +14,7 @@ resource "proxmox_vm_qemu" "vm" {
   os_type     = "cloud-init"
   ipconfig0   = "ip=${var.ip_address}/24,gw=${var.gateway_ip_address}"
   pool        = var.resource_pool
+  qemo_os     = "l26"
 
   network {
     bridge = var.network_bridge_name
