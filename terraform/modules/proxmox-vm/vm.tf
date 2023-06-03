@@ -23,7 +23,7 @@ resource "proxmox_vm_qemu" "vm" {
   }
 
   disk {
-    #size    = "20G"
+    size    = "20G"
     type    = "virtio"
     storage = var.storage
     #aio     = "native"
