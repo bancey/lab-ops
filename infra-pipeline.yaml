@@ -177,8 +177,6 @@ stages:
                           variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                           ${{ if eq(deployment.local, true) }}:
                             parallelism: 2
-                          env:
-                            TF_LOG: TRACE
           - ${{ if ne(deployment.playbook, '') }}:
               - ${{ if ne(deployment.addresses, '') }}:
                   - job: CheckAnsibleHostsOnline
