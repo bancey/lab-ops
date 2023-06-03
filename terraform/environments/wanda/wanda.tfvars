@@ -16,4 +16,18 @@ virtual_machines = {
     startup_delay       = 0,
     cname_required      = false
   },
+  test = {
+    node                = "wanda",
+    vm_id               = 102,
+    vm_description      = "test vm",
+    cpu_cores           = 4,
+    memory              = 16384,
+    ip_address          = "10.151.14.22",
+    gateway_ip_address  = "10.151.14.1",
+    network_bridge_name = "vmbr0",
+    vlan_tag            = "-1",
+    startup_order       = 5,
+    startup_delay       = 0,
+    cname_required      = false
+  },
 }

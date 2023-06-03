@@ -14,10 +14,20 @@ resource "proxmox_vm_qemu" "vm" {
   os_type     = "cloud-init"
   ipconfig0   = "ip=${var.ip_address}/24,gw=${var.gateway_ip_address}"
   pool        = var.resource_pool
+  qemu_os     = "l26"
 
   network {
     bridge = var.network_bridge_name
     model  = "virtio"
     tag    = var.vlan_tag
+  }
+
+  disk {
+    size    = "20G"
+    type    = "virtio"
+    storage = var.storage
+    aio     = "native"
+    ssd     = 1
+    discard = "on"
   }
 }
