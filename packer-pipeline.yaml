@@ -62,5 +62,6 @@ stages:
                 configFiles: ${{ deployment.configFiles }}
                 keyVaultName: "bancey-vault"
                 serviceConnection: "MSDN Sub"
+                extraVars: ${{ deployment.extraVars }}
                 runBuild: ${{ deployment.runBuild }}
   
