@@ -15,5 +15,6 @@ virtual_machines = {
   #  startup_order       = 5,
   #  startup_delay       = 0,
   #  cname_required      = false
+  #  storage             = "data1"
   #},
 }

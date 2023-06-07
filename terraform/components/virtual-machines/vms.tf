@@ -14,5 +14,5 @@ module "virtual_machines" {
   vlan_tag            = each.value.vlan_tag
   startup_order       = each.value.startup_order
   startup_delay       = each.value.startup_delay
-  storage             = "data0"
+  storage             = each.value.storage
 }
