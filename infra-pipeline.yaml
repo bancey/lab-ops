@@ -59,51 +59,51 @@ parameters:
         dependsOn:
           - CheckEnvIsOnline_wanda
           - k8s_infra
-      #- deployment: nuc_k8s_ansible
-      #  environment: yggdrasil
-      #  playbook: k3s-nuc.yaml
-      #  requirementsFile: requirements.yml
-      #  addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
-      #  deploy: false
-      #  extraVars: "run_prep=true run_install=true"
-      #  local: true
-      #  demands:
-      #    - accessible
-      #  dependsOn: []
-      #- deployment: thanos_ansible
-      #  environment: thanos
-      #  playbook: thanos.yaml
-      #  addresses: "10.151.14.5"
-      #  local: true
-      #  demands:
-      #    - KUBERNETES_SERVICE_HOST
-      #  dependsOn:
-      #    - CheckEnvIsOnline_thanos
-      #- deployment: dns
-      #  environment: dns
-      #  component: dns
-      #  serviceConnection: "MSDN Sub"
-      #  storageAccount: dns175090c1a7c944d1
-      #  destroy: false
-      #  deploy: true
-      #  dependsOn: []
-      #- deployment: az_test_gameserver
-      #  environment: az-test
-      #  component: gameserver
-      #  serviceConnection: "MSDN Sub"
-      #  storageAccount: gamec96560353b1a4d1a
-      #  destroy: false
-      #  deploy: false
-      #  dependsOn: []
-      #- deployment: az_prod_gameserver
-      #  environment: az-prod
-      #  component: gameserver
-      #  serviceConnection: "MSDN Sub"
-      #  storageAccount: gamec96560353b1a4d1a
-      #  destroy: false
-      #  deploy: true
-      #  dependsOn:
-      #    - az_test_gameserver
+      - deployment: nuc_k8s_ansible
+        environment: yggdrasil
+        playbook: k3s-nuc.yaml
+        requirementsFile: requirements.yml
+        addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
+        deploy: false
+        extraVars: "run_prep=true run_install=true"
+        local: true
+        demands:
+          - accessible
+        dependsOn: []
+      - deployment: thanos_ansible
+        environment: thanos
+        playbook: thanos.yaml
+        addresses: "10.151.14.5"
+        local: true
+        demands:
+          - KUBERNETES_SERVICE_HOST
+        dependsOn:
+          - CheckEnvIsOnline_thanos
+      - deployment: dns
+        environment: dns
+        component: dns
+        serviceConnection: "MSDN Sub"
+        storageAccount: dns175090c1a7c944d1
+        destroy: false
+        deploy: true
+        dependsOn: []
+      - deployment: az_test_gameserver
+        environment: az-test
+        component: gameserver
+        serviceConnection: "MSDN Sub"
+        storageAccount: gamec96560353b1a4d1a
+        destroy: false
+        deploy: false
+        dependsOn: []
+      - deployment: az_prod_gameserver
+        environment: az-prod
+        component: gameserver
+        serviceConnection: "MSDN Sub"
+        storageAccount: gamec96560353b1a4d1a
+        destroy: false
+        deploy: true
+        dependsOn:
+          - az_test_gameserver
 
 variables:
   - name: agentImage
