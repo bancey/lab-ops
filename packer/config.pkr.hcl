@@ -32,6 +32,11 @@ variable "vm_name" {
   type = string
 }
 
+variable "vm_storage" {
+  type = string
+  default = "local-lvm"
+}
+
 variable "template_description" {
   type = string
 }
@@ -121,7 +126,7 @@ source "proxmox" "proxmox-template" {
   disks {
     disk_size         = "20G"
     format            = "raw"
-    storage_pool      = "local-lvm"
+    storage_pool      = var.vm_storage
     storage_pool_type = "lvm"
     type              = "virtio"
   }
@@ -141,7 +146,7 @@ source "proxmox" "proxmox-template" {
 
   # VM Cloud-Init Settings
   cloud_init              = true
-  cloud_init_storage_pool = "local-lvm"
+  cloud_init_storage_pool = var.vm_storage
 
   # PACKER Boot Commands
   boot_command = var.boot_command

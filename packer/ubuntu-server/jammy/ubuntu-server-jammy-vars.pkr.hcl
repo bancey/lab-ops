@@ -4,6 +4,7 @@ proxmox_api_token_secret = "$(Wanda-Proxmox-Token-Secret)"
 node                     = "wanda"
 vm_id                    = 900
 vm_name                  = "ubuntu-jammy-template"
+storage                  = "local-lvm"
 template_description     = "Ubuntu 22.04 (Jammy) Server Template"
 iso_url                  = "https://releases.ubuntu.com/22.04.2/ubuntu-22.04.2-live-server-amd64.iso"
 iso_checksum             = "5e38b55d57d94ff029719342357325ed3bda38fa80054f9330dc789cd2d43931"

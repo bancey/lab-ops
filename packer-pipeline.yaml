@@ -16,13 +16,32 @@ parameters:
   - name: packer_components
     type: object
     default:
-      - deployment: packer_jammy
+      - deployment: packer_jammy_local_lvm
         packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
         runBuild: false
         configFiles:
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
           - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
+        extraVars: '-var="vm_id=900" -var="vm_name=ubuntu-jammy-template-local-lvm" -var="vm_storage=local-lvm"'
+        dependsOn: []
+      - deployment: packer_jammy_data0
+        packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+        runBuild: false
+        configFiles:
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
+        extraVars: '-var="vm_id=901" -var="vm_name=ubuntu-jammy-template-data0" -var="vm_storage=data0"'
+        dependsOn: []
+      - deployment: packer_jammy_data1
+        packerVarsFile: $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+        runBuild: false
+        configFiles:
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/jammy/ubuntu-server-jammy-vars.pkr.hcl
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/http/*
+          - $(System.DefaultWorkingDirectory)/packer/ubuntu-server/files/*
+        extraVars: '-var="vm_id=902" -var="vm_name=ubuntu-jammy-template-data1" -var="vm_storage=data1"'
         dependsOn: []
 
 stages:
