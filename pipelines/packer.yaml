@@ -73,4 +73,4 @@ steps:
           script: |
             packer -version
             packer init ${{ parameters.packerConfigFile }}
-            packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.extraVars }} ${{ parameters.packerConfigFile }}
+            packer build -debug -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.extraVars }} ${{ parameters.packerConfigFile }}
