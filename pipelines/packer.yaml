@@ -7,6 +7,9 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
+  - name: extraVars
+    type: string
+    default: ''
   - name: configFiles
     type: object
     default: []
@@ -46,16 +49,28 @@ steps:
   - task: CmdLine@2
     displayName: Run Packer Validate
     inputs:
-      script: |
-        packer -version
-        packer init ${{ parameters.packerConfigFile }}
-        packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+      ${{ if eq(parameters.extraVars, '') }}:
+        script: |
+          packer -version
+          packer init ${{ parameters.packerConfigFile }}
+          packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+      ${{ else }}:
+        script: |
+          packer -version
+          packer init ${{ parameters.packerConfigFile }}
+          packer validate -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.extraVars }} ${{ parameters.packerConfigFile }}
   - ${{ if eq(true, parameters.runBuild) }}:
     - task: CmdLine@2
       displayName: Run Packer Build
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
       inputs:
-        script: |
-          packer -version
-          packer init ${{ parameters.packerConfigFile }}
-          packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+        ${{ if eq(parameters.extraVars, '') }}:
+          script: |
+            packer -version
+            packer init ${{ parameters.packerConfigFile }}
+            packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.packerConfigFile }}
+        ${{ else }}:
+          script: |
+            packer -version
+            packer init ${{ parameters.packerConfigFile }}
+            packer build -var-file="${{ parameters.packerVarsFile }}" ${{ parameters.extraVars }} ${{ parameters.packerConfigFile }}
