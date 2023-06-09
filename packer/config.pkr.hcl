@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     proxmox = {
-      version = "1.1.0"
+      version = "1.1.3"
       source  = "github.com/hashicorp/proxmox"
     }
   }
@@ -97,7 +97,7 @@ variable "secondary_provisioner_commands" {
   default = []
 }
 
-source "proxmox" "proxmox-template" {
+source "proxmox-iso" "template" {
   # Proxmox Connection Settings
   proxmox_url              = var.proxmox_api_url
   username                 = var.proxmox_api_token_id
@@ -165,7 +165,7 @@ source "proxmox" "proxmox-template" {
 build {
 
   name    = var.vm_name
-  sources = ["source.proxmox.proxmox-template"]
+  sources = ["source.proxmox-iso.template"]
 
   provisioner "shell" {
     inline = var.primary_provisioner_commands

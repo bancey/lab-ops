@@ -1,4 +1,4 @@
-proxmox_api_url          = "https://192.168.80.11:8006/api2/json"
+proxmox_api_url          = "https://10.151.14.11:8006/api2/json"
 proxmox_api_token_id     = "$(Wanda-Proxmox-Token-ID)"
 proxmox_api_token_secret = "$(Wanda-Proxmox-Token-Secret)"
 node                     = "wanda"
@@ -11,27 +11,13 @@ http_directory           = "packer/ubuntu-server/http"
 files_directory          = "packer/ubuntu-server/files"
 
 boot_command = [
-  " <wait>",
-  " <wait>",
-  " <wait>",
-  " <wait>",
-  " <wait>",
   "c",
-  "<wait>",
-  "set gfxpayload=keep",
+  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://10.151.14.5:{{.HTTPPort}}/' ",
   "<enter><wait>",
-  "linux /casper/vmlinuz <wait>",
-  " autoinstall<wait>",
-  " ds=nocloud-net<wait>",
-  "\\;s=http://<wait>",
-  "$(ADO-Agent-Host-IP)<wait>",
-  ":{{.HTTPPort}}/<wait>",
-  " ---",
-  "<enter><wait>",
-  " initrd /casper/<wait>",
+  "initrd /casper<wait>",
   "/initrd<wait>",
   "<enter><wait>",
-  "boot<enter><wait>"
+  "boot<enter>"
 ]
 
 primary_provisioner_commands = [
