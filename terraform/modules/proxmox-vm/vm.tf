@@ -5,7 +5,7 @@ resource "proxmox_vm_qemu" "vm" {
   desc        = var.vm_description
   onboot      = var.start_on_boot
   startup     = "order=${var.startup_order},up=${var.startup_delay}"
-  clone       = "ubuntu-jammy-template"
+  clone       = "ubuntu-jammy-template-${var.storage}"
   agent       = var.qemu_agent_installed
   cores       = var.cpu_cores
   sockets     = var.cpu_sockets
@@ -22,9 +22,7 @@ resource "proxmox_vm_qemu" "vm" {
     tag    = var.vlan_tag
   }
 
-  disk {
-    size    = "20G"
-    type    = "virtio"
-    storage = var.storage
+  lifecycle {
+    ignore_changes = [ disk ]
   }
 }
