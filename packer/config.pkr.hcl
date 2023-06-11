@@ -156,7 +156,7 @@ source "proxmox-iso" "template" {
 
   ssh_username         = "${var.username}"
   ssh_private_key_file = "${var.ssh_private_key_file}"
-  ssh_timeout          = "60m"
+  ssh_timeout          = "20m"
 }
 
 # Build Definition to create the VM Template
