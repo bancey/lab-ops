@@ -2,13 +2,15 @@
 autoinstall:
   version: 1
   locale: en_GB
-  keyboard:
-    layout: en
   ssh:
     install-server: true
     allow-pw: true
     disable_root: true
+  packages:
+    - qemu-guest-agent
+    - sudo
   user-data:
+    package_upgrade: true
     timezone: Europe/London
     users:
       - name: $(VM-Template-Username)
