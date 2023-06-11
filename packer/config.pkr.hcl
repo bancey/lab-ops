@@ -41,7 +41,7 @@ variable "template_description" {
   type = string
 }
 
-variable "iso_url" {
+variable "iso_file" {
   type = string
 }
 
@@ -110,7 +110,7 @@ source "proxmox-iso" "template" {
   vm_name              = var.vm_name
   template_description = var.template_description
 
-  iso_url          = var.iso_url
+  iso_file         = var.iso_file
   iso_checksum     = var.iso_checksum
   iso_storage_pool = "local"
   unmount_iso      = true
@@ -127,7 +127,6 @@ source "proxmox-iso" "template" {
     disk_size         = "20G"
     format            = "raw"
     storage_pool      = var.vm_storage
-    storage_pool_type = "lvm"
     type              = "virtio"
   }
 
@@ -150,15 +149,14 @@ source "proxmox-iso" "template" {
 
   # PACKER Boot Commands
   boot_command = var.boot_command
-  boot         = "c"
-  boot_wait    = "20s"
+  boot_wait    = "5s"
 
   http_directory = "${path.cwd}/${var.http_directory}"
   http_interface = var.http_interface
 
   ssh_username         = "${var.username}"
   ssh_private_key_file = "${var.ssh_private_key_file}"
-  ssh_timeout          = "20m"
+  ssh_timeout          = "60m"
 }
 
 # Build Definition to create the VM Template

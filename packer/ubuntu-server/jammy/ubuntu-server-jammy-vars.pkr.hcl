@@ -11,13 +11,12 @@ http_directory           = "packer/ubuntu-server/http"
 files_directory          = "packer/ubuntu-server/files"
 
 boot_command = [
-  "c",
-  "linux /casper/vmlinuz --- autoinstall ds='nocloud-net;s=http://10.151.14.5:{{.HTTPPort}}/' ",
-  "<enter><wait>",
-  "initrd /casper<wait>",
-  "/initrd<wait>",
-  "<enter><wait>",
-  "boot<enter>"
+  "e<wait>",
+  "<down><down><down><end>",
+  "<bs><bs><bs><bs><wait>",
+  "autoinstall ip=dhcp net.ifnames=0 biosdevname=0 ipv6.disable=1 ",
+  "ds=nocloud-net\\;s=http://10.151.11.119:{{ .HTTPPort }}/ ",
+  "---<wait><f10><wait>"
 ]
 
 primary_provisioner_commands = [
