@@ -16,7 +16,7 @@ boot_command = [
   "<down><down><down><end>",
   "<bs><bs><bs><bs><wait>",
   "autoinstall ip=dhcp net.ifnames=0 biosdevname=0 ipv6.disable=1 ",
-  "ds=nocloud-net\\;s=http://10.151.11.119:{{ .HTTPPort }}/ ",
+  "ds=nocloud-net\\;s=http://10.151.14.5:{{ .HTTPPort }}/ ",
   "---<wait><f10><wait>"
 ]
 

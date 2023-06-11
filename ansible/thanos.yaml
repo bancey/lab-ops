@@ -18,6 +18,7 @@
         - /opt/adguard
         - /opt/adguard/config
         - /opt/adguard/work
+        - /opt/portainer
         - /opt/compose
     - name: upload the config directory
       ansible.builtin.copy:

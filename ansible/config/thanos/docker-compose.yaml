@@ -59,3 +59,12 @@ services:
       - AZP_AGENT_NAME=thanosagent1
       - AZP_POOL=${POOL_NAME}
       - AZP_TOKEN=${TOKEN}
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/portainer:/data
+    ports:
+      - 8000:8000
+      - 9000:9000
