@@ -35,6 +35,7 @@ terraform/components/gameserver/.terraform.lock.hcl
 ### Packer ###
 # Cache objects
 packer_cache/
+packer/packer_private_key
 
 # Crash log
 crash.log
