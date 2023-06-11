@@ -51,12 +51,12 @@ variable "iso_checksum" {
 
 variable "vm_cores" {
   type    = number
-  default = 2
+  default = 4
 }
 
 variable "vm_memory" {
   type    = number
-  default = 4098
+  default = 8196
 }
 
 variable "username" {
