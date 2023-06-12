@@ -7,59 +7,59 @@ resources:
   - plex-data-pv.yaml
   - plex-data-pvc.yaml
   - ../base/plex
-  #- sabnzbd-config-pv.yaml
-  #- sabnzbd-config-pvc.yaml
-  #- sabnzbd-downloads-pv.yaml
-  #- sabnzbd-downloads-pvc.yaml
-  #- sonarr-config-pv.yaml
-  #- sonarr-config-pvc.yaml
-  #- sonarr-data-pv.yaml
-  #- sonarr-data-pvc.yaml
-  #- radarr-config-pv.yaml
-  #- radarr-config-pvc.yaml
-  #- radarr-data-pv.yaml
-  #- radarr-data-pvc.yaml
-  #- ../base/acquisitions
-#patches:
-#  - patch: |
-#      - op: add
-#        path: /spec/routes/0/match
-#        value: Host(`dl.wanda`)
-#    target:
-#      kind: IngressRoute
-#      name: sabnzbd
-#  - patch: |
-#      - op: add
-#        path: /spec/routes/1/match
-#        value: Host(`dl.wanda`)
-#    target:
-#      kind: IngressRoute
-#      name: sabnzbd
-#  - patch: |
-#      - op: add
-#        path: /spec/routes/0/match
-#        value: Host(`sonarr.wanda`)
-#    target:
-#      kind: IngressRoute
-#      name: sonarr
-#  - patch: |
-#      - op: add
-#        path: /spec/routes/1/match
-#        value: Host(`sonarr.wanda`)
-#    target:
-#      kind: IngressRoute
-#      name: sonarr
-#  - patch: |
-#      - op: add
-#        path: /spec/routes/0/match
-#        value: Host(`radarr.wanda`)
-#    target:
-#      kind: IngressRoute
-#      name: radarr
-#  - patch: |
-#      - op: add
-#        path: /spec/routes/1/match
-#        value: Host(`radarr.wanda`)
-#    target:
-#      kind: IngressRoute
-#      name: radarr
+  - sabnzbd-config-pv.yaml
+  - sabnzbd-config-pvc.yaml
+  - sabnzbd-downloads-pv.yaml
+  - sabnzbd-downloads-pvc.yaml
+  - sonarr-config-pv.yaml
+  - sonarr-config-pvc.yaml
+  - sonarr-data-pv.yaml
+  - sonarr-data-pvc.yaml
+  - radarr-config-pv.yaml
+  - radarr-config-pvc.yaml
+  - radarr-data-pv.yaml
+  - radarr-data-pvc.yaml
+  - ../base/acquisitions
+patches:
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`dl.wanda`)
+    target:
+      kind: IngressRoute
+      name: sabnzbd
+  - patch: |
+      - op: add
+        path: /spec/routes/1/match
+        value: Host(`dl.wanda`)
+    target:
+      kind: IngressRoute
+      name: sabnzbd
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`sonarr.wanda`)
+    target:
+      kind: IngressRoute
+      name: sonarr
+  - patch: |
+      - op: add
+        path: /spec/routes/1/match
+        value: Host(`sonarr.wanda`)
+    target:
+      kind: IngressRoute
+      name: sonarr
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`radarr.wanda`)
+    target:
+      kind: IngressRoute
+      name: radarr
+  - patch: |
+      - op: add
+        path: /spec/routes/1/match
+        value: Host(`radarr.wanda`)
+    target:
+      kind: IngressRoute
+      name: radarr
