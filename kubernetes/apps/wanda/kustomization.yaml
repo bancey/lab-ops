@@ -30,13 +30,6 @@ patches:
       name: sabnzbd
   - patch: |
       - op: add
-        path: /spec/routes/1/match
-        value: Host(`dl.wanda`)
-    target:
-      kind: IngressRoute
-      name: sabnzbd
-  - patch: |
-      - op: add
         path: /spec/routes/0/match
         value: Host(`sonarr.wanda`)
     target:
@@ -44,21 +37,7 @@ patches:
       name: sonarr
   - patch: |
       - op: add
-        path: /spec/routes/1/match
-        value: Host(`sonarr.wanda`)
-    target:
-      kind: IngressRoute
-      name: sonarr
-  - patch: |
-      - op: add
         path: /spec/routes/0/match
-        value: Host(`radarr.wanda`)
-    target:
-      kind: IngressRoute
-      name: radarr
-  - patch: |
-      - op: add
-        path: /spec/routes/1/match
         value: Host(`radarr.wanda`)
     target:
       kind: IngressRoute
