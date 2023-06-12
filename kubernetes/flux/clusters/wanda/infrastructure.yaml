@@ -26,13 +26,6 @@ spec:
         kind: HelmRelease
         name: traefik
     - patch: |
-        - op: add
-          path: /spec/routes/0/match
-          value: Host(`weave.wanda`)
-      target:
-        kind: IngressRoute
-        name: weave-gitops
-    - patch: |
         $patch: delete
         apiVersion: v1
         kind: Namespace
@@ -90,6 +83,13 @@ spec:
       target:
         kind: IngressRoute
         name: traefik-dashboard
+    - patch: |
+        - op: add
+          path: /spec/routes/0/match
+          value: Host(`weave.wanda`)
+      target:
+        kind: IngressRoute
+        name: weave-gitops
     - patch: |
         $patch: delete
         apiVersion: cert-manager.io/v1
