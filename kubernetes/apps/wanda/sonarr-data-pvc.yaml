@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sonarr-data-pvc-nfs-static
+  namespace: acquisition
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 15000Gi
+  volumeName: sonarr-data-pv-nfs
+  storageClassName: nfs-csi

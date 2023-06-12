@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-apps
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  dependsOn:
+    - name: cluster-infrastructure-configs
+  path: ./kubernetes/apps/wanda
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

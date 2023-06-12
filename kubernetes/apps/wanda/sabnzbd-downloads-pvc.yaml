@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sabnzbd-downloads-pvc-nfs-static
+  namespace: acquisition
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 15000Gi
+  volumeName: sabnzbd-downloads-pv-nfs
+  storageClassName: nfs-csi

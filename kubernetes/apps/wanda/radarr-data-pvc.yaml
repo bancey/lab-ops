@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: radarr-data-pvc-nfs-static
+  namespace: acquisition
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 15000Gi
+  volumeName: radarr-data-pv-nfs
+  storageClassName: nfs-csi
