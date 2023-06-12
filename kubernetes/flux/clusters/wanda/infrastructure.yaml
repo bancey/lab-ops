@@ -79,7 +79,7 @@ spec:
     - patch: |
         - op: add
           path: /spec/routes/0/match
-          value: Host(`traefik.nuc`)
+          value: Host(`traefik.wanda`)
       target:
         kind: IngressRoute
         name: traefik-dashboard

@@ -26,13 +26,6 @@ spec:
         kind: HelmRelease
         name: traefik
     - patch: |
-        - op: add
-          path: /spec/routes/0/match
-          value: Host(`weave.nuc`)
-      target:
-        kind: IngressRoute
-        name: weave-gitops
-    - patch: |
         $patch: delete
         apiVersion: v1
         kind: Namespace
@@ -90,3 +83,19 @@ spec:
       target:
         kind: IngressRoute
         name: traefik-dashboard
+    - patch: |
+        - op: add
+          path: /spec/routes/0/match
+          value: Host(`weave.nuc`)
+      target:
+        kind: IngressRoute
+        name: weave-gitops
+    - patch: |
+        $patch: delete
+        apiVersion: storage.k8s.io/v1
+        kind: StorageClass
+        metadata:
+          name: config-nfs-csi
+      target:
+        kind: StorageClass
+        name: config-nfs-csi
