@@ -105,3 +105,60 @@ spec:
           port: 443
   tls:
     secretName: storage-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarr
+  namespace: external-services
+  annotations: 
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`sonarr.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: wanda-k8s
+          port: 443
+  tls:
+    secretName: sonarr-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: radarr
+  namespace: external-services
+  annotations: 
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`radarr.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: wanda-k8s
+          port: 443
+  tls:
+    secretName: radarr-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sabnzbd
+  namespace: external-services
+  annotations: 
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`dl.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: wanda-k8s
+          port: 443
+  tls:
+    secretName: sabnzbd-tls

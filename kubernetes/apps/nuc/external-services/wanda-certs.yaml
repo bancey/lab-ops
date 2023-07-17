@@ -82,3 +82,87 @@ spec:
   commonName: "storage.heimelska.co.uk"
   dnsNames:
   - "storage.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sonarr-staging-tls
+  namespace: default
+spec:
+  secretName: sonarr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "sonarr.heimelska.co.uk"
+  dnsNames:
+  - "sonarr.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sonarr-tls
+  namespace: default
+spec:
+  secretName: sonarr-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "sonarr.heimelska.co.uk"
+  dnsNames:
+  - "sonarr.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: radarr-staging-tls
+  namespace: default
+spec:
+  secretName: radarr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "radarr.heimelska.co.uk"
+  dnsNames:
+  - "radarr.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: radarr-tls
+  namespace: default
+spec:
+  secretName: radarr-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "radarr.heimelska.co.uk"
+  dnsNames:
+  - "radarr.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sabnzbd-staging-tls
+  namespace: default
+spec:
+  secretName: sabnzbd-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "dl.heimelska.co.uk"
+  dnsNames:
+  - "dl.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sabnzbd-tls
+  namespace: default
+spec:
+  secretName: sabnzbd-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "dl.heimelska.co.uk"
+  dnsNames:
+  - "dl.heimelska.co.uk"

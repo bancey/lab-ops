@@ -24,21 +24,21 @@ patches:
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`dl.wanda`)
+        value: Host(`dl.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: sabnzbd
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`sonarr.wanda`)
+        value: Host(`sonarr.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: sonarr
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`radarr.wanda`)
+        value: Host(`radarr.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: radarr
