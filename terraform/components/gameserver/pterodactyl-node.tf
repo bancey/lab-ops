@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=fix%2Fvm-shutdown_schedule"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=master"
 
   depends_on = [
     cloudflare_record.records
@@ -27,6 +27,8 @@ module "pterodactyl_node" {
     time     = "0000"
     timezone = "GMT Standard Time"
   }
+
+  enable_aad_login = true
 
   nsg_rules = {
     # Required to allow certbot to generate SSL certificates
