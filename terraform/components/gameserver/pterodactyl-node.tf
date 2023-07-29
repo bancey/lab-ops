@@ -23,7 +23,7 @@ module "pterodactyl_node" {
   publicly_accessible          = true
 
   vm_shutdown_schedule = {
-    enabled  = false
+    enabled  = true
     time     = "0000"
     timezone = "GMT Standard Time"
   }
