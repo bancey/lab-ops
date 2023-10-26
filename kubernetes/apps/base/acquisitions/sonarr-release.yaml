@@ -22,7 +22,7 @@ spec:
   values:
     image:
       repository: lscr.io/linuxserver/sonarr
-      tag: "3.0.10"
+      tag: "3.0.10.1567-ls209"
     config:
       port: 8989
     persistence:
