@@ -6,7 +6,7 @@ resources:
   - plex-config-pvc.yaml
   - plex-data-pv.yaml
   - plex-data-pvc.yaml
-  - ../base/plex
+  #- ../base/plex
   - sabnzbd-config-pv.yaml
   - sabnzbd-config-pvc.yaml
   - sabnzbd-downloads-pv.yaml
