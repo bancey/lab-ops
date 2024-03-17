@@ -79,8 +79,8 @@ parameters:
       #    - KUBERNETES_SERVICE_HOST
       #  dependsOn:
       #    - CheckEnvIsOnline_thanos
-      - deployment: dns
-        environment: dns
+      - deployment: prod_dns
+        environment: prod
         component: dns
         serviceConnection: "MSDN Sub"
         storageAccount: dns175090c1a7c944d1
