@@ -87,23 +87,23 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: az_test_gameserver
-        environment: az-test
+      - deployment: test_gameserver
+        environment: test
         component: gameserver
         serviceConnection: "MSDN Sub"
         storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: false
         dependsOn: []
-      - deployment: az_prod_gameserver
-        environment: az-prod
+      - deployment: prod_gameserver
+        environment: prod
         component: gameserver
         serviceConnection: "MSDN Sub"
         storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: true
         dependsOn:
-          - az_test_gameserver
+          - test_gameserver
       - deployment: prod_twingate
         environment: prod
         component: twingate
