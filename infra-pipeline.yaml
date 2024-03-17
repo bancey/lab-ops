@@ -104,10 +104,18 @@ parameters:
         deploy: true
         dependsOn:
           - az_test_gameserver
+      - deployment: prod_twingate
+        environment: prod
+        component: twingate
+        serviceConnection: "MSDN Sub"
+        storageAccount: twingate959ba0d66209
+        destroy: false
+        deploy: true
+        dependsOn: []
 
 variables:
   - name: agentImage
-    value: ubuntu-20.04
+    value: ubuntu-latest
 
 stages:
   - ${{ each env in parameters.local_environments }}:
