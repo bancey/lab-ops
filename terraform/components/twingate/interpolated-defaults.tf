@@ -1,3 +1,16 @@
+locals {
+  flattend_resources = flatten([
+    for network_key, network in var.var.twingate_networks : [
+      for resource_key, resource in network.resources : {
+        network_key  = network_key
+        resource_key = resource_key
+        key          = "${network_key}-${resource_key}"
+        resource     = resource
+      }
+    ]
+  ])
+}
+
 data "azurerm_client_config" "current" {}
 
 data "azurerm_key_vault" "vault" {
