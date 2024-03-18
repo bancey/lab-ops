@@ -1,6 +1,6 @@
-env                           = "prod"
+env                            = "prod"
 gameservers_vnet_address_space = ["10.200.0.0/16"]
-gameservers                   = {}
+gameservers                    = {}
 
 cloudflare_records = {
   "@" = {
@@ -60,5 +60,80 @@ virtual_machines = {
     cname_required      = false
     storage             = "local-lvm"
   },
+}
+
+twingate_groups           = ["pve", "all"]
+twingate_service_accounts = ["AzureDevOps"]
+twingate_networks = {
+  banceylab = {
+    resources = {
+      hela = {
+        address = "hela.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22, 8006]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+      thor = {
+        address = "thor.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22, 8006]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+      loki = {
+        address = "loki.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22, 8006]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+      wanda = {
+        address = "wanda.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22, 8006]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+      thanos = {
+        address = "thanos.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22, 53]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+    }
+    connectors = ["banceylab-connector"]
+  }
 }
 
