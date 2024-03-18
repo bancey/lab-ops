@@ -1,8 +1,5 @@
-env = "prod"
-
-gameservers = {
-  "pteronode1" = {}
-}
+env         = "prod"
+gameservers = {}
 
 cloudflare_records = {
   "@" = {
