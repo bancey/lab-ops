@@ -18,14 +18,14 @@ variable "twingate_networks" {
       is_active = optional(bool, true)
       protocols = object({
         allow_icmp = optional(bool, false)
-        tcp = object({
+        tcp = optional(object({
           policy = optional(string, "DENY_ALL")
           ports  = optional(list(number), [])
-        })
-        udp = object({
+        }), {})
+        udp = optional(object({
           policy = optional(string, "DENY_ALL")
           ports  = optional(list(number), [])
-        })
+        }), {})
       })
       access = object({
         groups           = optional(list(string), [])
