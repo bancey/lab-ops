@@ -22,11 +22,17 @@ parameters:
         address: "10.151.14.11"
       - name: thanos
         address: "10.151.14.5"
+      - name: hela
+        address: "10.151.14.12"
+      - name: loki
+        address: "10.151.14.13"
+      - name: thor
+        address: "10.151.14.14"
   - name: environment_components
     type: object
     default:
       #- deployment: virtual_machines
-      #  environment: wanda
+      #  environment: prod
       #  component: virtual-machines
       #  serviceConnection: "MSDN Sub"
       #  storageAccount: wanda1a85dd9018454b4
@@ -36,7 +42,7 @@ parameters:
       #  dependsOn:
       #    - CheckEnvIsOnline_wanda
       #- deployment: k8s_infra
-      #  environment: wanda
+      #  environment: prod
       #  component: kubernetes
       #  serviceConnection: "MSDN Sub"
       #  storageAccount: wanda1a85dd9018454b4
@@ -46,7 +52,7 @@ parameters:
       #  dependsOn:
       #    - CheckEnvIsOnline_wanda
       #- deployment: k8s_ansible
-      #  environment: wanda
+      #  environment: prod
       #  envCheckStageName: CheckEnvIsOnline_wanda
       #  playbook: k3s-wanda.yaml
       #  requirementsFile: requirements.yml
@@ -71,7 +77,7 @@ parameters:
       #    - accessible
       #  dependsOn: []
       #- deployment: thanos_ansible
-      #  environment: thanos
+      #  environment: prod
       #  playbook: thanos.yaml
       #  addresses: "10.151.14.5"
       #  local: true
