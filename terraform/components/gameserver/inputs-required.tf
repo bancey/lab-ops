@@ -7,6 +7,11 @@ variable "gameservers" {
   }))
 }
 
+variable "gameservers_vnet_address_space" {
+  description = "The address space for the game servers virtual network"
+  type        = list(string)
+}
+
 variable "env" {
   description = "The name of the environment"
   type        = string

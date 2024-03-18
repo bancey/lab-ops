@@ -4,8 +4,17 @@ variable "location" {
   default     = "uksouth"
 }
 
-variable "gameserver_count" {
-  description = "The number of game servers to deploy"
-  type        = number
-  default     = 1
+variable "nsg_rules" {
+  description = "Rule to apply to the network security group"
+  type = map(object({
+    priority                   = number
+    direction                  = string
+    access                     = string
+    protocol                   = string
+    source_port_range          = string
+    destination_port_range     = string
+    source_address_prefix      = string
+    destination_address_prefix = string
+  }))
+  default = {}
 }

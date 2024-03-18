@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=develop"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=feat%2Freference-existing-networking"
 
   depends_on = [
     cloudflare_record.records
@@ -20,8 +20,10 @@ module "pterodactyl_node" {
     name                = azurerm_public_ip.this[each.key].name
     resource_group_name = azurerm_resource_group.gameserver.name
   }
-  existing_resource_group_name = azurerm_resource_group.gameserver.name
-  publicly_accessible          = true
+  existing_resource_group_name       = azurerm_resource_group.gameserver.name
+  existing_subnet_id                 = azurerm_subnet.this.id
+  existing_network_security_group_id = azurerm_network_security_group.this.id
+  publicly_accessible                = true
 
   vm_shutdown_schedule = {
     enabled  = true
