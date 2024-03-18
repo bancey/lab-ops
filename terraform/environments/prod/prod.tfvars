@@ -76,7 +76,7 @@ twingate_networks = {
           }
         }
         access = {
-          group_names      = ["pve", "all"]
+          groups           = ["pve", "all"]
           service_accounts = ["AzureDevOps"]
         }
       }
@@ -89,7 +89,7 @@ twingate_networks = {
           }
         }
         access = {
-          group_names      = ["pve", "all"]
+          groups           = ["pve", "all"]
           service_accounts = ["AzureDevOps"]
         }
       }
@@ -102,7 +102,7 @@ twingate_networks = {
           }
         }
         access = {
-          group_names      = ["pve", "all"]
+          groups           = ["pve", "all"]
           service_accounts = ["AzureDevOps"]
         }
       }
@@ -115,7 +115,7 @@ twingate_networks = {
           }
         }
         access = {
-          group_names      = ["pve", "all"]
+          groups           = ["pve", "all"]
           service_accounts = ["AzureDevOps"]
         }
       }
@@ -128,7 +128,7 @@ twingate_networks = {
           }
         }
         access = {
-          group_names      = ["pve", "all"]
+          groups           = ["pve", "all"]
           service_accounts = ["AzureDevOps"]
         }
       }

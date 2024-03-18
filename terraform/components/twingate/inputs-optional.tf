@@ -28,7 +28,7 @@ variable "twingate_networks" {
         }), {})
       })
       access = object({
-        groups           = optional(list(string), [])
+        groups           = list(string)
         service_accounts = optional(list(string), [])
       })
     }))
