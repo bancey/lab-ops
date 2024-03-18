@@ -1,5 +1,8 @@
-gameserver_name = "pteronode"
-env             = "prod"
+env = "prod"
+
+gameservers = {
+  "pteronode1" = {}
+}
 
 cloudflare_records = {
   "@" = {

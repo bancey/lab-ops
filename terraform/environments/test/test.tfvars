@@ -1,2 +1,3 @@
-gameserver_name = "pteronode"
-env             = "test"
+env = "test"
+
+gameservers = {}
