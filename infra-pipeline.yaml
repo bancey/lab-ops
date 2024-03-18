@@ -22,92 +22,106 @@ parameters:
         address: "10.151.14.11"
       - name: thanos
         address: "10.151.14.5"
+      - name: hela
+        address: "10.151.14.12"
+      - name: loki
+        address: "10.151.14.13"
+      - name: thor
+        address: "10.151.14.14"
   - name: environment_components
     type: object
     default:
-      - deployment: virtual_machines
-        environment: wanda
-        component: virtual-machines
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-      - deployment: k8s_infra
-        environment: wanda
-        component: kubernetes
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: false
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-      - deployment: k8s_ansible
-        environment: wanda
-        envCheckStageName: CheckEnvIsOnline_wanda
-        playbook: k3s-wanda.yaml
-        requirementsFile: requirements.yml
-        addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
-        deploy: false
-        extraVars: "run_prep=true run_install=true"
-        local: true
-        demands:
-          - KUBERNETES_SERVICE_HOST
-        dependsOn:
-          - CheckEnvIsOnline_wanda
-          - k8s_infra
-      - deployment: nuc_k8s_ansible
-        environment: yggdrasil
-        playbook: k3s-nuc.yaml
-        requirementsFile: requirements.yml
-        addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
-        deploy: false
-        extraVars: "run_prep=true run_install=true"
-        local: true
-        demands:
-          - accessible
-        dependsOn: []
-      - deployment: thanos_ansible
-        environment: thanos
-        playbook: thanos.yaml
-        addresses: "10.151.14.5"
-        local: true
-        demands:
-          - KUBERNETES_SERVICE_HOST
-        dependsOn:
-          - CheckEnvIsOnline_thanos
-      - deployment: dns
-        environment: dns
+      #- deployment: virtual_machines
+      #  environment: prod
+      #  component: virtual-machines
+      #  serviceConnection: "MSDN Sub"
+      #  storageAccount: wanda1a85dd9018454b4
+      #  destroy: false
+      #  deploy: true
+      #  local: true
+      #  dependsOn:
+      #    - CheckEnvIsOnline_wanda
+      #- deployment: k8s_infra
+      #  environment: prod
+      #  component: kubernetes
+      #  serviceConnection: "MSDN Sub"
+      #  storageAccount: wanda1a85dd9018454b4
+      #  destroy: false
+      #  deploy: false
+      #  local: true
+      #  dependsOn:
+      #    - CheckEnvIsOnline_wanda
+      #- deployment: k8s_ansible
+      #  environment: prod
+      #  envCheckStageName: CheckEnvIsOnline_wanda
+      #  playbook: k3s-wanda.yaml
+      #  requirementsFile: requirements.yml
+      #  addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
+      #  deploy: false
+      #  extraVars: "run_prep=true run_install=true"
+      #  local: true
+      #  demands:
+      #    - KUBERNETES_SERVICE_HOST
+      #  dependsOn:
+      #    - CheckEnvIsOnline_wanda
+      #    - k8s_infra
+      #- deployment: nuc_k8s_ansible
+      #  environment: yggdrasil
+      #  playbook: k3s-nuc.yaml
+      #  requirementsFile: requirements.yml
+      #  addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
+      #  deploy: false
+      #  extraVars: "run_prep=true run_install=true"
+      #  local: true
+      #  demands:
+      #    - accessible
+      #  dependsOn: []
+      #- deployment: thanos_ansible
+      #  environment: prod
+      #  playbook: thanos.yaml
+      #  addresses: "10.151.14.5"
+      #  local: true
+      #  demands:
+      #    - KUBERNETES_SERVICE_HOST
+      #  dependsOn:
+      #    - CheckEnvIsOnline_thanos
+      - deployment: prod_dns
+        environment: prod
         component: dns
         serviceConnection: "MSDN Sub"
         storageAccount: dns175090c1a7c944d1
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: az_test_gameserver
-        environment: az-test
+      - deployment: test_gameserver
+        environment: test
         component: gameserver
         serviceConnection: "MSDN Sub"
         storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: false
         dependsOn: []
-      - deployment: az_prod_gameserver
-        environment: az-prod
+      - deployment: prod_gameserver
+        environment: prod
         component: gameserver
         serviceConnection: "MSDN Sub"
         storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: true
         dependsOn:
-          - az_test_gameserver
+          - test_gameserver
+      - deployment: prod_twingate
+        environment: prod
+        component: twingate
+        serviceConnection: "MSDN Sub"
+        storageAccount: twingate959ba0d66209
+        destroy: false
+        deploy: true
+        dependsOn: []
 
 variables:
   - name: agentImage
-    value: ubuntu-20.04
+    value: ubuntu-latest
 
 stages:
   - ${{ each env in parameters.local_environments }}:

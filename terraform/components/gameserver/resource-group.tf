@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "gameserver" {
-  name     = "${var.gameserver_name}-${var.env}-rg"
+  name     = "games-${var.env}-rg"
   location = var.location
 
   tags = local.tags
