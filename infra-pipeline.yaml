@@ -99,7 +99,7 @@ parameters:
         serviceConnection: "MSDN Sub"
         storageAccount: gamec96560353b1a4d1a
         destroy: false
-        deploy: false
+        deploy: true
         dependsOn: []
       - deployment: prod_gameserver
         environment: prod
