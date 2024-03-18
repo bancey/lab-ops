@@ -17,7 +17,7 @@ module "pterodactyl_node" {
   vm_image_version   = "latest"
   vm_domain_name     = each.value.domain_name == null ? "${each.key}-${var.env}.bancey.xyz" : each.value.domain_name
   existing_public_ip = {
-    name                = azurerm_public_ip.this[count.index].name
+    name                = azurerm_public_ip.this[each.key].name
     resource_group_name = azurerm_resource_group.gameserver.name
   }
   existing_resource_group_name = azurerm_resource_group.gameserver.name
