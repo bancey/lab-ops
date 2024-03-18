@@ -32,6 +32,7 @@ variable "twingate_networks" {
         service_accounts = optional(list(string), [])
       })
     }))
+    connectors = optional(list(string), [])
   }))
   description = "Map of networks to create in TwinGate."
   default     = {}

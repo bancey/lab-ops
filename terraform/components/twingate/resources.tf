@@ -1,5 +1,5 @@
 resource "twingate_resource" "this" {
-  for_each          = { for resource in local.flattend_resources : resource.key => resource }
+  for_each          = { for resource in local.flattened_resources : resource.key => resource }
   name              = each.value.resource_key
   remote_network_id = twingate_remote_network.this[each.value.network_key].id
 
