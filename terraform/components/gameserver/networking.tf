@@ -32,7 +32,7 @@ resource "azurerm_network_security_group" "this" {
 }
 
 resource "azurerm_network_security_rule" "this" {
-  for_each = var.nsg_rules
+  for_each = merge(local.nsg_rules, var.nsg_rules)
 
   network_security_group_name = azurerm_network_security_group.this.name
   resource_group_name         = azurerm_resource_group.gameserver.name
