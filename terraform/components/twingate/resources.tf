@@ -6,7 +6,7 @@ resource "twingate_resource" "this" {
 
   protocols = each.value.resource.protocols
 
-  access = {
+  access {
     group_ids           = [for group in each.value.resource.access.groups : twingate_group.this[group].id]
     service_account_ids = [for service_account in each.value.resource.access.service_accounts : twingate_service_account.this[service_account].id]
   }
