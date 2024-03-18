@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=develop"
+  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=feat%2Freference-existing-networking"
 
   depends_on = [
     cloudflare_record.records
@@ -20,8 +20,10 @@ module "pterodactyl_node" {
     name                = azurerm_public_ip.this[each.key].name
     resource_group_name = azurerm_resource_group.gameserver.name
   }
-  existing_resource_group_name = azurerm_resource_group.gameserver.name
-  publicly_accessible          = true
+  existing_resource_group_name       = azurerm_resource_group.gameserver.name
+  existing_subnet_id                 = azurerm_subnet.this.id
+  existing_nsg_id = azurerm_network_security_group.this.id
+  publicly_accessible                = true
 
   vm_shutdown_schedule = {
     enabled  = true
@@ -30,70 +32,6 @@ module "pterodactyl_node" {
   }
 
   enable_aad_login = true
-
-  nsg_rules = {
-    # Required to allow certbot to generate SSL certificates
-    Allow80 : {
-      priority                   = 1000
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = "80"
-      source_address_prefix      = "*"
-      destination_address_prefix = "*"
-    }
-    Allow22 : {
-      priority                   = 1010
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = "22"
-      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
-      destination_address_prefix = "*"
-    }
-    Allow443 : {
-      priority                   = 1020
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = "443"
-      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
-      destination_address_prefix = "*"
-    }
-    Allow8080 : {
-      priority                   = 1030
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = "8080"
-      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
-      destination_address_prefix = "*"
-    }
-    Allow2022 : {
-      priority                   = 1040
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = "2022"
-      source_address_prefix      = data.azurerm_key_vault_secret.public_ip.value
-      destination_address_prefix = "*"
-    }
-    AllowGameServerPorts : {
-      priority                   = 1050
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = data.azurerm_key_vault_secret.game_server_ports.value
-      source_address_prefix      = "*"
-      destination_address_prefix = "*"
-    }
-  }
 
   kv_policies = [
     {
