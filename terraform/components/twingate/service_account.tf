@@ -20,7 +20,7 @@ resource "twingate_service_account_key" "this" {
   }
 }
 
-resource "azurerm_key_vault_secret" "access_token" {
+resource "azurerm_key_vault_secret" "service_account_key" {
   for_each     = toset(var.twingate_service_accounts)
   name         = "Twingate-${each.value}-SA-Key"
   value        = twingate_service_account_key.this[each.key].token
