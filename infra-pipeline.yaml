@@ -130,7 +130,7 @@ stages:
         jobs:
           - job: CheckEnvIsOnline
             pool:
-              name: Local
+              vmImage: $(agentImage)
             steps:
               - template: pipelines/connect.yaml
                 parameters:
