@@ -20,5 +20,4 @@ steps:
         twingate setup --headless $(Build.StagingDirectory)/servicekey.json
         twingate status
         twingate start
-        journalctl -u twingate --since "1 hour ago"
-        
+        twingate status
