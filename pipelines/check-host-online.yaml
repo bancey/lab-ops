@@ -4,7 +4,9 @@ parameters:
 
 steps:
   - script: |
+        sudo apt install ssh-tools
         nc -zv ${{ parameters.addresses }} 22
+        ssh-ping ${{ parameters.addresses}}
 #      if [[ "${{ parameters.addresses }}" == *","* ]]; then
 #        OUTPUT=true
 #        readarray -d , -t addressArr <<<"${{ parameters.addresses }}"
