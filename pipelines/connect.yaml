@@ -16,9 +16,9 @@ steps:
       scriptLocation: "inlineScript"
       inlineScript: |
         az keyvault secret download --name ${{ parameters.serviceKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/servicekey.json
-        curl https://binaries.twingate.com/client/linux/install.sh | sudo bash
-        sudo twingate setup --headless $(Build.StagingDirectory)/servicekey.json
+        curl https://binaries.twingate.com/client/linux/install.sh | bash
+        twingate setup --headless $(Build.StagingDirectory)/servicekey.json
         twingate status
-        sudo twingate start
-        sudo journalctl -u twingate --since "1 hour ago"
+        twingate start
+        journalctl -u twingate --since "1 hour ago"
         
