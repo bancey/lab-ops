@@ -3,8 +3,9 @@ parameters:
     type: string
 
 steps:
+  - script: sudo apt install ssh-tools
+    displayName: 'Install ssh-tools'
   - script: |
-      sudo apt install ssh-tools
       if [[ "${{ parameters.addresses }}" == *","* ]]; then
         OUTPUT=true
         readarray -d , -t addressArr <<<"${{ parameters.addresses }}"
