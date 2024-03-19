@@ -4,12 +4,13 @@ parameters:
 
 steps:
   - script: |
+      sudo apt install ssh-tools
       if [[ "${{ parameters.addresses }}" == *","* ]]; then
         OUTPUT=true
         readarray -d , -t addressArr <<<"${{ parameters.addresses }}"
         for (( n=0; n < ${#addressArr[*]}; n++ ))
         do
-          if nc -z ${addressArr[n]} 22 2>/dev/null; then
+          if ssh-ping -q -c 1 ${addressArr[n]} 2>/dev/null; then
             echo "${addressArr[n]} ✓"
           else
             echo "${addressArr[n]} ✗"
@@ -22,7 +23,7 @@ steps:
           echo "##vso[task.setvariable variable=online;isOutput=true]false"
         fi
       else
-        if nc -z ${{ parameters.addresses }} 22 2>/dev/null; then
+        if ssh-ping -q -c 1 ${{ parameters.addresses }} 2>/dev/null; then
           echo "${{ parameters.addresses }} ✓"
           echo "##vso[task.setvariable variable=online;isOutput=true]true"
         else

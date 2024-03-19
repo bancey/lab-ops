@@ -19,15 +19,15 @@ parameters:
     type: object
     default:
       - name: wanda
-        address: "10.151.14.11"
+        address: "wanda.heimelska.co.uk"
       - name: thanos
-        address: "10.151.14.5"
+        address: "thanos.heimelska.co.uk"
       - name: hela
-        address: "10.151.14.12"
+        address: "hela.heimelska.co.uk"
       - name: loki
-        address: "10.151.14.13"
+        address: "loki.heimelska.co.uk"
       - name: thor
-        address: "10.151.14.14"
+        address: "thor.heimelska.co.uk"
   - name: environment_components
     type: object
     default:
@@ -130,8 +130,13 @@ stages:
         jobs:
           - job: CheckEnvIsOnline
             pool:
-              name: Local
+              vmImage: $(agentImage)
             steps:
+              - template: pipelines/connect.yaml
+                parameters:
+                  keyVaultName: bancey-vault
+                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                  serviceConnection: MSDN Sub
               - template: pipelines/check-host-online.yaml
                 parameters:
                   addresses: ${{ env.address }}
