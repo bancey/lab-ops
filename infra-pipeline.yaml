@@ -132,6 +132,11 @@ stages:
             pool:
               name: Local
             steps:
+              - template: pipelines/connect.yaml
+                parameters:
+                  keyVaultName: bancey-vault
+                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                  serviceConnection: MSDN Sub
               - template: pipelines/check-host-online.yaml
                 parameters:
                   addresses: ${{ env.address }}
