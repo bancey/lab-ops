@@ -1,24 +1,5 @@
 version: "3.2"
 services:
-  #wanda_database:
-  #  image: mariadb:10.6
-  #  container_name: wanda_database
-  #  restart: always
-  #  command: --default-authentication-plugin=mysql_native_password
-  #  volumes:
-  #    - /opt/wanda_database:/var/lib/mysql
-  #  environment:
-  #    - MYSQL_ROOT_PASSWORD=${MYSQLROOTPASS}
-  #    - MYSQL_DATABASE=wanda
-  #    - MYSQL_USER=k3s
-  #    - MYSQL_PASSWORD=${MYSQLPASS}
-  #  ports:
-  #    - 3307:3306
-  #adminer:
-  #  image: adminer
-  #  restart: always
-  #  ports:
-  #    - 8080:8080
   adguard:
     image: adguard/adguardhome
     container_name: adguard
@@ -39,26 +20,6 @@ services:
       - 8853:8853/udp
       - 5443:5443/tcp
       - 5443:5443/udp
-  azdevops0:
-    image: bancey/ado-agent:latest
-    container_name: thanosagent0
-    restart: always
-    network_mode: host
-    environment:
-      - AZP_URL=${DEVOPS_URL}
-      - AZP_AGENT_NAME=thanosagent0
-      - AZP_POOL=${POOL_NAME}
-      - AZP_TOKEN=${TOKEN}
-  azdevops1:
-    image: bancey/ado-agent:latest
-    container_name: thanosagent1
-    restart: always
-    network_mode: host
-    environment:
-      - AZP_URL=${DEVOPS_URL}
-      - AZP_AGENT_NAME=thanosagent1
-      - AZP_POOL=${POOL_NAME}
-      - AZP_TOKEN=${TOKEN}
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
