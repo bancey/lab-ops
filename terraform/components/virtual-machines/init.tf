@@ -2,8 +2,8 @@ terraform {
   required_version = "1.7.5"
   required_providers {
     proxmox = {
-      source  = "Telmate/proxmox"
-      version = "2.9.14"
+      source  = "bpg/proxmox"
+      version = "0.49.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -23,10 +23,47 @@ provider "azurerm" {
 }
 
 provider "proxmox" {
-  pm_api_url          = data.azurerm_key_vault_secret.proxmox_url.value
-  pm_api_token_id     = data.azurerm_key_vault_secret.proxmox_token_id.value
-  pm_api_token_secret = data.azurerm_key_vault_secret.proxmox_token_secret.value
-  pm_tls_insecure     = true
+  alias     = "wanda"
+  endpoint  = data.azurerm_key_vault_secret.wanda_proxmox_url.value
+  api_token = data.azurerm_key_vault_secret.wanda_proxmox_token.value
+  insecure  = true
+  ssh {
+    agent    = true
+    username = split("@", data.azurerm_key_vault_secret.wanda_proxmox_token.value)[0]
+  }
+}
+
+provider "proxmox" {
+  alias     = "hela"
+  endpoint  = data.azurerm_key_vault_secret.hela_proxmox_url.value
+  api_token = data.azurerm_key_vault_secret.tiny_proxmox_token.value
+  insecure  = true
+  ssh {
+    agent    = true
+    username = split("@", data.azurerm_key_vault_secret.tiny_proxmox_token.value)[0]
+  }
+}
+
+provider "proxmox" {
+  alias     = "loki"
+  endpoint  = data.azurerm_key_vault_secret.loki_proxmox_url.value
+  api_token = data.azurerm_key_vault_secret.tiny_proxmox_token.value
+  insecure  = true
+  ssh {
+    agent    = true
+    username = split("@", data.azurerm_key_vault_secret.tiny_proxmox_token.value)[0]
+  }
+}
+
+provider "proxmox" {
+  alias     = "thor"
+  endpoint  = data.azurerm_key_vault_secret.thor_proxmox_url.value
+  api_token = data.azurerm_key_vault_secret.tiny_proxmox_token.value
+  insecure  = true
+  ssh {
+    agent    = true
+    username = split("@", data.azurerm_key_vault_secret.tiny_proxmox_token.value)[0]
+  }
 }
 
 provider "cloudflare" {

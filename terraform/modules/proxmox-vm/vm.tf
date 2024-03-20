@@ -1,28 +1,54 @@
-resource "proxmox_vm_qemu" "vm" {
-  target_node = var.target_node
-  vmid        = var.vm_id
+resource "proxmox_virtual_environment_vm" "vm" {
   name        = var.vm_name
-  desc        = var.vm_description
-  onboot      = var.start_on_boot
-  startup     = "order=${var.startup_order},up=${var.startup_delay}"
-  clone       = "ubuntu-jammy-template-${var.storage}"
-  agent       = var.qemu_agent_installed
-  cores       = var.cpu_cores
-  sockets     = var.cpu_sockets
-  cpu         = "host"
-  memory      = var.memory
-  os_type     = "cloud-init"
-  ipconfig0   = "ip=${var.ip_address}/24,gw=${var.gateway_ip_address}"
-  pool        = var.resource_pool
-  qemu_os     = "l26"
+  vm_id       = var.vm_id
+  description = var.vm_description
+  pool_id     = var.resource_pool
+  node_name   = var.target_node
+  on_boot     = var.start_on_boot
+  tags        = concat(["terraform"], var.tags)
 
-  network {
-    bridge = var.network_bridge_name
-    model  = "virtio"
-    tag    = var.vlan_tag
+  initialization {
+    user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
+    ip_config {
+      ipv4 {
+        address = var.ip_address
+        gateway = var.gateway_ip_address
+      }
+    }
   }
 
-  lifecycle {
-    ignore_changes = [disk]
+  startup {
+    order    = var.startup_order
+    up_delay = var.startup_delay
+  }
+
+  agent {
+    enabled = true
+  }
+
+  cpu {
+    cores   = var.cpu_cores
+    sockets = var.cpu_sockets
+  }
+
+  memory {
+    dedicated = var.memory
+  }
+
+  network_device {
+    bridge  = var.network_bridge_name
+    vlan_id = var.vlan_tag
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
+  disk {
+    datastore_id = "local-lvm"
+    file_id      = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
+    interface    = "virtio0"
+    iothread     = true
+    discard      = "on"
   }
 }

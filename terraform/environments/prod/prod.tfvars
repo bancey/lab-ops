@@ -60,6 +60,20 @@ virtual_machines = {
     cname_required      = false
     storage             = "local-lvm"
   },
+  test0 = {
+    node                = "hela",
+    vm_id               = 120,
+    vm_description      = "Test VM.",
+    cpu_cores           = 4,
+    memory              = 4096,
+    ip_address          = "10.151.14.100",
+    gateway_ip_address  = "10.151.14.1",
+    network_bridge_name = "vmbr0",
+    startup_order       = 5,
+    startup_delay       = 0,
+    cname_required      = false
+    storage             = "local-lvm"
+  }
 }
 
 twingate_groups           = ["pve", "all"]
@@ -68,7 +82,8 @@ twingate_networks = {
   banceylab = {
     resources = {
       hela = {
-        address = "hela.heimelska.co.uk"
+        address = "10.151.14.12"
+        alias   = "hela.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -81,7 +96,8 @@ twingate_networks = {
         }
       }
       thor = {
-        address = "thor.heimelska.co.uk"
+        address = "10.151.14.13"
+        alias   = "thor.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -94,7 +110,8 @@ twingate_networks = {
         }
       }
       loki = {
-        address = "loki.heimelska.co.uk"
+        address = "10.151.14.14"
+        alias   = "loki.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -107,7 +124,8 @@ twingate_networks = {
         }
       }
       wanda = {
-        address = "wanda.heimelska.co.uk"
+        address = "10.151.14.11"
+        alias   = "wanda.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -120,7 +138,8 @@ twingate_networks = {
         }
       }
       thanos = {
-        address = "thanos.heimelska.co.uk"
+        address = "10.151.14.5"
+        alias   = "thanos.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"

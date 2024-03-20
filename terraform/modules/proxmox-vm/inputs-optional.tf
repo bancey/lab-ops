@@ -63,3 +63,9 @@ variable "storage" {
   description = "The storage pool to use."
   default     = "local-lvm"
 }
+
+variable "tags" {
+  type        = list(string)
+  description = "Tags to apply to the VM."
+  default     = []
+}

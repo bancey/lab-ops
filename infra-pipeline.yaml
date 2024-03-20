@@ -41,6 +41,18 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: tiny_virtual_machines
+        environment: prod
+        component: virtual-machines
+        serviceConnection: "MSDN Sub"
+        storageAccount: tiny523c690a628b4700
+        destroy: false
+        deploy: true
+        local: false
+        dependsOn:
+          - CheckEnvIsOnline_hela
+          - CheckEnvIsOnline_loki
+          - CheckEnvIsOnline_thor
       - deployment: k8s_infra
         environment: prod
         component: kubernetes
@@ -152,10 +164,7 @@ stages:
                 ${{ else }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
-                  ${{ if eq(deployment.local, true) }}:
-                    name: Local
-                  ${{ else }}:
-                    vmImage: $(agentImage)
+                  vmImage: $(agentImage)
                 steps:
                   - template: pipelines/terraform-init.yaml
                     parameters:
@@ -173,10 +182,7 @@ stages:
                 ${{ else }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
-                  ${{ if eq(deployment.local, true) }}:
-                    name: Local
-                  ${{ else }}:
-                    vmImage: $(agentImage)
+                  vmImage: $(agentImage)
                 steps:
                   - template: pipelines/terraform-init.yaml
                     parameters:
@@ -203,10 +209,7 @@ stages:
                     ? ${{ if and(eq(deployment.local, true), ne(deployment.envCheckStageName, '')) }}
                     : condition: and(succeeded(), eq(stageDependencies.${{ deployment.envCheckStageName }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                     pool:
-                      ${{ if eq(deployment.local, true) }}:
-                        name: Local
-                      ${{ else }}:
-                        vmImage: $(agentImage)
+                      vmImage: $(agentImage)
                     steps:
                       - template: pipelines/check-host-online.yaml
                         parameters:
@@ -219,12 +222,7 @@ stages:
                 ${{ else }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
-                  ${{ if eq(deployment.local, true) }}:
-                    name: Local
-                    ${{ if ne(deployment.demands, '') }}:
-                      demands: ${{ deployment.demands }}
-                  ${{ else }}:
-                    vmImage: $(agentImage)
+                  vmImage: $(agentImage)
                 ${{ if ne(deployment.addresses, '') }}:
                   dependsOn: CheckAnsibleHostsOnline
                 steps:
