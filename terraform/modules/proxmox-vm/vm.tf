@@ -9,7 +9,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   initialization {
     user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
-    ipconfig {
+    ip_config {
       ipv4 {
         address = var.ip_address
         gateway = var.gateway_ip_address
