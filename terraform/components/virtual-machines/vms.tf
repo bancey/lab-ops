@@ -4,7 +4,7 @@ module "wanda_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for key, value in var.var.virtual_machines : key => value if lower(value.node) == "wanda" }
+  for_each = { for key, value in var.var.virtual_machines : key => value if(lower(value.node) == "wanda" && contains(var.target_nodes, lower(value.node))) }
 
   target_node         = each.value.node
   vm_name             = each.key
@@ -29,7 +29,7 @@ module "hela_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for key, value in var.var.virtual_machines : key => value if lower(value.node) == "hela" }
+  for_each = { for key, value in var.var.virtual_machines : key => value if(lower(value.node) == "hela" && contains(var.target_nodes, lower(value.node))) }
 
   target_node         = each.value.node
   vm_name             = each.key
@@ -54,7 +54,7 @@ module "loki_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for key, value in var.var.virtual_machines : key => value if lower(value.node) == "loki" }
+  for_each = { for key, value in var.var.virtual_machines : key => value if(lower(value.node) == "loki" && contains(var.target_nodes, lower(value.node))) }
 
   target_node         = each.value.node
   vm_name             = each.key
@@ -79,7 +79,7 @@ module "thor_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for key, value in var.var.virtual_machines : key => value if lower(value.node) == "thor" }
+  for_each = { for key, value in var.var.virtual_machines : key => value if(lower(value.node) == "thor" && contains(var.target_nodes, lower(value.node))) }
 
   target_node         = each.value.node
   vm_name             = each.key

@@ -41,6 +41,15 @@ parameters:
         local: true
         dependsOn:
           - CheckEnvIsOnline_wanda
+      - deployment: tiny_virtual_machines
+        environment: prod
+        component: virtual-machines
+        serviceConnection: "MSDN Sub"
+        storageAccount: tiny523c690a628b4700
+        destroy: false
+        deploy: true
+        local: false
+        dependsOn:
           - CheckEnvIsOnline_hela
           - CheckEnvIsOnline_loki
           - CheckEnvIsOnline_thor
