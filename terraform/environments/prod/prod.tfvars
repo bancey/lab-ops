@@ -83,7 +83,7 @@ twingate_networks = {
     resources = {
       hela = {
         address = "10.151.14.12"
-        aliases = ["hela.heimelska.co.uk"]
+        alias   = "hela.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -97,7 +97,7 @@ twingate_networks = {
       }
       thor = {
         address = "10.151.14.13"
-        aliases = ["thor.heimelska.co.uk"]
+        alias   = "thor.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -111,7 +111,7 @@ twingate_networks = {
       }
       loki = {
         address = "10.151.14.14"
-        aliases = ["loki.heimelska.co.uk"]
+        alias   = "loki.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -125,7 +125,7 @@ twingate_networks = {
       }
       wanda = {
         address = "10.151.14.11"
-        aliases = ["wanda.heimelska.co.uk"]
+        alias   = "wanda.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
@@ -139,7 +139,7 @@ twingate_networks = {
       }
       thanos = {
         address = "10.151.14.5"
-        aliases = ["thanos.heimelska.co.uk"]
+        alias   = "thanos.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"

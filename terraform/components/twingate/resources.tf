@@ -3,7 +3,7 @@ resource "twingate_resource" "this" {
   name              = each.value.resource_key
   remote_network_id = twingate_remote_network.this[each.value.network_key].id
   address           = each.value.resource.address
-  aliases           = each.value.resource.aliases
+  alias             = each.value.resource.alias
 
   protocols = each.value.resource.protocols
 
