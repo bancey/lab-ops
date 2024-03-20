@@ -27,3 +27,14 @@ variable "ip_address" {
   type        = string
   description = "IP Address of the VM."
 }
+
+variable "username" {
+  type        = string
+  description = "The name of the administrator of the VM."
+}
+
+variable "password" {
+  type        = string
+  description = "THe password of the administrator of the VM."
+  sensitive   = true
+}

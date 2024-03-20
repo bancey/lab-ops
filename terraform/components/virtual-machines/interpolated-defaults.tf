@@ -5,18 +5,43 @@ data "azurerm_key_vault" "vault" {
   resource_group_name = "common"
 }
 
-data "azurerm_key_vault_secret" "proxmox_url" {
+data "azurerm_key_vault_secret" "wanda_proxmox_url" {
   name         = "Wanda-Proxmox-URL"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "proxmox_token_id" {
-  name         = "Wanda-Proxmox-Token-ID"
+data "azurerm_key_vault_secret" "hela_proxmox_url" {
+  name         = "Hela-Proxmox-URL"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "proxmox_token_secret" {
-  name         = "Wanda-Proxmox-Token-Secret"
+data "azurerm_key_vault_secret" "loki_proxmox_url" {
+  name         = "Loki-Proxmox-URL"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "thor_proxmox_url" {
+  name         = "Thor-Proxmox-URL"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "wanda_proxmox_token" {
+  name         = "Wanda-Proxmox-API-Token"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "tiny_proxmox_token" {
+  name         = "Tiny-Proxmox-API-Token"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "lab_vm_username" {
+  name         = "Lab-VM-Username"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "lab_vm_password" {
+  name         = "Lab-VM-Password"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
