@@ -25,7 +25,7 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
       publishPlanResults: $(System.StageDisplayName)
-      ${{ if ne(parameters.extraCommandArgs, "") }}:
+      ${{ if ne(parameters.extraCommandArgs, '') }}:
         commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }}'
       ${{ else }}:
         commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings'
