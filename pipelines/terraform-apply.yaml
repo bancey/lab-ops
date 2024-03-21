@@ -22,9 +22,9 @@ steps:
       command: apply
       ${{ if and(ne(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
         commandOptions: '-parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }}'
-      ${{ else if and(eq(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
+      ${{ elseif and(eq(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
         commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }}'
-      ${{ else if and(ne(parameters.parallelism, -1), eq(parameters.extraCommandArgs, '')) }}:
+      ${{ elseif and(ne(parameters.parallelism, -1), eq(parameters.extraCommandArgs, '')) }}:
         commandOptions: '-parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings'
       ${{ else }}:
         commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings'
