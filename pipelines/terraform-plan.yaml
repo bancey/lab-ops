@@ -8,6 +8,9 @@ parameters:
   - name: env
     type: object
     default: {}
+  - name: extraCommandArgs
+    type: string
+    default: ""
 
 steps:
   - task: TerraformCLI@0
@@ -22,5 +25,8 @@ steps:
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
       publishPlanResults: $(System.StageDisplayName)
-      commandOptions: -var-file ${{ parameters.variableFilePath }} -compact-warnings
+      ${{ if ne(parameters.extraCommandArgs, "") }}:
+        commandOptions: ${{ parameters.extraCommandArgs }} -var-file ${{ parameters.variableFilePath }} -compact-warnings
+      ${{ else }}:
+        commandOptions: -var-file ${{ parameters.variableFilePath }} -compact-warnings
     env: ${{ parameters.env }}
