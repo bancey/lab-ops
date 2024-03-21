@@ -46,6 +46,7 @@ parameters:
         component: virtual-machines
         serviceConnection: "MSDN Sub"
         storageAccount: tiny523c690a628b4700
+        extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
         destroy: false
         deploy: true
         local: false
@@ -182,8 +183,8 @@ stages:
                       serviceConnection: ${{ deployment.serviceConnection }}
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                      ${{ if eq(deployment.deployment, 'tiny_virtual_machines') }}:
-                        extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
+                      ${{ if ne(deployment.extraCommandArgs, '') }}:
+                        extraCommandArgs: ${{ deployment.extraCommandArgs }}
               - job: TerraformApply
                 ${{ if eq(deployment.local, true) }}:
                   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
@@ -225,6 +226,11 @@ stages:
                     pool:
                       vmImage: $(agentImage)
                     steps:
+                      - template: pipelines/connect.yaml
+                        parameters:
+                          keyVaultName: bancey-vault
+                          serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                          serviceConnection: MSDN Sub
                       - template: pipelines/check-host-online.yaml
                         parameters:
                           addresses: ${{ deployment.addresses }}
