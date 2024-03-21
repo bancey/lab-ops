@@ -182,7 +182,7 @@ stages:
                       serviceConnection: ${{ deployment.serviceConnection }}
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                      ${{ if eq(deployment.deployment, "tiny_virtual_machines") }}:
+                      ${{ if eq(deployment.deployment, 'tiny_virtual_machines') }}:
                         extraCommandArgs: "-var target_nodes=[\"hela\",\"loki\",\"thor\"]"
               - job: TerraformApply
                 ${{ if eq(deployment.local, true) }}:
