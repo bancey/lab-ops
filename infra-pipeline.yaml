@@ -166,6 +166,12 @@ stages:
                 pool:
                   vmImage: $(agentImage)
                 steps:
+                  - ${{ if eq(deployment.local, true) }}:
+                    - template: pipelines/connect.yaml
+                      parameters:
+                        keyVaultName: bancey-vault
+                        serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                        serviceConnection: MSDN Sub
                   - template: pipelines/terraform-init.yaml
                     parameters:
                       storageAccount: ${{ deployment.storageAccount}}
@@ -184,6 +190,12 @@ stages:
                 pool:
                   vmImage: $(agentImage)
                 steps:
+                  - ${{ if eq(deployment.local, true) }}:
+                    - template: pipelines/connect.yaml
+                      parameters:
+                        keyVaultName: bancey-vault
+                        serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                        serviceConnection: MSDN Sub
                   - template: pipelines/terraform-init.yaml
                     parameters:
                       storageAccount: ${{ deployment.storageAccount}}
@@ -226,6 +238,11 @@ stages:
                 ${{ if ne(deployment.addresses, '') }}:
                   dependsOn: CheckAnsibleHostsOnline
                 steps:
+                  - template: pipelines/connect.yaml
+                    parameters:
+                      keyVaultName: bancey-vault
+                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                      serviceConnection: MSDN Sub
                   - template: pipelines/ansible-check.yaml
                     parameters:
                       hostsFilePath: ansible/hosts.yaml
