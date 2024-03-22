@@ -39,9 +39,9 @@ parameters:
         extraCommandArgs: -var "target_nodes=[\"wanda\"]"
         destroy: false
         deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
+        localEnvironments:
+          - wanda
+        dependsOn: []
       - deployment: tiny_virtual_machines
         environment: prod
         component: virtual-machines
@@ -50,11 +50,11 @@ parameters:
         extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
         destroy: false
         deploy: true
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_hela
-          - CheckEnvIsOnline_loki
-          - CheckEnvIsOnline_thor
+        localEnvironments:
+          - hela
+          - loki
+          - thor
+        dependsOn: []
       - deployment: k8s_infra
         environment: prod
         component: kubernetes
@@ -62,9 +62,9 @@ parameters:
         storageAccount: wanda1a85dd9018454b4
         destroy: false
         deploy: false
-        local: true
-        dependsOn:
-          - CheckEnvIsOnline_wanda
+        localEnvironments:
+          - wanda
+        dependsOn: []
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -98,55 +98,17 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-  #- name: ansible_deployments
-  #  type: object
-  #  default:
-      #- deployment: k8s_ansible
-      #  environment: prod
-      #  envCheckStageName: CheckEnvIsOnline_wanda
-      #  playbook: k3s-wanda.yaml
-      #  requirementsFile: requirements.yml
-      #  addresses: "10.151.15.8,10.151.15.16,10.151.15.17,10.151.15.18,10.151.15.19"
-      #  deploy: false
-      #  extraVars: "run_prep=true run_install=true"
-      #  local: true
-      #  demands:
-      #    - KUBERNETES_SERVICE_HOST
-      #  dependsOn:
-      #    - CheckEnvIsOnline_wanda
-      #    - k8s_infra
-      #- deployment: nuc_k8s_ansible
-      #  environment: prod
-      #  playbook: k3s-nuc.yaml
-      #  requirementsFile: requirements.yml
-      #  addresses: "10.151.16.8,10.151.16.16,10.151.16.17"
-      #  deploy: false
-      #  extraVars: "run_prep=true run_install=true"
-      #  local: true
-      #  demands:
-      #    - accessible
-      #  dependsOn: []
-      #- deployment: thanos_ansible
-      #  environment: prod
-      #  playbook: thanos.yaml
-      #  addresses: "10.151.14.5"
-      #  envCheckStageName: CheckEnvIsOnline_thanos
-      #  local: true
-      #  demands:
-      #    - KUBERNETES_SERVICE_HOST
-      #  dependsOn:
-      #    - CheckEnvIsOnline_thanos
 
 variables:
   - name: agentImage
     value: ubuntu-latest
 
 stages:
-  - ${{ each env in parameters.local_environments }}:
-      - stage: CheckEnvIsOnline_${{ env.name }}
-        dependsOn: []
-        jobs:
-          - job: CheckEnvIsOnline
+  - stage: CheckHostsOnline
+    dependsOn: []
+    jobs:
+      - ${{ each env in parameters.local_environments }}:
+          - job: CheckHostIsOnline_${{ env.name }}
             pool:
               vmImage: $(agentImage)
             steps:
@@ -160,42 +122,44 @@ stages:
                   addresses: ${{ env.address }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
-        dependsOn: ${{ deployment.dependsOn }}
+        ${{ if ne(deployment.localEnvironments, []) }}:
+          dependsOn: ${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}
+        ${{ else }}:
+          dependsOn: ${{ deployment.dependsOn }}
         jobs:
-          - ${{ if ne(deployment.component, '') }}:
-              - job: TerraformPlanApply
-                pool:
-                  vmImage: $(agentImage)
-                steps:
-                  - ${{ if eq(deployment.local, true) }}:
-                    - template: pipelines/connect.yaml
-                      parameters:
-                        keyVaultName: bancey-vault
-                        serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                        serviceConnection: MSDN Sub
-                  - template: pipelines/terraform-init.yaml
+          - job: TerraformPlanApply
+            pool:
+              vmImage: $(agentImage)
+            steps:
+              - ${{ if eq(deployment.local, true) }}:
+                - template: pipelines/connect.yaml
+                  parameters:
+                    keyVaultName: bancey-vault
+                    serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                    serviceConnection: MSDN Sub
+              - template: pipelines/terraform-init.yaml
+                parameters:
+                  storageAccount: ${{ deployment.storageAccount}}
+                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                  azureRmKey: ${{ deployment.deployment }}
+              - template: pipelines/terraform-plan.yaml
+                parameters:
+                  serviceConnection: ${{ deployment.serviceConnection }}
+                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                  variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                  ${{ if ne(deployment.extraCommandArgs, '') }}:
+                    extraCommandArgs: ${{ deployment.extraCommandArgs }}
+              - ${{ if and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
+                  - template: pipelines/terraform-destroy.yaml
                     parameters:
-                      storageAccount: ${{ deployment.storageAccount}}
+                      serviceConnection: ${{ deployment.serviceConnection }}
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                      azureRmKey: ${{ deployment.deployment }}
-                  - template: pipelines/terraform-plan.yaml
+                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+              - ${{ if and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
+                  - template: pipelines/terraform-apply.yaml
                     parameters:
                       serviceConnection: ${{ deployment.serviceConnection }}
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                       ${{ if ne(deployment.extraCommandArgs, '') }}:
                         extraCommandArgs: ${{ deployment.extraCommandArgs }}
-                  - ${{ if and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-                      - template: pipelines/terraform-destroy.yaml
-                        parameters:
-                          serviceConnection: ${{ deployment.serviceConnection }}
-                          workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                          variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                  - ${{ if and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-                      - template: pipelines/terraform-apply.yaml
-                        parameters:
-                          serviceConnection: ${{ deployment.serviceConnection }}
-                          workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                          variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                          ${{ if ne(deployment.extraCommandArgs, '') }}:
-                            extraCommandArgs: ${{ deployment.extraCommandArgs }}
