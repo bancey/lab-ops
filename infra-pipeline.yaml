@@ -129,7 +129,7 @@ stages:
               vmImage: $(agentImage)
             steps:
               #- script: echo "${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}"
-              - script: echo "${{ join(',', deployment.dependsOn) }}"
+              - script: echo "${{ format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline') }}"
               - ${{ if eq(deployment.local, true) }}:
                 - template: pipelines/connect.yaml
                   parameters:
