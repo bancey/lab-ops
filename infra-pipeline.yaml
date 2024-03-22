@@ -161,7 +161,6 @@ stages:
         jobs:
           - ${{ if ne(deployment.component, '') }}:
               - job: TerraformPlanApply
-                condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   vmImage: $(agentImage)
                 steps:
