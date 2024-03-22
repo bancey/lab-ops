@@ -161,16 +161,14 @@ stages:
         jobs:
           - ${{ if ne(deployment.component, '') }}:
               - job: TerraformPlan
-                ${{ if eq(deployment.local, true) }}:
-                  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
+                #${{ if eq(deployment.local, true) }}:
+                #  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(stageDependencies.CheckEnvIsOnline_${{ deployment.environment }}.CheckEnvIsOnline.outputs['checkOnline.online'], 'true'))
                 ${{ else }}:
                   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
                 pool:
                   vmImage: $(agentImage)
                 steps:
                   - ${{ if eq(deployment.local, true) }}:
-                    - ${{ each dep in stageDependencies }}:
-                      - script : echo ${{ dep }}
                     - template: pipelines/connect.yaml
                       parameters:
                         keyVaultName: bancey-vault
