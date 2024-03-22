@@ -36,6 +36,7 @@ parameters:
         component: virtual-machines
         serviceConnection: "MSDN Sub"
         storageAccount: wanda1a85dd9018454b4
+        extraCommandArgs: -var "target_nodes=[\"wanda\"]"
         destroy: false
         deploy: true
         local: true
@@ -49,7 +50,7 @@ parameters:
         extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
         destroy: false
         deploy: true
-        local: false
+        local: true
         dependsOn:
           - CheckEnvIsOnline_hela
           - CheckEnvIsOnline_loki
@@ -168,6 +169,8 @@ stages:
                   vmImage: $(agentImage)
                 steps:
                   - ${{ if eq(deployment.local, true) }}:
+                    - ${{ each dep in stageDependencies }}:
+                      - script : echo ${{ dep }}
                     - template: pipelines/connect.yaml
                       parameters:
                         keyVaultName: bancey-vault
