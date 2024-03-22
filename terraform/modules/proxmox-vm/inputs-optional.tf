@@ -69,3 +69,9 @@ variable "tags" {
   description = "Tags to apply to the VM."
   default     = []
 }
+
+variable "domain" {
+  type        = string
+  description = "The domain the VM is in."
+  default     = "heimelska.co.uk"
+}

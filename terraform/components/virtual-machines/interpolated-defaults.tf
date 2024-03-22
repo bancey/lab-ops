@@ -25,13 +25,23 @@ data "azurerm_key_vault_secret" "thor_proxmox_url" {
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "wanda_proxmox_token" {
-  name         = "Wanda-Proxmox-API-Token"
+data "azurerm_key_vault_secret" "wanda_proxmox_username" {
+  name         = "Wanda-Proxmox-Username"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "tiny_proxmox_token" {
-  name         = "Tiny-Proxmox-API-Token"
+data "azurerm_key_vault_secret" "wanda_proxmox_password" {
+  name         = "Wanda-Proxmox-Password"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "tiny_proxmox_username" {
+  name         = "Tiny-Proxmox-Username"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "tiny_proxmox_password" {
+  name         = "Tiny-Proxmox-Password"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
