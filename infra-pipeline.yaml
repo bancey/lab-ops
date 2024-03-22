@@ -133,7 +133,7 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
-              - script: echo "${{ length(deployment.dependsOn)}}"
+              - script: echo "${{ gt(length(join('', deployment.dependsOn)), 0) }}"
               - ${{ if eq(deployment.local, true) }}:
                 - template: pipelines/connect.yaml
                   parameters:
