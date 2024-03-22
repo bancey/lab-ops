@@ -124,7 +124,7 @@ stages:
       - stage: ${{ deployment.deployment }}
         ${{ if and(deployment.localEnvironments, gt(length(deployment.dependsOn), 0)) }}:
           dependsOn: ${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}
-        ${{ elseif and(deployment.localEnvironments, eq(length(deployment.dependsOn), 0)) }}:
+        ${{ elseif deployment.localEnvironments }}:
           dependsOn: CheckHostsOnline
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
