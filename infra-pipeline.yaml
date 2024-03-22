@@ -122,7 +122,7 @@ stages:
                   addresses: ${{ env.address }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
-        ${{ if and(deployment.localEnvironments, gt(length(deployment.dependsOn), 0)) }}:
+        ${{ if and(deployment.localEnvironments, deployment.dependsOn) }}:
           dependsOn: ${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}
         ${{ elseif deployment.localEnvironments }}:
           dependsOn: CheckHostsOnline
