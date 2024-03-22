@@ -122,15 +122,13 @@ stages:
                   addresses: ${{ env.address }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
-        ${{ if deployment.localEnvironments }}:
-          dependsOn: ${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}
-        ${{ else }}:
-          dependsOn: ${{ deployment.dependsOn }}
+        dependsOn: ${{ deployment.dependsOn }}
         jobs:
           - job: TerraformPlanApply
             pool:
               vmImage: $(agentImage)
             steps:
+              - script: echo "${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}"
               - ${{ if eq(deployment.local, true) }}:
                 - template: pipelines/connect.yaml
                   parameters:
