@@ -128,12 +128,13 @@ stages:
           dependsOn: CheckHostsOnline
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
+        condition: and(succeeded(), eq(stageDependencies.CheckHostOnline.CheckHostIsOnline_${{  }}.outputs['checkOnline.online'], 'true'))
         jobs:
           - job: TerraformPlanApply
             pool:
               vmImage: $(agentImage)
             steps:
-              - ${{ if eq(deployment.local, true) }}:
+              - ${{ if deployment.localEnvironments }}:
                 - template: pipelines/connect.yaml
                   parameters:
                     keyVaultName: bancey-vault
