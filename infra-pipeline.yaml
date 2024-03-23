@@ -129,7 +129,7 @@ stages:
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
         ${{ if deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.CheckHostOnline.CheckHostIsOnline_${{  }}.outputs['checkOnline.online'], 'true'))
+          condition: and(succeeded(), eq(stageDependencies.CheckHostOnline.CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.outputs['checkOnline.online'], 'true'))
         ${{ else }}:
           condition: succeeded()
         jobs:
