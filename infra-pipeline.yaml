@@ -139,8 +139,8 @@ stages:
             steps:
               - ${{ if deployment.localEnvironments }}:
                 - script: |
-                    echo "Name: ${{ convertToJson(deployment.localEnvironments) }}"
-                    echo "Output: $[stageDependencies.CheckHostOnline.CheckHostIsOnline_${{ deployment.localEnvironments[0].name }}.outputs['checkOnline.online']]"
+                    echo "Name: ${{ deployment.localEnvironments[0] }}"
+                    echo "Output: $[stageDependencies.CheckHostOnline.CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.outputs['checkOnline.online']]"
               - ${{ if deployment.localEnvironments }}:
                 - template: pipelines/connect.yaml
                   parameters:
