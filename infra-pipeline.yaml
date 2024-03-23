@@ -137,9 +137,10 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
-              - script: |
-                  echo "Name: ${{ deployment.localEnvironments[0].name }}"
-                  echo "Output: $[stageDependencies.CheckHostOnline.CheckHostIsOnline_${{ deployment.localEnvironments[0].name }}.outputs['checkOnline.online']]"
+              - ${{ if deployment.localEnvironments }}:
+                - script: |
+                    echo "Name: ${{ deployment.localEnvironments[0].name }}"
+                    echo "Output: $[stageDependencies.CheckHostOnline.CheckHostIsOnline_${{ deployment.localEnvironments[0].name }}.outputs['checkOnline.online']]"
               - ${{ if deployment.localEnvironments }}:
                 - template: pipelines/connect.yaml
                   parameters:
