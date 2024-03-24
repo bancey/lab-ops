@@ -27,7 +27,7 @@ steps:
       ${{ elseif and(ne(parameters.parallelism, -1), eq(parameters.extraCommandArgs, '')) }}:
         commandOptions: '-parallelism=${{ parameters.parallelism }} -compact-warnings $(System.StageName).tfplan'
       ${{ else }}:
-        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings'
+        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings $(System.StageName).tfplan'
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
     env: ${{ parameters.env }}
