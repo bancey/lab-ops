@@ -138,10 +138,6 @@ stages:
               vmImage: $(agentImage)
             steps:
               - ${{ if deployment.localEnvironments }}:
-                - script: |
-                    echo "Name: ${{ deployment.localEnvironments[0] }}"
-                    echo "Output: $[stageDependencies.CheckHostsOnline.outputs['CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.checkOnline.online']]"
-              - ${{ if deployment.localEnvironments }}:
                 - template: pipelines/connect.yaml
                   parameters:
                     keyVaultName: bancey-vault
