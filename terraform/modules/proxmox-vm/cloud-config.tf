@@ -14,6 +14,6 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
       username = var.username
     })
 
-    file_name = "cloud-config.yaml"
+    file_name = "${var.vm_name}-cloud-config.yaml"
   }
 }
