@@ -11,23 +11,16 @@ parameters:
   - name: env
     type: object
     default: {}
-  - name: extraCommandArgs
-    type: string
-    default: ""
 
 steps:
   - task: TerraformCLI@0
     displayName: Terraform apply
     inputs:
       command: apply
-      ${{ if and(ne(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
-        commandOptions: '-parallelism=${{ parameters.parallelism }} -compact-warnings ${{ parameters.extraCommandArgs }} $(System.StageName).tfplan'
-      ${{ elseif and(eq(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
-        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }} $(System.StageName).tfplan'
-      ${{ elseif and(ne(parameters.parallelism, -1), eq(parameters.extraCommandArgs, '')) }}:
+      ${{ if ne(parameters.parallelism, -1) }}:
         commandOptions: '-parallelism=${{ parameters.parallelism }} -compact-warnings $(System.StageName).tfplan'
       ${{ else }}:
-        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings $(System.StageName).tfplan'
+        commandOptions: '-compact-warnings $(System.StageName).tfplan'
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
     env: ${{ parameters.env }}
