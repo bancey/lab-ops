@@ -12,7 +12,6 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
       name     = var.vm_name
       domain   = var.domain
       username = var.username
-      password = local.password_hash
     })
 
     file_name = "cloud-config.yaml"
