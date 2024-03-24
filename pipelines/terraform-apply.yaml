@@ -21,11 +21,11 @@ steps:
     inputs:
       command: apply
       ${{ if and(ne(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
-        commandOptions: '-parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }}'
+        commandOptions: '-parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }} $(Stage.StageName).tfplan'
       ${{ elseif and(eq(parameters.parallelism, -1), ne(parameters.extraCommandArgs, '')) }}:
-        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }}'
+        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }} $(Stage.StageName).tfplan'
       ${{ elseif and(ne(parameters.parallelism, -1), eq(parameters.extraCommandArgs, '')) }}:
-        commandOptions: '-parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings'
+        commandOptions: '-parallelism=${{ parameters.parallelism }} -var-file ${{ parameters.variableFilePath }} -compact-warnings $(Stage.StageName).tfplan'
       ${{ else }}:
         commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings'
       workingDirectory: ${{ parameters.workingDirectory }}

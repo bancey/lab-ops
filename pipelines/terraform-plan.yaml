@@ -22,11 +22,12 @@ steps:
     displayName: Terraform plan
     inputs:
       command: plan
+      allowTelemetryCollection: true
       workingDirectory: ${{ parameters.workingDirectory }}
       environmentServiceName: ${{ parameters.serviceConnection }}
       publishPlanResults: $(System.StageDisplayName)
       ${{ if ne(parameters.extraCommandArgs, '') }}:
-        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings ${{ parameters.extraCommandArgs }}'
+        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings -out=$(System.StageName).tfplan ${{ parameters.extraCommandArgs }}'
       ${{ else }}:
-        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings'
+        commandOptions: '-var-file ${{ parameters.variableFilePath }} -compact-warnings -out=$(System.StageName).tfplan'
     env: ${{ parameters.env }}
