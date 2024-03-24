@@ -128,10 +128,10 @@ stages:
           dependsOn: CheckHostsOnline
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
-        #${{ if deployment.localEnvironments }}:
-        #  condition: and(succeeded(), eq(stageDependencies.CheckHostOnline.CheckHostIsOnline_${{ deployment.localEnvironments[0].name }}.outputs['checkOnline.online'], 'true'))
-        #${{ else }}:
-        #  condition: succeeded()
+        ${{ if deployment.localEnvironments }}:
+          condition: and(succeeded(), eq(stageDependencies.CheckHostsOnline.outputs['CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.checkOnline.online'], 'true'))
+        ${{ else }}:
+          condition: succeeded()
         jobs:
           - job: TerraformPlanApply
             pool:
@@ -140,7 +140,7 @@ stages:
               - ${{ if deployment.localEnvironments }}:
                 - script: |
                     echo "Name: ${{ deployment.localEnvironments[0] }}"
-                    echo "Output: $[stageDependencies.CheckHostOnline.outputs['CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.checkOnline.online']]"
+                    echo "Output: $[stageDependencies.CheckHostsOnline.outputs['CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.checkOnline.online']]"
               - ${{ if deployment.localEnvironments }}:
                 - template: pipelines/connect.yaml
                   parameters:
