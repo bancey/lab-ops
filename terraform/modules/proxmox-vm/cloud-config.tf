@@ -28,7 +28,7 @@ resource "terraform_data" "mkpassword" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      sudo apt install -yq whois
+      sudo apt install whois
       mkpasswd -m sha-512 ${var.password} >> ${path.module}/password_hash.txt
     EOT
   }
