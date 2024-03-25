@@ -35,6 +35,6 @@ variable "username" {
 
 variable "password" {
   type        = string
-  description = "THe password of the administrator of the VM."
+  description = "The password of the administrator of the VM must be in a sha512crypt format."
   sensitive   = true
 }
