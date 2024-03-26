@@ -16,3 +16,26 @@ variable "virtual_machines" {
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox."
 }
+
+variable "kubernetes_virtual_machines" {
+  type = map(object({
+    target_nodes = list(string)
+    master = object({
+      count               = optional(number, 1)
+      vm_id_start         = optional(number, 200)
+      cidr                = string
+      gateway_ip_address  = string
+      vlan_tag            = string
+      network_bridge_name = optional(string, "vmbr1")
+    })
+    worker = object({
+      count               = optional(number, 3)
+      vm_id_start         = optional(number, 220)
+      cidr                = string
+      gateway_ip_address  = string
+      vlan_tag            = string
+      network_bridge_name = optional(string, "vmbr1")
+    })
+  }))
+  description = "Map containing information about Virtual Machines to create in Proxmox for Kubernetes."
+}

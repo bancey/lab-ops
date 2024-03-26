@@ -1,3 +1,42 @@
+locals {
+  master_vms = flatten([
+    for vm_key, vm_value in var.kubernetes_virtual_machines : [
+      for i in range(vm_value.master.count) : {
+        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i] : vm_value.target_nodes[0]
+        vm_name             = "master${i}"
+        vm_id               = vm_value.master.vm_id_start + i
+        vm_description      = "k8s control plane"
+        cpu_cores           = 4
+        memory              = 8192
+        ip_address          = cidrhost(vm_value.master.cidr, i)
+        gateway_ip_address  = vm_value.master.gateway_ip_address
+        network_bridge_name = vm_value.master.network_bridge_name
+        vlan_tag            = vm_value.master.vlan_tag
+        startup_delay       = 0
+        startup_order       = 10
+      }
+    ]
+  ])
+  worker_vms = flatten([
+    for vm_key, vm_value in var.kubernetes_virtual_machines : [
+      for i in range(vm_value.worker.count) : {
+        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i] : vm_value.target_nodes[0]
+        vm_name             = "node${i}"
+        vm_id               = vm_value.worker.vm_id_start + i
+        vm_description      = "k8s worker node"
+        cpu_cores           = 2
+        memory              = 4096
+        ip_address          = cidrhost(vm_value.worker.cidr, i)
+        gateway_ip_address  = vm_value.worker.gateway_ip_address
+        network_bridge_name = vm_value.worker.network_bridge_name
+        vlan_tag            = vm_value.worker.vlan_tag
+        startup_delay       = 0
+        startup_order       = 15
+      }
+    ]
+  ])
+}
+
 data "azurerm_client_config" "current" {}
 
 data "azurerm_key_vault" "vault" {

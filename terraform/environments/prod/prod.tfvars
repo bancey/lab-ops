@@ -44,6 +44,39 @@ cloudflare_records = {
 master_count = 1
 node_count   = 4
 
+kubernetes_virtual_machines = {
+  wanda_k8s = {
+    target_nodes = ["wanda"]
+    master = {
+      count              = 1
+      cidr               = "10.151.15.8/29"
+      gateway_ip_address = "10.151.15.1"
+      vlan_tag           = "15"
+    }
+    worker = {
+      count              = 4
+      cidr               = "10.151.15.16/29"
+      gateway_ip_address = "10.151.15.1"
+      vlan_tag           = "15"
+    }
+  }
+  tiny_k8s = {
+    target_nodes = ["hela", "thor", "loki"]
+    master = {
+      count              = 3
+      cidr               = "10.151.16.8/29"
+      gateway_ip_address = "10.151.16.1"
+      vlan_tag           = "16"
+    }
+    worker = {
+      count              = 3
+      cidr               = "10.151.16.16/29"
+      gateway_ip_address = "10.151.16.1"
+      vlan_tag           = "16"
+    }
+  }
+}
+
 virtual_machines = {
   scrypted = {
     node                = "wanda",

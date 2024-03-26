@@ -55,16 +55,6 @@ parameters:
           - loki
           - thor
         dependsOn: []
-      - deployment: k8s_infra
-        environment: prod
-        component: kubernetes
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: false
-        localEnvironments:
-          - wanda
-        dependsOn: []
       - deployment: prod_dns
         environment: prod
         component: dns
