@@ -21,6 +21,7 @@ module "wanda_k8s_virtual_machines" {
   storage             = "local-lvm"
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
+  image_id            = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
 }
 
 module "hela_k8s_virtual_machines" {
@@ -46,6 +47,7 @@ module "hela_k8s_virtual_machines" {
   storage             = "local-lvm"
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
+  image_id            = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
 }
 
 module "loki_k8s_virtual_machines" {
@@ -71,6 +73,7 @@ module "loki_k8s_virtual_machines" {
   storage             = "local-lvm"
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
+  image_id            = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
 }
 
 module "thor_k8s_virtual_machines" {
@@ -96,4 +99,5 @@ module "thor_k8s_virtual_machines" {
   storage             = "local-lvm"
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
+  image_id            = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
 }

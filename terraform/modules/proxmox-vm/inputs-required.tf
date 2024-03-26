@@ -38,3 +38,8 @@ variable "password" {
   description = "The password of the administrator of the VM must be in a sha512crypt format."
   sensitive   = true
 }
+
+variable "image_id" {
+  type = string
+  description = "ID of the image to use for the VM."
+}
