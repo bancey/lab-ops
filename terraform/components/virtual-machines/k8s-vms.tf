@@ -1,4 +1,4 @@
-module "wanda_virtual_machines" {
+module "wanda_k8s_virtual_machines" {
   providers = {
     proxmox = proxmox.wanda
   }
@@ -23,7 +23,7 @@ module "wanda_virtual_machines" {
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
 }
 
-module "hela_virtual_machines" {
+module "hela_k8s_virtual_machines" {
   providers = {
     proxmox = proxmox.hela
   }
@@ -48,7 +48,7 @@ module "hela_virtual_machines" {
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
 }
 
-module "loki_virtual_machines" {
+module "loki_k8s_virtual_machines" {
   providers = {
     proxmox = proxmox.loki
   }
@@ -73,7 +73,7 @@ module "loki_virtual_machines" {
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
 }
 
-module "thor_virtual_machines" {
+module "thor_k8s_virtual_machines" {
   providers = {
     proxmox = proxmox.thor
   }
