@@ -4,7 +4,7 @@ module "wanda_k8s_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "wanda" && contains(var.target_nodes, lower(value.node))) }
+  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "wanda" && contains(var.target_nodes, lower(value.target_node))) }
 
   target_node         = each.value.target_node
   vm_name             = each.value.vm_name
@@ -29,7 +29,7 @@ module "hela_k8s_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "hela" && contains(var.target_nodes, lower(value.node))) }
+  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "hela" && contains(var.target_nodes, lower(value.target_node))) }
 
   target_node         = each.value.target_node
   vm_name             = each.value.vm_name
@@ -54,7 +54,7 @@ module "loki_k8s_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "loki" && contains(var.target_nodes, lower(value.node))) }
+  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "loki" && contains(var.target_nodes, lower(value.target_node))) }
 
   target_node         = each.value.target_node
   vm_name             = each.value.vm_name
@@ -79,7 +79,7 @@ module "thor_k8s_virtual_machines" {
   }
 
   source   = "../../modules/proxmox-vm"
-  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "thor" && contains(var.target_nodes, lower(value.node))) }
+  for_each = { for value in concat(local.master_vms, local.worker_vms) : "${value.target_node}-${value.vm_name}" => value if(lower(value.target_node) == "thor" && contains(var.target_nodes, lower(value.target_node))) }
 
   target_node         = each.value.target_node
   vm_name             = each.value.vm_name
