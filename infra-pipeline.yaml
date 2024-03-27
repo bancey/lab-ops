@@ -31,6 +31,14 @@ parameters:
   - name: terraform_deployments
     type: object
     default:
+      - deployment: prod_twingate
+        environment: prod
+        component: twingate
+        serviceConnection: "MSDN Sub"
+        storageAccount: twingate959ba0d66209
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: virtual_machines
         environment: prod
         component: virtual-machines
@@ -80,14 +88,6 @@ parameters:
         deploy: true
         dependsOn:
           - test_gameserver
-      - deployment: prod_twingate
-        environment: prod
-        component: twingate
-        serviceConnection: "MSDN Sub"
-        storageAccount: twingate959ba0d66209
-        destroy: false
-        deploy: true
-        dependsOn: []
 
 variables:
   - name: agentImage

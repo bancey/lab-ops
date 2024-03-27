@@ -45,21 +45,21 @@ master_count = 1
 node_count   = 4
 
 kubernetes_virtual_machines = {
-  wanda_k8s = {
-    target_nodes = ["wanda"]
-    master = {
-      count              = 1
-      cidr               = "10.151.15.8/29"
-      gateway_ip_address = "10.151.15.1"
-      vlan_tag           = "15"
-    }
-    worker = {
-      count              = 4
-      cidr               = "10.151.15.16/29"
-      gateway_ip_address = "10.151.15.1"
-      vlan_tag           = "15"
-    }
-  }
+  #wanda_k8s = {
+  #  target_nodes = ["wanda"]
+  #  master = {
+  #    count              = 1
+  #    cidr               = "10.151.15.8/29"
+  #    gateway_ip_address = "10.151.15.1"
+  #    vlan_tag           = "15"
+  #  }
+  #  worker = {
+  #    count              = 4
+  #    cidr               = "10.151.15.16/29"
+  #    gateway_ip_address = "10.151.15.1"
+  #    vlan_tag           = "15"
+  #  }
+  #}
   tiny_k8s = {
     target_nodes = ["hela", "thor", "loki"]
     master = {
@@ -77,67 +77,7 @@ kubernetes_virtual_machines = {
   }
 }
 
-virtual_machines = {
-  scrypted = {
-    node                = "wanda",
-    vm_id               = 101,
-    vm_description      = "VM to run Scrypted, a surveillance integration system.",
-    cpu_cores           = 4,
-    memory              = 4096,
-    ip_address          = "10.151.14.25/24",
-    gateway_ip_address  = "10.151.14.1",
-    network_bridge_name = "vmbr0",
-    vlan_tag            = "-1",
-    startup_order       = 5,
-    startup_delay       = 0,
-    cname_required      = false
-    storage             = "local-lvm"
-  }
-  test0 = {
-    node                = "hela",
-    vm_id               = 120,
-    vm_description      = "Test VM.",
-    cpu_cores           = 4,
-    memory              = 4096,
-    ip_address          = "10.151.14.100/24",
-    gateway_ip_address  = "10.151.14.1",
-    network_bridge_name = "vmbr0",
-    startup_order       = 5,
-    startup_delay       = 0,
-    cname_required      = false
-    storage             = "local-lvm"
-  }
-  test1 = {
-    node                = "thor",
-    vm_id               = 120,
-    vm_description      = "Test VM.",
-    cpu_cores           = 4,
-    memory              = 4096,
-    ip_address          = "10.151.16.100/24",
-    gateway_ip_address  = "10.151.16.1",
-    network_bridge_name = "vmbr1",
-    vlan_tag            = "16"
-    startup_order       = 5,
-    startup_delay       = 0,
-    cname_required      = false
-    storage             = "local-lvm"
-  }
-  test2 = {
-    node                = "loki",
-    vm_id               = 120,
-    vm_description      = "Test VM.",
-    cpu_cores           = 4,
-    memory              = 4096,
-    ip_address          = "10.151.15.25/24",
-    gateway_ip_address  = "10.151.15.1",
-    network_bridge_name = "vmbr1",
-    vlan_tag            = "15"
-    startup_order       = 5,
-    startup_delay       = 0,
-    cname_required      = false
-    storage             = "local-lvm"
-  }
-}
+virtual_machines = {}
 
 twingate_groups           = ["pve", "all"]
 twingate_service_accounts = ["AzureDevOps"]
