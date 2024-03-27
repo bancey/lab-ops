@@ -106,6 +106,8 @@ stages:
               keyVaultName: bancey-vault
               serviceKeySecretName: Twingate-AzureDevOps-SA-Key
               serviceConnection: MSDN Sub
+          - script: sudo apt install ssh-tools
+            displayName: 'Install ssh-tools'
           - ${{ each env in parameters.local_environments }}:
             - template: pipelines/check-host-online.yaml
               parameters:
