@@ -22,6 +22,7 @@ module "wanda_k8s_virtual_machines" {
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = proxmox_virtual_environment_download_file.wanda_ubuntu_cloud_image[0].id
+  tags                = ["kubernetes"]
 }
 
 module "hela_k8s_virtual_machines" {

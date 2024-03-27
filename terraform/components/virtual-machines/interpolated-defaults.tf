@@ -14,6 +14,7 @@ locals {
         vlan_tag            = vm_value.master.vlan_tag
         startup_delay       = 0
         startup_order       = 10
+        tags                = ["k8s", "k8s-control-plane"]
       }
     ]
   ])
@@ -32,6 +33,7 @@ locals {
         vlan_tag            = vm_value.worker.vlan_tag
         startup_delay       = 0
         startup_order       = 15
+        tags                = ["k8s", "k8s-worker"]
       }
     ]
   ])

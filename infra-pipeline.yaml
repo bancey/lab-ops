@@ -97,19 +97,20 @@ stages:
   - stage: CheckHostsOnline
     dependsOn: prod_twingate
     jobs:
-      - ${{ each env in parameters.local_environments }}:
-          - job: CheckHostIsOnline_${{ env.name }}
-            pool:
-              vmImage: $(agentImage)
-            steps:
-              - template: pipelines/connect.yaml
-                parameters:
-                  keyVaultName: bancey-vault
-                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                  serviceConnection: MSDN Sub
-              - template: pipelines/check-host-online.yaml
-                parameters:
-                  addresses: ${{ env.address }}
+      - job: CheckHostsOnline
+        pool:
+          vmImage: $(agentImage)
+        steps:
+          - template: pipelines/connect.yaml
+            parameters:
+              keyVaultName: bancey-vault
+              serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+              serviceConnection: MSDN Sub
+          - ${{ each env in parameters.local_environments }}:
+            - template: pipelines/check-host-online.yaml
+              parameters:
+                name: ${{ env.name }}
+                addresses: ${{ env.address }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
         ${{ if and(deployment.localEnvironments, gt(length(join('', deployment.dependsOn)), 0)) }}:
@@ -119,7 +120,7 @@ stages:
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
         ${{ if deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.CheckHostsOnline.outputs['CheckHostIsOnline_${{ deployment.localEnvironments[0] }}.checkOnline.online'], 'true'))
+          condition: and(succeeded(), eq(stageDependencies.CheckHostsOnline.outputs['CheckHostsOnline.checkOnline.${{ deployment.localEnvironments[0] }}online'], 'true'))
         ${{ else }}:
           condition: succeeded()
         jobs:
