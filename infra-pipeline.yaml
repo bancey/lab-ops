@@ -31,6 +31,14 @@ parameters:
   - name: terraform_deployments
     type: object
     default:
+      - deployment: prod_twingate
+        environment: prod
+        component: twingate
+        serviceConnection: "MSDN Sub"
+        storageAccount: twingate959ba0d66209
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: virtual_machines
         environment: prod
         component: virtual-machines
@@ -54,16 +62,6 @@ parameters:
           - hela
           - loki
           - thor
-        dependsOn: []
-      - deployment: k8s_infra
-        environment: prod
-        component: kubernetes
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
-        destroy: false
-        deploy: false
-        localEnvironments:
-          - wanda
         dependsOn: []
       - deployment: prod_dns
         environment: prod
@@ -90,14 +88,6 @@ parameters:
         deploy: true
         dependsOn:
           - test_gameserver
-      - deployment: prod_twingate
-        environment: prod
-        component: twingate
-        serviceConnection: "MSDN Sub"
-        storageAccount: twingate959ba0d66209
-        destroy: false
-        deploy: true
-        dependsOn: []
 
 variables:
   - name: agentImage
@@ -105,7 +95,7 @@ variables:
 
 stages:
   - stage: CheckHostsOnline
-    dependsOn: []
+    dependsOn: prod_twingate
     jobs:
       - ${{ each env in parameters.local_environments }}:
           - job: CheckHostIsOnline_${{ env.name }}
