@@ -2,8 +2,8 @@ locals {
   master_vms = flatten([
     for vm_key, vm_value in var.kubernetes_virtual_machines : [
       for i in range(vm_value.master.count) : {
-        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i] : vm_value.target_nodes[0]
-        vm_name             = "master${i}"
+        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i % length(vm_value.target_nodes)] : vm_value.target_nodes[0]
+        vm_name             = "${vm_key}-master${i}"
         vm_id               = vm_value.master.vm_id_start + i
         vm_description      = "k8s control plane"
         cpu_cores           = 4
@@ -21,8 +21,8 @@ locals {
   worker_vms = flatten([
     for vm_key, vm_value in var.kubernetes_virtual_machines : [
       for i in range(vm_value.worker.count) : {
-        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i] : vm_value.target_nodes[0]
-        vm_name             = "node${i}"
+        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i % length(vm_value.target_nodes)] : vm_value.target_nodes[0]
+        vm_name             = "${vm_key}-node${i}"
         vm_id               = vm_value.worker.vm_id_start + i
         vm_description      = "k8s worker node"
         cpu_cores           = 2
