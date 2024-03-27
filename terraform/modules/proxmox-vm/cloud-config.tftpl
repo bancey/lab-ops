@@ -4,7 +4,8 @@ ssh_pwauth: false
 users:
   - default
   - name: ${username}
-    passwd: ${password}
+    passwd: "${password}"
+    lock_passwd: false
     groups:
       - sudo
       - adm
