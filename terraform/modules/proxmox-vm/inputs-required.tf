@@ -40,6 +40,6 @@ variable "password" {
 }
 
 variable "image_id" {
-  type = string
+  type        = string
   description = "ID of the image to use for the VM."
 }
