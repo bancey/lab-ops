@@ -60,39 +60,39 @@ kubernetes_virtual_machines = {
   #    vlan_tag           = "15"
   #  }
   #}
-  #tiny_k8s = {
-  #  target_nodes = ["hela", "thor", "loki"]
-  #  master = {
-  #    count              = 3
-  #    cidr               = "10.151.16.8/29"
-  #    gateway_ip_address = "10.151.16.1"
-  #    vlan_tag           = "16"
-  #  }
-  #  worker = {
-  #    count              = 3
-  #    cidr               = "10.151.16.16/29"
-  #    gateway_ip_address = "10.151.16.1"
-  #    vlan_tag           = "16"
-  #  }
-  #}
+  tiny_k8s = {
+    target_nodes = ["hela", "thor", "loki"]
+    master = {
+      count              = 3
+      cidr               = "10.151.16.8/29"
+      gateway_ip_address = "10.151.16.1"
+      vlan_tag           = "16"
+    }
+    worker = {
+      count              = 3
+      cidr               = "10.151.16.16/29"
+      gateway_ip_address = "10.151.16.1"
+      vlan_tag           = "16"
+    }
+  }
 }
 
 virtual_machines = {
-  test0 = {
-    node                = "hela",
-    vm_id               = 120,
-    vm_description      = "Test VM.",
-    cpu_cores           = 4,
-    memory              = 4096,
-    ip_address          = "10.151.16.100/24",
-    gateway_ip_address  = "10.151.16.1",
-    network_bridge_name = "vmbr1",
-    vlan_tag            = "16",
-    startup_order       = 5,
-    startup_delay       = 0,
-    cname_required      = false
-    storage             = "local-lvm"
-  }
+  #test0 = {
+  #  node                = "hela",
+  #  vm_id               = 120,
+  #  vm_description      = "Test VM.",
+  #  cpu_cores           = 4,
+  #  memory              = 4096,
+  #  ip_address          = "10.151.16.100/24",
+  #  gateway_ip_address  = "10.151.16.1",
+  #  network_bridge_name = "vmbr1",
+  #  vlan_tag            = "16",
+  #  startup_order       = 5,
+  #  startup_delay       = 0,
+  #  cname_required      = false
+  #  storage             = "local-lvm"
+  #}
 }
 
 twingate_groups           = ["pve", "all"]
