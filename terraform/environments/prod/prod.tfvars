@@ -69,7 +69,7 @@ kubernetes_virtual_machines = {
       vlan_tag           = "16"
     }
     worker = {
-      count              = 6
+      count              = 3
       cidr               = "10.151.16.16/29"
       gateway_ip_address = "10.151.16.1"
       vlan_tag           = "16"
