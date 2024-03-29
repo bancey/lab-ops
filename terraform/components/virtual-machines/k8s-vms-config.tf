@@ -10,6 +10,7 @@ resource "terraform_data" "k8s_hosts" {
     command = <<EOF
       pwd
     EOF
+    interpreter = ["/bin/bash", "-c"]
   }
 }
 
