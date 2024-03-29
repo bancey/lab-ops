@@ -8,7 +8,7 @@ resource "terraform_data" "k8s_hosts" {
 
   provisioner "local-exec" {
     command = <<EOF
-      yq -i e 'all.children.wanda_k3s_cluster.hosts.${each.value.vm_name}.ansible_host = ${each.value.ip_address}' ${path.root}/../../../ansible/hosts.yaml
+      yq -i e 'all.children.wanda_k3s_cluster.hosts.${each.value.vm_name}.ansible_host = ${each.value.ip_address}' ${replace(path.root, "terraform/components/virtual-machines", "ansible/hosts.yaml")}
     EOF
   }
 }
