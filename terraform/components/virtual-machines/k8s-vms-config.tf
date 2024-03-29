@@ -25,7 +25,7 @@ resource "terraform_data" "combine_hosts" {
     command     = <<-EOT
       files=$(find . -name "vm-*.yaml" |xargs echo)
       echo "Found files: $files"
-      if [ -n "${files-}" ]; then
+      if [ -n "$files" ]; then
         yq eval-all '. as $item ireduce ({}; . *+ $item)' $files > hosts.yaml
       fi
     EOT
