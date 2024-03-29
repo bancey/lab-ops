@@ -25,7 +25,9 @@ resource "terraform_data" "combine_hosts" {
     command     = <<-EOT
       files=$(find . -name "vm-*.yaml" |xargs echo)
       echo "Found files: $files"
-      yq eval-all '. as $item ireduce ({}; . *+ $item)' $files > hosts.yaml
+      if [[ -n "$files" ]]; then
+        yq eval-all '. as $item ireduce ({}; . *+ $item)' $files > hosts.yaml
+      fi
     EOT
     interpreter = ["/bin/bash", "-c"]
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
