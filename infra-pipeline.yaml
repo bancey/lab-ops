@@ -55,7 +55,7 @@ parameters:
         component: virtual-machines
         serviceConnection: "MSDN Sub"
         storageAccount: tiny523c690a628b4700
-        extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]" -var ansible_inventory_file=$(System.DefaultWorkingDirectory)/ansible/hosts.yaml
+        extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
         destroy: false
         deploy: true
         localEnvironments:
