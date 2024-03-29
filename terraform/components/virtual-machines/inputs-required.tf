@@ -39,3 +39,8 @@ variable "kubernetes_virtual_machines" {
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox for Kubernetes."
 }
+
+variable "ansible_inventory_file" {
+  type        = string
+  description = "Path to the Ansible inventory file to update with the IP addresses of the created VMs."
+}
