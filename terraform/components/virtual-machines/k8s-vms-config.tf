@@ -8,10 +8,7 @@ resource "terraform_data" "k8s_hosts" {
 
   provisioner "local-exec" {
     command = <<EOF
-      ls
-      ls ../../../ansible
+      yq -i '.all.children.wanda_k3s_cluster.hosts.${each.value.vm_name}.ansible_host = "${each.value.ip_address}"' ./../../../ansible/hosts.yaml
     EOF
   }
 }
-
-#yq -i '.all.children.wanda_k3s_cluster.hosts.${each.value.vm_name}.ansible_host = "${each.value.ip_address}"' ../../../ansible/hosts.yaml
