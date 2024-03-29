@@ -1,7 +1,0 @@
-- name: Update system and install docker
-  hosts: migration
-  become: true
-  become_user: root
-  become_method: sudo
-  roles:
-    - install-docker

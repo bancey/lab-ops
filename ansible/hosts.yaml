@@ -4,15 +4,6 @@ all:
   hosts:
     thanos:
       ansible_host: 10.151.14.5
-      ado_url: "https://dev.azure.com/bancey"
-      ado_pool: "Local"
-      ado_token: "$(ADO-Token)"
-      sql_pass: "$(MySQL-Password)"
-      sql_root_pass: "$(MySQL-Root-Password)"
-    wings1:
-      ansible_host: 10.151.14.30
-    migration:
-      ansible_host: 10.151.14.21
   children:
     wanda_k3s_cluster:
       hosts:
