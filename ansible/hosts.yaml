@@ -7,25 +7,9 @@ all:
   children:
     wanda_k3s_cluster:
       hosts:
-        master0:
-          ansible_host: 10.151.15.8
-        node0:
-          ansible_host: 10.151.15.16
-        node1:
-          ansible_host: 10.151.15.17
-        node2:
-          ansible_host: 10.151.15.18
-        node3:
-          ansible_host: 10.151.15.19
       vars:
-        metallb_ip_range: "10.151.15.50-10.151.15.200"
-    nuc_k3s_cluster:
+        metallb_ip_range: "10.151.15.50-10.151.15.100"
+    tiny_k3s_cluster:
       hosts:
-        thor:
-          ansible_host: 10.151.16.8
-        loki:
-          ansible_host: 10.151.16.16
-        hela:
-          ansible_host: 10.151.16.17
       vars:
-        metallb_ip_range: "10.151.16.50-10.151.16.200"
+        metallb_ip_range: "10.151.16.50-10.151.16.100"
