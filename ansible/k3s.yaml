@@ -1,16 +1,19 @@
 - name: Prepare and install K3S
-  hosts: wanda_k3s_cluster
+  vars:
+    passed_hosts: wanda_k3s_cluster
+    k3s_version: "v1.29.3+k3s1"
+    control_nodes: ['master0']
+    run_prep: true
+    run_install: false
+  hosts: {{ passed_hosts }}
   become: true
   become_user: root
   become_method: sudo
-  vars:
-    run_prep: true
-    run_install: false
   pre_tasks:
     - name: Set master nodes to be a control node
       ansible.builtin.set_fact:
         k3s_control_node: true
-      when: inventory_hostname in ['master0', 'thor']
+      when: inventory_hostname in {{ control_nodes }}
   tasks:
     - name: K3S Prepare
       when: run_prep
@@ -22,17 +25,16 @@
         name: xanmanning.k3s
         public: true
       vars:
-        k3s_release_version: "v1.26.2+k3s1"
+        k3s_release_version: {{ k3s_version }}
         k3s_install_hard_links: true
         k3s_become: true
         k3s_use_unsupported_config: true
         k3s_server:
           node-ip: "{{ ansible_host }}"
-          flannel-backend: none
+          flannel-backend: 'none'
           disable:
             - flannel
             - local-storage
-            - metrics-server
             - servicelb
             - traefik
           disable-network-policy: true
@@ -40,9 +42,9 @@
           cluster-cidr: 10.42.0.0/16
           service-cidr: 10.43.0.0/16
         k3s_server_manifests_urls:
-          - url: https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+          - url: https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
             filename: tigera-operator.yaml
-          - url: https://raw.githubusercontent.com/metallb/metallb/v0.13.9/config/manifests/metallb-native.yaml
+          - url: https://raw.githubusercontent.com/metallb/metallb/v0.14.4/config/manifests/metallb-native.yaml
             filename: metallb-native.yaml
         k3s_server_manifests_templates:
           - calico-install.yaml.j2
