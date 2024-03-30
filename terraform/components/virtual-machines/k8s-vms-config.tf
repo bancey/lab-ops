@@ -10,7 +10,7 @@ resource "local_file" "hosts" {
 resource "terraform_data" "combine_hosts" {
   triggers_replace = timestamp()
 
-  depends_on = [terraform_data.k8s_hosts]
+  depends_on = [local_file.hosts]
 
   provisioner "local-exec" {
     command     = "yq eval-all '. as $item ireduce ({}; . *+ $item)' k8s-vms.yaml > hosts.yaml"
