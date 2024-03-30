@@ -61,7 +61,7 @@ kubernetes_virtual_machines = {
     }
   }
   tiny = {
-    target_nodes = ["hela", "thor", "loki"]
+    target_nodes = ["hela", "loki", "thor"]
     master = {
       count              = 3
       cidr               = "10.151.16.8/29"
