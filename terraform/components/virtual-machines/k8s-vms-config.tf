@@ -1,7 +1,7 @@
 resource "local_file" "hosts" {
   content = templatefile("${path.module}/hosts.yaml.tpl",
     {
-      k8s = { for cluster_key, cluster in local.k8s_hosts : cluster_key => cluster if contains(var.target_nodes, lower(cluster.target_nodes)) }
+      k8s = local.k8s_hosts
     }
   )
   filename = "../../../ansible/k8s-vms.yaml"

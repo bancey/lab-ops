@@ -1,6 +1,6 @@
 locals {
   master_vms = flatten([
-    for cluster_key, cluser in var.kubernetes_virtual_machines : [
+    for cluster_key, cluster in var.kubernetes_virtual_machines : [
       for i in range(cluster.master.count) : {
         cluster_key         = cluster_key
         target_node         = length(cluster.target_nodes) > 1 ? cluster.target_nodes[i % length(cluster.target_nodes)] : cluster.target_nodes[0]
@@ -45,7 +45,7 @@ locals {
         { for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i) },
         { for i in range(cluster.worker.count) : "${cluster_key}-node${i}" => cidrhost(cluster.worker.cidr, i) }
       )
-    }
+    } if contains(var.target_nodes, lower(cluster.target_nodes))
   }
 }
 
