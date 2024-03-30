@@ -45,7 +45,7 @@ locals {
         { for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i) },
         { for i in range(cluster.worker.count) : "${cluster_key}-node${i}" => cidrhost(cluster.worker.cidr, i) }
       )
-    } if contains(var.target_nodes, lower(cluster.target_nodes))
+    } if var.target_nodes == cluster.target_nodes
   }
 }
 
