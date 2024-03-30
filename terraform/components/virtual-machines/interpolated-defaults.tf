@@ -1,17 +1,18 @@
 locals {
   master_vms = flatten([
-    for vm_key, vm_value in var.kubernetes_virtual_machines : [
-      for i in range(vm_value.master.count) : {
-        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i % length(vm_value.target_nodes)] : vm_value.target_nodes[0]
-        vm_name             = "${vm_key}-master${i}"
-        vm_id               = vm_value.master.vm_id_start + i
+    for cluster_key, cluser in var.kubernetes_virtual_machines : [
+      for i in range(cluster.master.count) : {
+        cluster_key         = cluster_key
+        target_node         = length(cluster.target_nodes) > 1 ? cluster.target_nodes[i % length(cluster.target_nodes)] : cluster.target_nodes[0]
+        vm_name             = "${cluster_key}-master${i}"
+        vm_id               = cluster.master.vm_id_start + i
         vm_description      = "k8s control plane"
         cpu_cores           = 4
         memory              = 8192
-        ip_address          = cidrhost(vm_value.master.cidr, i)
-        gateway_ip_address  = vm_value.master.gateway_ip_address
-        network_bridge_name = vm_value.master.network_bridge_name
-        vlan_tag            = vm_value.master.vlan_tag
+        ip_address          = cidrhost(cluster.master.cidr, i)
+        gateway_ip_address  = cluster.master.gateway_ip_address
+        network_bridge_name = cluster.master.network_bridge_name
+        vlan_tag            = cluster.master.vlan_tag
         startup_delay       = 0
         startup_order       = 10
         tags                = ["k8s", "k8s-control-plane"]
@@ -19,24 +20,33 @@ locals {
     ]
   ])
   worker_vms = flatten([
-    for vm_key, vm_value in var.kubernetes_virtual_machines : [
-      for i in range(vm_value.worker.count) : {
-        target_node         = length(vm_value.target_nodes) > 1 ? vm_value.target_nodes[i % length(vm_value.target_nodes)] : vm_value.target_nodes[0]
-        vm_name             = "${vm_key}-node${i}"
-        vm_id               = vm_value.worker.vm_id_start + i
+    for cluster_key, cluster in var.kubernetes_virtual_machines : [
+      for i in range(cluster.worker.count) : {
+        target_node         = length(cluster.target_nodes) > 1 ? cluster.target_nodes[i % length(cluster.target_nodes)] : cluster.target_nodes[0]
+        vm_name             = "${cluster_key}-node${i}"
+        vm_id               = cluster.worker.vm_id_start + i
         vm_description      = "k8s worker node"
         cpu_cores           = 2
         memory              = 4096
-        ip_address          = cidrhost(vm_value.worker.cidr, i)
-        gateway_ip_address  = vm_value.worker.gateway_ip_address
-        network_bridge_name = vm_value.worker.network_bridge_name
-        vlan_tag            = vm_value.worker.vlan_tag
+        ip_address          = cidrhost(cluster.worker.cidr, i)
+        gateway_ip_address  = cluster.worker.gateway_ip_address
+        network_bridge_name = cluster.worker.network_bridge_name
+        vlan_tag            = cluster.worker.vlan_tag
         startup_delay       = 0
         startup_order       = 15
         tags                = ["k8s", "k8s-worker"]
       }
     ]
   ])
+  k8s_hosts = {
+    for cluster_key, cluster in var.kubernetes_virtual_machines : "${cluster_key}_k3s_cluster" => {
+      target_nodes = cluster.target_nodes
+      vms = concat(
+        { for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i) },
+        { for i in range(cluster.worker.count) : "${cluster_key}-node${i}" => cidrhost(cluster.worker.cidr, i) }
+      )
+    }
+  }
 }
 
 data "azurerm_client_config" "current" {}
