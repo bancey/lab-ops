@@ -38,18 +38,6 @@ locals {
       }
     ]
   ])
-  k8s_hosts = {
-    for cluster_key, cluster in var.kubernetes_virtual_machines : "${cluster_key}_k3s_cluster" => {
-      target_nodes     = cluster.target_nodes
-      metallb_ip_range = cluster.metallb_ip_range
-      masters = {
-        for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i)
-      }
-      workers = {
-        for i in range(cluster.worker.count) : "${cluster_key}-node${i}" => cidrhost(cluster.worker.cidr, i)
-      }
-    } if var.target_nodes == cluster.target_nodes
-  }
 }
 
 data "azurerm_client_config" "current" {}
@@ -121,5 +109,10 @@ data "azurerm_key_vault_secret" "cloudflare_lab_zone_name" {
 
 data "azurerm_key_vault_secret" "cloudflare_lab_api_token" {
   name         = "Cloudflare-Lab-API-Token"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "key_file" {
+  name         = "Packer-Private-Key"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
