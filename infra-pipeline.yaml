@@ -101,6 +101,11 @@ stages:
         pool:
           vmImage: $(agentImage)
         steps:
+          - template: pipelines/terraform-init.yaml
+            parameters:
+              storageAccount: inventory50fc6b4d73a
+              workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
+              azureRmKey: prod_inventory
           - template: pipelines/terraform-plan.yaml
             parameters:
               serviceConnection: "MSDN Sub"
