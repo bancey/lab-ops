@@ -49,7 +49,8 @@ parameters:
         deploy: true
         localEnvironments:
           - wanda
-        dependsOn: []
+        dependsOn:
+          - GenerateAnsibleInventory
       - deployment: tiny_virtual_machines
         environment: prod
         component: virtual-machines
@@ -62,7 +63,8 @@ parameters:
           - hela
           - loki
           - thor
-        dependsOn: []
+        dependsOn:
+          - GenerateAnsibleInventory
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -167,8 +169,6 @@ stages:
                     artifactName: 'ansible'
                     targetPath: $(System.DefaultWorkingDirectory)/ansible
                     itemPattern: hosts.yaml
-                - script: cat $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
-                  displayName: 'Display Ansible Inventory'
               - template: pipelines/terraform-init.yaml
                 parameters:
                   storageAccount: ${{ deployment.storageAccount}}
