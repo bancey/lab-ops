@@ -13,6 +13,10 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "4.28.0"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "2.5.1"
+    }
   }
 
   backend "azurerm" {}
@@ -21,6 +25,8 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+provider "local" {}
 
 provider "proxmox" {
   alias    = "wanda"
