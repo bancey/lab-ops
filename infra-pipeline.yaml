@@ -162,10 +162,13 @@ stages:
                     serviceConnection: MSDN Sub
               - ${{ if eq(deployment.component, 'virtual-machines') }}:
                 - task: DownloadPipelineArtifact@2
+                  displayName: 'Download Ansible Inventory'
                   inputs:
                     artifactName: 'ansible'
                     targetPath: $(System.DefaultWorkingDirectory)/ansible
                     itemPattern: hosts.yaml
+                - script: cat $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
+                  displayName: 'Display Ansible Inventory'
               - template: pipelines/terraform-init.yaml
                 parameters:
                   storageAccount: ${{ deployment.storageAccount}}
