@@ -5,7 +5,7 @@ resource "local_sensitive_file" "key_file" {
 }
 
 resource "terraform_data" "k8s_ansible" {
-  for_each = { for key, value in var.var.kubernetes_virtual_machines : key => value if var.target_nodes == value.target_nodes }
+  for_each = { for key, value in var.kubernetes_virtual_machines : key => value if var.target_nodes == value.target_nodes }
 
   provisioner "local-exec" {
     command     = <<-EOT
