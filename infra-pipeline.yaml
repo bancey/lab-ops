@@ -160,6 +160,12 @@ stages:
                     keyVaultName: bancey-vault
                     serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                     serviceConnection: MSDN Sub
+              - ${{ if eq(deployment.component, 'virtual-machines') }}:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    artifactName: 'ansible'
+                    targetPath: $(System.DefaultWorkingDirectory)/ansible
+                    itemPattern: hosts.yaml
               - template: pipelines/terraform-init.yaml
                 parameters:
                   storageAccount: ${{ deployment.storageAccount}}
