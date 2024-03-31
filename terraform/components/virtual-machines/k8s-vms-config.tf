@@ -10,7 +10,7 @@ resource "terraform_data" "k8s_ansible" {
   depends_on = [ local_sensitive_file.key_file ]
 
   provisioner "local-exec" {
-    command     = <<-EOT
+    command     = <<EOT
       eval `ssh-agent -s`
       ssh-add id_rsa
       ansible-galaxy install -r requirements.yml
