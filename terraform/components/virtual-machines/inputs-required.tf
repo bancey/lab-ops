@@ -19,7 +19,7 @@ variable "virtual_machines" {
 
 variable "kubernetes_virtual_machines" {
   type = map(object({
-    target_nodes = list(string)
+    target_nodes     = list(string)
     metallb_ip_range = string
     master = object({
       count               = optional(number, 1)

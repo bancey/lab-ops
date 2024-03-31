@@ -40,7 +40,8 @@ locals {
   ])
   k8s_hosts = {
     for cluster_key, cluster in var.kubernetes_virtual_machines : "${cluster_key}_k3s_cluster" => {
-      target_nodes = cluster.target_nodes
+      target_nodes     = cluster.target_nodes
+      metallb_ip_range = cluster.metallb_ip_range
       masters = {
         for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i)
       }

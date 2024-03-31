@@ -46,7 +46,7 @@ node_count   = 4
 
 kubernetes_virtual_machines = {
   wanda = {
-    target_nodes = ["wanda"]
+    target_nodes     = ["wanda"]
     metallb_ip_range = "10.151.15.50-10.151.15.100"
     master = {
       count              = 1
@@ -62,7 +62,7 @@ kubernetes_virtual_machines = {
     }
   }
   tiny = {
-    target_nodes = ["hela", "loki", "thor"]
+    target_nodes     = ["hela", "loki", "thor"]
     metallb_ip_range = "10.151.16.50-10.151.16.100"
     master = {
       count              = 3
