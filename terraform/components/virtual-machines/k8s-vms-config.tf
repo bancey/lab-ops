@@ -21,7 +21,7 @@ resource "terraform_data" "combine_hosts" {
   depends_on = [local_file.hosts]
 
   provisioner "local-exec" {
-    command     = "yq eval-all '. as $item ireduce ({}; . *+ $item)' k8s-vms.yaml hosts.yaml > hosts.yaml"
+    command     = "yq eval-all '. as $item ireduce ({}; . *+ $item)' hosts.yaml k8s-vms.yaml > hosts.yaml"
     interpreter = ["/bin/bash", "-c"]
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
   }
