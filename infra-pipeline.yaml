@@ -94,6 +94,25 @@ variables:
     value: ubuntu-latest
 
 stages:
+  - stage: GenerateAnsibleInventory
+    dependsOn: []
+    jobs:
+      - job: GenerateAnsibleInventory
+        pool:
+          vmImage: $(agentImage)
+        steps:
+          - template: pipelines/terraform-plan.yaml
+            parameters:
+              serviceConnection: "MSDN Sub"
+              workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
+              variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
+          - template: pipelines/terraform-apply.yaml
+            parameters:
+              serviceConnection: "MSDN Sub"
+              workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
+              variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
+          - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
+            artifact: ansible
   - stage: CheckHostsOnline
     dependsOn: prod_twingate
     jobs:
