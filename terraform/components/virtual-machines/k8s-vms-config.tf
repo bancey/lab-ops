@@ -14,4 +14,8 @@ resource "terraform_data" "k8s_ansible" {
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
     interpreter = ["/bin/bash", "-c"]
   }
+
+  lifecycle {
+    replace_triggered_by = [ local_sensitive_file.key_file ]
+  }
 }
