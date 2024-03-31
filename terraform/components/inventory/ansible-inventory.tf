@@ -1,7 +1,3 @@
-resource "terraform_data" "hosts_replace" {
-  triggers_replace = timestamp()
-}
-
 resource "local_file" "hosts" {
   content = templatefile("${path.module}/hosts.yaml.tpl",
     {
@@ -10,8 +6,4 @@ resource "local_file" "hosts" {
     }
   )
   filename = "../../../ansible/hosts.yaml"
-
-  lifecycle {
-    replace_triggered_by = [terraform_data.hosts_replace]
-  }
 }
