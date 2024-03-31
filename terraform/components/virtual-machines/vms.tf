@@ -12,7 +12,7 @@ module "wanda_virtual_machines" {
   vm_description      = each.value.vm_description
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
-  ip_address          = each.value.ip_address
+  ip_address          = "${each.value.ip_address}/24"
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
   vlan_tag            = each.value.vlan_tag
@@ -38,7 +38,7 @@ module "hela_virtual_machines" {
   vm_description      = each.value.vm_description
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
-  ip_address          = each.value.ip_address
+  ip_address          = "${each.value.ip_address}/24"
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
   vlan_tag            = each.value.vlan_tag
@@ -64,7 +64,7 @@ module "loki_virtual_machines" {
   vm_description      = each.value.vm_description
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
-  ip_address          = each.value.ip_address
+  ip_address          = "${each.value.ip_address}/24"
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
   vlan_tag            = each.value.vlan_tag
@@ -90,7 +90,7 @@ module "thor_virtual_machines" {
   vm_description      = each.value.vm_description
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
-  ip_address          = each.value.ip_address
+  ip_address          = "${each.value.ip_address}/24"
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
   vlan_tag            = each.value.vlan_tag
