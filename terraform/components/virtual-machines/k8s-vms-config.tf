@@ -11,7 +11,9 @@ resource "terraform_data" "k8s_ansible" {
   depends_on = [local_sensitive_file.key_file]
 
   provisioner "local-exec" {
-    command     = file("${path.module}/ansible.sh.tpl")
+    command = templatefile("${path.module}/ansible.sh.tpl", {
+      key = each.key
+    })
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
     interpreter = ["/bin/bash", "-c"]
   }
