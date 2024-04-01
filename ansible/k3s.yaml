@@ -4,7 +4,7 @@
     k3s_version: "v1.29.3+k3s1"
     run_prep: true
     run_install: false
-  hosts: {{ passed_hosts }}
+  hosts: "{{ passed_hosts }}"
   become: true
   become_user: root
   become_method: sudo
