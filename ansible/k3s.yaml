@@ -24,7 +24,7 @@
         name: xanmanning.k3s
         public: true
       vars:
-        k3s_release_version: {{ k3s_version }}
+        k3s_release_version: "{{ k3s_version }}"
         k3s_install_hard_links: true
         k3s_become: true
         k3s_use_unsupported_config: true
