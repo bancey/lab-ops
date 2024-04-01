@@ -15,7 +15,7 @@ variable "twingate_networks" {
     location = optional(string, "ON_PREMISE")
     resources = map(object({
       address   = string
-      alias     = string
+      alias     = optional(string)
       is_active = optional(bool, true)
       protocols = object({
         allow_icmp = optional(bool, false)
