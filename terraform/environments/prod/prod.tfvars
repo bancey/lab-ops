@@ -97,11 +97,37 @@ virtual_machines = {
   #}
 }
 
-twingate_groups           = ["pve", "all"]
+twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s"]
 twingate_service_accounts = ["AzureDevOps"]
 twingate_networks = {
   banceylab = {
     resources = {
+      wanda_k8s = {
+        address = "10.151.15.0/24"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22]
+          }
+        }
+        access = {
+          groups           = ["wanda_k8s", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+      tiny_k8s = {
+        address = "10.151.16.0/24"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22]
+          }
+        }
+        access = {
+          groups           = ["tiny_k8s", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
       hela = {
         address = "10.151.14.12"
         alias   = "hela.heimelska.co.uk"
