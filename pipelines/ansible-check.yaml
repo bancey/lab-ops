@@ -32,8 +32,6 @@ steps:
       EXTRA_VARS="${{ parameters.extraVars }}"
       echo "Extra Variables: $EXTRA_VARS"
 
-      ls
-
       if [ ! -z "$EXTRA_VARS" ]; then
         ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
         ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"

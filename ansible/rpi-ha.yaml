@@ -30,13 +30,13 @@
         src: templates/keepalived.conf.j2
         dest: /etc/keepalived/keepalived.conf
     - name: Update apt and install keepalived
-        apt:
-          pkg:
-            - keepalived
-            - libipset13
-          state: latest
-          update_cache: true
-        when: not ansible_check_mode
+      apt:
+        pkg:
+          - keepalived
+          - libipset13
+        state: latest
+        update_cache: true
+      when: not ansible_check_mode
     - name: create config directories
       file:
         path: "{{ item }}"
