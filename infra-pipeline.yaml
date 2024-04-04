@@ -94,7 +94,7 @@ parameters:
           - test_gameserver
   - name: ansible_deployments
     type: object
-    defaukt:
+    default:
       - deployment: rpi_ansible
         environment: prod
         playbook: rpi-ha.yaml
