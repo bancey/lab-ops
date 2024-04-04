@@ -17,14 +17,9 @@ parameters:
     default: ""
 
 steps:
-  - template: ansible-prepare.yaml
-    parameters:
-      replaceTokens: true
-      keyVaultName: ${{ parameters.keyVaultName }}
-      privateKeySecretName: ${{ parameters.privateKeySecretName }}
-      serviceConnection: ${{ parameters.serviceConnection}}
-      hostsFilePath: ${{ parameters.hostsFilePath }}
   - script: |
+      az keyvault secret download --name ${{ parameters.privateKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/id_rsa
+      chmod 600 $(Build.StagingDirectory)/id_rsa
       eval `ssh-agent -s`
       ssh-add $(Build.StagingDirectory)/id_rsa
       REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
@@ -36,6 +31,8 @@ steps:
 
       EXTRA_VARS="${{ parameters.extraVars }}"
       echo "Extra Variables: $EXTRA_VARS"
+
+      ls
 
       if [ ! -z "$EXTRA_VARS" ]; then
         ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
