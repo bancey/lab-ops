@@ -22,6 +22,8 @@ parameters:
         address: "wanda.heimelska.co.uk"
       - name: thanos
         address: "thanos.heimelska.co.uk"
+      - name: gamora
+        address: "gamora.heimelska.co.uk"        
       - name: hela
         address: "hela.heimelska.co.uk"
       - name: loki
@@ -90,6 +92,18 @@ parameters:
         deploy: true
         dependsOn:
           - test_gameserver
+  - name: ansible_deployments
+    type: object
+    defaukt:
+      - deployment: rpi_ansible
+        environment: prod
+        playbook: rpi-ha.yaml
+        localEnvironments:
+          - hela
+          - loki
+          - thor
+        dependsOn:
+          - GenerateAnsibleInventory
 
 variables:
   - name: agentImage
@@ -193,3 +207,53 @@ stages:
                       serviceConnection: ${{ deployment.serviceConnection }}
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+  - ${{ each ansible_deployment in parameters.ansible_deployments }}:
+      - stage: ${{ ansible_deployment.deployment }}
+        ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
+          dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'CheckHostsOnline'), ',') }}
+        ${{ elseif ansible_deployment.localEnvironments }}:
+          dependsOn: CheckHostsOnline
+        ${{ else }}:
+          dependsOn: ${{ ansible_deployment.dependsOn }}
+        ${{ if ansible_deployment.localEnvironments }}:
+          condition: and(succeeded(), eq(stageDependencies.CheckHostsOnline.outputs['CheckHostsOnline.checkOnline_${{ ansible_deployment.localEnvironments[0] }}.online'], 'true'))
+        ${{ else }}:
+          condition: succeeded()
+        jobs:
+          - job: AnsibleCheckRun
+            pool:
+              vmImage: $(agentImage)
+            steps:
+              - template: pipelines/connect.yaml
+                parameters:
+                  keyVaultName: bancey-vault
+                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                  serviceConnection: MSDN Sub
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download Ansible Inventory'
+                inputs:
+                  artifactName: 'ansible'
+                  targetPath: $(System.DefaultWorkingDirectory)/ansible
+                  itemPattern: hosts.yaml
+              - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+                - template: pipelines/ansible-check.yaml
+                  parameters:
+                    hostsFilePath: ansible/hosts.yaml
+                    requirementsFile: ${{ deployment.requirementsFile }}
+                    playbook: ${{ deployment.playbook }}
+                    workingDirectory: ${{ deployment.workingDirectory }}
+                    keyVaultName: bancey-vault
+                    privateKeySecretName: Packer-Private-Key
+                    serviceCOnnection: MSDN Sub
+                    extraVars: ${{ deployment.extraVars }}
+              - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+                - template: pipelines/ansible-run.yaml
+                  parameters:
+                    hostsFilePath: ansible/hosts.yaml
+                    requirementsFile: ${{ deployment.requirementsFile }}
+                    playbook: ${{ deployment.playbook }}
+                    workingDirectory: ${{ deployment.workingDirectory }}
+                    keyVaultName: bancey-vault
+                    privateKeySecretName: Packer-Private-Key
+                    serviceCOnnection: MSDN Sub
+                    extraVars: ${{ deployment.extraVars }}

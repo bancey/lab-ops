@@ -3,13 +3,17 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    thanos:
-      ansible_host: 10.151.14.5
 %{ for vm_key, vm in vms ~}
     ${ vm_key }:
       ansible_host: ${ vm.ip_address }
 %{ endfor ~}
   children:
+    rpi:
+      hosts:
+        thanos:
+          ansible_host: 10.151.14.5
+        gamora:
+          ansible_host: 10.151.14.6
 %{ for cluster_key, cluster in k8s ~}
     ${ cluster_key }:
       vars:
