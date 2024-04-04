@@ -60,3 +60,4 @@
         files:
         - docker-compose.yaml
       register: output
+      when: not ansible_check_mode
