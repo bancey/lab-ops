@@ -241,7 +241,6 @@ stages:
                     hostsFilePath: ansible/hosts.yaml
                     requirementsFile: ${{ ansible_deployment.requirementsFile }}
                     playbook: ${{ ansible_deployment.playbook }}
-                    workingDirectory: ${{ ansible_deployment.workingDirectory }}
                     keyVaultName: bancey-vault
                     privateKeySecretName: Packer-Private-Key
                     serviceCOnnection: MSDN Sub
@@ -252,7 +251,6 @@ stages:
                     hostsFilePath: ansible/hosts.yaml
                     requirementsFile: ${{ ansible_deployment.requirementsFile }}
                     playbook: ${{ ansible_deployment.playbook }}
-                    workingDirectory: ${{ ansible_deployment.workingDirectory }}
                     keyVaultName: bancey-vault
                     privateKeySecretName: Packer-Private-Key
                     serviceCOnnection: MSDN Sub
