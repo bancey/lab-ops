@@ -6,8 +6,6 @@ parameters:
     default: ""
   - name: playbook
     type: string
-  - name: workingDirectory
-    type: string
   - name: keyVaultName
     type: string
   - name: privateKeySecretName
@@ -45,7 +43,4 @@ steps:
         ansible-playbook --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
       fi
     displayName: Run Ansible Playbook
-    ${{ if ne(parameters.workingDirectory, '') }}:
-      workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.workingDirectory }}
-    ${{ else }}:
-      workingDirectory: $(System.DefaultWorkingDirectory)/ansible
+    workingDirectory: $(System.DefaultWorkingDirectory)/ansible

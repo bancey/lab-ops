@@ -6,8 +6,6 @@ parameters:
     default: ""
   - name: playbook
     type: string
-  - name: workingDirectory
-    type: string
   - name: keyVaultName
     type: string
   - name: privateKeySecretName
@@ -19,35 +17,32 @@ parameters:
     default: ""
 
 steps:
-  - template: ansible-prepare.yaml
-    parameters:
-      replaceTokens: true
-      keyVaultName: ${{ parameters.keyVaultName }}
-      privateKeySecretName: ${{ parameters.privateKeySecretName }}
-      serviceConnection: ${{ parameters.serviceConnection}}
-      hostsFilePath: ${{ parameters.hostsFilePath }}
-  - script: |
-      eval `ssh-agent -s`
-      ssh-add $(Build.StagingDirectory)/id_rsa
-      REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
-      echo "Requirements file: $REQUIREMENTS_FILE"
-
-      if [ ! -z "$REQUIREMENTS_FILE" ]; then
-        ansible-galaxy install -r $REQUIREMENTS_FILE
-      fi
-
-      EXTRA_VARS="${{ parameters.extraVars }}"
-      echo "Extra Variables: $EXTRA_VARS"
-
-      if [ ! -z "$EXTRA_VARS" ]; then
-        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
-        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
-      else
-        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
-        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
-      fi
+  - task: AzureCLI@2
     displayName: Check Ansible Playbook
-    ${{ if ne(parameters.workingDirectory, '') }}:
-      workingDirectory: $(System.DefaultWorkingDirectory)/${{ parameters.workingDirectory }}
-    ${{ else }}:
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnection }}
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+        az keyvault secret download --name ${{ parameters.privateKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/id_rsa
+        chmod 600 $(Build.StagingDirectory)/id_rsa
+        eval `ssh-agent -s`
+        ssh-add $(Build.StagingDirectory)/id_rsa
+        REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
+        echo "Requirements file: $REQUIREMENTS_FILE"
+
+        if [ ! -z "$REQUIREMENTS_FILE" ]; then
+          ansible-galaxy install -r $REQUIREMENTS_FILE
+        fi
+
+        EXTRA_VARS="${{ parameters.extraVars }}"
+        echo "Extra Variables: $EXTRA_VARS"
+
+        if [ ! -z "$EXTRA_VARS" ]; then
+          ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
+          ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
+        else
+          ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
+          ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
+        fi
       workingDirectory: $(System.DefaultWorkingDirectory)/ansible
