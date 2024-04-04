@@ -198,6 +198,20 @@ twingate_networks = {
           service_accounts = ["AzureDevOps"]
         }
       }
+      gamora = {
+        address = "10.151.14.6"
+        alias   = "gamora.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [22, 53]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
     }
     connectors = ["banceylab-connector"]
   }
