@@ -213,7 +213,7 @@ twingate_networks = {
         }
       }
     }
-    connectors = ["banceylab-connector"]
+    connectors = ["banceylab-connector", "banceylab-connector-2"]
   }
 }
 
