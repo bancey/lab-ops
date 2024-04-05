@@ -16,9 +16,11 @@
         state: "BACKUP"
         priority: 100
   roles:
-    - install-docker
+    - role: install-docker
+      upgrade_packages: false
   tasks:
     - name: Get keepalived password
+      delegate_to: localhost
       shell: az keyvault secret show --name keepalived-pass --vault-name bancey-vault --query value -o tsv
       args:
         executable: /usr/bin/bash

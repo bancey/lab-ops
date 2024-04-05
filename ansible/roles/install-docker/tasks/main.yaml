@@ -27,6 +27,7 @@
   apt:
     name: "*"
     state: latest
+  when: {{ upgrade_packages }}
 - name: Create /etc/apt/keyrings if it doesn't exist
   file:
     path: /etc/apt/keyrings
