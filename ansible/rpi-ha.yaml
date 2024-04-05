@@ -6,7 +6,6 @@
   become_method: sudo
   gather_facts: true
   vars:
-    keepalived_pass: ""
     vip: "10.151.14.4/24"
     keepalive:
       thanos:
@@ -21,6 +20,12 @@
     - role: install-docker
       upgrade_packages: false
   tasks:
+    - name: Get keepalived password
+      delegate_to: localhost
+      shell: az keyvault secret show --name keepalived-pass --vault-name bancey-vault --query value -o tsv
+      register: get_keepalived_pass
+    - set_fact:
+        keepalived_pass: "{{ get_keepalived_pass.stdout }}"
     - name: Copy KeepAlived configuration template
       template:
         src: templates/keepalived.conf.j2
