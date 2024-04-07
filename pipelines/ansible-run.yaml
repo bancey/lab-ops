@@ -30,6 +30,7 @@ steps:
         az keyvault secret download --name ${{ parameters.privateKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/id_rsa
         chmod 600 $(Build.StagingDirectory)/id_rsa
         eval `ssh-agent -s`
+        echo $testEnvVar
         ssh-add $(Build.StagingDirectory)/id_rsa
         REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
         echo "Requirements file: $REQUIREMENTS_FILE"
