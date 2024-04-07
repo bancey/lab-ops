@@ -25,6 +25,9 @@
       shell: |
         echo "test"
         echo $testEnvVar
+      register: debug
+    - debug:
+        var: debug
     #- name: Get keepalived password
     #  delegate_to: localhost
     #  shell: |
