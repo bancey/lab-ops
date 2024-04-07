@@ -12,9 +12,6 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
-  - name: extraVars
-    type: string
-    default: ""
 
 steps:
   - task: AzureCLI@2
@@ -36,14 +33,6 @@ steps:
           ansible-galaxy install -r $REQUIREMENTS_FILE
         fi
 
-        EXTRA_VARS="${{ parameters.extraVars }}"
-        echo "Extra Variables: $EXTRA_VARS"
-
-        if [ ! -z "$EXTRA_VARS" ]; then
-          ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
-          ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
-        else
-          ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
-          ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
-        fi
+        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
+        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
       workingDirectory: $(System.DefaultWorkingDirectory)/ansible

@@ -12,9 +12,9 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
-  - name: extraVars
-    type: string
-    default: ""
+  - name: secrets
+    type: object
+    default: {}
 
 steps:
   - task: AzureCLI@2
@@ -30,7 +30,6 @@ steps:
         az keyvault secret download --name ${{ parameters.privateKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/id_rsa
         chmod 600 $(Build.StagingDirectory)/id_rsa
         eval `ssh-agent -s`
-        echo $testEnvVar
         ssh-add $(Build.StagingDirectory)/id_rsa
         REQUIREMENTS_FILE="${{ parameters.requirementsFile }}"
         echo "Requirements file: $REQUIREMENTS_FILE"
@@ -39,12 +38,6 @@ steps:
           ansible-galaxy install -r $REQUIREMENTS_FILE
         fi
 
-        EXTRA_VARS="${{ parameters.extraVars }}"
-        echo "Extra Variables: $EXTRA_VARS"
 
-        if [ ! -z "$EXTRA_VARS" ]; then
-          ansible-playbook --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
-        else
-          ansible-playbook --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }}
-        fi
+        ansible-playbook --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
       workingDirectory: $(System.DefaultWorkingDirectory)/ansible
