@@ -46,6 +46,6 @@ steps:
           ansible-galaxy install -r $REQUIREMENTS_FILE
         fi
 
-        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
-        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS"
+        ansible-playbook --syntax-check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS" -vvvvv
+        ansible-playbook --check --inventory $(System.DefaultWorkingDirectory)/${{ parameters.hostsFilePath }} ${{ parameters.playbook }} --extra-vars "$EXTRA_VARS" -vvvvv
       workingDirectory: $(System.DefaultWorkingDirectory)/ansible
