@@ -21,7 +21,7 @@
       upgrade_packages: false
   tasks:
     - set_fact:
-        keepalived_pass: "{{ lookup('ansible.builtin.file', './keepalived-pass') }}"
+        keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
     - name: Copy KeepAlived configuration template
       template:
         src: templates/keepalived.conf.j2
