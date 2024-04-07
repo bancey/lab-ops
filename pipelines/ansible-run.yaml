@@ -19,6 +19,8 @@ parameters:
 steps:
   - task: AzureCLI@2
     displayName: Run Ansible Playbook
+    env:
+      testEnvVar: "hello world!"
     inputs:
       azureSubscription: ${{ parameters.serviceConnection }}
       scriptType: "bash"

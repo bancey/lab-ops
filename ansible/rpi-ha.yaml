@@ -20,48 +20,53 @@
     - role: install-docker
       upgrade_packages: false
   tasks:
-    - name: Get keepalived password
+    - name: test env
       delegate_to: localhost
       shell: |
-        az login --service-principal -u $servicePrincipalId -p $servicePrincipalKey --tenant $tenantId
-        az keyvault secret show --name keepalived-pass --vault-name bancey-vault --query value -o tsv
-      register: get_keepalived_pass
-      no_log: true
-    - set_fact:
-        keepalived_pass: "{{ get_keepalived_pass.stdout }}"
-    - name: Copy KeepAlived configuration template
-      template:
-        src: templates/keepalived.conf.j2
-        dest: /etc/keepalived/keepalived.conf
-    - name: Update apt and install keepalived
-      apt:
-        pkg:
-          - keepalived
-          - libipset13
-        state: latest
-        update_cache: true
-      when: not ansible_check_mode
-    - name: create config directories
-      file:
-        path: "{{ item }}"
-        state: directory
-        owner: root
-        group: root
-        mode: 0775
-      loop:
-        - /opt/adguard
-        - /opt/adguard/config
-        - /opt/adguard/work
-        - /opt/portainer
-        - /opt/compose
-    - name: Copy docker-compose config
-      ansible.builtin.copy:
-        src: ./templates/docker-compose.yaml
-        dest: /opt/compose
-    - name: deploy Docker Compose stack
-      community.docker.docker_compose:
-        project_src: /opt/compose
-        files:
-        - docker-compose.yaml
-      register: output
-      when: not ansible_check_mode
+        echo "test"
+        echo $testEnvVar
+    #- name: Get keepalived password
+    #  delegate_to: localhost
+    #  shell: |
+    #    az login --service-principal -u $servicePrincipalId -p $servicePrincipalKey --tenant $tenantId
+    #    az keyvault secret show --name keepalived-pass --vault-name bancey-vault --query value -o tsv
+    #  register: get_keepalived_pass
+    #  no_log: true
+    #- set_fact:
+    #    keepalived_pass: "{{ get_keepalived_pass.stdout }}"
+    #- name: Copy KeepAlived configuration template
+    #  template:
+    #    src: templates/keepalived.conf.j2
+    #    dest: /etc/keepalived/keepalived.conf
+    #- name: Update apt and install keepalived
+    #  apt:
+    #    pkg:
+    #      - keepalived
+    #      - libipset13
+    #    state: latest
+    #    update_cache: true
+    #  when: not ansible_check_mode
+    #- name: create config directories
+    #  file:
+    #    path: "{{ item }}"
+    #    state: directory
+    #    owner: root
+    #    group: root
+    #    mode: 0775
+    #  loop:
+    #    - /opt/adguard
+    #    - /opt/adguard/config
+    #    - /opt/adguard/work
+    #    - /opt/portainer
+    #    - /opt/compose
+    #- name: Copy docker-compose config
+    #  ansible.builtin.copy:
+    #    src: ./templates/docker-compose.yaml
+    #    dest: /opt/compose
+    #- name: deploy Docker Compose stack
+    #  community.docker.docker_compose:
+    #    project_src: /opt/compose
+    #    files:
+    #    - docker-compose.yaml
+    #  register: output
+    #  when: not ansible_check_mode
