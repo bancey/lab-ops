@@ -22,6 +22,10 @@
   tasks:
     - set_fact:
         keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
+    - name: ensures /etc/keelalived dir exists
+      file: 
+        path: /etc/keepalived
+        state: directory
     - name: Copy KeepAlived configuration template
       template:
         src: templates/keepalived.conf.j2
