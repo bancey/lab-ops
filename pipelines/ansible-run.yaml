@@ -25,7 +25,7 @@ steps:
         scriptType: "bash"
         addSpnToEnvironment: true
         scriptLocation: "inlineScript"
-        inlineScript: az keyvault secret download --name ${{ secret }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/${{ secret }}
+        inlineScript: az keyvault secret download --name ${{ secret }} --vault-name ${{ parameters.keyVaultName }} --file ${{ secret }}
         workingDirectory: $(System.DefaultWorkingDirectory)/ansible
   - task: AzureCLI@2
     displayName: Run Ansible Playbook
