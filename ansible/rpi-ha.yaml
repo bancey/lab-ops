@@ -56,7 +56,7 @@
         src: ./templates/docker-compose.yaml
         dest: /opt/compose
     - name: deploy Docker Compose stack
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: /opt/compose
         files:
         - docker-compose.yaml
