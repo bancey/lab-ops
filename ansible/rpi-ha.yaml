@@ -22,8 +22,11 @@
   tasks:
     - name: Get keepalived password
       delegate_to: localhost
-      shell: az keyvault secret show --name keepalived-pass --vault-name bancey-vault --query value -o tsv
+      shell: |
+        az login --service-principal -u $servicePrincipalId -p $servicePrincipalKey --tenant $tenantId
+        az keyvault secret show --name keepalived-pass --vault-name bancey-vault --query value -o tsv
       register: get_keepalived_pass
+      no_log: true
     - set_fact:
         keepalived_pass: "{{ get_keepalived_pass.stdout }}"
     - name: Copy KeepAlived configuration template

@@ -22,6 +22,7 @@ steps:
     inputs:
       azureSubscription: ${{ parameters.serviceConnection }}
       scriptType: "bash"
+      addSpnToEnvironment: true
       scriptLocation: "inlineScript"
       inlineScript: |
         az keyvault secret download --name ${{ parameters.privateKeySecretName }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/id_rsa
