@@ -98,6 +98,8 @@ parameters:
       - deployment: rpi_ansible
         environment: prod
         playbook: rpi-ha.yaml
+        secrets:
+          - keepalived-pass
         localEnvironments:
           - hela
           - loki
@@ -244,6 +246,7 @@ stages:
                     keyVaultName: bancey-vault
                     privateKeySecretName: Packer-Private-Key
                     serviceCOnnection: MSDN Sub
+                    secrets: ${{ ansible_deployment.secrets }}
               - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
                 - template: pipelines/ansible-run.yaml
                   parameters:
@@ -253,3 +256,4 @@ stages:
                     keyVaultName: bancey-vault
                     privateKeySecretName: Packer-Private-Key
                     serviceCOnnection: MSDN Sub
+                    secrets: ${{ ansible_deployment.secrets }}
