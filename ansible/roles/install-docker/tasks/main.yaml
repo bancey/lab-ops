@@ -54,9 +54,9 @@
       - docker-compose-plugin
     state: latest
     update_cache: true
-  when: not (docker_repo.changed and ansible_check_mode)
+  when: not ansible_check_mode
 - name: Enable and start docker
   systemd:
     name: docker
     enabled: yes
-  when: not (docker_repo.changed and ansible_check_mode)
+  when: not ansible_check_mode
