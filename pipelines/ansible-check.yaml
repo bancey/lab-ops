@@ -12,8 +12,21 @@ parameters:
     type: string
   - name: serviceConnection
     type: string
+  - name: secrets
+    type: object
+    default: {}
 
 steps:
+  - ${{ each secret in parameters.secrets }}:
+    - task: AzureCLI@2
+      displayName: Download ${{ secret }}
+      inputs:
+        azureSubscription: ${{ parameters.serviceConnection }}
+        scriptType: "bash"
+        addSpnToEnvironment: true
+        scriptLocation: "inlineScript"
+        inlineScript: az keyvault secret download --name ${{ secret }} --vault-name ${{ parameters.keyVaultName }} --file $(Build.StagingDirectory)/${{ secret }}
+        workingDirectory: $(System.DefaultWorkingDirectory)/ansible
   - task: AzureCLI@2
     displayName: Check Ansible Playbook
     inputs:
