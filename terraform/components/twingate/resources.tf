@@ -8,14 +8,14 @@ resource "twingate_resource" "this" {
   protocols = each.value.resource.protocols
 
   dynamic "access_group" {
-    for_each = each.value.resource.access.groups
+    for_each = toset(each.value.resource.access.groups)
     content {
       group_id = twingate_group.this[access_group.value].id
     }
   }
 
   dynamic "access_service" {
-    for_each = each.value.resource.access.service_accounts
+    for_each = toset(each.value.resource.access.service_accounts)
     content {
       service_account_id = twingate_service_account.this[access_service.value].id
     }
