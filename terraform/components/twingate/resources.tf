@@ -7,9 +7,18 @@ resource "twingate_resource" "this" {
 
   protocols = each.value.resource.protocols
 
-  access {
-    group_ids           = [for group in each.value.resource.access.groups : twingate_group.this[group].id]
-    service_account_ids = [for service_account in each.value.resource.access.service_accounts : twingate_service_account.this[service_account].id]
+  dynamic "access_group" {
+    for_each = each.value.resource.access.groups
+    content {
+      group_id = twingate_group.this[access_group.value].id
+    }
+  }
+
+  dynamic "access_service_account" {
+    for_each = each.value.resource.access.service_accounts
+    content {
+      service_account_id = twingate_service_account.this[access_service_account.value].id
+    }
   }
 
   is_active = each.value.resource.is_active
