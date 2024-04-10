@@ -4,6 +4,7 @@ resource "twingate_resource" "this" {
   remote_network_id = twingate_remote_network.this[each.value.network_key].id
   address           = each.value.resource.address
   alias             = each.value.resource.alias
+  security_policy_id = data.twingate_security_policy.default.id
 
   protocols = each.value.resource.protocols
 
@@ -19,7 +20,6 @@ resource "twingate_resource" "this" {
     for_each = toset(each.value.resource.access.service_accounts)
     content {
       service_account_id = twingate_service_account.this[access_service.value].id
-      security_policy_id = data.twingate_security_policy.default.id
     }
   }
 
