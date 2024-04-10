@@ -14,10 +14,10 @@ resource "twingate_resource" "this" {
     }
   }
 
-  dynamic "access_service_account" {
+  dynamic "access_service" {
     for_each = each.value.resource.access.service_accounts
     content {
-      service_account_id = twingate_service_account.this[access_service_account.value].id
+      service_account_id = twingate_service_account.this[access_service.value].id
     }
   }
 
