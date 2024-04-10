@@ -36,3 +36,7 @@ data "azurerm_key_vault_secret" "twingate_api_token" {
   name         = "Twingate-API-Token"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
+
+data "twingate_security_policy" "default" {
+  name = "Default Policy"
+}
