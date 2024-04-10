@@ -20,6 +20,7 @@ steps:
     inputs:
       command: init
       workingDirectory: ${{ parameters.workingDirectory }}
+      commandOptions: '-upgrade'
       backendType: azurerm
       ensurebackend: true
       backendServiceArm: "MSDN Sub"

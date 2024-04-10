@@ -1,9 +1,9 @@
 resource "twingate_resource" "this" {
-  for_each          = { for resource in local.flattened_resources : resource.key => resource }
-  name              = each.value.resource_key
-  remote_network_id = twingate_remote_network.this[each.value.network_key].id
-  address           = each.value.resource.address
-  alias             = each.value.resource.alias
+  for_each           = { for resource in local.flattened_resources : resource.key => resource }
+  name               = each.value.resource_key
+  remote_network_id  = twingate_remote_network.this[each.value.network_key].id
+  address            = each.value.resource.address
+  alias              = each.value.resource.alias
   security_policy_id = data.twingate_security_policy.default.id
 
   protocols = each.value.resource.protocols
