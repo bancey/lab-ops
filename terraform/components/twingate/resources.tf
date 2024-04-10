@@ -10,7 +10,8 @@ resource "twingate_resource" "this" {
   dynamic "access_group" {
     for_each = toset(each.value.resource.access.groups)
     content {
-      group_id = twingate_group.this[access_group.value].id
+      group_id           = twingate_group.this[access_group.value].id
+      security_policy_id = data.twingate_security_policy.default.id
     }
   }
 
@@ -18,6 +19,7 @@ resource "twingate_resource" "this" {
     for_each = toset(each.value.resource.access.service_accounts)
     content {
       service_account_id = twingate_service_account.this[access_service.value].id
+      security_policy_id = data.twingate_security_policy.default.id
     }
   }
 
