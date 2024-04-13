@@ -184,13 +184,27 @@ twingate_networks = {
           service_accounts = ["AzureDevOps"]
         }
       }
+      wanda-mgmt = {
+        address = "10.151.14.10"
+        alias   = "wanda-mgmt.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [80, 443]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
       thanos = {
         address = "10.151.14.5"
         alias   = "thanos.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
-            ports  = [22, 53]
+            ports  = [22, 53, 80]
           }
         }
         access = {
@@ -204,7 +218,7 @@ twingate_networks = {
         protocols = {
           tcp = {
             policy = "RESTRICTED"
-            ports  = [22, 53]
+            ports  = [22, 53, 80]
           }
         }
         access = {
