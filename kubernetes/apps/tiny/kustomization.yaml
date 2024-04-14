@@ -2,14 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./external-services
-  - ../base/longhorn
+#  - ../base/longhorn
   - ../base/smokeping
   - ../base/pterodactyl
   - ./azdevops-secret.sops.yaml
   - ../base/azdevops
 patchesStrategicMerge:
-  - longhorn-certificate-patch.yaml
-  - longhorn-ingress-route-patch.yaml
+#  - longhorn-certificate-patch.yaml
+#  - longhorn-ingress-route-patch.yaml
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
