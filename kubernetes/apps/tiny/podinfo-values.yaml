@@ -14,7 +14,7 @@ spec:
       enabled: true
       className: traefik
       hosts:
-        - host: podinfo.nuc
+        - host: podinfo.tiny
           paths:
             - path: /
               pathType: ImplementationSpecific

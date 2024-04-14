@@ -8,7 +8,7 @@ spec:
   interval: 10m0s
   dependsOn:
     - name: cluster-infrastructure-configs
-  path: ./kubernetes/apps/nuc
+  path: ./kubernetes/apps/tiny
   prune: true
   sourceRef:
     kind: GitRepository

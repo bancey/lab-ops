@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   type: discord
-  channel: k8s-nuc
+  channel: k8s-tiny
   secretRef:
     name: discord-url
 ---
@@ -16,7 +16,7 @@ metadata:
   name: discord-alert
   namespace: flux-system
 spec:
-  summary: "K8S - NUC"
+  summary: "K8S - Tiny"
   providerRef:
     name: discord
   eventSeverity: info

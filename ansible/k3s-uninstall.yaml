@@ -1,5 +1,7 @@
 - name: Install K3S
-  hosts: wanda_k3s_cluster
+  vars:
+    passed_hosts: wanda_k3s_cluster
+  hosts: "{{ passed_hosts }}"
   become: true
   become_user: root
   become_method: sudo
