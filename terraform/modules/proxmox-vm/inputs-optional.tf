@@ -75,3 +75,9 @@ variable "domain" {
   description = "The domain the VM is in."
   default     = "heimelska.co.uk"
 }
+
+variable "disk_size" {
+  type        = number
+  description = "The size of the disk in GB."
+  default     = 8
+}

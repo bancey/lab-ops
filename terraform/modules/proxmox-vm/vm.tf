@@ -50,5 +50,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
+    size         = var.disk_size
   }
 }

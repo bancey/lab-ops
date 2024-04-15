@@ -9,6 +9,7 @@ locals {
         vm_description      = "k8s control plane"
         cpu_cores           = 4
         memory              = 8192
+        disk_size           = cluster.disk_size
         ip_address          = cidrhost(cluster.master.cidr, i)
         gateway_ip_address  = cluster.master.gateway_ip_address
         network_bridge_name = cluster.master.network_bridge_name
@@ -28,6 +29,7 @@ locals {
         vm_description      = "k8s worker node"
         cpu_cores           = 2
         memory              = 4096
+        disk_size           = cluster.disk_size
         ip_address          = cidrhost(cluster.worker.cidr, i)
         gateway_ip_address  = cluster.worker.gateway_ip_address
         network_bridge_name = cluster.worker.network_bridge_name

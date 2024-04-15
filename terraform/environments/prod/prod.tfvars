@@ -63,6 +63,7 @@ kubernetes_virtual_machines = {
   }
   tiny = {
     target_nodes     = ["hela", "loki", "thor"]
+    disk_size        = 100
     metallb_ip_range = "10.151.16.50-10.151.16.100"
     master = {
       count              = 3
