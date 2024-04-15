@@ -22,6 +22,7 @@ module "wanda_k8s_virtual_machines" {
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = proxmox_virtual_environment_download_file.wanda_ubuntu_cloud_image[0].id
+  disk_size           = each.value.disk_size
   tags                = each.value.tags
 }
 
@@ -49,6 +50,7 @@ module "hela_k8s_virtual_machines" {
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = proxmox_virtual_environment_download_file.hela_ubuntu_cloud_image[0].id
+  disk_size           = each.value.disk_size
   tags                = each.value.tags
 }
 
@@ -76,6 +78,7 @@ module "loki_k8s_virtual_machines" {
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = proxmox_virtual_environment_download_file.loki_ubuntu_cloud_image[0].id
+  disk_size           = each.value.disk_size
   tags                = each.value.tags
 }
 
@@ -103,5 +106,6 @@ module "thor_k8s_virtual_machines" {
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = proxmox_virtual_environment_download_file.thor_ubuntu_cloud_image[0].id
+  disk_size           = each.value.disk_size
   tags                = each.value.tags
 }
