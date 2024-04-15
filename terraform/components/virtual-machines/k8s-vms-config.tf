@@ -15,7 +15,7 @@ resource "terraform_data" "k8s_ansible" {
     module.loki_k8s_virtual_machines
   ]
 
-  triggers_replace = contains(each.value.target_nodes, "wanda") ? module.wanda_k8s_virtual_machines.mac_addresses : contains(each.value.target_nodes, "hela") && contains(each.value.target_nodes, "thor") && contains(each.value.target_nodes, "loki") ? concat(module.hela_k8s_virtual_machines.mac_addresses, module.thor_k8s_virtual_machines.mac_addresses, module.loki_k8s_virtual_machines.mac_addresses) : timestamp()
+  triggers_replace = contains(each.value.target_nodes, "wanda") ? module.wanda_k8s_virtual_machines.*.mac_addresses : contains(each.value.target_nodes, "hela") && contains(each.value.target_nodes, "thor") && contains(each.value.target_nodes, "loki") ? concat(module.hela_k8s_virtual_machines.*.mac_addresses, module.thor_k8s_virtual_machines.*.mac_addresses, module.loki_k8s_virtual_machines.*.mac_addresses) : timestamp()
 
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
