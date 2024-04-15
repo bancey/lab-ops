@@ -54,3 +54,5 @@ crash.log
 ### Packer Patch ###
 # ignore temporary output files
 output-*/
+
+ansible/hosts.yaml
