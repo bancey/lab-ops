@@ -10,3 +10,4 @@ resources:
   - ./podinfo.yaml
   - ./traefik.yaml
   - ./weave.yaml
+  - ./longhorn.yaml
