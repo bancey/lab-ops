@@ -38,11 +38,9 @@ spec:
         menu = Local
         title = Local Services
         ++ VDSL Modem
-        menu = VDSL Modem
         title = VDSL Modem
         host = 192.168.0.1
         ++ Router
-        menu = Router
         title = Router (Unifi Dream Machine Pro)
         host = 10.151.16.1
         ++ DNS / Ad Blocking
