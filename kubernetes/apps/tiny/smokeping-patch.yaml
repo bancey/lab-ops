@@ -37,18 +37,24 @@ spec:
         + Local
         menu = Local
         title = Local Services
-        ++ ONT
-        menu = ONT
-        title = ONT/Fibre Modem
-        host = 86.15.110.129
+        ++ VDSL Modem
+        menu = VDSL Modem
+        title = VDSL Modem
+        host = 192.168.0.1
         ++ Router
         menu = Router
         title = Router (Unifi Dream Machine Pro)
         host = 10.151.16.1
-        ++ Thanos
-        menu = Thanos
-        title = Thanos (DNS/AD blocking)
+        ++ DNS / Ad Blocking
+        menu = DNS / Ad Blocking
+        probe = DNS
+        title = DNS / Ad Blocking
+        +++ Thanos
         host = 10.151.14.5
+        +++ Gamora
+        host = 10.151.14.6
+        +++ Keepalived Endpoint
+        host = 10.151.14.4
         ++ Wanda
         menu = Wanda
         title = Wanda (Supermicro 5018)
