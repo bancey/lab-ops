@@ -14,6 +14,8 @@ spec:
     persistence:
       storageClassName: longhorn
       size: 500Mi
+      accessModes:
+        - ReadWriteMany
     appConfig:
       probes: |
         *** Probes ***
