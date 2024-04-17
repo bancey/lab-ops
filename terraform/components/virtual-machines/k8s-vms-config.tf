@@ -15,14 +15,12 @@ resource "terraform_data" "k8s_ansible" {
     module.loki_k8s_virtual_machines
   ]
 
-  lifecycle {
-    replace_triggered_by = [
-      module.wanda_k8s_virtual_machines.proxmox_virtual_environment_vm.vm,
-      module.hela_k8s_virtual_machines.proxmox_virtual_environment_vm.vm,
-      module.thor_k8s_virtual_machines.proxmox_virtual_environment_vm.vm,
-      module.loki_k8s_virtual_machines.proxmox_virtual_environment_vm.vm
-    ]
-  }
+  triggers_replace = [
+    module.wanda_k8s_virtual_machines,
+    module.hela_k8s_virtual_machines,
+    module.thor_k8s_virtual_machines,
+    module.loki_k8s_virtual_machines
+  ]
 
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
