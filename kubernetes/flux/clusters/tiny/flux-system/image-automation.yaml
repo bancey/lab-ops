@@ -20,5 +20,5 @@ spec:
     push:
       branch: main
   update:
-    path: ./clusters/my-cluster
+    path: ./kubernetes/flux/clusters/tiny
     strategy: Setters
