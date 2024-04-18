@@ -20,6 +20,7 @@ variable "virtual_machines" {
 variable "kubernetes_virtual_machines" {
   type = map(object({
     target_nodes       = list(string)
+    ansible_trigger    = optional(string)
     disk_size          = optional(number)
     k3s_etcd_datastore = optional(bool, false)
     metallb_ip_range   = string
