@@ -6,3 +6,5 @@ metadata:
 spec:
   imageRepositoryRef:
     name: smokeping
+  policy:
+    range: '>=1.0.0'
