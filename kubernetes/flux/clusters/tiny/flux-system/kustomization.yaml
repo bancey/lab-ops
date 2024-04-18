@@ -4,4 +4,4 @@ resources:
   - flux-components.yaml
   - flux-source.yaml
   - flux-cluster.yaml
-# - image-automation.yaml
+  - image-automation.yaml
