@@ -39,7 +39,7 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: virtual_machines
+      - deployment: wanda_virtual_machines
         environment: prod
         component: virtual-machines
         extraCommandArgs: -var "target_nodes=[\"wanda\"]"
