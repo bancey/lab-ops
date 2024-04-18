@@ -7,4 +7,5 @@ spec:
   imageRepositoryRef:
     name: smokeping
   policy:
-    range: '>=1.0.0'
+    semver:
+      range: '>=1.0.0'
