@@ -18,6 +18,7 @@ all:
     ${ cluster_key }:
       vars:
         metallb_ip_range: "${ cluster.metallb_ip_range }"
+        k3s_etcd_datastore: ${ cluster.k3s_etcd_datastore }
       hosts:
 %{ for master_key, master in cluster.masters ~}
         ${ master_key }:

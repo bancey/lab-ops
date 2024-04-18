@@ -19,8 +19,10 @@ variable "virtual_machines" {
 
 variable "kubernetes_virtual_machines" {
   type = map(object({
-    target_nodes     = list(string)
-    metallb_ip_range = string
+    target_nodes       = list(string)
+    disk_size          = optional(number)
+    k3s_etcd_datastore = optional(bool, false)
+    metallb_ip_range   = string
     master = object({
       count               = optional(number, 1)
       vm_id_start         = optional(number, 200)
@@ -40,3 +42,4 @@ variable "kubernetes_virtual_machines" {
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox for Kubernetes."
 }
+
