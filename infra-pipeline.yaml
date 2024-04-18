@@ -36,16 +36,12 @@ parameters:
       - deployment: prod_twingate
         environment: prod
         component: twingate
-        serviceConnection: "MSDN Sub"
-        storageAccount: twingate959ba0d66209
         destroy: false
         deploy: true
         dependsOn: []
       - deployment: virtual_machines
         environment: prod
         component: virtual-machines
-        serviceConnection: "MSDN Sub"
-        storageAccount: wanda1a85dd9018454b4
         extraCommandArgs: -var "target_nodes=[\"wanda\"]"
         destroy: false
         deploy: true
@@ -56,8 +52,6 @@ parameters:
       - deployment: tiny_virtual_machines
         environment: prod
         component: virtual-machines
-        serviceConnection: "MSDN Sub"
-        storageAccount: tiny523c690a628b4700
         extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
         destroy: false
         deploy: true
@@ -70,24 +64,18 @@ parameters:
       - deployment: prod_dns
         environment: prod
         component: dns
-        serviceConnection: "MSDN Sub"
-        storageAccount: dns175090c1a7c944d1
         destroy: false
         deploy: true
         dependsOn: []
       - deployment: test_gameserver
         environment: test
         component: gameserver
-        serviceConnection: "MSDN Sub"
-        storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: true
         dependsOn: []
       - deployment: prod_gameserver
         environment: prod
         component: gameserver
-        serviceConnection: "MSDN Sub"
-        storageAccount: gamec96560353b1a4d1a
         destroy: false
         deploy: true
         dependsOn:
@@ -110,6 +98,10 @@ parameters:
 variables:
   - name: agentImage
     value: ubuntu-latest
+  - name: stateStorageAccount
+    value: banceystatestor
+  - name: serviceConnection
+    value: "MSDN Sub"
 
 stages:
   - stage: GenerateAnsibleInventory
@@ -121,17 +113,17 @@ stages:
         steps:
           - template: pipelines/terraform-init.yaml
             parameters:
-              storageAccount: inventory50fc6b4d73a
+              storageAccount: $(stateStorageAccount)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
-              azureRmKey: prod_inventory
+              azureRmKey: tfstate/prod_inventory
           - template: pipelines/terraform-plan.yaml
             parameters:
-              serviceConnection: "MSDN Sub"
+              serviceConnection: $(serviceConnection)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
           - template: pipelines/terraform-apply.yaml
             parameters:
-              serviceConnection: "MSDN Sub"
+              serviceConnection: $(serviceConnection)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
@@ -147,7 +139,7 @@ stages:
             parameters:
               keyVaultName: bancey-vault
               serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-              serviceConnection: MSDN Sub
+              serviceConnection: $(serviceConnection)
           - script: sudo apt install ssh-tools
             displayName: 'Install ssh-tools'
           - ${{ each env in parameters.local_environments }}:
@@ -177,7 +169,7 @@ stages:
                   parameters:
                     keyVaultName: bancey-vault
                     serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                    serviceConnection: MSDN Sub
+                    serviceConnection: $(serviceConnection)
               - ${{ if eq(deployment.component, 'virtual-machines') }}:
                 - task: DownloadPipelineArtifact@2
                   displayName: 'Download Ansible Inventory'
@@ -187,12 +179,12 @@ stages:
                     itemPattern: hosts.yaml
               - template: pipelines/terraform-init.yaml
                 parameters:
-                  storageAccount: ${{ deployment.storageAccount}}
+                  storageAccount: $(stateStorageAccount)
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                  azureRmKey: ${{ deployment.deployment }}
+                  azureRmKey: tfstate/${{ deployment.deployment }}
               - template: pipelines/terraform-plan.yaml
                 parameters:
-                  serviceConnection: ${{ deployment.serviceConnection }}
+                  serviceConnection: $(serviceConnection)
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   ${{ if ne(deployment.extraCommandArgs, '') }}:
@@ -200,13 +192,13 @@ stages:
               - ${{ if and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
                   - template: pipelines/terraform-destroy.yaml
                     parameters:
-                      serviceConnection: ${{ deployment.serviceConnection }}
+                      serviceConnection: $(serviceConnection)
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
               - ${{ if and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
                   - template: pipelines/terraform-apply.yaml
                     parameters:
-                      serviceConnection: ${{ deployment.serviceConnection }}
+                      serviceConnection: $(serviceConnection)
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
@@ -230,7 +222,7 @@ stages:
                 parameters:
                   keyVaultName: bancey-vault
                   serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                  serviceConnection: MSDN Sub
+                  serviceConnection: $(serviceConnection)
               - task: DownloadPipelineArtifact@2
                 displayName: 'Download Ansible Inventory'
                 inputs:
@@ -245,7 +237,7 @@ stages:
                     playbook: ${{ ansible_deployment.playbook }}
                     keyVaultName: bancey-vault
                     privateKeySecretName: Packer-Private-Key
-                    serviceCOnnection: MSDN Sub
+                    serviceConnection: $(serviceConnection)
                     secrets: ${{ ansible_deployment.secrets }}
               - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
                 - template: pipelines/ansible-run.yaml
@@ -255,5 +247,5 @@ stages:
                     playbook: ${{ ansible_deployment.playbook }}
                     keyVaultName: bancey-vault
                     privateKeySecretName: Packer-Private-Key
-                    serviceCOnnection: MSDN Sub
+                    serviceConnection: $(serviceConnection)
                     secrets: ${{ ansible_deployment.secrets }}
