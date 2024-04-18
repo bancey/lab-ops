@@ -27,7 +27,6 @@
         k3s_release_version: "{{ k3s_version }}"
         k3s_install_hard_links: true
         k3s_become: true
-        k3s_etcd_datastore: "{{ k3s_etcd_datastore }}"
         k3s_server:
           node-ip: "{{ ansible_host }}"
           flannel-backend: 'none'
