@@ -179,6 +179,7 @@ stages:
                     inlineScript: |
                       az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/id_rsa
                       chmod 600 $(System.DefaultWorkingDirectory)/ansible/id_rsa
+                      ls -la $(System.DefaultWorkingDirectory)/ansible
               - ${{ if eq(deployment.component, 'virtual-machines') }}:
                 - task: DownloadPipelineArtifact@2
                   displayName: 'Download Ansible Inventory'
