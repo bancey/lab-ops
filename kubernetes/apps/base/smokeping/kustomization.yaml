@@ -7,5 +7,5 @@ resources:
   - release.yaml
   - ingress-route.yaml
   - certificates.yaml
-#  - image-repository.yaml
-#  - image-policy.yaml
+  - image-repository.yaml
+  - image-policy.yaml
