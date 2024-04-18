@@ -113,8 +113,3 @@ data "azurerm_key_vault_secret" "cloudflare_lab_api_token" {
   name         = "Cloudflare-Lab-API-Token"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
-
-data "azurerm_key_vault_secret" "key_file" {
-  name         = "Packer-Private-Key"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
