@@ -5,8 +5,6 @@ resources:
   - ../base/longhorn
   - ../base/smokeping
   - ../base/pterodactyl
-  - ./azdevops-secret.sops.yaml
-  - ../base/azdevops
 patchesStrategicMerge:
   - longhorn-certificate-patch.yaml
   - longhorn-ingress-route-patch.yaml
