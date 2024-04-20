@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - flux-components.yaml
+  - gotk-components.yaml
   - flux-source.yaml
   - flux-cluster.yaml
   - image-automation.yaml
