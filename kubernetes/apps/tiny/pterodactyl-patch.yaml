@@ -5,9 +5,6 @@ metadata:
   name: pterodactyl
   namespace: pterodactyl
 spec:
-  chart:
-    spec:
-      version: "0.3.6"
   values:
     appConfig:
       url: "https://pterodactyl.heimelska.co.uk"

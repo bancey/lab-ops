@@ -8,6 +8,7 @@ spec:
   releaseName: smokeping
   chart:
     spec:
+      version: 0.3.1
       chart: smokeping
       sourceRef:
         kind: HelmRepository

@@ -8,6 +8,7 @@ spec:
   releaseName: pterodactyl
   chart:
     spec:
+      version: 0.3.6
       chart: pterodactyl-panel
       sourceRef:
         kind: HelmRepository
