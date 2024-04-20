@@ -12,7 +12,12 @@ trigger:
       - infra-pipeline.yaml
 
 pr:
-  - master
+  branches:
+    include:
+      - master
+  paths:
+    exclude:
+      - kubernetes/*
 
 parameters:
   - name: local_environments
