@@ -19,3 +19,5 @@ spec:
   install:
     remediation:
       retries: 3
+  values:
+    image: lscr.io/linuxserver/smokeping:2.8.2
