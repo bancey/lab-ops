@@ -33,8 +33,6 @@ spec:
       secondary:
         persistence:
           size: 2Gi
-      image:
-        tag: 10.5.19-debian-11-r19
     redis:
       enabled: true
       global:
