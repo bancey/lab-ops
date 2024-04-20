@@ -8,6 +8,6 @@
   },
   "helm-values":{
     "fileMatch": ["^kubernetes/.*\\.yaml$"],
-    "ignorePaths": ["(?:^|/)gotk-components\\.ya?ml$"]
+    "ignorePaths": ["^kubernetes/.*/gotk-components\\.yaml$"]
   }
 }
