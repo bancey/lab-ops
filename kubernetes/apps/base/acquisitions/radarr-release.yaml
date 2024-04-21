@@ -8,7 +8,7 @@ spec:
   releaseName: radarr
   chart:
     spec:
-      version: 0.1.0
+      version: 0.2.1
       chart: xarr
       sourceRef:
         kind: HelmRepository
@@ -20,9 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image:
-      repository: lscr.io/linuxserver/radarr
-      tag: "5.0.3.8127-ls191"
+    image: linuxserver/radarr:5.0.3.8127-ls191
     config:
       port: 7878
     persistence:
