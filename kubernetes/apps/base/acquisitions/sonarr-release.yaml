@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: linuxserver/sonarr:3.0.10.1567-ls209
+    image: linuxserver/sonarr:3.0.10
     config:
       port: 8989
     persistence:
