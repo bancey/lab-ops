@@ -9,6 +9,5 @@ resources:
   - ./kube-plex.yaml
   - ./podinfo.yaml
   - ./traefik.yaml
-  - ./weave.yaml
   - ./longhorn.yaml
   - ./codechem.yaml
