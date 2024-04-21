@@ -8,7 +8,7 @@ spec:
   releaseName: sabnzbd
   chart:
     spec:
-      version: 0.2.0
+      version: 0.3.1
       chart: sabnzbd
       sourceRef:
         kind: HelmRepository
@@ -20,6 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
+    image: lscr.io/linuxserver/sabnzbd:4.1.0-ls132
     persistence:
       config:
         enabled: true
