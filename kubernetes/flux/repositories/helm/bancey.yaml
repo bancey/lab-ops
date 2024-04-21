@@ -5,5 +5,5 @@ metadata:
   name: bancey
   namespace: flux-system
 spec:
-  interval: 1h0m0s
+  interval: 30m
   url: https://bancey.github.io/helm-charts/
