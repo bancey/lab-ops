@@ -28,13 +28,14 @@ spec:
       size: 10Gi
       storageClass: longhorn
       accessModes:
-        - ReadWriteOnce
+        - ReadWriteMany
     config:
       publicURI: "https://penpot.heimelska.co.uk"
       flags: "enable-registration enable-login disable-demo-users disable-demo-warning enable-smtp"
       apiExistingSecret: penpot-secret
       apiSecretKey: api-secret
       postgresql:
+        host: penpot-postgresql
         username: penpot
         database: penpot
         existingSecret: penpot-secret
