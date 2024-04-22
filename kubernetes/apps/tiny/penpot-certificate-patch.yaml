@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: penpot-staging-tls
+  namespace: default
+spec:
+  commonName: "penpot.heimelska.co.uk"
+  dnsNames:
+  - "penpot.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: penpot-tls
+  namespace: default
+spec:
+  commonName: "penpot.heimelska.co.uk"
+  dnsNames:
+  - "penpot.heimelska.co.uk"

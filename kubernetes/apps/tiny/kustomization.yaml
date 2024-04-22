@@ -5,6 +5,8 @@ resources:
   - ../base/longhorn
   - ../base/smokeping
   - ../base/pterodactyl
+  - ./penpot-secret.sops.yaml
+  - ../base/penpot
 patchesStrategicMerge:
   - longhorn-certificate-patch.yaml
   - longhorn-ingress-route-patch.yaml
@@ -14,3 +16,4 @@ patchesStrategicMerge:
   - pterodactyl-certificate-patch.yaml
   - pterodactyl-ingress-route-patch.yaml
   - pterodactyl-patch.yaml
+  - penpot-certificate-patch.yaml
