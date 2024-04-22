@@ -42,7 +42,7 @@ spec:
         secretKeys:
           passwordKey: postgresql-password
       redis:
-        host: penpot-redis
+        host: penpot-redis-master
       smtp:
         enabled: true
         defaultFrom: "bancey.homelab@gmail.com"
