@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: penpot-staging-tls
+  namespace: default
+spec:
+  secretName: penpot-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "penpot-fqdn"
+  dnsNames:
+  - "penpot-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: penpot-tls
+  namespace: default
+spec:
+  secretName: penpot-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "penpot-fqdn"
+  dnsNames:
+  - "penpot-fqdn"

@@ -1,0 +1,61 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: penpot
+  namespace: penpot
+spec:
+  releaseName: penpot
+  chart:
+    spec:
+      version: 0.4.1
+      chart: penpot
+      sourceRef:
+        kind: HelmRepository
+        name: codechem
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  values:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: longhorn
+    config:
+      publicURI: "https://penpot.hiemelska.co.uk"
+      flags: "enable-registration enable-login disable-demo-users disable-demo-warning enable-smtp"
+      apiExistingSecret: penpot-secret
+      apiSecretKey: api-secret
+      postgresql:
+        username: penpot
+        database: penpot
+        existingSecret: penpot-secret
+        secretKeys:
+          passwordKey: postgresql-password
+      smtp:
+        enabled: true
+        defaultFrom: "bancey.homelab@gmail.com"
+        defaultReplyTo: "bancey.homelab@gmail.com"
+        host: "smtp.gmail.com"
+        port: "587"
+        tls: true
+        existingSecret: penpot-secret
+        secretKeys:
+          usernameKey: smtp-username
+          passwordKey: smtp-password
+      registrationDomainWhitelist: "bancey.xyz"
+    postgresql:
+      auth:
+        username: penpot
+        enablePostgresUser: false
+        database: penpot
+        existingSecret: penpot-secret
+        secretKeys:
+          userPasswordKey: postgresql-password
+    redis:
+      auth:
+        enabled: false
+

@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: smokeping
+  namespace: smokeping
+spec:
+  routes:
+    - match: Host(`smokeping.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: smokeping
+          port: 80
+      middlewares:
+        - name: default-headers
+          namespace: traefik
