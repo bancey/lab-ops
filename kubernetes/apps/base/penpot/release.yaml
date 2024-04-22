@@ -8,7 +8,7 @@ spec:
   releaseName: penpot
   chart:
     spec:
-      version: 0.4.1
+      version: 0.1.0
       chart: penpot
       sourceRef:
         kind: HelmRepository
@@ -25,7 +25,7 @@ spec:
       size: 10Gi
       storageClass: longhorn
     config:
-      publicURI: "https://penpot.hiemelska.co.uk"
+      publicURI: "https://penpot.heimelska.co.uk"
       flags: "enable-registration enable-login disable-demo-users disable-demo-warning enable-smtp"
       apiExistingSecret: penpot-secret
       apiSecretKey: api-secret
