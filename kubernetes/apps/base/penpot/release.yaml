@@ -20,10 +20,15 @@ spec:
     remediation:
       retries: 3
   values:
+    global:
+      postgresqlEnabled: true
+      redisEnabled: true
     persistence:
       enabled: true
       size: 10Gi
       storageClass: longhorn
+      accessModes:
+        - ReadWriteOnce
     config:
       publicURI: "https://penpot.heimelska.co.uk"
       flags: "enable-registration enable-login disable-demo-users disable-demo-warning enable-smtp"
