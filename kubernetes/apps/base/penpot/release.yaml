@@ -30,7 +30,7 @@ spec:
       accessModes:
         - ReadWriteMany
     config:
-      publicURI: "https://penpot.heimelska.co.uk"
+      publicURI: "penpot-fqdn"
       flags: "enable-registration enable-login disable-demo-users disable-demo-warning enable-smtp"
       apiExistingSecret: penpot-secret
       apiSecretKey: api-secret
