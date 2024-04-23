@@ -2,8 +2,8 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: pterodactyl-panel
-  namespace: pterodactyl
+  name: penpot
+  namespace: penpot
 spec:
   routes:
     - match: Host(`penpot.heimelska.co.uk`)
