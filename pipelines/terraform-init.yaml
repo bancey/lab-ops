@@ -8,7 +8,7 @@ parameters:
 
 steps:
   - script: |
-      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b  ~/.local/bin 0.13.1300
+      curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash -s -- -b  ~/.local/bin
       set -x
       echo '##vso[task.prependpath]$(HOME)/.local/bin'
       export PATH=$HOME/.local/bin:$PATH
