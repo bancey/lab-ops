@@ -34,7 +34,6 @@ defaults
         errorfile 504 /etc/haproxy/errors/504.http
 
 peers stickytables
-        bind *:10000
         peer thanos 10.151.14.5
         peer gamora 10.151.14.6
         table sticky-sessions type ip size 1m expire 30m
