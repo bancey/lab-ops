@@ -44,11 +44,22 @@ frontend stats
         stats uri /
         stats refresh 10s
 
-frontend tinyProxmoxGUI
+frontend sniProxy
         bind *:443
         option tcplog
         mode tcp
-        default_backend tinyPVE
+        tcp-request inspect-delay 5s
+        tcp-request content accept if { req_ssl_hello_type 1 }
+
+        use_backend tinyPVE if { req_ssl_sni -i tiny-pve.heimelska.co.uk }
+        default_backend tinyTraefik
+
+backend tinyTraefik
+        mode tcp
+        balance roundrobin
+        option ssl-hello-chk
+        option tcp-check
+        server tiny 10.151.16.50:443 check
 
 backend tinyPVE
         mode tcp
