@@ -109,7 +109,7 @@ twingate_networks = {
         protocols = {
           tcp = {
             policy = "RESTRICTED"
-            ports  = [22]
+            ports  = [22, 443, 80]
           }
         }
         access = {
@@ -122,7 +122,7 @@ twingate_networks = {
         protocols = {
           tcp = {
             policy = "RESTRICTED"
-            ports  = [22]
+            ports  = [22, 443, 80]
           }
         }
         access = {
