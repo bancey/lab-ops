@@ -104,6 +104,34 @@ twingate_service_accounts = ["AzureDevOps"]
 twingate_networks = {
   banceylab = {
     resources = {
+      sonarr = {
+        address = "10.151.16.50"
+        alias   = "sonarr.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [443, 80]
+          }
+        }
+        access = {
+          groups           = ["wanda_k8s", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
+      dl = {
+        address = "10.151.16.50"
+        alias   = "dl.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [443, 80]
+          }
+        }
+        access = {
+          groups           = ["wanda_k8s", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
       wanda_k8s = {
         address = "10.151.15.0/24"
         protocols = {
