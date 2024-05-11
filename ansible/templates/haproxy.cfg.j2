@@ -52,6 +52,7 @@ frontend sniProxy
         tcp-request content accept if { req_ssl_hello_type 1 }
 
         use_backend tinyPVE if { req_ssl_sni -i tiny-pve.heimelska.co.uk }
+        use_backend wanda if { req_ssl_sni -i wanda.heimelska.co.uk }
         default_backend tinyTraefik
 
 backend tinyTraefik
@@ -60,6 +61,12 @@ backend tinyTraefik
         option ssl-hello-chk
         option tcp-check
         server tiny 10.151.16.50:443 check
+
+backend wanda
+        mode tcp
+        balance roundrobin
+        option ssl-hell-chk
+        server wanda wanda.heimelska.co.uk:8006 check
 
 backend tinyPVE
         mode tcp

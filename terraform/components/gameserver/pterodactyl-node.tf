@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=feat%2Freference-existing-networking"
+  source = "github.com/bancey/terraform-azurerm-pterodactyl-node.git?ref=main"
 
   depends_on = [
     cloudflare_record.records
@@ -13,7 +13,7 @@ module "pterodactyl_node" {
   vm_size            = each.value.size
   vm_image_publisher = "canonical"
   vm_image_offer     = "0001-com-ubuntu-server-focal"
-  vm_image_sku       = "20_04-lts-gen2"
+  vm_image_sku       = "24_04-lts-gen2"
   vm_image_version   = "latest"
   vm_domain_name     = each.value.domain_name == null ? "${each.key}-${var.env}.bancey.xyz" : each.value.domain_name
   existing_public_ip = {
