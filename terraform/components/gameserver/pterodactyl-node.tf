@@ -63,12 +63,11 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
   type                       = "RunCommandLinux"
   type_handler_version       = "1.0"
   auto_upgrade_minor_version = true
+  tags                       = local.tags
 
   protected_settings = <<PROTECTED_SETTINGS
   {
     "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh"), { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_service_key.value })}"
   }
   PROTECTED_SETTINGS
-
-  tags = module.ctags.common_tags
 }
