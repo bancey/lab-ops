@@ -67,7 +67,7 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
 
   protected_settings = <<PROTECTED_SETTINGS
   {
-    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_service_key.value }))}"
+    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_service_key[0].value }))}"
   }
   PROTECTED_SETTINGS
 }
