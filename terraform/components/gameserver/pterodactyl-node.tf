@@ -1,5 +1,5 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-module-pterodactyl-node.git?ref=feat%2Freference-existing-networking"
+  source = "github.com/bancey/terraform-azurerm-pterodactyl-node.git?ref=main"
 
   depends_on = [
     cloudflare_record.records
@@ -13,9 +13,12 @@ module "pterodactyl_node" {
   vm_size            = each.value.size
   vm_image_publisher = "canonical"
   vm_image_offer     = "0001-com-ubuntu-server-focal"
-  vm_image_sku       = "20_04-lts-gen2"
+  vm_image_sku       = "24_04-lts-gen2"
   vm_image_version   = "latest"
-  vm_domain_name     = each.value.domain_name == null ? "${each.key}-${var.env}.bancey.xyz" : each.value.domain_name
+  certificate_config = {
+    domain_name = each.value.domain_name == null ? "${each.key}-${var.env}.bancey.xyz" : each.value.domain_name
+    email       = "abance@bancey.xyz"
+  }
   existing_public_ip = {
     name                = azurerm_public_ip.this[each.key].name
     resource_group_name = azurerm_resource_group.gameserver.name
@@ -50,4 +53,21 @@ module "pterodactyl_node" {
       ]
     }
   ]
+}
+
+resource "azurerm_virtual_machine_extension" "setup_twingate" {
+  for_each                   = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
+  name                       = "SetupTwingate"
+  virtual_machine_id         = module.pterodactyl_node[each.key].vm_id
+  publisher                  = "Microsoft.CPlat.Core"
+  type                       = "RunCommandLinux"
+  type_handler_version       = "1.0"
+  auto_upgrade_minor_version = true
+  tags                       = local.tags
+
+  protected_settings = <<PROTECTED_SETTINGS
+  {
+    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_service_key[0].value }))}"
+  }
+  PROTECTED_SETTINGS
 }

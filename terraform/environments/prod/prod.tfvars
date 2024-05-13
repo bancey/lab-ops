@@ -2,44 +2,7 @@ env                            = "prod"
 gameservers_vnet_address_space = ["10.200.0.0/16"]
 gameservers                    = {}
 
-cloudflare_records = {
-  "@" = {
-    value   = "PublicIP"
-    type    = "A"
-    proxied = true
-    ttl     = 1
-  },
-  "whales" = {
-    value   = "@"
-    type    = "CNAME"
-    proxied = true
-    ttl     = 1
-  },
-  "request" = {
-    value   = "@"
-    type    = "CNAME"
-    proxied = true
-    ttl     = 1
-  },
-  "plex" = {
-    value   = "@"
-    type    = "CNAME"
-    proxied = true
-    ttl     = 1
-  },
-  "wf" = {
-    value   = "@"
-    type    = "CNAME"
-    proxied = true
-    ttl     = 1
-  },
-  "pterodactyl" = {
-    value   = "@"
-    type    = "CNAME"
-    proxied = true
-    ttl     = 1
-  }
-}
+cloudflare_records = {}
 
 master_count = 1
 node_count   = 4
@@ -99,8 +62,8 @@ virtual_machines = {
   #}
 }
 
-twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s"]
-twingate_service_accounts = ["AzureDevOps"]
+twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
+twingate_service_accounts = ["AzureDevOps", "Pterodactyl"]
 twingate_networks = {
   banceylab = {
     resources = {
@@ -130,6 +93,21 @@ twingate_networks = {
         access = {
           groups           = ["wanda_k8s", "all"]
           service_accounts = ["AzureDevOps"]
+        }
+      }
+      pterodactyl = {
+        address = "10.151.15.50"
+        alias   = "pterodactyl.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [8080, 443, 2022, 22]
+          }
+        }
+        access = {
+          groups           = ["pterodactyl", "all"]
+          service_accounts = ["Pterodactyl"]
+
         }
       }
       wanda_k8s = {
