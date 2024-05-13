@@ -54,3 +54,21 @@ module "pterodactyl_node" {
     }
   ]
 }
+
+resource "azurerm_virtual_machine_extension" "setup_twingate" {
+  for_each                   = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
+  name                       = "SetupTwingate"
+  virtual_machine_id         = module.virtual-machines[each.key].vm_id
+  publisher                  = "Microsoft.CPlat.Core"
+  type                       = "RunCommandLinux"
+  type_handler_version       = "1.0"
+  auto_upgrade_minor_version = true
+
+  protected_settings = <<PROTECTED_SETTINGS
+  {
+    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh"), { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_service_key.value })}"
+  }
+  PROTECTED_SETTINGS
+
+  tags = module.ctags.common_tags
+}
