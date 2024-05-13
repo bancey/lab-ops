@@ -7,7 +7,7 @@ module "pterodactyl_node" {
 
   for_each = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
 
-  name               = "${each.key}-${var.env}"
+  name               = each.key
   env                = var.env
   location           = var.location
   vm_size            = each.value.size
