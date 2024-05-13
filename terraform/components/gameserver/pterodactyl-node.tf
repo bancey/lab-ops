@@ -12,8 +12,8 @@ module "pterodactyl_node" {
   location           = var.location
   vm_size            = each.value.size
   vm_image_publisher = "canonical"
-  vm_image_offer     = "ubuntu-24_04-lts"
-  vm_image_sku       = "server"
+  vm_image_offer     = "0001-com-ubuntu-server-jammy"
+  vm_image_sku       = "22_04-lts-gen2"
   vm_image_version   = "latest"
   certificate_config = {
     domain_name = each.value.domain_name == null ? "${each.key}-${var.env}.bancey.xyz" : each.value.domain_name
