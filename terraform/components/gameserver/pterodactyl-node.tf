@@ -59,13 +59,13 @@ resource "azurerm_role_assignment" "reader" {
   for_each             = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
   scope                = "/subscriptions/5a8abf1c-0a69-49c6-bcf1-676843b64217/resourceGroups/common/providers/Microsoft.KeyVault/vaults/bancey-vault"
   role_definition_name = "Reader"
-  principal_id         = module.pterodactyl_node[each.key].vm_identity_principal_id
+  principal_id         = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
 
 resource "azuread_group_member" "kv_reader" {
   for_each         = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
   group_object_id  = "9edd55d1-288c-482b-84a3-508efac9e683"
-  member_object_id = module.pterodactyl_node[each.key].vm_identity_principal_id
+  member_object_id = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
 
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
