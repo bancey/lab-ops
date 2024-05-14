@@ -99,9 +99,3 @@ data "azurerm_key_vault_secret" "public_ip" {
   name         = "Home-Public-IP"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
-
-data "azurerm_key_vault_secret" "twingate_service_key" {
-  count        = length({ for k, v in var.gameservers : k => v if v.type == "pterodactyl" }) > 0 ? 1 : 0
-  name         = "Twingate-Pterodactyl-SA-Key"
-  key_vault_id = data.azurerm_key_vault.vault.id
-}
