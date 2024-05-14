@@ -81,7 +81,7 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
 
   protected_settings = <<PROTECTED_SETTINGS
   {
-    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { SECRET_NAME = "Twingate-Pterodactyl-SA-Key", VAULT_NAME = data.azurerm_key_vault.vault.id }))}"
+    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { SECRET_NAME = "Twingate-Pterodactyl-SA-Key", VAULT_NAME = "bancey-vault" }))}"
   }
   PROTECTED_SETTINGS
 }
