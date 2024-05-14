@@ -1,6 +1,8 @@
 env                            = "prod"
 gameservers_vnet_address_space = ["10.200.0.0/16"]
-gameservers                    = {}
+gameservers = {
+  wings = {}
+}
 
 cloudflare_records = {}
 
