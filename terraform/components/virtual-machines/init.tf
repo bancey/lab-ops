@@ -3,7 +3,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.55.0"
+      version = "0.56.1"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
