@@ -98,7 +98,7 @@ twingate_networks = {
         }
       }
       pterodactyl = {
-        address = "10.151.15.50"
+        address = "10.151.16.50"
         alias   = "pterodactyl.heimelska.co.uk"
         protocols = {
           tcp = {
