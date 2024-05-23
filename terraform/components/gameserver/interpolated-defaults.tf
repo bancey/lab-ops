@@ -99,3 +99,8 @@ data "azurerm_key_vault_secret" "public_ip" {
   name         = "Home-Public-IP"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
+
+data "azurerm_key_vault_secret" "twingate_pterodactyl_sa_key" {
+  name         = "Twingate-Pterodactyl-SA-Key"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
