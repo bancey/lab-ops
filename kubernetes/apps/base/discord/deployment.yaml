@@ -6,7 +6,7 @@ metadata:
   labels:
     app: discord-bot
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: discord-bot
@@ -19,47 +19,47 @@ spec:
         - name: discord-bot
           image: ghcr.io/bancey/bancey-bot:sha-500ddd0
           env:
-            - name: BANCEYBOT__DISCORDTOKEN
+            - name: BanceyBot__DiscordToken
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: TOKEN
-            - name: BANCEYBOT__AZURE__TENANTID
+            - name: BanceyBot__Azure__TenantId
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_TENANT_ID
-            - name: BANCEYBOT__AZURE__CLIENTID
+            - name: BanceyBot__Azure__ClientId
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_CLIENT_ID
-            - name: BANCEYBOT__AZURE__CLIENTSECRET
+            - name: BanceyBot__Azure__ClientSecret
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_CLIENT_SECRET
-            - name: BANCEYBOT__AZURE__SUBSCRIPTIONID
+            - name: BanceyBot__Azure__SubscriptionId
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_SUBSCRIPTION_ID
-            - name: BANCEYBOT__PTERODACTYL__BASEURL
+            - name: BanceyBot__Pterodactyl__BaseUrl
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: PTERODACTYL_BASE_URL
-            - name: BANCEYBOT__PTERODACTYL__CLIENTTOKEN
+            - name: BanceyBot__Pterodactyl__ClientToken
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: PTERODACTYL_TOKEN
-            - name: BANCEYBOT__APPLICATIONINSIGHTS__CONNECTIONSTRING
+            - name: BanceyBot__ApplicationInsights__ConnectionString
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: APPLICATIONINSIGHTS_CONNECTIONSTRING
-            - name: BANCEYBOT__ALLOWEDCHANNELIDS__0
+            - name: BanceyBot__AllowedChannelIds__0
               valueFrom:
                 configMapKeyRef:
                   name: discord-bot-config
