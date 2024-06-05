@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-bot-deployment
+  namespace: discord
+  labels:
+    app: discord-bot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: discord-bot
+  template:
+    metadata:
+      labels:
+        app: discord-bot
+    spec:
+      containers:
+        - name: discord-bot
+          image: ghcr.io/bancey/bancey-bot:sha-500ddd0
+          env:
+            - name: BANCEYBOT:DISCORDTOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: TOKEN
+            - name: BANCEYBOT:AZURE:TENANTID
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: AZURE_TENANT_ID
+            - name: BANCEYBOT:AZURE:CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: AZURE_CLIENT_ID
+            - name: BANCEYBOT:AZURE:CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: AZURE_CLIENT_SECRET
+            - name: BANCEYBOT:AZURE:SUBSCRIPTIONID
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: AZURE_SUBSCRIPTION_ID
+            - name: BANCEYBOT:PTERODACTYL:BASEURL
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: PTERODACTYL_BASE_URL
+            - name: BANCEYBOT:PTERODACTYL:CLIENTTOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: PTERODACTYL_TOKEN
+            - name: BANCEYBOT:APPLICATIONINSIGHTS:CONNECTIONSTRING
+              valueFrom:
+                secretKeyRef:
+                  name: discord-bot
+                  key: APPLICATIONINSIGHTS_CONNECTIONSTRING
+            - name: BANCEYBOT:ALLOWEDCHANNELIDS:0
+              valueFrom:
+                configMapKeyRef:
+                  name: discord-bot-config
+                  key: ALLOWED_CHANNELS_0

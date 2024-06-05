@@ -7,6 +7,8 @@ resources:
   - ../base/pterodactyl
   - ./penpot-secret.sops.yaml
   - ../base/penpot
+  - ./discord-bot-secret.sops.yaml
+  - ../base/discord
 patchesStrategicMerge:
   - longhorn-certificate-patch.yaml
   - longhorn-ingress-route-patch.yaml
