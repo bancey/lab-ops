@@ -19,47 +19,47 @@ spec:
         - name: discord-bot
           image: ghcr.io/bancey/bancey-bot:sha-500ddd0
           env:
-            - name: BANCEYBOT:DISCORDTOKEN
+            - name: BANCEYBOT__DISCORDTOKEN
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: TOKEN
-            - name: BANCEYBOT:AZURE:TENANTID
+            - name: BANCEYBOT__AZURE__TENANTID
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_TENANT_ID
-            - name: BANCEYBOT:AZURE:CLIENTID
+            - name: BANCEYBOT__AZURE__CLIENTID
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_CLIENT_ID
-            - name: BANCEYBOT:AZURE:CLIENTSECRET
+            - name: BANCEYBOT__AZURE__CLIENTSECRET
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_CLIENT_SECRET
-            - name: BANCEYBOT:AZURE:SUBSCRIPTIONID
+            - name: BANCEYBOT__AZURE__SUBSCRIPTIONID
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: AZURE_SUBSCRIPTION_ID
-            - name: BANCEYBOT:PTERODACTYL:BASEURL
+            - name: BANCEYBOT__PTERODACTYL__BASEURL
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: PTERODACTYL_BASE_URL
-            - name: BANCEYBOT:PTERODACTYL:CLIENTTOKEN
+            - name: BANCEYBOT__PTERODACTYL__CLIENTTOKEN
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: PTERODACTYL_TOKEN
-            - name: BANCEYBOT:APPLICATIONINSIGHTS:CONNECTIONSTRING
+            - name: BANCEYBOT__APPLICATIONINSIGHTS__CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
                   name: discord-bot
                   key: APPLICATIONINSIGHTS_CONNECTIONSTRING
-            - name: BANCEYBOT:ALLOWEDCHANNELIDS:0
+            - name: BANCEYBOT__ALLOWEDCHANNELIDS__0
               valueFrom:
                 configMapKeyRef:
                   name: discord-bot-config
