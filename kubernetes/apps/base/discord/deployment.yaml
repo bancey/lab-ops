@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: discord-bot
-          image: ghcr.io/bancey/bancey-bot:sha-0435b54
+          image: ghcr.io/bancey/bancey-bot:sha-88963c2
           env:
             - name: BanceyBot__DiscordToken
               valueFrom:
