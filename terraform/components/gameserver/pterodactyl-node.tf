@@ -53,6 +53,10 @@ module "pterodactyl_node" {
       ]
     }
   ]
+
+  tags = {
+    "DiscordControl" : "true"
+  }
 }
 
 resource "azurerm_role_assignment" "reader" {
