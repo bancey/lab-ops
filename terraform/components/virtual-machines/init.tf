@@ -1,9 +1,9 @@
 terraform {
-  required_version = "1.8.3"
+  required_version = "1.8.5"
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.57.0"
+      version = "0.57.1"
     }
     azurerm = {
       source  = "hashicorp/azurerm"

@@ -21,7 +21,7 @@ module "wanda_virtual_machines" {
   storage             = each.value.storage
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
-  image_id            = proxmox_virtual_environment_download_file.wanda_ubuntu_cloud_image[0].id
+  image_id            = "local:iso/${each.value.image.ubuntu_version}-server-cloudimg-amd64-${each.value.image.ubuntu_image_version}.img"
 }
 
 module "hela_virtual_machines" {
@@ -47,7 +47,7 @@ module "hela_virtual_machines" {
   storage             = each.value.storage
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
-  image_id            = proxmox_virtual_environment_download_file.hela_ubuntu_cloud_image[0].id
+  image_id            = "local:iso/${each.value.image.ubuntu_version}-server-cloudimg-amd64-${each.value.image.ubuntu_image_version}.img"
 }
 
 module "loki_virtual_machines" {
@@ -73,7 +73,7 @@ module "loki_virtual_machines" {
   storage             = each.value.storage
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
-  image_id            = proxmox_virtual_environment_download_file.loki_ubuntu_cloud_image[0].id
+  image_id            = "local:iso/${each.value.image.ubuntu_version}-server-cloudimg-amd64-${each.value.image.ubuntu_image_version}.img"
 }
 
 module "thor_virtual_machines" {
@@ -99,5 +99,5 @@ module "thor_virtual_machines" {
   storage             = each.value.storage
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
-  image_id            = proxmox_virtual_environment_download_file.thor_ubuntu_cloud_image[0].id
+  image_id            = "local:iso/${each.value.image.ubuntu_version}-server-cloudimg-amd64-${each.value.image.ubuntu_image_version}.img"
 }
