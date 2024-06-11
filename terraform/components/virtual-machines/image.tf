@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_download_file" "wanda_ubuntu_cloud_image" {
-  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "wanda") ? toset(var.ubuntu_images) : toset({})
+  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "wanda") ? { for image in var.ubuntu_images : "${image.ubuntu_version}-${image.ubuntu_image_version}" => image } : {}
   provider     = proxmox.wanda
   content_type = "iso"
   datastore_id = "local"
@@ -9,7 +9,7 @@ resource "proxmox_virtual_environment_download_file" "wanda_ubuntu_cloud_image" 
 }
 
 resource "proxmox_virtual_environment_download_file" "hela_ubuntu_cloud_image" {
-  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "hela") ? toset(var.ubuntu_images) : toset({})
+  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "hela") ? { for image in var.ubuntu_images : "${image.ubuntu_version}-${image.ubuntu_image_version}" => image } : {}
   provider     = proxmox.hela
   content_type = "iso"
   datastore_id = "local"
@@ -19,7 +19,7 @@ resource "proxmox_virtual_environment_download_file" "hela_ubuntu_cloud_image" {
 }
 
 resource "proxmox_virtual_environment_download_file" "thor_ubuntu_cloud_image" {
-  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "thor") ? toset(var.ubuntu_images) : toset({})
+  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "thor") ? { for image in var.ubuntu_images : "${image.ubuntu_version}-${image.ubuntu_image_version}" => image } : {}
   provider     = proxmox.thor
   content_type = "iso"
   datastore_id = "local"
@@ -29,7 +29,7 @@ resource "proxmox_virtual_environment_download_file" "thor_ubuntu_cloud_image" {
 }
 
 resource "proxmox_virtual_environment_download_file" "loki_ubuntu_cloud_image" {
-  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "loki") ? toset(var.ubuntu_images) : toset({})
+  for_each     = var.target_nodes == null ? {} : contains(var.target_nodes, "loki") ? { for image in var.ubuntu_images : "${image.ubuntu_version}-${image.ubuntu_image_version}" => image } : {}
   provider     = proxmox.loki
   content_type = "iso"
   datastore_id = "local"
