@@ -79,10 +79,6 @@ virtual_machines = {
 ubuntu_images = [
   {
     ubuntu_version       = "jammy"
-    ubuntu_image_version = "current"
-  },
-  {
-    ubuntu_version       = "jammy"
     ubuntu_image_version = "20240605.1"
   }
 ]
