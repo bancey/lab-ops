@@ -6,9 +6,6 @@ gameservers = {
 
 cloudflare_records = {}
 
-master_count = 1
-node_count   = 4
-
 kubernetes_virtual_machines = {
   wanda = {
     target_nodes     = ["wanda"]
@@ -67,15 +64,9 @@ virtual_machines = {
   }
 }
 
-ubuntu_images = [
-  {
-    ubuntu_version       = "jammy"
-    ubuntu_image_version = "20240712"
-  }
-]
-
 images = {
-  "jammy-server-cloudimg-amd64-.img" = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  "jammy-server-cloudimg-amd64-.img"  = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  "debian-12-generic-amd64.qcow2.img" = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
 }
 
 twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
