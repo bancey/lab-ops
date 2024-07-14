@@ -13,10 +13,7 @@ variable "virtual_machines" {
     vm_description      = string
     cname_required      = optional(bool, false)
     storage             = string
-    image = optional(object({
-      ubuntu_version       = string
-      ubuntu_image_version = string
-    }))
+    image               = optional(string)
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox."
 }
@@ -27,11 +24,8 @@ variable "kubernetes_virtual_machines" {
     ansible_trigger    = optional(string)
     disk_size          = optional(number)
     k3s_etcd_datastore = optional(bool, false)
-    image = object({
-      ubuntu_version       = string
-      ubuntu_image_version = string
-    })
-    metallb_ip_range = string
+    image              = string
+    metallb_ip_range   = string
     master = object({
       count               = optional(number, 1)
       vm_id_start         = optional(number, 200)

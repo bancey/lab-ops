@@ -13,10 +13,7 @@ kubernetes_virtual_machines = {
   wanda = {
     target_nodes     = ["wanda"]
     metallb_ip_range = "10.151.15.50-10.151.15.100"
-    image = {
-      ubuntu_version       = "jammy"
-      ubuntu_image_version = null
-    }
+    image            = "local:iso/jammy-server-cloudimg-amd64.img"
     master = {
       count              = 1
       cidr               = "10.151.15.8/29"
@@ -69,10 +66,7 @@ virtual_machines = {
     startup_delay       = 0,
     cname_required      = false
     storage             = "local-lvm"
-    image = {
-      ubuntu_version       = "jammy"
-      ubuntu_image_version = "current"
-    }
+    image               = "local:iso/jammy-server-cloudimg-amd64-current.img"
   }
 }
 
