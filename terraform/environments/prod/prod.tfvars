@@ -6,17 +6,11 @@ gameservers = {
 
 cloudflare_records = {}
 
-master_count = 1
-node_count   = 4
-
 kubernetes_virtual_machines = {
   wanda = {
     target_nodes     = ["wanda"]
     metallb_ip_range = "10.151.15.50-10.151.15.100"
-    image = {
-      ubuntu_version       = "jammy"
-      ubuntu_image_version = null
-    }
+    image            = "jammy-server-cloudimg-amd64.img"
     master = {
       count              = 1
       cidr               = "10.151.15.8/29"
@@ -34,11 +28,8 @@ kubernetes_virtual_machines = {
     target_nodes       = ["hela", "loki", "thor"]
     k3s_etcd_datastore = true
     disk_size          = 100
-    image = {
-      ubuntu_version       = "jammy"
-      ubuntu_image_version = null
-    }
-    metallb_ip_range = "10.151.16.50-10.151.16.100"
+    image              = "jammy-server-cloudimg-amd64.img"
+    metallb_ip_range   = "10.151.16.50-10.151.16.100"
     master = {
       count              = 3
       cidr               = "10.151.16.8/29"
@@ -69,19 +60,13 @@ virtual_machines = {
     startup_delay       = 0,
     cname_required      = false
     storage             = "local-lvm"
-    image = {
-      ubuntu_version       = "jammy"
-      ubuntu_image_version = "current"
-    }
+    image               = "jammy-server-cloudimg-amd64-current.img"
   }
 }
 
-ubuntu_images = [
-  {
-    ubuntu_version       = "jammy"
-    ubuntu_image_version = "20240605.1"
-  }
-]
+images = {
+  "jammy-server-cloudimg-amd64.img"  = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+}
 
 twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
 twingate_service_accounts = ["AzureDevOps", "Pterodactyl"]

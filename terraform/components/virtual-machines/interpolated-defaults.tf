@@ -17,7 +17,7 @@ locals {
         startup_delay       = 0
         startup_order       = 10
         tags                = ["k8s", "k8s-control-plane"]
-        image               = cluster.image.ubuntu_image_version == null ? "local:iso/${cluster.image.ubuntu_version}-server-cloudimg-amd64.img" : "local:iso/${cluster.image.ubuntu_version}-server-cloudimg-amd64-${cluster.image.ubuntu_image_version}.img"
+        image               = "local:iso/${cluster.image}"
       }
     ]
   ])
@@ -38,7 +38,7 @@ locals {
         startup_delay       = 0
         startup_order       = 15
         tags                = ["k8s", "k8s-worker"]
-        image               = cluster.image.ubuntu_image_version == null ? "local:iso/${cluster.image.ubuntu_version}-server-cloudimg-amd64.img" : "local:iso/${cluster.image.ubuntu_version}-server-cloudimg-amd64-${cluster.image.ubuntu_image_version}.img"
+        image               = "local:iso/${cluster.image}"
       }
     ]
   ])

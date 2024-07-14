@@ -4,11 +4,8 @@ variable "target_nodes" {
   default     = []
 }
 
-variable "ubuntu_images" {
-  type = list(object({
-    ubuntu_version       = string
-    ubuntu_image_version = string
-  }))
-  description = "Map of ubuntu images to download."
-  default     = []
+variable "images" {
+  type        = map(string)
+  description = "Map of image names to urls to download."
+  default     = {}
 }
