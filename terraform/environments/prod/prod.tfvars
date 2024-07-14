@@ -31,11 +31,8 @@ kubernetes_virtual_machines = {
     target_nodes       = ["hela", "loki", "thor"]
     k3s_etcd_datastore = true
     disk_size          = 100
-    image = {
-      ubuntu_version       = "jammy"
-      ubuntu_image_version = null
-    }
-    metallb_ip_range = "10.151.16.50-10.151.16.100"
+    image              = "local:iso/jammy-server-cloudimg-amd64.img"
+    metallb_ip_range   = "10.151.16.50-10.151.16.100"
     master = {
       count              = 3
       cidr               = "10.151.16.8/29"
@@ -78,7 +75,7 @@ ubuntu_images = [
 ]
 
 images = {
-  "jammy-server-cloudimg-amd64-.img" = "https://cloud-images.ubuntu.com/jammy/20240712/jammy-server-cloudimg-amd64.img"
+  "jammy-server-cloudimg-amd64-.img" = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 }
 
 twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
