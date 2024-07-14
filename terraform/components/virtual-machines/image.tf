@@ -7,7 +7,6 @@ resource "proxmox_virtual_environment_download_file" "wanda_images" {
   file_name      = each.key
   url            = each.value
   upload_timeout = 2400
-  overwrite      = false
 }
 
 resource "proxmox_virtual_environment_download_file" "hela_images" {
@@ -19,7 +18,6 @@ resource "proxmox_virtual_environment_download_file" "hela_images" {
   file_name      = each.key
   url            = each.value
   upload_timeout = 2400
-  overwrite      = false
 }
 
 resource "proxmox_virtual_environment_download_file" "thor_images" {
@@ -31,7 +29,6 @@ resource "proxmox_virtual_environment_download_file" "thor_images" {
   file_name      = each.key
   url            = each.value
   upload_timeout = 2400
-  overwrite      = false
 }
 
 resource "proxmox_virtual_environment_download_file" "loki_images" {
@@ -43,5 +40,4 @@ resource "proxmox_virtual_environment_download_file" "loki_images" {
   file_name      = each.key
   url            = each.value
   upload_timeout = 2400
-  overwrite      = false
 }

@@ -65,8 +65,7 @@ virtual_machines = {
 }
 
 images = {
-  "jammy-server-cloudimg-amd64-.img"  = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
-  "debian-12-generic-amd64.qcow2.img" = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+  "jammy-server-cloudimg-amd64.img"  = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 }
 
 twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
