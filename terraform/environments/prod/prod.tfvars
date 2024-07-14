@@ -77,6 +77,10 @@ ubuntu_images = [
   }
 ]
 
+images = {
+  "jammy-server-cloudimg-amd64-.img" = "https://cloud-images.ubuntu.com/jammy/20240712/jammy-server-cloudimg-amd64.img"
+}
+
 twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
 twingate_service_accounts = ["AzureDevOps", "Pterodactyl"]
 twingate_networks = {

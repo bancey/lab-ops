@@ -5,8 +5,7 @@ variable "target_nodes" {
 }
 
 variable "images" {
-  type = map(object({
-    file_name = optional(string)
-    url       = string
-  }))
+  type        = map(string)
+  description = "Map of image names to urls to download."
+  default     = {}
 }
