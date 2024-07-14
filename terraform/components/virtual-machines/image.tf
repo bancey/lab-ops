@@ -22,7 +22,7 @@ resource "proxmox_virtual_environment_download_file" "hela_images" {
 
 resource "proxmox_virtual_environment_download_file" "thor_images" {
   for_each       = var.target_nodes == null ? {} : contains(var.target_nodes, "thor") ? var.images : {}
-  provider       = proxmox.wanda
+  provider       = proxmox.thor
   content_type   = "iso"
   datastore_id   = "local"
   node_name      = "thor"
@@ -33,7 +33,7 @@ resource "proxmox_virtual_environment_download_file" "thor_images" {
 
 resource "proxmox_virtual_environment_download_file" "loki_images" {
   for_each       = var.target_nodes == null ? {} : contains(var.target_nodes, "loki") ? var.images : {}
-  provider       = proxmox.wanda
+  provider       = proxmox.loki
   content_type   = "iso"
   datastore_id   = "local"
   node_name      = "loki"

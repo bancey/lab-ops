@@ -60,12 +60,12 @@ virtual_machines = {
     startup_delay       = 0,
     cname_required      = false
     storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64-current.img"
+    image               = "jammy-server-cloudimg-amd64.img"
   }
 }
 
 images = {
-  "jammy-server-cloudimg-amd64.img"  = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  "jammy-server-cloudimg-amd64.img" = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 }
 
 twingate_groups           = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
