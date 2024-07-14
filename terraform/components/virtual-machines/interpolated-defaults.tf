@@ -17,7 +17,7 @@ locals {
         startup_delay       = 0
         startup_order       = 10
         tags                = ["k8s", "k8s-control-plane"]
-        image               = cluster.image
+        image               = "local:iso/${cluster.image}"
       }
     ]
   ])
@@ -38,7 +38,7 @@ locals {
         startup_delay       = 0
         startup_order       = 15
         tags                = ["k8s", "k8s-worker"]
-        image               = cluster.image
+        image               = "local:iso/${cluster.image}"
       }
     ]
   ])

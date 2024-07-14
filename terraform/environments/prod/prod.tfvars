@@ -10,7 +10,7 @@ kubernetes_virtual_machines = {
   wanda = {
     target_nodes     = ["wanda"]
     metallb_ip_range = "10.151.15.50-10.151.15.100"
-    image            = "local:iso/jammy-server-cloudimg-amd64.img"
+    image            = "jammy-server-cloudimg-amd64.img"
     master = {
       count              = 1
       cidr               = "10.151.15.8/29"
@@ -28,7 +28,7 @@ kubernetes_virtual_machines = {
     target_nodes       = ["hela", "loki", "thor"]
     k3s_etcd_datastore = true
     disk_size          = 100
-    image              = "local:iso/jammy-server-cloudimg-amd64.img"
+    image              = "jammy-server-cloudimg-amd64.img"
     metallb_ip_range   = "10.151.16.50-10.151.16.100"
     master = {
       count              = 3
@@ -60,7 +60,7 @@ virtual_machines = {
     startup_delay       = 0,
     cname_required      = false
     storage             = "local-lvm"
-    image               = "local:iso/jammy-server-cloudimg-amd64-current.img"
+    image               = "jammy-server-cloudimg-amd64-current.img"
   }
 }
 
