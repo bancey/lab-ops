@@ -8,24 +8,30 @@ spec:
   releaseName: plex
   chart:
     spec:
-      chart: kube-plex
+      chart: plex
       sourceRef:
         kind: HelmRepository
-        name: kube-plex
+        name: plex
         namespace: flux-system
   interval: 1h0m
   install:
     remediation:
       retries: 3
   values:
-    service:
-      type: LoadBalancer
-      loadBalancerIP: 10.151.15.51
-    persistence:
-      transcode:
-        enabled: true
-        storageClass: config-nfs-csi
-      config:
-        claimName: plex-config-pvc-nfs-static
-      data:
-        claimName: plex-data-pvc-nfs-static
+    image:
+      registry: index.docker.io
+      repository: plexinc/pms-docker
+      tag: 1.40.4.8679-424562606
+    ingress:
+      enabled: true
+      url: https://plex.bancey.xyz
+    pms:
+      configExistingClaim: plex-config-pvc-nfs-static
+    extraVolumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: plex-data-pvc-nfs-static
+    extraVolumeMounts:
+      - name: data
+        mountPath: /data
+

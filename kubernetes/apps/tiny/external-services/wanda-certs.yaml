@@ -166,3 +166,31 @@ spec:
   commonName: "dl.heimelska.co.uk"
   dnsNames:
   - "dl.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: plex-staging-tls
+  namespace: default
+spec:
+  secretName: plex-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "plex.bancey.xyz"
+  dnsNames:
+  - "plex.bancey.xyz"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: plex-tls
+  namespace: default
+spec:
+  secretName: plex-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "plex.bancey.xyz"
+  dnsNames:
+  - "plex.bancey.xyz"

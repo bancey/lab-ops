@@ -11,3 +11,4 @@ resources:
   - ./traefik.yaml
   - ./longhorn.yaml
   - ./codechem.yaml
+  - ./plex.yaml
