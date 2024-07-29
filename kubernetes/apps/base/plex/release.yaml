@@ -8,10 +8,10 @@ spec:
   releaseName: plex
   chart:
     spec:
-      chart: plex
+      chart: plex-media-server
       sourceRef:
         kind: HelmRepository
-        name: plex-media-server
+        name: plex
         namespace: flux-system
   interval: 1h0m
   install:
