@@ -18,6 +18,10 @@ spec:
     remediation:
       retries: 3
   values:
+    image:
+      registry: index.docker.io
+      repository: plexinc/pms-docker
+      tag: 1.40.4.8679-424562606
     ingress:
       enabled: true
       url: https://plex.bancey.xyz
