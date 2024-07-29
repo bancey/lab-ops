@@ -25,6 +25,7 @@ spec:
     ingress:
       enabled: true
       url: https://plex.bancey.xyz
+      ingressClassName: traefik
     pms:
       configExistingClaim: plex-config-pvc-nfs-static
     extraVolumes:
