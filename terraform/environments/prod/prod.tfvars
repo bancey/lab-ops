@@ -27,6 +27,7 @@ kubernetes_virtual_machines = {
   }
   tiny = {
     target_nodes       = ["hela", "loki", "thor"]
+    ansible_trigger    = "30_07_2024_0940"
     k3s_etcd_datastore = true
     disk_size          = 100
     image              = "jammy-server-cloudimg-amd64.img"
