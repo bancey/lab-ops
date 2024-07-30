@@ -1,3 +1,10 @@
+locals {
+  zones = {
+    main = data.azurerm_key_vault_secret.cloudflare_main_zone_id.value
+    lab  = data.azurerm_key_vault_secret.cloudflare_lab_zone_id.value
+  }
+}
+
 data "azurerm_key_vault" "vault" {
   name                = "bancey-vault"
   resource_group_name = "common"
@@ -5,6 +12,11 @@ data "azurerm_key_vault" "vault" {
 
 data "azurerm_key_vault_secret" "cloudflare_lab_zone_id" {
   name         = "Cloudflare-Lab-Zone-ID"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "cloudflare_main_zone_id" {
+  name         = "Cloudflare-Main-Zone-ID"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
