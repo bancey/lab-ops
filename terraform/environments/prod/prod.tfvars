@@ -4,7 +4,15 @@ gameservers = {
   wings = {}
 }
 
-cloudflare_records = {}
+cloudflare_records = {
+  plex = {
+    type    = "A"
+    value   = "PublicIP"
+    proxied = false
+    ttl     = 1
+    zone    = "main"
+  }
+}
 
 kubernetes_virtual_machines = {
   wanda = {
