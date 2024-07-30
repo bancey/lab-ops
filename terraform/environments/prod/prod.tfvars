@@ -9,6 +9,7 @@ cloudflare_records = {}
 kubernetes_virtual_machines = {
   wanda = {
     target_nodes     = ["wanda"]
+    ansible_trigger  = "30_07_2024_0920"
     metallb_ip_range = "10.151.15.50-10.151.15.100"
     image            = "jammy-server-cloudimg-amd64.img"
     master = {
