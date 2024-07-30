@@ -1,9 +1,22 @@
 resource "cloudflare_record" "records" {
-  for_each = var.cloudflare_records
+  provider = cloudflare.lab
+  for_each = { for key, value in var.cloudflare_records : key => value if value.zone == "lab" }
 
-  zone_id = local.zones[each.value.zone]
+  zone_id = data.azurerm_key_vault_secret.cloudflare_lab_zone_id.value
   name    = each.key
   value   = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value == "@" ? data.azurerm_key_vault_secret.cloudflare_lab_zone_name.value : each.value.value
+  type    = each.value.type
+  proxied = each.value.proxied
+  ttl     = each.value.ttl
+}
+
+resource "cloudflare_record" "main_records" {
+  provider = cloudflare.main
+  for_each = { for key, value in var.cloudflare_records : key => value if value.zone == "main" }
+
+  zone_id = data.azurerm_key_vault_secret.cloudflare_main_zone_id.value
+  name    = each.key
+  value   = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value == "@" ? data.azurerm_key_vault_secret.cloudflare_main_zone_name.value : each.value.value
   type    = each.value.type
   proxied = each.value.proxied
   ttl     = each.value.ttl
