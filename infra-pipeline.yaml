@@ -7,8 +7,6 @@ trigger:
     include:
       - terraform
       - ansible
-      - pipelines/terraform-*.yaml
-      - pipelines/ansible-*.yaml
       - infra-pipeline.yaml
 
 pr:
