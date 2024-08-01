@@ -139,31 +139,23 @@ stages:
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
             artifact: ansible
-  - stage: CheckHostsOnline
-    dependsOn: prod_twingate
-    jobs:
-      - job: CheckHostsOnline
-        pool:
-          vmImage: $(agentImage)
-        steps:
-          - template: steps/twingate-connect.yaml@azuredevops-lib
-            parameters:
-              keyVaultName: bancey-vault
-              serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-              serviceConnection: $(serviceConnection)
-          - template: steps/check-hosts-online.yaml@azuredevops-lib
-            parameters:
-              hosts: ${{ parameters.local_environments }}
+  - template: stages/check-hosts-online.yaml@azuredevops-lib
+    parameters:
+      dependencies: prod_twingate
+      keyVaultName: bancey-vault
+      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+      serviceConnection: $(serviceConnection)
+      hosts: ${{ parameters.local_environments }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
         ${{ if and(deployment.localEnvironments, gt(length(join('', deployment.dependsOn)), 0)) }}:
-          dependsOn: ${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'CheckHostsOnline'), ',') }}
+          dependsOn: ${{ split(format('{0},{1}', join(',', deployment.dependsOn), 'check_hosts_online'), ',') }}
         ${{ elseif deployment.localEnvironments }}:
-          dependsOn: CheckHostsOnline
+          dependsOn: check_hosts_online
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
         ${{ if deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.CheckHostsOnline.outputs['CheckHostsOnline.checkOnline_${{ deployment.localEnvironments[0] }}.online'], 'true'))
+          condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ deployment.localEnvironments[0] }}.online'], 'true'))
         ${{ else }}:
           condition: succeeded()
         jobs:
@@ -221,13 +213,13 @@ stages:
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
-          dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'CheckHostsOnline'), ',') }}
+          dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
         ${{ elseif ansible_deployment.localEnvironments }}:
-          dependsOn: CheckHostsOnline
+          dependsOn: check_hosts_online
         ${{ else }}:
           dependsOn: ${{ ansible_deployment.dependsOn }}
         ${{ if ansible_deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.CheckHostsOnline.outputs['CheckHostsOnline.checkOnline_${{ ansible_deployment.localEnvironments[0] }}.online'], 'true'))
+          condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ ansible_deployment.localEnvironments[0] }}.online'], 'true'))
         ${{ else }}:
           condition: succeeded()
         jobs:
