@@ -151,13 +151,9 @@ stages:
               keyVaultName: bancey-vault
               serviceKeySecretName: Twingate-AzureDevOps-SA-Key
               serviceConnection: $(serviceConnection)
-          - script: sudo apt install ssh-tools
-            displayName: 'Install ssh-tools'
-          - ${{ each env in parameters.local_environments }}:
-            - template: steps/check-host-online.yaml@azuredevops-lib
-              parameters:
-                name: ${{ env.name }}
-                addresses: ${{ env.address }}
+          - template: steps/check-hosts-online.yaml@azuredevops-lib
+            parameters:
+              hosts: ${{ parameters.local_environments }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
         ${{ if and(deployment.localEnvironments, gt(length(join('', deployment.dependsOn)), 0)) }}:
