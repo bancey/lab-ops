@@ -146,7 +146,7 @@ stages:
         pool:
           vmImage: $(agentImage)
         steps:
-          - template: steps/connect.yaml@azuredevops-lib
+          - template: steps/twingate-connect.yaml@azuredevops-lib
             parameters:
               keyVaultName: bancey-vault
               serviceKeySecretName: Twingate-AzureDevOps-SA-Key
@@ -176,7 +176,7 @@ stages:
               vmImage: $(agentImage)
             steps:
               - ${{ if deployment.localEnvironments }}:
-                - template: steps/connect.yaml@azuredevops-lib
+                - template: steps/twingate-connect.yaml@azuredevops-lib
                   parameters:
                     keyVaultName: bancey-vault
                     serviceKeySecretName: Twingate-AzureDevOps-SA-Key
@@ -239,7 +239,7 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
-              - template: steps/connect.yaml@azuredevops-lib
+              - template: steps/twingate-connect.yaml@azuredevops-lib
                 parameters:
                   keyVaultName: bancey-vault
                   serviceKeySecretName: Twingate-AzureDevOps-SA-Key
