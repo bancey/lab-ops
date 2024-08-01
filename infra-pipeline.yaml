@@ -19,6 +19,14 @@ pr:
     exclude:
       - kubernetes/*
 
+resources:
+  repositories:
+  - repository: azuredevops-lib
+    type: github
+    ref: refs/heads/feat/initial-template-move
+    name: bancey/azuredevops-lib
+    endpoint: bancey
+
 parameters:
   - name: local_environments
     type: object
@@ -116,17 +124,17 @@ stages:
         pool:
           vmImage: $(agentImage)
         steps:
-          - template: pipelines/terraform-init.yaml
+          - template: steps/terraform-init.yaml@azuredevops-lib
             parameters:
               storageAccount: $(stateStorageAccount)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
               azureRmKey: tfstate/prod_inventory
-          - template: pipelines/terraform-plan.yaml
+          - template: steps/terraform-plan.yaml@azuredevops-lib
             parameters:
               serviceConnection: $(serviceConnection)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
-          - template: pipelines/terraform-apply.yaml
+          - template: steps/terraform-apply.yaml@azuredevops-lib
             parameters:
               serviceConnection: $(serviceConnection)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
@@ -140,7 +148,7 @@ stages:
         pool:
           vmImage: $(agentImage)
         steps:
-          - template: pipelines/connect.yaml
+          - template: steps/connect.yaml@azuredevops-lib
             parameters:
               keyVaultName: bancey-vault
               serviceKeySecretName: Twingate-AzureDevOps-SA-Key
@@ -148,7 +156,7 @@ stages:
           - script: sudo apt install ssh-tools
             displayName: 'Install ssh-tools'
           - ${{ each env in parameters.local_environments }}:
-            - template: pipelines/check-host-online.yaml
+            - template: steps/check-host-online.yaml@azuredevops-lib
               parameters:
                 name: ${{ env.name }}
                 addresses: ${{ env.address }}
@@ -170,7 +178,7 @@ stages:
               vmImage: $(agentImage)
             steps:
               - ${{ if deployment.localEnvironments }}:
-                - template: pipelines/connect.yaml
+                - template: steps/connect.yaml@azuredevops-lib
                   parameters:
                     keyVaultName: bancey-vault
                     serviceKeySecretName: Twingate-AzureDevOps-SA-Key
@@ -192,12 +200,12 @@ stages:
                     artifactName: 'ansible'
                     targetPath: $(System.DefaultWorkingDirectory)/ansible
                     itemPattern: hosts.yaml
-              - template: pipelines/terraform-init.yaml
+              - template: steps/terraform-init.yaml@azuredevops-lib
                 parameters:
                   storageAccount: $(stateStorageAccount)
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                   azureRmKey: tfstate/${{ deployment.deployment }}
-              - template: pipelines/terraform-plan.yaml
+              - template: steps/terraform-plan.yaml@azuredevops-lib
                 parameters:
                   serviceConnection: $(serviceConnection)
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
@@ -205,13 +213,13 @@ stages:
                   ${{ if ne(deployment.extraCommandArgs, '') }}:
                     extraCommandArgs: ${{ deployment.extraCommandArgs }}
               - ${{ if and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-                  - template: pipelines/terraform-destroy.yaml
+                  - template: steps/terraform-destroy.yaml@azuredevops-lib
                     parameters:
                       serviceConnection: $(serviceConnection)
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                       variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
               - ${{ if and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-                  - template: pipelines/terraform-apply.yaml
+                  - template: steps/terraform-apply.yaml@azuredevops-lib
                     parameters:
                       serviceConnection: $(serviceConnection)
                       workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
@@ -233,7 +241,7 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
-              - template: pipelines/connect.yaml
+              - template: steps/connect.yaml@azuredevops-lib
                 parameters:
                   keyVaultName: bancey-vault
                   serviceKeySecretName: Twingate-AzureDevOps-SA-Key
@@ -245,7 +253,7 @@ stages:
                   targetPath: $(System.DefaultWorkingDirectory)/ansible
                   itemPattern: hosts.yaml
               - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-                - template: pipelines/ansible-check.yaml
+                - template: steps/ansible-check.yaml@azuredevops-lib
                   parameters:
                     hostsFilePath: ansible/hosts.yaml
                     requirementsFile: ${{ ansible_deployment.requirementsFile }}
@@ -255,7 +263,7 @@ stages:
                     serviceConnection: $(serviceConnection)
                     secrets: ${{ ansible_deployment.secrets }}
               - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-                - template: pipelines/ansible-run.yaml
+                - template: steps/ansible-run.yaml@azuredevops-lib
                   parameters:
                     hostsFilePath: ansible/hosts.yaml
                     requirementsFile: ${{ ansible_deployment.requirementsFile }}
