@@ -122,21 +122,14 @@ stages:
         pool:
           vmImage: $(agentImage)
         steps:
-          - template: steps/terraform-init.yaml@azuredevops-lib
+          - template: steps/terraform.yaml@azuredevops-lib
             parameters:
+              serviceConnection: $(serviceConnection)
               storageAccount: $(stateStorageAccount)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
-              azureRmKey: tfstate/prod_inventory
-          - template: steps/terraform-plan.yaml@azuredevops-lib
-            parameters:
-              serviceConnection: $(serviceConnection)
-              workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
+              azureRmKey: tfstate/prod_inventory.tfstate
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
-          - template: steps/terraform-apply.yaml@azuredevops-lib
-            parameters:
-              serviceConnection: $(serviceConnection)
-              workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
-              variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
+              runApply: true
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
             artifact: ansible
   - template: stages/check-hosts-online.yaml@azuredevops-lib
