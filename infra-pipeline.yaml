@@ -125,7 +125,7 @@ stages:
           - template: steps/terraform.yaml@azuredevops-lib
             parameters:
               serviceConnection: $(serviceConnection)
-              storageAccount: $(stateStorageAccount)
+              backendStorageAccount: $(stateStorageAccount)
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
               azureRmKey: tfstate/prod_inventory.tfstate
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
@@ -181,7 +181,7 @@ stages:
                     itemPattern: hosts.yaml
               - template: steps/terraform.yaml@azuredevops-lib
                 parameters:
-                  storageAccount: $(stateStorageAccount)
+                  backendStorageAccount: $(stateStorageAccount)
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                   azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
                   serviceConnection: $(serviceConnection)
