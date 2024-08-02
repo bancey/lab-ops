@@ -130,6 +130,7 @@ stages:
               azureRmKey: tfstate/prod_inventory.tfstate
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
               runApply: true
+              runDestroy: false
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
             artifact: ansible
   - template: stages/check-hosts-online.yaml@azuredevops-lib
