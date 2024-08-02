@@ -4,10 +4,8 @@ trigger:
     include:
       - master
   paths:
-    include:
-      - terraform
-      - ansible
-      - infra-pipeline.yaml
+    exclude:
+      - kubernetes/*
 
 pr:
   branches:
@@ -164,22 +162,11 @@ stages:
                     serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                     serviceConnection: $(serviceConnection)
               - ${{ if eq(deployment.component, 'virtual-machines') }}:
-                - task: AzureCLI@2
-                  displayName: Get Ansible Private Key
-                  inputs:
-                    azureSubscription: $(serviceConnection)
-                    scriptType: "bash"
-                    scriptLocation: "inlineScript"
-                    inlineScript: |
-                      az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/id_rsa
-                      chmod 600 $(System.DefaultWorkingDirectory)/ansible/id_rsa
-                      ls -la $(System.DefaultWorkingDirectory)/ansible
-                - task: DownloadPipelineArtifact@2
-                  displayName: 'Download Ansible Inventory'
-                  inputs:
-                    artifactName: 'ansible'
-                    targetPath: $(System.DefaultWorkingDirectory)/ansible
-                    itemPattern: hosts.yaml
+                - template: steps/ansible.yaml@azuredevops-lib
+                  parameters:
+                    serviceConnection: $(serviceConnection)
+                    keyVaultName: bancey-vault
+                    privateKeySecretName: Packer-Private-Key
               - template: steps/terraform.yaml@azuredevops-lib
                 parameters:
                   backendStorageAccount: $(stateStorageAccount)
@@ -213,29 +200,11 @@ stages:
                   keyVaultName: bancey-vault
                   serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                   serviceConnection: $(serviceConnection)
-              - task: DownloadPipelineArtifact@2
-                displayName: 'Download Ansible Inventory'
-                inputs:
-                  artifactName: 'ansible'
-                  targetPath: $(System.DefaultWorkingDirectory)/ansible
-                  itemPattern: hosts.yaml
-              - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-                - template: steps/ansible-check.yaml@azuredevops-lib
-                  parameters:
-                    hostsFilePath: ansible/hosts.yaml
-                    requirementsFile: ${{ ansible_deployment.requirementsFile }}
-                    playbook: ${{ ansible_deployment.playbook }}
-                    keyVaultName: bancey-vault
-                    privateKeySecretName: Packer-Private-Key
-                    serviceConnection: $(serviceConnection)
-                    secrets: ${{ ansible_deployment.secrets }}
-              - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-                - template: steps/ansible-run.yaml@azuredevops-lib
-                  parameters:
-                    hostsFilePath: ansible/hosts.yaml
-                    requirementsFile: ${{ ansible_deployment.requirementsFile }}
-                    playbook: ${{ ansible_deployment.playbook }}
-                    keyVaultName: bancey-vault
-                    privateKeySecretName: Packer-Private-Key
-                    serviceConnection: $(serviceConnection)
-                    secrets: ${{ ansible_deployment.secrets }}
+              - template: steps/ansible.yaml@azuredevops-lib
+                parameters:
+                  serviceConnection: $(serviceConnection)
+                  keyVaultName: bancey-vault
+                  privateKeySecretName: Packer-Private-Key
+                  playbook: ${{ ansible_deployment.playbook }}
+                  secrets: ${{ ansible_deployment.secrets }}
+                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
