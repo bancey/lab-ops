@@ -163,6 +163,7 @@ stages:
                     keyVaultName: bancey-vault
                     serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                     serviceConnection: $(serviceConnection)
+              - ${{ if eq(deployment.component, 'virtual-machines') }}:
                 - task: AzureCLI@2
                   displayName: Get Ansible Private Key
                   inputs:
@@ -173,7 +174,6 @@ stages:
                       az keyvault secret download --name Packer-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/ansible/id_rsa
                       chmod 600 $(System.DefaultWorkingDirectory)/ansible/id_rsa
                       ls -la $(System.DefaultWorkingDirectory)/ansible
-              - ${{ if eq(deployment.component, 'virtual-machines') }}:
                 - task: DownloadPipelineArtifact@2
                   displayName: 'Download Ansible Inventory'
                   inputs:
