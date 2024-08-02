@@ -186,30 +186,17 @@ stages:
                     artifactName: 'ansible'
                     targetPath: $(System.DefaultWorkingDirectory)/ansible
                     itemPattern: hosts.yaml
-              - template: steps/terraform-init.yaml@azuredevops-lib
+              - template: steps/terraform.yaml@azuredevops-lib
                 parameters:
                   storageAccount: $(stateStorageAccount)
                   workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                  azureRmKey: tfstate/${{ deployment.deployment }}
-              - template: steps/terraform-plan.yaml@azuredevops-lib
-                parameters:
+                  azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
                   serviceConnection: $(serviceConnection)
-                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   ${{ if ne(deployment.extraCommandArgs, '') }}:
                     extraCommandArgs: ${{ deployment.extraCommandArgs }}
-              - ${{ if and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-                  - template: steps/terraform-destroy.yaml@azuredevops-lib
-                    parameters:
-                      serviceConnection: $(serviceConnection)
-                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-              - ${{ if and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-                  - template: steps/terraform-apply.yaml@azuredevops-lib
-                    parameters:
-                      serviceConnection: $(serviceConnection)
-                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                  runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}
+                  runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
