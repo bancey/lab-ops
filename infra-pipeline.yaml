@@ -19,7 +19,7 @@ resources:
   repositories:
   - repository: azuredevops-lib
     type: github
-    ref: refs/heads/feat/inital-template-move
+    ref: refs/heads/main
     name: bancey/azuredevops-lib
     endpoint: bancey
 
