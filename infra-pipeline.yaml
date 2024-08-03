@@ -19,7 +19,7 @@ resources:
   repositories:
   - repository: azuredevops-lib
     type: github
-    ref: refs/heads/main
+    ref: refs/heads/feat/gh-comments
     name: bancey/azuredevops-lib
     endpoint: bancey
 
