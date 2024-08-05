@@ -127,7 +127,7 @@ stages:
               workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
               azureRmKey: tfstate/prod_inventory.tfstate
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
-              runApply: true
+              runApply: $(eq(variables['Build.SourceBranch'], 'refs/heads/master'))
               runDestroy: false
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
             artifact: ansible
