@@ -129,6 +129,7 @@ stages:
               variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
               runApply: true
               runDestroy: false
+              publishPlan: false
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
             artifact: ansible
   - template: stages/check-hosts-online.yaml@azuredevops-lib
