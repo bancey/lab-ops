@@ -10,7 +10,7 @@ resource "proxmox_virtual_environment_download_file" "wanda_images" {
 }
 
 resource "proxmox_virtual_environment_download_file" "tiny_images" {
-  for_each       = { for pair in setproduct(local.tiny_nodes, var.images) : "${pair[0]}-${pair[1].key}" => pair[1].value if contains(var.target_nodes, pair[0]) }
+  for_each       = { for pair in setproduct(local.tiny_nodes, local.set_images) : "${pair[0]}-${pair[1].key}" => pair[1].value if contains(var.target_nodes, pair[0]) }
   provider       = proxmox.tiny
   content_type   = "iso"
   datastore_id   = "local"
