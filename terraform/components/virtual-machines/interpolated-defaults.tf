@@ -42,6 +42,7 @@ locals {
       }
     ]
   ])
+  tiny_nodes = ["hela", "loki", "thor"]
 }
 
 data "azurerm_client_config" "current" {}
@@ -53,6 +54,11 @@ data "azurerm_key_vault" "vault" {
 
 data "azurerm_key_vault_secret" "wanda_proxmox_url" {
   name         = "Wanda-Proxmox-URL"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "tiny_proxmox_url" {
+  name         = "Tiny-Proxmox-URL"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 

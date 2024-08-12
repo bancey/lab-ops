@@ -3,17 +3,13 @@ resource "terraform_data" "k8s_ansible" {
 
   depends_on = [
     module.wanda_k8s_virtual_machines,
-    module.hela_k8s_virtual_machines,
-    module.thor_k8s_virtual_machines,
-    module.loki_k8s_virtual_machines
+    module.tiny_k8s_virtual_machines
   ]
 
   triggers_replace = [
     each.value.ansible_trigger,
     module.wanda_k8s_virtual_machines,
-    module.hela_k8s_virtual_machines,
-    module.thor_k8s_virtual_machines,
-    module.loki_k8s_virtual_machines
+    module.tiny_k8s_virtual_machines
   ]
 
   provisioner "local-exec" {
