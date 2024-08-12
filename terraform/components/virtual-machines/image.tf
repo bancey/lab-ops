@@ -9,34 +9,12 @@ resource "proxmox_virtual_environment_download_file" "wanda_images" {
   upload_timeout = 2400
 }
 
-resource "proxmox_virtual_environment_download_file" "hela_images" {
-  for_each       = var.target_nodes == null ? {} : contains(var.target_nodes, "hela") ? var.images : {}
-  provider       = proxmox.hela
+resource "proxmox_virtual_environment_download_file" "tiny_images" {
+  for_each       = { for pair in setproduct(local.tiny_nodes, var.images) : "${pair[0]}-${pair[1].key}" => pair[1].value if contains(var.target_nodes, pair[0]) }
+  provider       = proxmox.tiny
   content_type   = "iso"
   datastore_id   = "local"
-  node_name      = "hela"
-  file_name      = each.key
-  url            = each.value
-  upload_timeout = 2400
-}
-
-resource "proxmox_virtual_environment_download_file" "thor_images" {
-  for_each       = var.target_nodes == null ? {} : contains(var.target_nodes, "thor") ? var.images : {}
-  provider       = proxmox.thor
-  content_type   = "iso"
-  datastore_id   = "local"
-  node_name      = "thor"
-  file_name      = each.key
-  url            = each.value
-  upload_timeout = 2400
-}
-
-resource "proxmox_virtual_environment_download_file" "loki_images" {
-  for_each       = var.target_nodes == null ? {} : contains(var.target_nodes, "loki") ? var.images : {}
-  provider       = proxmox.loki
-  content_type   = "iso"
-  datastore_id   = "local"
-  node_name      = "loki"
+  node_name      = each.value
   file_name      = each.key
   url            = each.value
   upload_timeout = 2400

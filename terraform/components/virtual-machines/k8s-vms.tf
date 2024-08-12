@@ -49,7 +49,7 @@ module "tiny_k8s_virtual_machines" {
   storage             = "local-lvm"
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
-  image_id            = each.value.w
+  image_id            = each.value.image
   disk_size           = each.value.disk_size
   tags                = each.value.tags
 }

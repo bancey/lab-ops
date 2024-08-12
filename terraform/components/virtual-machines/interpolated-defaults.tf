@@ -43,6 +43,12 @@ locals {
     ]
   ])
   tiny_nodes = ["hela", "loki", "thor"]
+  set_images = [
+    for key, value in var.images : {
+      key   = key
+      value = value
+    }
+  ]
 }
 
 data "azurerm_client_config" "current" {}
