@@ -14,9 +14,9 @@ resource "proxmox_virtual_environment_download_file" "tiny_images" {
   provider       = proxmox.tiny
   content_type   = "iso"
   datastore_id   = "local"
-  node_name      = each.node
+  node_name      = each.value.node
   file_name      = each.key
-  url            = each.url
+  url            = each.value.url
   upload_timeout = 2400
 }
 
