@@ -19,3 +19,16 @@ resource "proxmox_virtual_environment_download_file" "tiny_images" {
   url            = each.value
   upload_timeout = 2400
 }
+
+moved {
+  from = proxmox_virtual_environment_download_file.hela_images["jammy-server-cloudimg-amd64.img"]
+  to   = proxmox_virtual_environment_download_file.tiny_images["hela-jammy-server-cloudimg-amd64.img"]
+}
+moved {
+  from = proxmox_virtual_environment_download_file.loki_images["jammy-server-cloudimg-amd64.img"]
+  to   = proxmox_virtual_environment_download_file.tiny_images["loki-jammy-server-cloudimg-amd64.img"]
+}
+moved {
+  from = proxmox_virtual_environment_download_file.thor_images["jammy-server-cloudimg-amd64.img"]
+  to   = proxmox_virtual_environment_download_file.tiny_images["thor-jammy-server-cloudimg-amd64.img"]
+}
