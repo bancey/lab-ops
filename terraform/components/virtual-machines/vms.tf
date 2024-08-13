@@ -49,3 +49,12 @@ module "tiny_virtual_machines" {
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = "local:iso/${each.value.image}"
 }
+
+moved {
+  from = module.hela_virtual_machines["test0"].proxmox_virtual_environment_file.cloud_config
+  to   = module.tiny_virtual_machines["test0"].proxmox_virtual_environment_file.cloud_config
+}
+moved {
+  from = module.hela_virtual_machines["test0"].proxmox_virtual_environment_vm.vm
+  to   = module.tiny_virtual_machines["test0"].proxmox_virtual_environment_vm.vm
+}
