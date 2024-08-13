@@ -144,6 +144,20 @@ twingate_networks = {
           service_accounts = ["AzureDevOps"]
         }
       }
+      tiny-pve = {
+        address = "10.151.14.4"
+        alias = "tiny-pve.heimelska.co.uk"
+        protocols = {
+          tcp = {
+            policy = "RESTRICTED"
+            ports  = [443]
+          }
+        }
+        access = {
+          groups           = ["pve", "all"]
+          service_accounts = ["AzureDevOps"]
+        }
+      }
       hela = {
         address = "10.151.14.12"
         alias   = "hela.heimelska.co.uk"
