@@ -20,7 +20,7 @@
     {
       "customType": "regex",
       "fileMatch": ["^ansible/k3s.yaml$"],
-      "matchStrings": ["k3s_version: \"(?<currentValut>.*?)\""],
+      "matchStrings": ["k3s_version: \"(?<currentValue>.*?)\""],
       "depNameTemplate": "k3s-io/k3s",
       "datasourceTemplate": "github-releases"
     }
