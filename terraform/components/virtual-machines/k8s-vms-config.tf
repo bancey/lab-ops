@@ -9,7 +9,8 @@ resource "terraform_data" "k8s_ansible" {
   triggers_replace = [
     each.value.ansible_trigger,
     module.wanda_k8s_virtual_machines,
-    module.tiny_k8s_virtual_machines
+    module.tiny_k8s_virtual_machines,
+    local.base64_ansible_config
   ]
 
   provisioner "local-exec" {

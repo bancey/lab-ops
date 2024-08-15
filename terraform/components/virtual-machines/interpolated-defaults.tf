@@ -49,6 +49,7 @@ locals {
       value = value
     }
   ]
+  base64_ansible_config = filebase64("../../../ansible/hosts.yaml")
 }
 
 data "azurerm_client_config" "current" {}

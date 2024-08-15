@@ -146,7 +146,7 @@ twingate_networks = {
       }
       tiny-pve = {
         address = "10.151.14.4"
-        alias = "tiny-pve.heimelska.co.uk"
+        alias   = "tiny-pve.heimelska.co.uk"
         protocols = {
           tcp = {
             policy = "RESTRICTED"
