@@ -4,10 +4,27 @@
     "config:base"
   ],
   "flux": {
-    "fileMatch": ["^kubernetes/.*\\.yaml$"]
+    "fileMatch": [
+      "^kubernetes/.*\\.yaml$"
+    ]
   },
-  "helm-values":{
-    "fileMatch": ["^kubernetes/.*\\.yaml$"],
-    "ignorePaths": ["**/gotk-components.yaml"]
-  }
+  "helm-values": {
+    "fileMatch": [
+      "^kubernetes/.*\\.yaml$"
+    ],
+    "ignorePaths": [
+      "**/gotk-components.yaml"
+    ]
+  },
+  "regexManagers": [
+    {
+      "fileMatch": [
+        "^ansible/.*\\.yaml$"
+      ],
+      "matchStrings": [
+        "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sexport .*?_version=\\$\\(echo (?<currentValue>.*) \\| tf \\-d \\'v\\'\\)\\s"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    }
+  ]
 }
