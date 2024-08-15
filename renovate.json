@@ -16,15 +16,13 @@
       "**/gotk-components.yaml"
     ]
   },
-  "regexManagers": [
+  "customManagers": [
     {
-      "fileMatch": [
-        "^ansible/.*\\.yaml$"
-      ],
-      "matchStrings": [
-        "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sexport .*?_version=\\$\\(echo (?<currentValue>.*) \\| tf \\-d \\'v\\'\\)\\s"
-      ],
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+      "customType": "regex",
+      "fileMatch": ["^ansible/k3s.yaml$"],
+      "matchStrings": ["k3s_version: \"(?<currentValut>.*?)\""],
+      "depNameTemplate": "k3s-io/k3s",
+      "datasourceTemplate": "github-releases"
     }
   ]
 }
