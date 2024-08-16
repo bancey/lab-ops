@@ -38,5 +38,12 @@
       "depNameTemplate": "metallb/metallb",
       "datasourceTemplate": "github-tags"
     }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["plex-inc/pms-docker"],
+      "versioning": "loose"
+    }
   ]
 }
