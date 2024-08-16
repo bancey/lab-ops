@@ -81,13 +81,15 @@ parameters:
         component: gameserver
         destroy: false
         deploy: true
-        dependsOn: []
+        dependsOn: 
+          - prod_twingate
       - deployment: prod_gameserver
         environment: prod
         component: gameserver
         destroy: false
         deploy: true
         dependsOn:
+          - prod_twingate
           - test_gameserver
   - name: ansible_deployments
     type: object
