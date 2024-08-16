@@ -42,7 +42,7 @@
   "packageRules": [
     {
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["plexinc/pms-docker"],
+      "matchPackageNames": ["index.docker.io/plexinc/pms-docker"],
       "versioning": "loose"
     }
   ]
