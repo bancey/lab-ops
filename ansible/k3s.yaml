@@ -47,6 +47,7 @@
         k3s_server_manifests_templates:
           - calico-install.yaml.j2
           - metallb-config.yaml.j2
+          - coredns-custom.yaml
     - name: Resource Readiness Check
       run_once: true
       kubernetes.core.k8s_info:
