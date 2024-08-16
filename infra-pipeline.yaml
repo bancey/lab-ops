@@ -115,6 +115,13 @@ variables:
     value: "MSDN Sub"
 
 stages:
+  - template: stages/check-hosts-online.yaml@azuredevops-lib
+    parameters:
+      dependencies: prod_twingate
+      keyVaultName: bancey-vault
+      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+      serviceConnection: $(serviceConnection)
+      hosts: ${{ parameters.local_environments }}
   - stage: GenerateAnsibleInventory
     dependsOn: []
     jobs:
@@ -134,13 +141,6 @@ stages:
               publishPlan: false
           - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
             artifact: ansible
-  - template: stages/check-hosts-online.yaml@azuredevops-lib
-    parameters:
-      dependencies: prod_twingate
-      keyVaultName: bancey-vault
-      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-      serviceConnection: $(serviceConnection)
-      hosts: ${{ parameters.local_environments }}
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
         ${{ if and(deployment.localEnvironments, gt(length(join('', deployment.dependsOn)), 0)) }}:
