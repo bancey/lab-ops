@@ -2,7 +2,7 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+      - main
   paths:
     exclude:
       - kubernetes/*
@@ -10,7 +10,7 @@ trigger:
 pr:
   branches:
     include:
-      - master
+      - main
   paths:
     exclude:
       - kubernetes/*
@@ -179,8 +179,8 @@ stages:
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   ${{ if ne(deployment.extraCommandArgs, '') }}:
                     extraCommandArgs: ${{ deployment.extraCommandArgs }}
-                  runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}
-                  runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/master')) }}
+                  runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                  runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
