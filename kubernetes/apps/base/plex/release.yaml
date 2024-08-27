@@ -26,6 +26,10 @@ spec:
       enabled: true
       url: https://plex.bancey.xyz
       ingressClassName: traefik
+    service:
+      type: LoadBalancer
+      annotations:
+        metallb.universe.tf/loadBalancerIPs: 10.151.15.51
     pms:
       configExistingClaim: plex-config-pvc-nfs-static
     extraVolumes:
@@ -35,4 +39,3 @@ spec:
     extraVolumeMounts:
       - name: data
         mountPath: /data
-
