@@ -17,6 +17,10 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "4.40.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.2"
+    }
   }
 
   backend "azurerm" {}
@@ -29,3 +33,5 @@ provider "azurerm" {
 provider "cloudflare" {
   api_token = data.azurerm_key_vault_secret.cloudflare_main_api_token.value
 }
+
+provider "null" {}

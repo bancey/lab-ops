@@ -72,6 +72,12 @@ resource "azuread_group_member" "kv_reader" {
   member_object_id = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
 
+resource "null_resource" "twingate_trigger_replace" {
+  triggers = {
+    key = data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value
+  }
+}
+
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
   depends_on                 = [azuread_group_member.kv_reader, azurerm_role_assignment.reader]
   for_each                   = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
@@ -90,6 +96,6 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
   PROTECTED_SETTINGS
 
   lifecycle {
-    replace_triggered_by = [data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value]
+    replace_triggered_by = [null_resource.twingate_trigger_replace]
   }
 }
