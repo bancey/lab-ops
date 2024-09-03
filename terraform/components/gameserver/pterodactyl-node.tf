@@ -72,10 +72,8 @@ resource "azuread_group_member" "kv_reader" {
   member_object_id = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
 
-resource "null_resource" "twingate_trigger_replace" {
-  triggers = {
-    key = data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value
-  }
+resource "terraform_data" "trigger_replace" {
+  input = bcrypt(data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value)
 }
 
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
@@ -96,6 +94,6 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
   PROTECTED_SETTINGS
 
   lifecycle {
-    replace_triggered_by = [null_resource.twingate_trigger_replace]
+    replace_triggered_by = [terraform_data.trigger_replace]
   }
 }
