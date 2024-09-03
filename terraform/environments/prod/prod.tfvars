@@ -74,7 +74,7 @@ twingate_groups = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
 twingate_service_accounts = {
   "AzureDevOps" = {}
   "Pterodactyl" = {
-    trigger_credential_replace = "03/09/24@1855"
+    trigger_credential_replace = "03/09/24@1925"
   }
 }
 twingate_networks = {
