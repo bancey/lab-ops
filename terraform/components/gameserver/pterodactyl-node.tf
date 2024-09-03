@@ -72,11 +72,6 @@ resource "azuread_group_member" "kv_reader" {
   member_object_id = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
 
-resource "terraform_data" "pterodactyl_sa_key" {
-  for_each = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
-  input    = data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value
-}
-
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
   depends_on                 = [azuread_group_member.kv_reader, azurerm_role_assignment.reader]
   for_each                   = { for k, v in var.gameservers : k => v if v.type == "pterodactyl" }
@@ -95,6 +90,6 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
   PROTECTED_SETTINGS
 
   lifecycle {
-    replace_triggered_by = [terraform_data.pterodactyl_sa_key[each.key]]
+    replace_triggered_by = [data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key]
   }
 }
