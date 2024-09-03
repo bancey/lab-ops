@@ -5,9 +5,11 @@ variable "twingate_groups" {
 }
 
 variable "twingate_service_accounts" {
-  type        = list(string)
-  description = "List of service accounts to create in TwinGate."
-  default     = []
+  type = map(object({
+    trigger_credential_replace = optional(string, null)
+  }))
+  description = "Map of service accounts to create in TwinGate."
+  default     = {}
 }
 
 variable "twingate_networks" {
