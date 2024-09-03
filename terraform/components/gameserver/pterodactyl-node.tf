@@ -90,6 +90,6 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
   PROTECTED_SETTINGS
 
   lifecycle {
-    replace_triggered_by = [data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key]
+    replace_triggered_by = [data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value]
   }
 }
