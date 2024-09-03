@@ -29,8 +29,9 @@ resource "twingate_service_account_key" "this" {
 }
 
 resource "azurerm_key_vault_secret" "service_account_key" {
-  for_each     = var.twingate_service_accounts
-  name         = "Twingate-${each.key}-SA-Key"
-  value        = twingate_service_account_key.this[each.key].token
-  key_vault_id = data.azurerm_key_vault.vault.id
+  for_each        = var.twingate_service_accounts
+  name            = "Twingate-${each.key}-SA-Key"
+  value           = twingate_service_account_key.this[each.key].token
+  key_vault_id    = data.azurerm_key_vault.vault.id
+  expiration_date = time_static.service_account_key_rotation.rfc3339
 }

@@ -73,7 +73,7 @@ resource "azuread_group_member" "kv_reader" {
 }
 
 resource "terraform_data" "trigger_replace" {
-  input = bcrypt(data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value)
+  input = data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.expiration_date
 }
 
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
