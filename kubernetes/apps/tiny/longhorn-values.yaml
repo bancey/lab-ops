@@ -1,0 +1,11 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+spec:
+  values:
+    defaultSettings:
+      backupTarget: azblob://backup/longhorn
+      backupTargetCredentialSecret: azblob-secret
