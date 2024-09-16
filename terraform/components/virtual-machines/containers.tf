@@ -46,8 +46,8 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
   }
 
   startup {
-    order      = each.value.startup_order
-    up_delay   = each.value.startuo_delay
+    order    = each.value.startup_order
+    up_delay = each.value.startuo_delay
   }
 }
 
@@ -75,8 +75,8 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
   }
 
   network_interface {
-    name     = each.value.network_bridge_name
-    vlan_tag = each.value.vlan_tag
+    name    = each.value.network_bridge_name
+    vlan_id = each.value.vlan_tag
   }
 
   operating_system {
@@ -99,7 +99,7 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
   }
 
   startup {
-    order      = each.value.startup_order
-    up_delay   = each.value.startuo_delay
+    order    = each.value.startup_order
+    up_delay = each.value.startuo_delay
   }
 }
