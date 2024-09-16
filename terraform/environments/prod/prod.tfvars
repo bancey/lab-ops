@@ -67,7 +67,11 @@ virtual_machines = {
 }
 
 images = {
-  "jammy-server-cloudimg-amd64.img" = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
+  "jammy-server-cloudimg-amd64.tar.gz" = {
+    url          = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.tar.gz"
+    content_type = "vztmpl"
+  }
 }
 
 twingate_groups = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
