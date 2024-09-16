@@ -47,7 +47,7 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
 
   startup {
     order    = each.value.startup_order
-    up_delay = each.value.startuo_delay
+    up_delay = each.value.startup_delay
   }
 }
 
@@ -100,6 +100,6 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
 
   startup {
     order    = each.value.startup_order
-    up_delay = each.value.startuo_delay
+    up_delay = each.value.startup_delay
   }
 }
