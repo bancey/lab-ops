@@ -29,6 +29,6 @@ provider "github" {
   app_auth {
     id              = data.azurerm_key_vault_secret.github_app_id.value
     installation_id = data.azurerm_key_vault_secret.github_installation_id.value
-    pem_file        = "../../../private-key.pem"
+    pem_file        = file("../../../private-key.pem")
   }
 }
