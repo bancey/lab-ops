@@ -13,3 +13,22 @@ locals {
     }
   }
 }
+
+data "azurerm_key_vault" "vault" {
+  name                = "bancey-vault"
+  resource_group_name = "common"
+}
+
+data "azurerm_key_vault_secret" "github_app_id" {
+  name         = "GitHub-Bot-ID"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "github_installation_id" {
+  name         = "GitHub-Bot-Installation-ID"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "github_repository" "this" {
+  full_name = "bancey/lab-ops"
+}

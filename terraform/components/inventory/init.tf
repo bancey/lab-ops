@@ -5,9 +5,30 @@ terraform {
       source  = "hashicorp/local"
       version = "2.5.2"
     }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "4.2.0"
+    }
+    github = {
+      source  = "integrations/github"
+      version = "6.0"
+    }
   }
 
   backend "azurerm" {}
 }
 
 provider "local" {}
+
+provider "azurerm" {
+  features {}
+}
+
+provider "github" {
+  owner = "bancey"
+  app_auth {
+    id              = data.azurerm_key_vault_secret.github_app_id
+    installation_id = data.azurerm_key_vault_secret.github_installation_id
+    pem_file        = "../../../private-key.pem"
+  }
+}
