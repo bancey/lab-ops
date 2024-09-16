@@ -7,5 +7,5 @@ metadata:
 spec:
   values:
     defaultSettings:
-      backupTarget: azblob://backup/longhorn
+      backupTarget: azblob://backup@core.windows.net/longhorn/
       backupTargetCredentialSecret: azblob-secret
