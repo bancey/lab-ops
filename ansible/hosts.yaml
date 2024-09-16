@@ -1,0 +1,46 @@
+# This file is updated by Terraform to reflect the VMs deployed any updates should be made to the hosts.yaml.tpl file.
+all:
+  vars:
+    ansible_user: bancey
+  hosts:
+    test0:
+      ansible_host: 10.151.16.100
+  children:
+    rpi:
+      hosts:
+        thanos:
+          ansible_host: 10.151.14.5
+        gamora:
+          ansible_host: 10.151.14.6
+    tiny_k3s_cluster:
+      vars:
+        metallb_ip_range: "10.151.16.50-10.151.16.100"
+        k3s_etcd_datastore: true
+      hosts:
+        tiny-master0:
+          ansible_host: 10.151.16.8
+        tiny-master1:
+          ansible_host: 10.151.16.9
+        tiny-master2:
+          ansible_host: 10.151.16.10
+        tiny-node0:
+          ansible_host: 10.151.16.16
+        tiny-node1:
+          ansible_host: 10.151.16.17
+        tiny-node2:
+          ansible_host: 10.151.16.18
+    wanda_k3s_cluster:
+      vars:
+        metallb_ip_range: "10.151.15.50-10.151.15.100"
+        k3s_etcd_datastore: false
+      hosts:
+        wanda-master0:
+          ansible_host: 10.151.15.8
+        wanda-node0:
+          ansible_host: 10.151.15.16
+        wanda-node1:
+          ansible_host: 10.151.15.17
+        wanda-node2:
+          ansible_host: 10.151.15.18
+        wanda-node3:
+          ansible_host: 10.151.15.19
