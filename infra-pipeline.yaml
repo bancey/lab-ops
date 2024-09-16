@@ -6,6 +6,7 @@ trigger:
   paths:
     exclude:
       - kubernetes/*
+      - ansible/hosts.yaml
 
 pr:
   branches:
@@ -14,6 +15,7 @@ pr:
   paths:
     exclude:
       - kubernetes/*
+      - ansible/hosts.yaml
 
 resources:
   repositories:
@@ -42,6 +44,13 @@ parameters:
   - name: terraform_deployments
     type: object
     default:
+      - deployment: generate_ansible_inventory
+        environment: prod
+        component: inventory
+        destroy: false
+        deploy: true
+        alwaysDeploy: true
+        dependsOn: []
       - deployment: prod_twingate
         environment: prod
         component: twingate
@@ -57,7 +66,7 @@ parameters:
         localEnvironments:
           - wanda
         dependsOn:
-          - GenerateAnsibleInventory
+          - generate_ansible_inventory
       - deployment: tiny_virtual_machines
         environment: prod
         component: virtual-machines
@@ -69,7 +78,7 @@ parameters:
           - loki
           - thor
         dependsOn:
-          - GenerateAnsibleInventory
+          - generate_ansible_inventory
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -104,7 +113,7 @@ parameters:
           - loki
           - thor
         dependsOn:
-          - GenerateAnsibleInventory
+          - generate_ansible_inventory
 
 variables:
   - name: agentImage
@@ -122,25 +131,6 @@ stages:
       serviceKeySecretName: Twingate-AzureDevOps-SA-Key
       serviceConnection: $(serviceConnection)
       hosts: ${{ parameters.local_environments }}
-  - stage: GenerateAnsibleInventory
-    dependsOn: []
-    jobs:
-      - job: GenerateAnsibleInventory
-        pool:
-          vmImage: $(agentImage)
-        steps:
-          - template: steps/terraform.yaml@azuredevops-lib
-            parameters:
-              serviceConnection: $(serviceConnection)
-              backendStorageAccount: $(stateStorageAccount)
-              workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/inventory
-              azureRmKey: tfstate/prod_inventory.tfstate
-              variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/prod/prod.tfvars
-              runApply: true
-              runDestroy: false
-              publishPlan: false
-          - publish: $(System.DefaultWorkingDirectory)/ansible/hosts.yaml
-            artifact: ansible
   - ${{ each deployment in parameters.terraform_deployments }}:
       - stage: ${{ deployment.deployment }}
         ${{ if and(deployment.localEnvironments, gt(length(join('', deployment.dependsOn)), 0)) }}:
@@ -179,7 +169,10 @@ stages:
                   variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
                   ${{ if ne(deployment.extraCommandArgs, '') }}:
                     extraCommandArgs: ${{ deployment.extraCommandArgs }}
-                  runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                  ${{ if eq(deployment.alwaysDeploy, true) }}:
+                    runApply: true
+                  ${{ else }}:
+                    runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
                   runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
