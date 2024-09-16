@@ -12,5 +12,5 @@ Configuration as code for my lab environment which spans Azure & on premise devi
 
 ### Bootstrap K8S cluster
 
-`task boostrap -- <cluster-name>
+`task boostrap -- <cluster-name>`
 
