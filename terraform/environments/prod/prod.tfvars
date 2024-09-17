@@ -66,8 +66,31 @@ virtual_machines = {
   }
 }
 
+containers = {
+  test-ct = {
+    node                = "hela"
+    ct_id               = 101
+    ct_description      = "Test LXC Container"
+    cpu_cores           = 1
+    memory              = 512
+    ip_address          = "10.151.16.101"
+    gateway_ip_address  = "10.151.16.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "16"
+    startup_order       = 5
+    startup_delay       = 0
+    storage             = "local-lvm"
+    image               = "jammy-server-cloudimg-amd64.tar.gz"
+    image_type          = "ubuntu"
+  }
+}
+
 images = {
-  "jammy-server-cloudimg-amd64.img" = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
+  "jammy-server-cloudimg-amd64.tar.gz" = {
+    url          = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.tar.gz"
+    content_type = "vztmpl"
+  }
 }
 
 twingate_groups = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]

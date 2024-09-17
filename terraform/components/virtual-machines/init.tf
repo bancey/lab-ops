@@ -33,7 +33,6 @@ provider "proxmox" {
   endpoint = data.azurerm_key_vault_secret.wanda_proxmox_url.value
   username = data.azurerm_key_vault_secret.wanda_proxmox_username.value
   password = data.azurerm_key_vault_secret.wanda_proxmox_password.value
-  insecure = true
   ssh {
     agent = true
   }
@@ -44,40 +43,6 @@ provider "proxmox" {
   endpoint = data.azurerm_key_vault_secret.tiny_proxmox_url.value
   username = data.azurerm_key_vault_secret.tiny_proxmox_username.value
   password = data.azurerm_key_vault_secret.tiny_proxmox_password.value
-  insecure = true
-  ssh {
-    agent = true
-  }
-}
-
-provider "proxmox" {
-  alias    = "hela"
-  endpoint = data.azurerm_key_vault_secret.hela_proxmox_url.value
-  username = data.azurerm_key_vault_secret.tiny_proxmox_username.value
-  password = data.azurerm_key_vault_secret.tiny_proxmox_password.value
-  insecure = true
-  ssh {
-    agent = true
-  }
-}
-
-provider "proxmox" {
-  alias    = "loki"
-  endpoint = data.azurerm_key_vault_secret.loki_proxmox_url.value
-  username = data.azurerm_key_vault_secret.tiny_proxmox_username.value
-  password = data.azurerm_key_vault_secret.tiny_proxmox_password.value
-  insecure = true
-  ssh {
-    agent = true
-  }
-}
-
-provider "proxmox" {
-  alias    = "thor"
-  endpoint = data.azurerm_key_vault_secret.thor_proxmox_url.value
-  username = data.azurerm_key_vault_secret.tiny_proxmox_username.value
-  password = data.azurerm_key_vault_secret.tiny_proxmox_password.value
-  insecure = true
   ssh {
     agent = true
   }
