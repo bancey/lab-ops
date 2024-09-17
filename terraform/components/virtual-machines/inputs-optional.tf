@@ -27,8 +27,6 @@ variable "containers" {
     startup_delay       = number
     ct_description      = string
     storage             = string
-    image               = optional(string)
-    image_type          = optional(string, "ubuntu")
   }))
   description = "Map containing information about LXC Containers to create in Proxmox."
 }

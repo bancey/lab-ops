@@ -27,8 +27,8 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
   }
 
   operating_system {
-    template_file_id = "local:vztmpl/${each.value.image}"
-    type             = each.value.image_type
+    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+    type             = "ubuntu"
   }
 
   disk {
@@ -80,8 +80,8 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
   }
 
   operating_system {
-    template_file_id = "local:vztmpl/${each.value.image}"
-    type             = each.value.image_type
+    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+    type             = "ubuntu"
   }
 
   disk {
