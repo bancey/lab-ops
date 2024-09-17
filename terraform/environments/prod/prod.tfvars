@@ -80,15 +80,15 @@ containers = {
     startup_order       = 5
     startup_delay       = 0
     storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64.tar.gz"
+    image               = "ubuntu-24.04-server-cloudimg-amd64-root.tar.xz"
     image_type          = "ubuntu"
   }
 }
 
 images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
-  "jammy-server-cloudimg-amd64.tar.gz" = {
-    url          = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.tar.gz"
+  "ubuntu-24.04-server-cloudimg-amd64-root.tar.xz" = {
+    url          = "https://mirrors.servercentral.com/ubuntu-cloud-images/releases/24.04/release-20240911/ubuntu-24.04-server-cloudimg-amd64-root.tar.xz"
     content_type = "vztmpl"
   }
 }
