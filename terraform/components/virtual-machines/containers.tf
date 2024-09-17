@@ -27,7 +27,7 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
   }
 
   operating_system {
-    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-2_amd64.tar.zst"
     type             = "ubuntu"
   }
 
@@ -80,7 +80,7 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
   }
 
   operating_system {
-    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+    template_file_id = "local:vztmpl/ubuntu-22.04-standard_22.04-2_amd64.tar.zst"
     type             = "ubuntu"
   }
 
