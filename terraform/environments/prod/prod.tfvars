@@ -80,17 +80,11 @@ containers = {
     startup_order       = 5
     startup_delay       = 0
     storage             = "local-lvm"
-    image               = "ubuntu-24.04-server-cloudimg-amd64-root.tar.xz"
-    image_type          = "ubuntu"
   }
 }
 
 images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
-  "ubuntu-24.04-server-cloudimg-amd64-root.tar.xz" = {
-    url          = "https://mirrors.servercentral.com/ubuntu-cloud-images/releases/24.04/release-20240911/ubuntu-24.04-server-cloudimg-amd64-root.tar.xz"
-    content_type = "vztmpl"
-  }
 }
 
 twingate_groups = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl"]
