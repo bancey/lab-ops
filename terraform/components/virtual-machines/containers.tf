@@ -11,7 +11,7 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
 
     ip_config {
       ipv4 {
-        address = each.value.ip_address
+        address = "${each.value.ip_address}/24"
         gateway = each.value.gateway_ip_address
       }
     }
@@ -73,7 +73,7 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
 
     ip_config {
       ipv4 {
-        address = each.value.ip_address
+        address = "${each.value.ip_address}/24"
         gateway = each.value.gateway_ip_address
       }
     }
