@@ -6,7 +6,7 @@ all:
     test0:
       ansible_host: 10.151.16.100
     test-ct:
-      ansible_host: 10.151.16.101/24
+      ansible_host: 10.151.16.101
       ansible_user: root
   children:
     rpi:
