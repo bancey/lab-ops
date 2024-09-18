@@ -6,10 +6,11 @@ all:
 %{ for vm_key, vm in vms ~}
     ${ vm_key }:
       ansible_host: ${ vm.ip_address }
-${ endfor ~}
+%{ endfor ~}
 %{ for ct_key, ct in cts ~}
     ${ ct_key }:
       ansible_host: ${ ct.ip_address }
+      ansible_user: root
 %{ endfor ~}
   children:
     rpi:
