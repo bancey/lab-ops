@@ -22,7 +22,8 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
   }
 
   network_interface {
-    name    = each.value.network_bridge_name
+    name    = "veth0"
+    bridge  = each.value.network_bridge_name
     vlan_id = each.value.vlan_tag
   }
 
@@ -48,6 +49,11 @@ resource "proxmox_virtual_environment_container" "wanda_containers" {
   startup {
     order    = each.value.startup_order
     up_delay = each.value.startup_delay
+  }
+
+  unprivileged = true
+  features {
+    nesting = true
   }
 }
 
@@ -75,7 +81,8 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
   }
 
   network_interface {
-    name    = each.value.network_bridge_name
+    name    = "veth0"
+    bridge  = each.value.network_bridge_name
     vlan_id = each.value.vlan_tag
   }
 
@@ -101,5 +108,10 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
   startup {
     order    = each.value.startup_order
     up_delay = each.value.startup_delay
+  }
+
+  unprivileged = true
+  features {
+    nesting = true
   }
 }
