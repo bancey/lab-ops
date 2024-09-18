@@ -6,6 +6,7 @@ all:
 %{ for vm_key, vm in vms ~}
     ${ vm_key }:
       ansible_host: ${ vm.ip_address }
+${ endfor ~}
 %{ for ct_key, ct in cts ~}
     ${ ct_key }:
       ansible_host: ${ ct.ip_address }
