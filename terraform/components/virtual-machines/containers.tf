@@ -110,7 +110,7 @@ resource "proxmox_virtual_environment_container" "tiny_containers" {
     up_delay = each.value.startup_delay
   }
 
-  unprivileged = true
+  unprivileged = false
   features {
     nesting = true
   }
