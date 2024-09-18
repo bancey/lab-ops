@@ -43,3 +43,21 @@ variable "kubernetes_virtual_machines" {
   description = "Map containing information about Virtual Machines to create in Proxmox for Kubernetes."
 }
 
+variable "containers" {
+  type = map(object({
+    node                = string
+    ct_id               = number
+    cpu_cores           = number
+    memory              = number
+    ip_address          = string
+    gateway_ip_address  = string
+    network_bridge_name = string
+    vlan_tag            = optional(string)
+    startup_order       = number
+    startup_delay       = number
+    ct_description      = string
+    storage             = string
+  }))
+  description = "Map containing information about LXC Containers to create in Proxmox."
+}
+

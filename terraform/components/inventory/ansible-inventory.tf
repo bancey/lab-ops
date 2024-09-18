@@ -6,6 +6,7 @@ resource "github_repository_file" "hosts" {
     {
       k8s = local.k8s_hosts
       vms = var.virtual_machines
+      cts = var.containers
     }
   )
   commit_message      = "feat: update hosts file"
