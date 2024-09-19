@@ -10,7 +10,7 @@
           "10.151.15.203"
         state: "MASTER"
         priority: 150
-      haprox-1:
+      haproxy-1:
         peers: |-
           "10.151.15.201"
           "10.151.15.203"
