@@ -47,24 +47,7 @@ kubernetes_virtual_machines = {
   }
 }
 
-virtual_machines = {
-  test0 = {
-    node                = "hela",
-    vm_id               = 120,
-    vm_description      = "Test VM.",
-    cpu_cores           = 4,
-    memory              = 4096,
-    ip_address          = "10.151.16.100",
-    gateway_ip_address  = "10.151.16.1",
-    network_bridge_name = "vmbr1",
-    vlan_tag            = "16",
-    startup_order       = 5,
-    startup_delay       = 0,
-    cname_required      = false
-    storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64.img"
-  }
-}
+virtual_machines = {}
 
 containers = {
   haproxy-0 = {
