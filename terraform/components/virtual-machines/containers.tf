@@ -12,6 +12,7 @@ module "wanda_containers" {
   ct_description     = each.value.ct_description
   ip_address         = each.value.ip_address
   gateway_ip_address = each.value.gateway_ip_address
+  vlan_tag           = each.vale.vlan_tag
   password           = data.azurerm_key_vault_secret.lab_vm_password.value
 
   cpu_cores  = 1
