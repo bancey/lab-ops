@@ -25,7 +25,6 @@
   roles:
     - role: prep
       install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker"]
-    - role: install-docker
   tasks:
     - set_fact:
         keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
@@ -53,26 +52,13 @@
       template:
         src: templates/haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
-    - name: Check if HAProxy GPG key exists
-      stat:
-        path: /usr/share/keyrings/haproxy.debian.net.gpg
-      register: haproxygpg
-    - name: Download HAProxy GPG Key
-      get_url:
-        url: https://haproxy.debian.net/bernat.debian.org.gpg
-        dest: /tmp/bernat.debian.org.gpg
-      when: not haproxygpg.stat.exists
-    - name: Dearmor HAProxy GPG Key
-      ansible.builtin.command: gpg -o /usr/share/keyrings/haproxy.debian.net.gpg --dearmor /tmp/bernat.debian.org.gpg
-      when: not haproxygpg.stat.exists
-    - name: Add HAProxy Repository
-      apt_repository:
-        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net bullseye-backports-2.8 main"
-        state: present
+    - name: Add HAProxy PPA repository
+      ansible.builtin.apt_repository:
+        repo: 'ppa:vbernat/haproxy-3.0'
     - name: Update apt and install HAProxy
       apt:
         pkg:
-          - haproxy=2.8.*
+          - haproxy=3.0.\*
         state: latest
         update_cache: true
       when: not ansible_check_mode
