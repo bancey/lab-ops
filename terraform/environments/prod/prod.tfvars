@@ -67,17 +67,45 @@ virtual_machines = {
 }
 
 containers = {
-  test-ct = {
+  haproxy-0 = {
     node                = "hela"
-    ct_id               = 101
-    ct_description      = "Test LXC Container"
+    ct_id               = 250
+    ct_description      = "Hela HAProxy LXC Container. Load Balances services including K8S control plane."
     cpu_cores           = 1
     memory              = 512
-    ip_address          = "10.151.16.101"
-    gateway_ip_address  = "10.151.16.1"
+    ip_address          = "10.151.15.201"
+    gateway_ip_address  = "10.151.15.1"
     network_bridge_name = "vmbr1"
-    vlan_tag            = "16"
-    startup_order       = 5
+    vlan_tag            = "15"
+    startup_order       = 0
+    startup_delay       = 0
+    storage             = "local-lvm"
+  }
+  haproxy-1 = {
+    node                = "loki"
+    ct_id               = 250
+    ct_description      = "Loki HAProxy LXC Container. Load Balances services including K8S control plane."
+    cpu_cores           = 1
+    memory              = 512
+    ip_address          = "10.151.15.202"
+    gateway_ip_address  = "10.151.15.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "15"
+    startup_order       = 0
+    startup_delay       = 0
+    storage             = "local-lvm"
+  }
+  haproxy-2 = {
+    node                = "thor"
+    ct_id               = 250
+    ct_description      = "Thor HAProxy LXC Container. Load Balances services including K8S control plane."
+    cpu_cores           = 1
+    memory              = 512
+    ip_address          = "10.151.15.203"
+    gateway_ip_address  = "10.151.15.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "15"
+    startup_order       = 0
     startup_delay       = 0
     storage             = "local-lvm"
   }
