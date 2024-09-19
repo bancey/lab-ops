@@ -56,6 +56,21 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: test_gameserver
+        environment: test
+        component: gameserver
+        destroy: false
+        deploy: true
+        dependsOn: 
+          - prod_twingate
+      - deployment: prod_gameserver
+        environment: prod
+        component: gameserver
+        destroy: false
+        deploy: true
+        dependsOn:
+          - prod_twingate
+          - test_gameserver
       - deployment: wanda_virtual_machines
         environment: prod
         component: virtual-machines
@@ -84,21 +99,6 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: test_gameserver
-        environment: test
-        component: gameserver
-        destroy: false
-        deploy: true
-        dependsOn: 
-          - prod_twingate
-      - deployment: prod_gameserver
-        environment: prod
-        component: gameserver
-        destroy: false
-        deploy: true
-        dependsOn:
-          - prod_twingate
-          - test_gameserver
   - name: ansible_deployments
     type: object
     default:

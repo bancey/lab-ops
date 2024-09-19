@@ -24,15 +24,7 @@
         priority: 100
   roles:
     - role: prep
-        install_pkgs:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-          - python3-pip
-          - virtualenv
-          - python3-setuptools
-          - python3-docker
+      install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker"]
     - role: install-docker
   tasks:
     - set_fact:
