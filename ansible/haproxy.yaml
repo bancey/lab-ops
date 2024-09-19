@@ -58,7 +58,7 @@
     - name: Update apt and install HAProxy
       apt:
         pkg:
-          - haproxy=3.0.\*
+          - haproxy=3.0.*
         state: latest
         update_cache: true
       when: not ansible_check_mode
