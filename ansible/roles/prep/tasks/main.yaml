@@ -6,7 +6,7 @@
     update_cache: true
 - name: Install required system packages
   ansible.builtin.apt:
-    pkg: {{ install_pkgs }}
+    pkg: "{{ install_pkgs }}"
     state: latest
     update_cache: true
 - name: Remove packages
