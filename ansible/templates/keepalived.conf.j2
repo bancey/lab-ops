@@ -6,7 +6,7 @@ vrrp_instance RPI {
   advert_int 1
   unicast_src_ip {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
   unicast_peer {
-    {{ keepalive[inventory_hostname].peer }}
+    {{ keepalive[inventory_hostname].peers }}
   }
 
   authentication {

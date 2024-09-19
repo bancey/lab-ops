@@ -1,0 +1,7 @@
+install_pkgs:
+  - open-iscsi
+  - nfs-common
+  - curl
+  - grep
+  - python3-kubernetes
+  - python3-yaml

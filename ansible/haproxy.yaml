@@ -1,21 +1,25 @@
-- name: Update system, install docker and setup docker compose
-  hosts: rpi
-  serial: 1
-  become: true
-  become_user: root
-  become_method: sudo
+- name: Update system, install and configure HAProxy
+  hosts: haproxy-0, haproxy-1, haproxy-2
   gather_facts: true
   vars:
-    vip: "10.151.14.4/24"
+    vip: "10.151.15.200/24"
     keepalive:
-      thanos:
+      haproxy-0:
         peers: |-
-          "10.151.14.6"
+          "10.151.15.202"
+          "10.151.15.203"
         state: "MASTER"
         priority: 150
-      gamora:
+      haproxy-1:
         peers: |-
-          "10.151.14.5"
+          "10.151.15.201"
+          "10.151.15.203"
+        state: "BACKUP"
+        priority: 100
+      haproxy-2:
+        peers: |-
+          "10.151.15.201"
+          "10.151.15.202"
         state: "BACKUP"
         priority: 100
   roles:
@@ -26,7 +30,7 @@
     - set_fact:
         keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
     - name: ensures /etc/keelalived dir exists
-      file: 
+      file:
         path: /etc/keepalived
         state: directory
     - name: Copy KeepAlived configuration template
@@ -42,7 +46,7 @@
         update_cache: true
       when: not ansible_check_mode
     - name: ensures /etc/haproxy dir exists
-      file: 
+      file:
         path: /etc/haproxy
         state: directory
     - name: Copy HAProxy configuration template
@@ -71,28 +75,4 @@
           - haproxy=2.8.*
         state: latest
         update_cache: true
-      when: not ansible_check_mode
-    - name: create config directories
-      file:
-        path: "{{ item }}"
-        state: directory
-        owner: root
-        group: root
-        mode: 0775
-      loop:
-        - /opt/adguard
-        - /opt/adguard/config
-        - /opt/adguard/work
-        - /opt/portainer
-        - /opt/compose
-    - name: Copy docker-compose config
-      ansible.builtin.copy:
-        src: ./templates/docker-compose.yaml
-        dest: /opt/compose
-    - name: deploy Docker Compose stack
-      community.docker.docker_compose_v2:
-        project_src: /opt/compose
-        files:
-        - docker-compose.yaml
-      register: output
       when: not ansible_check_mode
