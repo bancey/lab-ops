@@ -83,7 +83,7 @@ containers = {
   }
   haproxy-1 = {
     node                = "loki"
-    ct_id               = 250
+    ct_id               = 251
     ct_description      = "Loki HAProxy LXC Container. Load Balances services including K8S control plane."
     cpu_cores           = 1
     memory              = 512
@@ -97,7 +97,7 @@ containers = {
   }
   haproxy-2 = {
     node                = "thor"
-    ct_id               = 250
+    ct_id               = 252
     ct_description      = "Thor HAProxy LXC Container. Load Balances services including K8S control plane."
     cpu_cores           = 1
     memory              = 512
