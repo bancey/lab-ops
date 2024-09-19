@@ -3,8 +3,6 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    test0:
-      ansible_host: 10.151.16.100
     haproxy-0:
       ansible_host: 10.151.15.201
       ansible_user: root
