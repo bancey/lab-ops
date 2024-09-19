@@ -5,4 +5,3 @@ install_pkgs:
   - grep
   - python3-kubernetes
   - python3-yaml
-  - software-properties-common
