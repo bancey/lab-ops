@@ -17,7 +17,7 @@
     - name: K3S Prepare
       when: run_prep
       ansible.builtin.include_role:
-        name: k3s-prep
+        name: prep
     - name: Install K3S
       when: run_install
       ansible.builtin.include_role:

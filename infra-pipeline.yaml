@@ -108,11 +108,22 @@ parameters:
         secrets:
           - keepalived-pass
         localEnvironments:
+          - thanos
+          - gamora
+        dependsOn:
+          - generate_ansible_inventory
+      - deployment: haproxy_ansible
+        environment: prod
+        playbook: haproxy.yaml
+        secrets:
+          - keepalived-pass
+        localEnvironments:
           - hela
           - loki
           - thor
         dependsOn:
           - generate_ansible_inventory
+          - tiny_virtual_machines
 
 variables:
   - name: agentImage

@@ -5,29 +5,6 @@
 - name: Get version codename
   shell: . /etc/os-release && echo "$VERSION_CODENAME"
   register: version_codename
-- name: Install aptitude
-  apt:
-    name: aptitude
-    state: latest
-    update_cache: true
-- name: Install required system packages
-  apt:
-    pkg:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
-      - python3-pip
-      - virtualenv
-      - python3-setuptools
-      - python3-docker
-    state: latest
-    update_cache: true
-- name: Upgrade all packages
-  apt:
-    name: "*"
-    state: latest
-  when: upgrade_packages | default(false)
 - name: Create /etc/apt/keyrings if it doesn't exist
   file:
     path: /etc/apt/keyrings
