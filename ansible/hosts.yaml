@@ -5,8 +5,14 @@ all:
   hosts:
     test0:
       ansible_host: 10.151.16.100
-    test-ct:
-      ansible_host: 10.151.16.101
+    haproxy-0:
+      ansible_host: 10.151.15.201
+      ansible_user: root
+    haproxy-1:
+      ansible_host: 10.151.15.202
+      ansible_user: root
+    haproxy-2:
+      ansible_host: 10.151.15.203
       ansible_user: root
   children:
     rpi:
