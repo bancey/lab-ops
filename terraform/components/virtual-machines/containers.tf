@@ -13,7 +13,7 @@ module "wanda_containers" {
   ip_address          = each.value.ip_address
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
-  vlan_tag            = each.vale.vlan_tag
+  vlan_tag            = each.value.vlan_tag
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
 
   cpu_cores  = 1
@@ -37,7 +37,7 @@ module "tiny_containers" {
   ip_address          = each.value.ip_address
   gateway_ip_address  = each.value.gateway_ip_address
   network_bridge_name = each.value.network_bridge_name
-  vlan_tag            = each.vale.vlan_tag
+  vlan_tag            = each.value.vlan_tag
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
 
   cpu_cores  = 1
