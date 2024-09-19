@@ -4,7 +4,7 @@ resource "proxmox_virtual_environment_container" "this" {
   description = var.ct_description
   pool_id     = var.resource_pool
   started     = var.start_on_boot
-  tags        = var.tags
+  tags        = concat(["terraform"], var.tags)
 
   initialization {
     hostname = var.ct_name
