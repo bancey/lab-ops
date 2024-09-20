@@ -13,6 +13,9 @@
       ansible.builtin.set_fact:
         k3s_control_node: true
       when: "'master' in inventory_hostname"
+    - name: Add node-ip to k3s_server conf
+      ansible.builtin.set_fact:
+        k3s_server: "{{ k3s_server | combine({ 'node-ip': ansible_host}) }}"
   tasks:
     - name: K3S Prepare
       when: run_prep
