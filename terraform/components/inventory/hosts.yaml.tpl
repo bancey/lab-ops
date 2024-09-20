@@ -24,6 +24,19 @@ all:
       vars:
         metallb_ip_range: "${ cluster.metallb_ip_range }"
         k3s_etcd_datastore: ${ cluster.k3s_etcd_datastore }
+        k3s_server:
+          flannel-backend: 'none'
+          disable:
+            - flannel
+            - local-storage
+            - servicelb
+            - traefik
+          disable-network-policy: true
+          write-kubeconfig-mode: "0644"
+          cluster-cidr: 10.42.0.0/16
+          service-cidr: 10.43.0.0/16%{ if cluster.load_balancer_address != null }
+          tls-san: ${cluster.load_balancer_address}
+        k3s_registration_address: ${cluster.load_balancer_address}%{ endif}
       hosts:
 %{ for master_key, master in cluster.masters ~}
         ${ master_key }:

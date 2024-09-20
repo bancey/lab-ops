@@ -15,9 +15,11 @@ module "wanda_containers" {
   network_bridge_name = each.value.network_bridge_name
   vlan_tag            = each.value.vlan_tag
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
+  startup_order       = each.value.startup_order
+  startup_delay       = each.value.startup_delay
+  cpu_cores           = each.value.cpu_cores
+  memory              = each.value.memory
 
-  cpu_cores  = 1
-  memory     = 512
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
 }
@@ -39,9 +41,11 @@ module "tiny_containers" {
   network_bridge_name = each.value.network_bridge_name
   vlan_tag            = each.value.vlan_tag
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
+  startup_order       = each.value.startup_order
+  startup_delay       = each.value.startup_delay
+  cpu_cores           = each.value.cpu_cores
+  memory              = each.value.memory
 
-  cpu_cores  = 1
-  memory     = 512
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
 }
