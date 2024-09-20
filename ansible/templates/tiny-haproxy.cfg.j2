@@ -40,7 +40,7 @@ backend kube-apiserver
         server  tiny-master2  10.151.16.10:6443 check
 
 listen stats
-        bind *:8443
+        bind *:8080
         stats enable                    # enable statistics reports  
         stats hide-version              # Hide the version of HAProxy
         stats refresh 30s               # HAProxy refresh time
