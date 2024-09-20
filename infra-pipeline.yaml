@@ -124,9 +124,6 @@ parameters:
         secrets:
           - keepalived-pass
         localEnvironments:
-          - hela
-          - loki
-          - thor
           - haproxy0
           - haproxy1
           - haproxy2
