@@ -36,8 +36,8 @@ backend kube-apiserver
 	mode tcp
 	option tcp-check
         server  tiny-master0  10.151.16.8:6443 check
-        server  tiny-master0  10.151.16.9:6443 check
-        server  tiny-master0  10.151.16.10:6443 check
+        server  tiny-master1  10.151.16.9:6443 check
+        server  tiny-master2  10.151.16.10:6443 check
 
 listen stats
         bind 10.151.16.200:8443
