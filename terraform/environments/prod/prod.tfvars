@@ -50,7 +50,7 @@ kubernetes_virtual_machines = {
 virtual_machines = {}
 
 containers = {
-  haproxy-0 = {
+  haproxy0 = {
     node                = "hela"
     ct_id               = 250
     ct_description      = "Hela HAProxy LXC Container. Load Balances services including K8S control plane."
@@ -64,7 +64,7 @@ containers = {
     startup_delay       = 0
     storage             = "local-lvm"
   }
-  haproxy-1 = {
+  haproxy1 = {
     node                = "loki"
     ct_id               = 251
     ct_description      = "Loki HAProxy LXC Container. Load Balances services including K8S control plane."
@@ -78,7 +78,7 @@ containers = {
     startup_delay       = 0
     storage             = "local-lvm"
   }
-  haproxy-2 = {
+  haproxy2 = {
     node                = "thor"
     ct_id               = 252
     ct_description      = "Thor HAProxy LXC Container. Load Balances services including K8S control plane."

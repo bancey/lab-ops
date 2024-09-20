@@ -1,5 +1,5 @@
 - name: Update system, install and configure HAProxy
-  hosts: haproxy-0, haproxy-1, haproxy-2
+  hosts: haproxy0, haproxy1, haproxy2
   gather_facts: true
   vars:
     vip: "10.151.15.200/24"
@@ -50,7 +50,7 @@
         state: directory
     - name: Copy HAProxy configuration template
       template:
-        src: templates/haproxy.cfg.j2
+        src: templates/tiny-haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
     - name: Add HAProxy PPA repository
       ansible.builtin.apt_repository:

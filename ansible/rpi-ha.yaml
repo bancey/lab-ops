@@ -47,7 +47,7 @@
         state: directory
     - name: Copy HAProxy configuration template
       template:
-        src: templates/haproxy.cfg.j2
+        src: templates/rpi-haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
     - name: Check if HAProxy GPG key exists
       stat:
