@@ -4,19 +4,19 @@
   vars:
     vip: "10.151.16.200/24"
     keepalive:
-      haproxy-0:
+      haproxy0:
         peers: |-
           "10.151.16.202"
           "10.151.16.203"
         state: "MASTER"
         priority: 150
-      haproxy-1:
+      haproxy1:
         peers: |-
           "10.151.16.201"
           "10.151.16.203"
         state: "BACKUP"
         priority: 100
-      haproxy-2:
+      haproxy2:
         peers: |-
           "10.151.16.201"
           "10.151.16.202"
