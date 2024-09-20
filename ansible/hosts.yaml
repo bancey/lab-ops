@@ -23,6 +23,19 @@ all:
       vars:
         metallb_ip_range: "10.151.16.50-10.151.16.100"
         k3s_etcd_datastore: true
+        k3s_server:
+          flannel-backend: 'none'
+          disable:
+            - flannel
+            - local-storage
+            - servicelb
+            - traefik
+          disable-network-policy: true
+          write-kubeconfig-mode: "0644"
+          cluster-cidr: 10.42.0.0/16
+          service-cidr: 10.43.0.0/16
+          tls-san: 10.151.16.200
+        k3s_registration_address: 10.151.16.200
       hosts:
         tiny-master0:
           ansible_host: 10.151.16.8
@@ -40,6 +53,17 @@ all:
       vars:
         metallb_ip_range: "10.151.15.50-10.151.15.100"
         k3s_etcd_datastore: false
+        k3s_server:
+          flannel-backend: 'none'
+          disable:
+            - flannel
+            - local-storage
+            - servicelb
+            - traefik
+          disable-network-policy: true
+          write-kubeconfig-mode: "0644"
+          cluster-cidr: 10.42.0.0/16
+          service-cidr: 10.43.0.0/16
       hosts:
         wanda-master0:
           ansible_host: 10.151.15.8
