@@ -50,7 +50,7 @@
         state: directory
     - name: Copy HAProxy configuration template
       template:
-        src: templates/haproxy.cfg.j2
+        src: templates/tiny-haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
     - name: Add HAProxy PPA repository
       ansible.builtin.apt_repository:
