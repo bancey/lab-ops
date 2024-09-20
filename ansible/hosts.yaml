@@ -4,13 +4,13 @@ all:
     ansible_user: bancey
   hosts:
     haproxy0:
-      ansible_host: 10.151.15.201
+      ansible_host: 10.151.16.201
       ansible_user: root
     haproxy1:
-      ansible_host: 10.151.15.202
+      ansible_host: 10.151.16.202
       ansible_user: root
     haproxy2:
-      ansible_host: 10.151.15.203
+      ansible_host: 10.151.16.203
       ansible_user: root
   children:
     rpi:
