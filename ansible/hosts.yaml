@@ -3,13 +3,13 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    haproxy-0:
+    haproxy0:
       ansible_host: 10.151.15.201
       ansible_user: root
-    haproxy-1:
+    haproxy1:
       ansible_host: 10.151.15.202
       ansible_user: root
-    haproxy-2:
+    haproxy2:
       ansible_host: 10.151.15.203
       ansible_user: root
   children:
