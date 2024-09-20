@@ -4,6 +4,7 @@ locals {
       target_nodes       = cluster.target_nodes
       k3s_etcd_datastore = cluster.k3s_etcd_datastore
       metallb_ip_range   = cluster.metallb_ip_range
+      load_balancer_address = cluster.load_balancer_Address
       masters = {
         for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i)
       }

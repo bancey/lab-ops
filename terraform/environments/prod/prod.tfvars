@@ -26,12 +26,13 @@ kubernetes_virtual_machines = {
     }
   }
   tiny = {
-    target_nodes       = ["hela", "loki", "thor"]
-    ansible_trigger    = "30_07_2024_0940"
-    k3s_etcd_datastore = true
-    disk_size          = 100
-    image              = "jammy-server-cloudimg-amd64.img"
-    metallb_ip_range   = "10.151.16.50-10.151.16.100"
+    target_nodes          = ["hela", "loki", "thor"]
+    ansible_trigger       = "30_07_2024_0940"
+    k3s_etcd_datastore    = true
+    disk_size             = 100
+    image                 = "jammy-server-cloudimg-amd64.img"
+    metallb_ip_range      = "10.151.16.50-10.151.16.100"
+    load_balancer_address = "10.151.16.200"
     master = {
       count              = 3
       cidr               = "10.151.16.8/29"
