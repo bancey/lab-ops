@@ -34,11 +34,9 @@ all:
           disable-network-policy: true
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.42.0.0/16
-          service-cidr: 10.43.0.0/16
-%{ if cluster.load_balancer_address != null }
+          service-cidr: 10.43.0.0/16%{ if cluster.load_balancer_address != null }
           tls-san: ${cluster.load_balancer_address}
-        k3s_registration_address: 10.151.16.200
-%{ endif}        
+        k3s_registration_address: ${cluster.load_balancer_address}%{ endif}
       hosts:
 %{ for master_key, master in cluster.masters ~}
         ${ master_key }:
