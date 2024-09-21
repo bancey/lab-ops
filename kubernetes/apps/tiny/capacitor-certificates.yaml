@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: capacitor-staging-tls
+  namespace: default
+spec:
+  secretName: capacitor-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "flux-capacitor.tiny.heimelska.co.uk"
+  dnsNames:
+    - "flux-capacitor.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: capacitor-tls
+  namespace: default
+spec:
+  secretName: capacitor-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "flux-capacitor.tiny.heimelska.co.uk"
+  dnsNames:
+    - "flux-capacitor.tiny.heimelska.co.uk"
