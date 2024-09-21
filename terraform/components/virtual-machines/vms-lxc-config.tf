@@ -1,5 +1,5 @@
 resource "terraform_data" "ansible" {
-  for_each = { for key, value in var.ansible : key => value if var.target_nodes == value.target_nodes }
+  for_each = { for key, value in var.ansible : key => value if var.target_nodes == value.nodes }
 
   depends_on = [
     module.tiny_containers,
