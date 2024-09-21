@@ -9,14 +9,14 @@ resource "terraform_data" "ansible" {
   ]
 
   triggers_replace = [
-    each.value.ansible.trigger,
-    file("../../../ansible/${each.value.ansible.playbook}")
+    each.value.trigger,
+    file("../../../ansible/${each.value.playbook}")
   ]
 
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
-      playbook  = each.value.ansible.playbook
-      arguments = each.value.ansible.arguments
+      playbook  = each.value.playbook
+      arguments = each.value.arguments
     })
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
     interpreter = ["/bin/bash", "-c"]
