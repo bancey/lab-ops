@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: capacitor-staging-tls
-  namespace: default
+  namespace: flux-system
 spec:
   secretName: capacitor-staging-tls
   issuerRef:
@@ -17,7 +17,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: capacitor-tls
-  namespace: default
+  namespace: flux-system
 spec:
   secretName: capacitor-tls
   issuerRef:
