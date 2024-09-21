@@ -95,6 +95,13 @@ containers = {
   }
 }
 
+ansible = {
+  "haproxy" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "haproxy.yaml"
+  }
+}
+
 images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
 }

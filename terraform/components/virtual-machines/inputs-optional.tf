@@ -30,3 +30,12 @@ variable "containers" {
   }))
   description = "Map containing information about LXC Containers to create in Proxmox."
 }
+
+variable "ansible" {
+  type = map(object({
+    nodes     = list(string)
+    playbook  = string
+    arguments = optional(string)
+    trigger   = optional(string)
+  }))
+}
