@@ -4,7 +4,7 @@ resource "cloudflare_record" "records" {
 
   zone_id = data.azurerm_key_vault_secret.cloudflare_lab_zone_id.value
   name    = each.key
-  content   = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value == "@" ? data.azurerm_key_vault_secret.cloudflare_lab_zone_name.value : each.value.value
+  content = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value == "@" ? data.azurerm_key_vault_secret.cloudflare_lab_zone_name.value : each.value.value
   type    = each.value.type
   proxied = each.value.proxied
   ttl     = each.value.ttl
@@ -16,7 +16,7 @@ resource "cloudflare_record" "main_records" {
 
   zone_id = data.azurerm_key_vault_secret.cloudflare_main_zone_id.value
   name    = each.key
-  content   = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value == "@" ? data.azurerm_key_vault_secret.cloudflare_main_zone_name.value : each.value.value
+  content = each.value.value == "PublicIP" ? data.azurerm_key_vault_secret.public_ip.value : each.value.value == "@" ? data.azurerm_key_vault_secret.cloudflare_main_zone_name.value : each.value.value
   type    = each.value.type
   proxied = each.value.proxied
   ttl     = each.value.ttl
