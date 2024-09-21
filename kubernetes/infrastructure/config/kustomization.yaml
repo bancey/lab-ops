@@ -9,4 +9,3 @@ resources:
   - traefik-dashboard-auth.yaml
   - traefik-dashboard-ingress.yaml
   - traefik-default-headers.yaml
-  - weave-ingress-route.yaml
