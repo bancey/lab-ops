@@ -10,6 +10,9 @@ resources:
   - ../base/penpot
   - ./discord-bot-secret.sops.yaml
   - ../base/discord
+  - ../base/capacitor
+  - ./capacitor-certificates.yaml
+  - ./capacitor-ingress-route.yaml
 patchesStrategicMerge:
   - longhorn-certificate-patch.yaml
   - longhorn-ingress-route-patch.yaml

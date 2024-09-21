@@ -12,3 +12,4 @@ resources:
   - ./longhorn.yaml
   - ./codechem.yaml
   - ./plex.yaml
+  - ./sebastiangaiser.yaml
