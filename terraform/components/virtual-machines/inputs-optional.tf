@@ -35,7 +35,9 @@ variable "ansible" {
   type = map(object({
     nodes     = list(string)
     playbook  = string
-    arguments = optional(string)
+    secrets   = optional(map(string), {})
+    arguments = optional(string, "")
     trigger   = optional(string)
   }))
+  description = "Map containing information about ansible playbooks to run after the creation of VMs/LXC Containers in proxmox."
 }
