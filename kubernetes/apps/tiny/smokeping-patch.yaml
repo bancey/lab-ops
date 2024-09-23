@@ -51,8 +51,8 @@ spec:
         host = 192.168.0.1
 
         ++ Switching
-        menu = Switching
-        title Switching
+        menu = Switching / Core Network Components
+        title = Switching / Core Network Components
 
         +++ USW24PoE
         menu = Unifi USW 24 PoE
