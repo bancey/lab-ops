@@ -28,6 +28,7 @@
   tasks:
     - set_fact:
         keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
+        when: keepalived_pass is undefined
     - name: ensures /etc/keelalived dir exists
       file:
         path: /etc/keepalived

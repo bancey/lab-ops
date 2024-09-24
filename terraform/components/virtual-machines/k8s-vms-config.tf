@@ -15,7 +15,8 @@ resource "terraform_data" "k8s_ansible" {
 
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
-      key = each.key
+      playbook  = "k3s.yaml"
+      arguments = "-e run_prep=true -e run_install=true -e passed_hosts=${each.key}_k3s_cluster"
     })
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
     interpreter = ["/bin/bash", "-c"]

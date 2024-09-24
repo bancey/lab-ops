@@ -49,6 +49,16 @@ locals {
       value = value
     }
   ]
+  ansible_secrets = flatten([
+    for key, value in var.ansible : [
+      for arg_name, secret_name in value.secrets : {
+        key           = "${key}_${arg_name}"
+        ansible_key   = key
+        argument_name = arg_name
+        secret_name   = secret_name
+      }
+    ] if length(value.secrets) > 0
+  ])
 }
 
 data "azurerm_client_config" "current" {}
