@@ -53,7 +53,7 @@ kind: IngressRoute
 metadata:
   name: wanda-proxmox
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -73,7 +73,7 @@ kind: IngressRoute
 metadata:
   name: wanda-mgmt
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -92,7 +92,7 @@ kind: IngressRoute
 metadata:
   name: storage
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -111,7 +111,7 @@ kind: IngressRoute
 metadata:
   name: sonarr
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -130,7 +130,7 @@ kind: IngressRoute
 metadata:
   name: radarr
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -149,7 +149,7 @@ kind: IngressRoute
 metadata:
   name: sabnzbd
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -168,7 +168,7 @@ kind: IngressRoute
 metadata:
   name: plex
   namespace: external-services
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
@@ -181,3 +181,22 @@ spec:
           port: 443
   tls:
     secretName: plex-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wanda-capacitor
+  namespace: external-services
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`flux-capacitor.wanda.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: wanda-k8s
+          port: 443
+  tls:
+    secretName: wanda-capacitor-tls

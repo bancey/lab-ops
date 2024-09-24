@@ -11,7 +11,7 @@ spec:
     kind: ClusterIssuer
   commonName: "proxmox.heimelska.co.uk"
   dnsNames:
-  - "proxmox.heimelska.co.uk"
+    - "proxmox.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -25,7 +25,7 @@ spec:
     kind: ClusterIssuer
   commonName: "proxmox.heimelska.co.uk"
   dnsNames:
-  - "proxmox.heimelska.co.uk"
+    - "proxmox.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -39,7 +39,7 @@ spec:
     kind: ClusterIssuer
   commonName: "wanda-mgmt.heimelska.co.uk"
   dnsNames:
-  - "wanda-mgmt.heimelska.co.uk"
+    - "wanda-mgmt.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -53,7 +53,7 @@ spec:
     kind: ClusterIssuer
   commonName: "wanda-mgmt.heimelska.co.uk"
   dnsNames:
-  - "wanda-mgmt.heimelska.co.uk"
+    - "wanda-mgmt.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -67,7 +67,7 @@ spec:
     kind: ClusterIssuer
   commonName: "storage.heimelska.co.uk"
   dnsNames:
-  - "storage.heimelska.co.uk"
+    - "storage.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -81,7 +81,7 @@ spec:
     kind: ClusterIssuer
   commonName: "storage.heimelska.co.uk"
   dnsNames:
-  - "storage.heimelska.co.uk"
+    - "storage.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -95,7 +95,7 @@ spec:
     kind: ClusterIssuer
   commonName: "sonarr.heimelska.co.uk"
   dnsNames:
-  - "sonarr.heimelska.co.uk"
+    - "sonarr.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -109,7 +109,7 @@ spec:
     kind: ClusterIssuer
   commonName: "sonarr.heimelska.co.uk"
   dnsNames:
-  - "sonarr.heimelska.co.uk"
+    - "sonarr.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -123,7 +123,7 @@ spec:
     kind: ClusterIssuer
   commonName: "radarr.heimelska.co.uk"
   dnsNames:
-  - "radarr.heimelska.co.uk"
+    - "radarr.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -137,7 +137,7 @@ spec:
     kind: ClusterIssuer
   commonName: "radarr.heimelska.co.uk"
   dnsNames:
-  - "radarr.heimelska.co.uk"
+    - "radarr.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -151,7 +151,7 @@ spec:
     kind: ClusterIssuer
   commonName: "dl.heimelska.co.uk"
   dnsNames:
-  - "dl.heimelska.co.uk"
+    - "dl.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -165,7 +165,7 @@ spec:
     kind: ClusterIssuer
   commonName: "dl.heimelska.co.uk"
   dnsNames:
-  - "dl.heimelska.co.uk"
+    - "dl.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -179,7 +179,7 @@ spec:
     kind: ClusterIssuer
   commonName: "plex.bancey.xyz"
   dnsNames:
-  - "plex.bancey.xyz"
+    - "plex.bancey.xyz"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -193,4 +193,32 @@ spec:
     kind: ClusterIssuer
   commonName: "plex.bancey.xyz"
   dnsNames:
-  - "plex.bancey.xyz"
+    - "plex.bancey.xyz"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wanda-capacitor-staging-tls
+  namespace: default
+spec:
+  secretName: wanda-capacitor-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "flux-capacitor.wanda.heimelska.co.uk"
+  dnsNames:
+    - "flux-capacitor.wanda.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wanda-capacitor-tls
+  namespace: default
+spec:
+  secretName: wanda-capacitor-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "flux-capacitor.wanda.heimelska.co.uk"
+  dnsNames:
+    - "flux-capacitor.wanda.heimelska.co.uk"

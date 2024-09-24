@@ -41,12 +41,6 @@ parameters:
         address: "loki.heimelska.co.uk"
       - name: thor
         address: "thor.heimelska.co.uk"
-      - name: haproxy0
-        address: "10.151.16.201"
-      - name: haproxy1
-        address: "10.151.16.202"
-      - name: haproxy2
-        address: "10.151.16.203"
   - name: terraform_deployments
     type: object
     default:
@@ -118,18 +112,6 @@ parameters:
           - gamora
         dependsOn:
           - generate_ansible_inventory
-      - deployment: haproxy_ansible
-        environment: prod
-        playbook: haproxy.yaml
-        secrets:
-          - keepalived-pass
-        localEnvironments:
-          - haproxy0
-          - haproxy1
-          - haproxy2
-        dependsOn:
-          - generate_ansible_inventory
-          - tiny_virtual_machines
 
 variables:
   - name: agentImage

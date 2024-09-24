@@ -20,6 +20,9 @@ resources:
   - radarr-data-pv.yaml
   - radarr-data-pvc.yaml
   - ../base/acquisitions
+  - ../base/capacitor
+patchesStrategicMerge:
+  - capacitor-ingress-route.yaml
 patches:
   - patch: |
       - op: add

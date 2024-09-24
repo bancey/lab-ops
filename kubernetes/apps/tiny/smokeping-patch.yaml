@@ -50,6 +50,25 @@ spec:
         title = VDSL Modem
         host = 192.168.0.1
 
+        ++ Switching
+        menu = Switching / Core Network Components
+        title = Switching / Core Network Components
+
+        +++ USW24PoE
+        menu = Unifi USW 24 PoE
+        title = Unifi USW 24 PoE
+        host = 10.151.10.209
+
+        +++ US860W
+        menu = Unifi US 8 60W
+        title = Unifi US 8 60W
+        host = 10.151.10.228
+
+        +++ USWFlexMini
+        menu = Unifi USW Flex Mini
+        title = Unifi USW Flex Mini
+        host = 10.151.10.126
+
         ++ DNSAdBlocking
         menu = DNS / Ad Blocking
         probe = DNS
