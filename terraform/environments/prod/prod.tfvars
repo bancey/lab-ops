@@ -100,7 +100,7 @@ ansible = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "haproxy.yaml"
     secrets = {
-      "keepalived-pass" = "keepalived-pass"
+      "keepalived_pass" = "keepalived-pass"
     }
   }
 }
