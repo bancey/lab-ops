@@ -21,7 +21,6 @@ resources:
   - radarr-data-pvc.yaml
   - ../base/acquisitions
   - ../base/capacitor
-patchesStrategicMerge:
   - capacitor-ingress-route.yaml
 patches:
   - patch: |
