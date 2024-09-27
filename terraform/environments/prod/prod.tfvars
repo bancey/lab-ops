@@ -11,6 +11,7 @@ kubernetes_virtual_machines = {
     target_nodes     = ["wanda"]
     ansible_trigger  = "30_07_2024_0920"
     metallb_ip_range = "10.151.15.50-10.151.15.100"
+    disk_size        = 20
     image            = "jammy-server-cloudimg-amd64.img"
     master = {
       count              = 1
