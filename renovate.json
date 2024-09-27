@@ -6,6 +6,9 @@
   "kubernetes": {
     "fileMatch": [
       "^kubernetes/.*\\.yaml$"
+    ],
+    "ignorePaths": [
+      "**/flux-system/**"
     ]
   },
   "flux": {
