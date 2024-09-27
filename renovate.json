@@ -3,6 +3,11 @@
   "extends": [
     "config:base"
   ],
+  "kubernetes": {
+    "fileMatch": [
+      "^kubernetes/.*\\.yaml$"
+    ]
+  },
   "flux": {
     "fileMatch": [
       "^kubernetes/.*\\.yaml$"
