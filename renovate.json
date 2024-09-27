@@ -24,6 +24,9 @@
       "**/gotk-components.yaml"
     ]
   },
+  "azure-pipelines": {
+    "enabled": true
+  },
   "customManagers": [
     {
       "customType": "regex",
