@@ -25,7 +25,10 @@
     ]
   },
   "azure-pipelines": {
-    "enabled": true
+    "enabled": true,
+    "fileMatch": [
+      "infra-pipeline.yaml"
+    ]
   },
   "customManagers": [
     {
