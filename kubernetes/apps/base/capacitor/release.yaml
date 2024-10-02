@@ -22,4 +22,4 @@ spec:
   values:
     image:
       repository: ghcr.io/gimlet-io/capacitor
-      tag: "v0.4.3"
+      tag: "v0.4.5"
