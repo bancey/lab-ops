@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: plex-data-private-pvc-nfs-static
+  namespace: plex
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 15000Gi
+  volumeName: plex-data-private-pv-nfs
+  storageClassName: nfs-csi
