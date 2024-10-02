@@ -6,6 +6,8 @@ resources:
   - plex-config-pvc.yaml
   - plex-data-pv.yaml
   - plex-data-pvc.yaml
+  - plex-data-private-pv.yaml
+  - plex-data-private-pvc.yaml
   - ../base/plex
   - sabnzbd-config-pv.yaml
   - sabnzbd-config-pvc.yaml

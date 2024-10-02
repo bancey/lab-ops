@@ -36,6 +36,11 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: plex-data-pvc-nfs-static
+      - name: private-data
+        persistentVolumeClaim:
+          claimName: plex-data-private-pvc-nfs-static
     extraVolumeMounts:
       - name: data
         mountPath: /data
+      - name: private-data
+        mountPath: /private-data
