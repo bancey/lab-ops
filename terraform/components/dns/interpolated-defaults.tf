@@ -37,3 +37,33 @@ data "azurerm_key_vault_secret" "public_ip" {
   name         = "Home-Public-IP"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
+
+data "azurerm_key_vault_secret" "adguard_thanos_host" {
+  name         = "Adguard-Thanos-Host"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "adguard_thanos_username" {
+  name         = "Adguard-Thanos-Username"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "adguard_thanos_password" {
+  name         = "Adguard-Thanos-Password"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "adguard_gamora_host" {
+  name         = "Adguard-Gamora-Host"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "adguard_gamora_username" {
+  name         = "Adguard-Gamora-Username"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "adguard_gamora_password" {
+  name         = "Adguard-Gamora-Password"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
