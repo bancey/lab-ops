@@ -2,7 +2,7 @@ variable "adguard_config" {
   type = object({
     filtering = optional(object({
       enabled         = optional(bool, true)
-      update_interval = optional(number, 6)
+      update_interval = optional(number, 24)
     }), {})
     query_log = optional(object({
       enabled             = optional(bool, true)
