@@ -1,3 +1,13 @@
+locals {
+  dns_yaml_path    = var.dns_yaml_path != null ? var.dns_yaml_path : "${path.cwd}/../../environments/${var.env}/dns.yaml"
+  dns              = yamldecode(file(local.dns_yaml_path))
+  adguard_rewrites = { for key, value in local.dns.dns : key => value.record if lookup(value, "public", false) != true }
+}
+
+data "local_file" "dns_yaml" {
+  filename = local.dns_yaml_path
+}
+
 data "azurerm_key_vault" "vault" {
   name                = "bancey-vault"
   resource_group_name = "common"
