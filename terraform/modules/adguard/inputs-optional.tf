@@ -1,5 +1,5 @@
 variable "adguard_config" {
-  type = optional(object({
+  type = object({
     filtering = optional(object({
       enabled         = optional(bool, true)
       update_interval = optional(number, 6)
@@ -21,7 +21,7 @@ variable "adguard_config" {
       bootstrap_dns      = optional(list(string), ["1.1.1.1", "1.0.0.1"])
       rate_limit         = optional(number, 30)
     }))
-  }))
+  })
   description = "Object describing the configuration of the AdGuard home instance."
   default     = {}
 }
