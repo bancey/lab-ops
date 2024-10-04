@@ -4,10 +4,6 @@ locals {
   adguard_rewrites = { for key, value in local.dns.dns : key => value.record if lookup(value, "public", false) != true }
 }
 
-data "local_file" "dns_yaml" {
-  filename = local.dns_yaml_path
-}
-
 data "azurerm_key_vault" "vault" {
   name                = "bancey-vault"
   resource_group_name = "common"

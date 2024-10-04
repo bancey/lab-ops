@@ -1,8 +1,3 @@
-twingate_networks:
-  banceylab:
-    connectors:
-      - "banceylab-connector"
-      - "banceylab-connector-2"
 dns:
   unifi.bancey.xyz:
     record: 10.151.11.1

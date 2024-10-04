@@ -1,4 +1,7 @@
 locals {
+  dns_yaml_path = var.dns_yaml_path != null ? var.dns_yaml_path : "${path.cwd}/../../environments/${var.env}/dns.yaml"
+  dns           = yamldecode(file(local.dns_yaml_path))
+  resources     = { for key, value in local.dns.dns : split(".", key)[0] => merge(value, { alias = key }) if lookup(value, "twingate", null) != null }
   flattened_resources = flatten([
     for network_key, network in var.twingate_networks : [
       for resource_key, resource in network.resources : {
