@@ -6,6 +6,7 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
@@ -26,6 +27,7 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
@@ -46,11 +48,14 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 22
             - 8006
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pve
@@ -62,11 +67,14 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 22
             - 8006
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pve
@@ -78,11 +86,14 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 22
             - 8006
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pve
@@ -94,11 +105,14 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 22
             - 8006
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pve
@@ -110,10 +124,13 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 443
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - wanda_k8s
@@ -125,10 +142,13 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 443
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - wanda_k8s
@@ -140,6 +160,7 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
@@ -147,6 +168,8 @@ dns:
             - 443
             - 2022
             - 22
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pterodactyl
@@ -158,10 +181,13 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 443
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pve
@@ -173,10 +199,13 @@ dns:
     twingate:
       network: banceylab
       protocols:
+        allow_icmp: false
         tcp:
           policy: RESTRICTED
           ports:
             - 443
+        udp:
+          policy: DENY_ALL
       access:
         groups:
           - pve
