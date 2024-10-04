@@ -3,16 +3,16 @@ variable "adguard_config" {
     filtering = optional(object({
       enabled         = optional(bool, true)
       update_interval = optional(number, 6)
-    }))
+    }), {})
     query_log = optional(object({
       enabled             = optional(bool, true)
       interval            = optional(number, 2160)
       anonymize_client_ip = optional(bool, false)
-    }))
+    }), {})
     stats = optional(object({
       enabled  = optional(bool, true)
       interval = optional(number, 168)
-    }))
+    }), {})
     dns = optional(object({
       protection_enabled = optional(bool, true)
       upstream_dns       = optional(list(string), ["https://dns10.quad9.net/dns-query"])
@@ -20,7 +20,7 @@ variable "adguard_config" {
       fallback_dns       = optional(list(string), ["https://1.1.1.1/dns-query", "https://1.0.0.1/dns-query"])
       bootstrap_dns      = optional(list(string), ["1.1.1.1", "1.0.0.1"])
       rate_limit         = optional(number, 30)
-    }))
+    }), {})
   })
   description = "Object describing the configuration of the AdGuard home instance."
   default     = {}
