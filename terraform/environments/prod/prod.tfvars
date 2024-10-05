@@ -123,3 +123,45 @@ twingate_networks = {
   }
 }
 
+adguard_filters = {
+  "AdGuard DNS filter" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt"
+  }
+  "AWAvenue Ads Rule" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_53.txt"
+  }
+  "1Hosts (mini)" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_38.txt"
+  }
+  "1Hosts (Lite)" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt"
+  }
+  "Dan Pollock's List" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_4.txt"
+  }
+  "HaGeZi's Normal Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_34.txt"
+  }
+  "HaGeZi's Pro Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_48.txt"
+  }
+  "HaGeZi's Pro++ Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_51.txt"
+  }
+  "OISD Blocklist Small" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_5.txt"
+  }
+  "OISD Blocklist Big" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt"
+  }
+  "Steven Black's List" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_33.txt"
+  }
+  "Peter Lowe's Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_3.txt"
+  }
+  "HaGeZi's Ultimate Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_49.txt"
+  }
+}
+

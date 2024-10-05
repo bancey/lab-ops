@@ -5,6 +5,7 @@ module "adguard_thanos" {
   }
 
   adguard_rewrites = local.adguard_rewrites
+  adguard_filters  = var.adguard_filters
 }
 
 module "adguard_gamora" {
@@ -14,4 +15,5 @@ module "adguard_gamora" {
   }
 
   adguard_rewrites = local.adguard_rewrites
+  adguard_filters  = var.adguard_filters
 }
