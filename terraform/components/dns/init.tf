@@ -13,19 +13,12 @@ terraform {
       source  = "gmichels/adguard"
       version = "1.3.0"
     }
-    local = {
-      source  = "hashicorp/local"
-      version = "2.5.2"
-    }
   }
 
-  #backend "azurerm" {}
+  backend "azurerm" {}
 }
 
-provider "local" {}
-
 provider "azurerm" {
-  subscription_id = "5a8abf1c-0a69-49c6-bcf1-676843b64217"
   features {}
 }
 
