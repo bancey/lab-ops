@@ -1,0 +1,10 @@
+pull_request_rules:
+  - name: Automatic approval of bancey's pull requests
+    conditions:
+      - author=bancey
+      - label=autoapprove
+      - "#approved-reviews-by=0"
+    actions:
+      review:
+        type: APPROVE
+        message: ":robot: LGTM! *beep* *boop*"
