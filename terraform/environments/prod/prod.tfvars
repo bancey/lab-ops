@@ -119,190 +119,49 @@ twingate_service_accounts = {
 }
 twingate_networks = {
   banceylab = {
-    resources = {
-      sonarr = {
-        address = "10.151.16.50"
-        alias   = "sonarr.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [443, 80]
-          }
-        }
-        access = {
-          groups           = ["wanda_k8s", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      dl = {
-        address = "10.151.16.50"
-        alias   = "dl.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [443, 80]
-          }
-        }
-        access = {
-          groups           = ["wanda_k8s", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      pterodactyl = {
-        address = "10.151.16.50"
-        alias   = "pterodactyl.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [8080, 443, 2022, 22]
-          }
-        }
-        access = {
-          groups           = ["pterodactyl", "all"]
-          service_accounts = ["Pterodactyl"]
-
-        }
-      }
-      wanda_k8s = {
-        address = "10.151.15.0/24"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 443, 80]
-          }
-        }
-        access = {
-          groups           = ["wanda_k8s", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      tiny_k8s = {
-        address = "10.151.16.0/24"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 443, 80]
-          }
-        }
-        access = {
-          groups           = ["tiny_k8s", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      tiny-pve = {
-        address = "10.151.14.4"
-        alias   = "tiny-pve.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [443]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      hela = {
-        address = "10.151.14.12"
-        alias   = "hela.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 8006]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      thor = {
-        address = "10.151.14.13"
-        alias   = "thor.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 8006]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      loki = {
-        address = "10.151.14.14"
-        alias   = "loki.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 8006]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      wanda = {
-        address = "10.151.14.11"
-        alias   = "wanda.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 8006]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      wanda-mgmt = {
-        address = "10.151.14.10"
-        alias   = "wanda-mgmt.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [80, 443]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      thanos = {
-        address = "10.151.14.5"
-        alias   = "thanos.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 53, 80]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-      gamora = {
-        address = "10.151.14.6"
-        alias   = "gamora.heimelska.co.uk"
-        protocols = {
-          tcp = {
-            policy = "RESTRICTED"
-            ports  = [22, 53, 80]
-          }
-        }
-        access = {
-          groups           = ["pve", "all"]
-          service_accounts = ["AzureDevOps"]
-        }
-      }
-    }
     connectors = ["banceylab-connector", "banceylab-connector-2"]
+  }
+}
+
+adguard_filters = {
+  "AdGuard DNS filter" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt"
+  }
+  "AWAvenue Ads Rule" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_53.txt"
+  }
+  "1Hosts (mini)" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_38.txt"
+  }
+  "1Hosts (Lite)" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt"
+  }
+  "Dan Pollock's List" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_4.txt"
+  }
+  "HaGeZi's Normal Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_34.txt"
+  }
+  "HaGeZi's Pro Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_48.txt"
+  }
+  "HaGeZi's Pro++ Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_51.txt"
+  }
+  "OISD Blocklist Small" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_5.txt"
+  }
+  "OISD Blocklist Big" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_27.txt"
+  }
+  "Steven Black's List" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_33.txt"
+  }
+  "Peter Lowe's Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_3.txt"
+  }
+  "HaGeZi's Ultimate Blocklist" = {
+    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_49.txt"
   }
 }
 

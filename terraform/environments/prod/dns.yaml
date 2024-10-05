@@ -1,0 +1,218 @@
+dns:
+  unifi.bancey.xyz:
+    record: 10.151.11.1
+  thanos.heimelska.co.uk:
+    record: 10.151.14.5
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 80
+        udp:
+          policy: RESTRICTED
+          ports:
+            - 53
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  gamora.heimelska.co.uk:
+    record: 10.151.14.6
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 80
+        udp:
+          policy: RESTRICTED
+          ports:
+            - 53
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  wanda.heimelska.co.uk:
+    record: 10.151.14.11
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 8006
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  hela.heimelska.co.uk:
+    record: 10.151.14.12
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 8006
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  thor.heimelska.co.uk:
+    record: 10.151.14.13
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 8006
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  loki.heimelska.co.uk:
+    record: 10.151.14.14
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 8006
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  sonarr.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - wanda_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  dl.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - wanda_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  pterodactyl.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 8080
+            - 443
+            - 2022
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pterodactyl
+          - all
+        service_accounts:
+          - Pterodactyl
+  tiny-pve.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  wanda-mgmt.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
+  "*.heimelska.co.uk":
+    record: 10.151.14.4
+  "*.bancey.xyz":
+    record: 10.151.14.4

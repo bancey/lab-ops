@@ -1,15 +1,15 @@
 resource "twingate_resource" "this" {
-  for_each           = { for resource in local.flattened_resources : resource.key => resource }
-  name               = each.value.resource_key
-  remote_network_id  = twingate_remote_network.this[each.value.network_key].id
-  address            = each.value.resource.address
-  alias              = each.value.resource.alias
+  for_each           = local.resources
+  name               = split(".", each.value.alias)[0]
+  remote_network_id  = twingate_remote_network.this[each.value.twingate.network].id
+  address            = each.value.record
+  alias              = each.value.alias
   security_policy_id = data.twingate_security_policy.default.id
 
-  protocols = each.value.resource.protocols
+  protocols = each.value.twingate.protocols
 
   dynamic "access_group" {
-    for_each = toset(each.value.resource.access.groups)
+    for_each = toset(each.value.twingate.access.groups)
     content {
       group_id           = twingate_group.this[access_group.value].id
       security_policy_id = data.twingate_security_policy.default.id
@@ -17,11 +17,11 @@ resource "twingate_resource" "this" {
   }
 
   dynamic "access_service" {
-    for_each = toset(each.value.resource.access.service_accounts)
+    for_each = toset(each.value.twingate.access.service_accounts)
     content {
       service_account_id = twingate_service_account.this[access_service.value].id
     }
   }
 
-  is_active = each.value.resource.is_active
+  is_active = lookup(each.value.twingate, "is_active", true)
 }
