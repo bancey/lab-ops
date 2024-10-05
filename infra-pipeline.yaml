@@ -56,6 +56,16 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: prod_dns
+        environment: prod
+        component: dns
+        destroy: false
+        deploy: true
+        localEnvironments:
+          - thanos
+          - gamora
+        dependsOn:
+          - prod_twingate
       - deployment: test_gameserver
         environment: test
         component: gameserver
@@ -93,16 +103,6 @@ parameters:
           - thor
         dependsOn:
           - generate_ansible_inventory
-      - deployment: prod_dns
-        environment: prod
-        component: dns
-        destroy: false
-        deploy: true
-        localEnvironments:
-          - thanos
-          - gamora
-        dependsOn:
-          - prod_twingate
   - name: ansible_deployments
     type: object
     default:
