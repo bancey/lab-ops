@@ -58,6 +58,11 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["index.docker.io/plexinc/pms-docker"],
       "versioning": "loose"
+    },
+    {
+      "description": "Auto-merge non-major updates",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     }
   ]
 }
