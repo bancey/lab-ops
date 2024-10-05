@@ -4,6 +4,8 @@ pull_request_rules:
       - author=bancey
       - label=autoapprove
       - "#approved-reviews-by=0"
+      - "#check-failure <= 0"
+      - "#check-pending <= 0"
     actions:
       review:
         type: APPROVE
