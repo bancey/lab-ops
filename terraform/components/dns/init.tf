@@ -38,7 +38,7 @@ provider "adguard" {
   username = data.azurerm_key_vault_secret.adguard_thanos_username.value
   password = data.azurerm_key_vault_secret.adguard_thanos_password.value
   scheme   = "http"
-  timeout  = 120
+  timeout  = 60
 }
 
 provider "adguard" {
@@ -47,5 +47,5 @@ provider "adguard" {
   username = data.azurerm_key_vault_secret.adguard_gamora_username.value
   password = data.azurerm_key_vault_secret.adguard_gamora_password.value
   scheme   = "http"
-  timeout  = 120
+  timeout  = 60
 }
