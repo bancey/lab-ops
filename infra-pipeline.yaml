@@ -98,7 +98,11 @@ parameters:
         component: dns
         destroy: false
         deploy: true
-        dependsOn: []
+        localEnvironments:
+          - thanos
+          - gamora
+        dependsOn:
+          - prod_twingate
   - name: ansible_deployments
     type: object
     default:
