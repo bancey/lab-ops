@@ -165,3 +165,9 @@ adguard_filters = {
   }
 }
 
+adguard_user_rules = [
+  "@@||whattoexpect.com^$important",
+  "@@||analytics.twingate.com^$important",
+  "@@||msmetrics.ws.sonos.com^$important",
+  "@@||graph.facebook.com^$important",
+]

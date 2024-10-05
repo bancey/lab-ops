@@ -41,3 +41,9 @@ variable "adguard_rewrites" {
   description = "Map of domains to answers to configure as rewrites in Adguard Home."
   default     = {}
 }
+
+variable "adguard_user_rules" {
+  type        = list(string)
+  description = "List of rules to apply to AdGuard home."
+  default     = []
+}
