@@ -4,4 +4,4 @@ metadata:
   name: discord-bot-config
   namespace: discord
 data:
-   ALLOWED_CHANNELS_0: "323233474909700098"
+  ALLOWED_CHANNELS_0: "323233474909700098"

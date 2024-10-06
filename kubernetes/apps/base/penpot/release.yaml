@@ -66,4 +66,3 @@ spec:
     redis:
       auth:
         enabled: false
-
