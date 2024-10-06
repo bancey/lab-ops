@@ -15,5 +15,5 @@
 - name: Enable and start wings
   systemd:
     name: wings
-    enabled: yes
+    enabled: yes # yamllint disable-line rule:truthy
   when: not ansible_check_mode
