@@ -11,7 +11,7 @@ spec:
     kind: ClusterIssuer
   commonName: "penpot-fqdn"
   dnsNames:
-  - "penpot-fqdn"
+    - "penpot-fqdn"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -25,4 +25,4 @@ spec:
     kind: ClusterIssuer
   commonName: "penpot-fqdn"
   dnsNames:
-  - "penpot-fqdn"
+    - "penpot-fqdn"

@@ -35,5 +35,5 @@
 - name: Enable and start docker
   systemd:
     name: docker
-    enabled: yes
+    enabled: yes # yamllint disable-line rule:truthy
   when: not ansible_check_mode

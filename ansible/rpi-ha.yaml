@@ -26,7 +26,7 @@
     - set_fact:
         keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
     - name: ensures /etc/keelalived dir exists
-      file: 
+      file:
         path: /etc/keepalived
         state: directory
     - name: Copy KeepAlived configuration template
@@ -42,7 +42,7 @@
         update_cache: true
       when: not ansible_check_mode
     - name: ensures /etc/haproxy dir exists
-      file: 
+      file:
         path: /etc/haproxy
         state: directory
     - name: Copy HAProxy configuration template
@@ -93,6 +93,6 @@
       community.docker.docker_compose_v2:
         project_src: /opt/compose
         files:
-        - docker-compose.yaml
+          - docker-compose.yaml
       register: output
       when: not ansible_check_mode

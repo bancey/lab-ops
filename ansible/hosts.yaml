@@ -24,7 +24,7 @@ all:
         metallb_ip_range: "10.151.16.50-10.151.16.100"
         k3s_etcd_datastore: true
         k3s_server:
-          flannel-backend: 'none'
+          flannel-backend: "none"
           disable:
             - flannel
             - local-storage
@@ -54,7 +54,7 @@ all:
         metallb_ip_range: "10.151.15.50-10.151.15.100"
         k3s_etcd_datastore: false
         k3s_server:
-          flannel-backend: 'none'
+          flannel-backend: "none"
           disable:
             - flannel
             - local-storage

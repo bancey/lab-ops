@@ -11,7 +11,7 @@ spec:
     kind: ClusterIssuer
   commonName: "adguard.heimelska.co.uk"
   dnsNames:
-  - "adguard.heimelska.co.uk"
+    - "adguard.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -25,4 +25,4 @@ spec:
     kind: ClusterIssuer
   commonName: "adguard.heimelska.co.uk"
   dnsNames:
-  - "adguard.heimelska.co.uk"
+    - "adguard.heimelska.co.uk"

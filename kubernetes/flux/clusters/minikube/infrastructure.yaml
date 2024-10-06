@@ -17,9 +17,9 @@ spec:
       name: sops-age
   patches:
     - patch: |
-       - op: add
-         path: /spec/routes/0/match
-         value: Host(`weave.minikube`)
+        - op: add
+          path: /spec/routes/0/match
+          value: Host(`weave.minikube`)
       target:
         kind: IngressRoute
         name: weave-gitops
@@ -89,9 +89,9 @@ spec:
       name: sops-age
   patches:
     - patch: |
-       - op: add
-         path: /spec/routes/0/match
-         value: Host(`traefik.minikube`)
+        - op: add
+          path: /spec/routes/0/match
+          value: Host(`traefik.minikube`)
       target:
         kind: IngressRoute
         name: traefik-dashboard
