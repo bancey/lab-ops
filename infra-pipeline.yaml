@@ -17,11 +17,11 @@ pr:
 
 resources:
   repositories:
-  - repository: azuredevops-lib
-    type: github
-    ref: refs/heads/main
-    name: bancey/azuredevops-lib
-    endpoint: bancey
+    - repository: azuredevops-lib
+      type: github
+      ref: refs/heads/main
+      name: bancey/azuredevops-lib
+      endpoint: bancey
 
 parameters:
   - name: local_environments
@@ -32,7 +32,7 @@ parameters:
       - name: thanos
         address: "thanos.heimelska.co.uk"
       - name: gamora
-        address: "gamora.heimelska.co.uk"        
+        address: "gamora.heimelska.co.uk"
       - name: hela
         address: "hela.heimelska.co.uk"
       - name: loki
@@ -69,7 +69,7 @@ parameters:
         component: gameserver
         destroy: false
         deploy: true
-        dependsOn: 
+        dependsOn:
           - prod_twingate
       - deployment: prod_gameserver
         environment: prod
@@ -141,7 +141,7 @@ stages:
           dependsOn: ${{ deployment.dependsOn }}
         ${{ if deployment.localEnvironments }}:
           condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ deployment.localEnvironments[0] }}.online'], 'true'))
-        ${{ else }}:
+        ${{ else }}: # yamllint disable-line rule:key-duplicates
           condition: succeeded()
         jobs:
           - job: TerraformPlanApply
@@ -149,17 +149,17 @@ stages:
               vmImage: $(agentImage)
             steps:
               - ${{ if deployment.localEnvironments }}:
-                - template: steps/twingate-connect.yaml@azuredevops-lib
-                  parameters:
-                    keyVaultName: bancey-vault
-                    serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                    serviceConnection: $(serviceConnection)
+                  - template: steps/twingate-connect.yaml@azuredevops-lib
+                    parameters:
+                      keyVaultName: bancey-vault
+                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                      serviceConnection: $(serviceConnection)
               - ${{ if eq(deployment.component, 'virtual-machines') }}:
-                - template: steps/ansible.yaml@azuredevops-lib
-                  parameters:
-                    serviceConnection: $(serviceConnection)
-                    keyVaultName: bancey-vault
-                    privateKeySecretName: Packer-Private-Key
+                  - template: steps/ansible.yaml@azuredevops-lib
+                    parameters:
+                      serviceConnection: $(serviceConnection)
+                      keyVaultName: bancey-vault
+                      privateKeySecretName: Packer-Private-Key
               - template: steps/terraform.yaml@azuredevops-lib
                 parameters:
                   backendStorageAccount: $(stateStorageAccount)
@@ -181,7 +181,7 @@ stages:
           dependsOn: ${{ ansible_deployment.dependsOn }}
         ${{ if ansible_deployment.localEnvironments }}:
           condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ ansible_deployment.localEnvironments[0] }}.online'], 'true'))
-        ${{ else }}:
+        ${{ else }}: # yamllint disable-line rule:key-duplicates
           condition: succeeded()
         jobs:
           - job: AnsibleCheckRun
