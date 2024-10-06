@@ -7,7 +7,7 @@ metadata:
 spec:
   commonName: "penpot.heimelska.co.uk"
   dnsNames:
-  - "penpot.heimelska.co.uk"
+    - "penpot.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -17,4 +17,4 @@ metadata:
 spec:
   commonName: "penpot.heimelska.co.uk"
   dnsNames:
-  - "penpot.heimelska.co.uk"
+    - "penpot.heimelska.co.uk"

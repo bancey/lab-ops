@@ -7,7 +7,7 @@ metadata:
 spec:
   commonName: "smokeping.heimelska.co.uk"
   dnsNames:
-  - "smokeping.heimelska.co.uk"
+    - "smokeping.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -17,4 +17,4 @@ metadata:
 spec:
   commonName: "smokeping.heimelska.co.uk"
   dnsNames:
-  - "smokeping.heimelska.co.uk"
+    - "smokeping.heimelska.co.uk"

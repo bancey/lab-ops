@@ -11,5 +11,3 @@ resources:
   - pvc.yaml
   - redis-pvc.yaml
   - release.yaml
-  
-  

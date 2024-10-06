@@ -22,6 +22,6 @@ spec:
   eventSeverity: info
   eventSources:
     - kind: GitRepository
-      name: '*'
+      name: "*"
     - kind: Kustomization
-      name: '*'
+      name: "*"

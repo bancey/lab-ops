@@ -4,7 +4,7 @@ kind: IngressRoute
 metadata:
   name: penpot
   namespace: penpot
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
