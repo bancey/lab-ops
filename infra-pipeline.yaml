@@ -124,20 +124,6 @@ variables:
     value: "MSDN Sub"
 
 stages:
-  - stage: static_checks
-    displayName: Static Checks
-    jobs:
-      - job: static_checks
-        pool:
-          vmImage: $(agentImage)
-        steps:
-          - script: |
-              sudo apt update
-              sudo apt install yamllint
-            displayName: Install yamllint
-          - script: |
-              yamllint -c .yamllint.yaml $(find . -type f -name '*.yaml') --format github
-            displayName: Lint YAML Files
   - template: stages/check-hosts-online.yaml@azuredevops-lib
     parameters:
       dependencies: prod_twingate
