@@ -1,0 +1,17 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana-cloud-monitoring
+  namespace: monitoring
+spec:
+  values:
+    cluster:
+      name: tiny
+    opencost:
+      opencost:
+        exporter:
+          defaultClusterId: tiny
+        prometheus:
+          external:
+            url: https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom
