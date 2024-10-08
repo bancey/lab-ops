@@ -212,7 +212,3 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
-  "*.heimelska.co.uk":
-    record: 10.151.14.4
-  "*.bancey.xyz":
-    record: 10.151.14.4
