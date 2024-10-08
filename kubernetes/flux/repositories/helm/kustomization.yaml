@@ -13,3 +13,4 @@ resources:
   - ./codechem.yaml
   - ./plex.yaml
   - ./sebastiangaiser.yaml
+  - ./grafana.yaml
