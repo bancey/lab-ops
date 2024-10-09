@@ -83,6 +83,9 @@ spec:
         exporter:
           defaultClusterId: my-cluster
         prometheus:
+          existingSecretName: grafana-cloud-monitoring
+          username_key: prometheus-username
+          password_key: prometheus-password
           external:
             url: prometheus-api-url
     kube-state-metrics:
