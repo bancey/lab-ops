@@ -40,6 +40,12 @@ variable "cpu_architecture" {
   default     = "x86_64"
 }
 
+variable "cpu_type" {
+  type        = string
+  description = "The type to use for the CPU. Defaults to host."
+  default     = "host"
+}
+
 variable "gateway_ip_address" {
   type        = string
   description = "The IP address of the gateway."
