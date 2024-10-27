@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: ghcr.io/pterodactyl/panel:v1.11.7
+    image: ghcr.io/pterodactyl/panel:v1.11.9
     appConfig:
       mailSecretRef: "pterodactyl-mail-secret"
       appServiceAuthor: "abance@bancey.xyz"
