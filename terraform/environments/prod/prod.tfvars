@@ -123,6 +123,41 @@ twingate_networks = {
   }
 }
 
+twingate_resources = {
+  "banceylab-tiny-k8s" = {
+    record = "10.151.16.0/24"
+    twingate = {
+      network = "banceylab"
+      access = {
+        groups           = ["wanda_k8s", "all"]
+        service_accounts = ["AzureDevOps"]
+      }
+      protocols = {
+        tcp = {
+          policy = "RESTRICTED"
+          ports  = ["22"]
+        }
+      }
+    }
+  }
+  "banceylab-wanda-k8s" = {
+    record = "10.151.15.0/24"
+    twingate = {
+      network = "banceylab"
+      access = {
+        groups           = ["tiny_k8s", "all"]
+        service_accounts = ["AzureDevOps"]
+      }
+      protocols = {
+        tcp = {
+          policy = "RESTRICTED"
+          ports  = ["22"]
+        }
+      }
+    }
+  }
+}
+
 adguard_filters = {
   "AdGuard DNS filter" = {
     url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt"
