@@ -29,7 +29,7 @@ variable "dns_yaml_path" {
 
 variable "twingate_resources" {
   type = map(object({
-    alias  = optional(string)
+    alias  = optional(string, "")
     record = string
     twingate = object({
       access = object({
