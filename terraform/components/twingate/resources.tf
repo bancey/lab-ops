@@ -1,5 +1,5 @@
 resource "twingate_resource" "this" {
-  for_each           = local.resources
+  for_each           = local.merged_resources
   name               = each.value.alias == null || each.value.alias == "" ? each.key : split(".", each.value.alias)[0]
   remote_network_id  = twingate_remote_network.this[each.value.twingate.network].id
   address            = each.value.record
