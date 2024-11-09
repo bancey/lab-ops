@@ -205,4 +205,7 @@ adguard_user_rules = [
   "@@||analytics.twingate.com^$important",
   "@@||msmetrics.ws.sonos.com^$important",
   "@@||graph.facebook.com^$important",
+  "@@||b-graph.facebook.com^$important",
+  "@@||web.facebook.com^$important",
+  "@@||graph.instagram.com^$important",
 ]
