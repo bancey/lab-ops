@@ -31,7 +31,7 @@
         k3s_install_hard_links: true
         k3s_become: true
         k3s_server_manifests_urls:
-          - url: https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/tigera-operator.yaml
+          - url: https://raw.githubusercontent.com/projectcalico/calico/v3.29.1/manifests/tigera-operator.yaml
             filename: tigera-operator.yaml
           - url: https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
             filename: metallb-native.yaml
