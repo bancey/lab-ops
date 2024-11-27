@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "kubernetes": {
     "fileMatch": [
@@ -33,35 +33,54 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^ansible/k3s.yaml$"],
-      "matchStrings": ["k3s_version: \"(?<currentValue>.*?)\""],
+      "fileMatch": [
+        "^ansible/k3s.yaml$"
+      ],
+      "matchStrings": [
+        "k3s_version: \"(?<currentValue>.*?)\""
+      ],
       "depNameTemplate": "k3s-io/k3s",
       "datasourceTemplate": "github-releases"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^ansible/k3s.yaml$"],
-      "matchStrings": ["url: https://raw.githubusercontent.com/projectcalico/calico/(?<currentValue>.*?)/manifests/tigera-operator.yaml"],
+      "fileMatch": [
+        "^ansible/k3s.yaml$"
+      ],
+      "matchStrings": [
+        "url: https://raw.githubusercontent.com/projectcalico/calico/(?<currentValue>.*?)/manifests/tigera-operator.yaml"
+      ],
       "depNameTemplate": "projectcalico/calico",
       "datasourceTemplate": "github-tags"
     },
     {
       "customType": "regex",
-      "fileMatch": ["^ansible/k3s.yaml$"],
-      "matchStrings": ["url: https://raw.githubusercontent.com/metallb/metallb/(?<currentValue>.*?)/config/manifests/metallb-native.yaml"],
+      "fileMatch": [
+        "^ansible/k3s.yaml$"
+      ],
+      "matchStrings": [
+        "url: https://raw.githubusercontent.com/metallb/metallb/(?<currentValue>.*?)/config/manifests/metallb-native.yaml"
+      ],
       "depNameTemplate": "metallb/metallb",
       "datasourceTemplate": "github-tags"
     }
   ],
   "packageRules": [
     {
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["index.docker.io/plexinc/pms-docker"],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "index.docker.io/plexinc/pms-docker"
+      ],
       "versioning": "loose"
     },
     {
       "description": "Auto-merge non-major updates",
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true
     }
   ]
