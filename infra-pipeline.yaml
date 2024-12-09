@@ -69,6 +69,15 @@ parameters:
         component: gameserver
         destroy: false
         deploy: true
+        preSteps:
+          - task: AzureCLI@2
+            displayName: Start Stopped VMs
+            inputs:
+              azureSubscription: "MSDN Sub"
+              scriptType: "bash"
+              addSpnToEnvironment: true
+              scriptLocation: "inlineScript"
+              inlineScript: az vm start --ids $(az vm list -g games-test-rg --query "[].id" -o tsv)
         dependsOn:
           - prod_twingate
       - deployment: prod_gameserver
@@ -76,6 +85,15 @@ parameters:
         component: gameserver
         destroy: false
         deploy: true
+        preSteps:
+          - task: AzureCLI@2
+            displayName: Start Stopped VMs
+            inputs:
+              azureSubscription: "MSDN Sub"
+              scriptType: "bash"
+              addSpnToEnvironment: true
+              scriptLocation: "inlineScript"
+              inlineScript: az vm start --ids $(az vm list -g games-test-rg --query "[].id" -o tsv)
         dependsOn:
           - prod_twingate
           - test_gameserver
@@ -148,6 +166,8 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
+              - ${{ if deployment.preSteps }}:
+                  ${{ deployment.preSteps }}
               - ${{ if deployment.localEnvironments }}:
                   - template: steps/twingate-connect.yaml@azuredevops-lib
                     parameters:
