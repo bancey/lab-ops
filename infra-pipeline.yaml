@@ -79,7 +79,7 @@ parameters:
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
             inlineScript: |
-              ids=$(az vm list -g games-test-rg --query "[].id" -o tsv)
+              ids=$( az vm list -g games-test-rg --query "[[?powerState!='VM running'].id]" -d -o tsv)
               if [ -z "$ids" ]; then
                 echo "No VMs to start"
               else
@@ -112,14 +112,14 @@ parameters:
         preStep:
           task: AzureCLI@2
           displayName: Start Stopped VMs
-          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
             azureSubscription: "MSDN Sub"
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
             inlineScript: |
-              ids=$(az vm list -g games-prod-rg --query "[].id" -o tsv)
+              ids=$( az vm list -g games-prod-rg --query "[[?powerState!='VM running'].id]" -d -o tsv)
               if [ -z "$ids" ]; then
                 echo "No VMs to start"
               else
@@ -129,7 +129,7 @@ parameters:
         postStep:
           task: AzureCLI@2
           displayName: Stop VMs
-          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          #condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
             azureSubscription: "MSDN Sub"
             scriptType: "bash"
