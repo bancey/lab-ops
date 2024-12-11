@@ -77,7 +77,13 @@ parameters:
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
-            inlineScript: az vm start --ids $(az vm list -g games-test-rg --query "[].id" -o tsv)
+            inlineScript: |
+              ids=$(az vm list -g games-test-rg --query "[].id" -o tsv)
+              if [ -z "$ids" ]; then
+                echo "No VMs to start"
+              else
+                az vm start --ids $ids
+              fi
         dependsOn:
           - prod_twingate
       - deployment: prod_gameserver
@@ -93,7 +99,13 @@ parameters:
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
-            inlineScript: az vm start --ids $(az vm list -g games-test-rg --query "[].id" -o tsv)
+            inlineScript: |
+              ids=$(az vm list -g games-prod-rg --query "[].id" -o tsv)
+              if [ -z "$ids" ]; then
+                echo "No VMs to start"
+              else
+                az vm start --ids $ids
+              fi
         dependsOn:
           - prod_twingate
           - test_gameserver
