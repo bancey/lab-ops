@@ -72,6 +72,7 @@ parameters:
         preStep:
           task: AzureCLI@2
           displayName: Start Stopped VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
             azureSubscription: "MSDN Sub"
             scriptType: "bash"
@@ -79,6 +80,23 @@ parameters:
             scriptLocation: "inlineScript"
             inlineScript: |
               ids=$(az vm list -g games-test-rg --query "[].id" -o tsv)
+              if [ -z "$ids" ]; then
+                echo "No VMs to start"
+              else
+                az vm start --ids $ids
+              fi
+              echo "##vso[task.setvariable variable=testStoppedIds;isOutput=true]$ids"
+        postStep:
+          task: AzureCLI@2
+          displayName: Stop VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          inputs:
+            azureSubscription: "MSDN Sub"
+            scriptType: "bash"
+            addSpnToEnvironment: true
+            scriptLocation: "inlineScript"
+            inlineScript: |
+              ids=$[ testStoppedIds ]
               if [ -z "$ids" ]; then
                 echo "No VMs to start"
               else
@@ -94,6 +112,7 @@ parameters:
         preStep:
           task: AzureCLI@2
           displayName: Start Stopped VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
             azureSubscription: "MSDN Sub"
             scriptType: "bash"
@@ -101,6 +120,23 @@ parameters:
             scriptLocation: "inlineScript"
             inlineScript: |
               ids=$(az vm list -g games-prod-rg --query "[].id" -o tsv)
+              if [ -z "$ids" ]; then
+                echo "No VMs to start"
+              else
+                az vm start --ids $ids
+              fi
+              echo "##vso[task.setvariable variable=prodStoppedIds]$ids"
+        postStep:
+          task: AzureCLI@2
+          displayName: Stop VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          inputs:
+            azureSubscription: "MSDN Sub"
+            scriptType: "bash"
+            addSpnToEnvironment: true
+            scriptLocation: "inlineScript"
+            inlineScript: |
+              ids=$[ prodStoppedIds ]
               if [ -z "$ids" ]; then
                 echo "No VMs to start"
               else
@@ -203,6 +239,8 @@ stages:
                     extraCommandArgs: ${{ deployment.extraCommandArgs }}
                   runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
                   runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+              - ${{ if deployment.postStep }}:
+                  - ${{ deployment.postStep }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
