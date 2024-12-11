@@ -96,8 +96,7 @@ parameters:
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
             inlineScript: |
-              ids=$[ testStoppedIds ]
-              if [ -z "$ids" ]; then
+              if [ -z "$testStoppedIds" ]; then
                 echo "No VMs to start"
               else
                 az vm start --ids $ids
@@ -136,8 +135,7 @@ parameters:
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
             inlineScript: |
-              ids=$[ prodStoppedIds ]
-              if [ -z "$ids" ]; then
+              if [ -z "$prodStoppedIds" ]; then
                 echo "No VMs to start"
               else
                 az vm start --ids $ids
