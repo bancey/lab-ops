@@ -83,6 +83,7 @@ parameters:
               if [ -z "$ids" ]; then
                 echo "No VMs to start"
               else
+                echo "Starting VMs: $ids"
                 az vm start --ids $ids
               fi
               echo "##vso[task.setvariable variable=testStoppedIds;isOutput=true]$ids"
@@ -99,7 +100,8 @@ parameters:
               if [ -z "$(testStoppedIds)" ]; then
                 echo "No VMs to start"
               else
-                az vm start --ids $(testStoppedIds)
+                echo "Stopping VMs: $(testStoppedIds)"
+                az vm stop --ids $(testStoppedIds)
               fi
         dependsOn:
           - prod_twingate
@@ -122,6 +124,7 @@ parameters:
               if [ -z "$ids" ]; then
                 echo "No VMs to start"
               else
+                echo "Starting VMs: $ids"
                 az vm start --ids $ids
               fi
               echo "##vso[task.setvariable variable=prodStoppedIds]$ids"
@@ -138,7 +141,8 @@ parameters:
               if [ -z "$(prodStoppedIds)" ]; then
                 echo "No VMs to start"
               else
-                az vm start --ids $(prodStoppedIds)
+                echo "Stopping VMs: $(prodStoppedIds)"
+                az vm stop --ids $(prodStoppedIds)
               fi
         dependsOn:
           - prod_twingate
