@@ -99,7 +99,7 @@ parameters:
               if [ -z "$(testStoppedIds)" ]; then
                 echo "No VMs to start"
               else
-                az vm start --ids $ids
+                az vm start --ids $(testStoppedIds)
               fi
         dependsOn:
           - prod_twingate
@@ -138,7 +138,7 @@ parameters:
               if [ -z "$(prodStoppedIds)" ]; then
                 echo "No VMs to start"
               else
-                az vm start --ids $ids
+                az vm start --ids $(prodStoppedIds)
               fi
         dependsOn:
           - prod_twingate
