@@ -102,6 +102,7 @@ parameters:
               else
                 echo "Stopping VMs: $(testStoppedIds)"
                 az vm stop --ids $(testStoppedIds)
+                az vm deallocate --ids $(testStoppedIds)
               fi
         dependsOn:
           - prod_twingate
@@ -143,6 +144,7 @@ parameters:
               else
                 echo "Stopping VMs: $(prodStoppedIds)"
                 az vm stop --ids $(prodStoppedIds)
+                az vm deallocate --ids $(prodStoppedIds)
               fi
         dependsOn:
           - prod_twingate
