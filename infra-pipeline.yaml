@@ -64,6 +64,12 @@ parameters:
           - gamora
         dependsOn:
           - prod_twingate
+      - deployment: test_vpn_gateway
+        environment: test
+        component: cloud-vpn-gateway
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: test_gameserver
         environment: test
         component: gameserver
