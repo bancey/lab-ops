@@ -1,10 +1,11 @@
 module "networking" {
   source = "github.com/hmcts/terraform-module-azure-virtual-networking?ref=main"
 
-  env         = var.env
-  product     = "lab"
-  common_tags = local.tags
-  component   = "vpn"
+  env                          = var.env
+  product                      = "lab"
+  common_tags                  = local.tags
+  component                    = "vpn"
+  existing_resource_group_name = local.resource_group_name
 
   vnets = {
     vpn = {
