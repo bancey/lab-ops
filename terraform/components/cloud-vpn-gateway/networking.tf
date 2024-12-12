@@ -1,5 +1,5 @@
 module "networking" {
-  source = "git@github.com:hmcts/terraform-module-azure-virtual-networking?ref=main"
+  source = "github.com/hmcts/terraform-module-azure-virtual-networking?ref=main"
 
   env         = var.env
   product     = "lab"
