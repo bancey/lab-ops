@@ -1,4 +1,5 @@
 module "networking" {
+  count  = var.cloud_vpn_gateway != null && var.cloud_vpn_gateway != {} ? 1 : 0
   source = "github.com/hmcts/terraform-module-azure-virtual-networking?ref=main"
 
   env                          = var.env
@@ -25,6 +26,7 @@ module "networking" {
 }
 
 resource "azurerm_public_ip" "this" {
+  count               = var.cloud_vpn_gateway != null && var.cloud_vpn_gateway != {} ? 1 : 0
   name                = "${local.name}-public-ip"
   location            = var.location
   resource_group_name = local.resource_group_name

@@ -1,4 +1,5 @@
 resource "azurerm_virtual_network_gateway" "this" {
+  count               = var.cloud_vpn_gateway != null && var.cloud_vpn_gateway != {} ? 1 : 0
   name                = "${local.name}-gateway"
   location            = var.location
   resource_group_name = local.resource_group_name
