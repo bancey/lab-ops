@@ -70,6 +70,13 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: prod_vpn_gateway
+        environment: prod
+        component: cloud-vpn-gateway
+        destroy: false
+        deploy: true
+        dependsOn:
+          - test_vpn_gateway
       - deployment: test_gameserver
         environment: test
         component: gameserver
