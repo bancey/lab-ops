@@ -13,8 +13,8 @@ resource "azurerm_virtual_network_gateway" "this" {
 
   ip_configuration {
     name                          = "vnetGatewayConfig"
-    public_ip_address_id          = azurerm_public_ip.this.id
+    public_ip_address_id          = azurerm_public_ip.this[0].id
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = module.networking.subnet_ids["vpn-gateway"]
+    subnet_id                     = module.networking[0].subnet_ids["vpn-gateway"]
   }
 }
