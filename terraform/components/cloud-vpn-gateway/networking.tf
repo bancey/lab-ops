@@ -31,5 +31,6 @@ resource "azurerm_public_ip" "this" {
   location            = var.location
   resource_group_name = local.resource_group_name
 
-  allocation_method = "Static"
+  allocation_method = "Dynamic"
+  sku               = "Basic"
 }

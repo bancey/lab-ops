@@ -8,7 +8,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   vpn_type = "RouteBased"
 
   active_active = false
-  enable_bgp    = false
+  enable_bgp    = true
   sku           = "Basic"
 
   ip_configuration {
