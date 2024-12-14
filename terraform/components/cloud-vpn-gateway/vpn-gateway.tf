@@ -18,3 +18,11 @@ resource "azurerm_virtual_network_gateway" "this" {
     subnet_id                     = module.networking[0].subnet_ids["vpn-gateway"]
   }
 }
+
+resource "azurerm_local_network_gateway" "lab" {
+  name                = "${local.name}-local-gateway"
+  resource_group_name = local.resource_group_name
+  location            = var.location
+  gateway_address     = data.azurerm_key_vault_secret.public_ip.value
+  address_space       = ["10.151.0.0/18"]
+}

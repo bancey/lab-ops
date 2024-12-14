@@ -9,3 +9,13 @@ locals {
     }
   )
 }
+
+data "azurerm_key_vault" "vault" {
+  name                = "bancey-vault"
+  resource_group_name = "common"
+}
+
+data "azurerm_key_vault_secret" "public_ip" {
+  name         = "Home-Public-IP"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
