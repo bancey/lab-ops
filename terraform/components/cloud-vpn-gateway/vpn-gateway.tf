@@ -42,6 +42,7 @@ resource "azurerm_key_vault_secret" "shared_key" {
 }
 
 resource "azurerm_virtual_network_gateway_connection" "lab-s2s" {
+  count               = var.cloud_vpn_gateway.active ? 1 : 0
   name                = "${local.name}-s2s-connection"
   location            = var.location
   resource_group_name = local.resource_group_name
