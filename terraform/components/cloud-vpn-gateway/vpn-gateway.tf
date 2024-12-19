@@ -9,7 +9,7 @@ resource "azurerm_virtual_network_gateway" "this" {
 
   active_active = false
   enable_bgp    = false
-  sku           = "Standard"
+  sku           = "Basic"
 
   ip_configuration {
     name                          = "vnetGatewayConfig"
@@ -20,9 +20,37 @@ resource "azurerm_virtual_network_gateway" "this" {
 }
 
 resource "azurerm_local_network_gateway" "lab" {
+  count               = var.cloud_vpn_gateway.active ? 1 : 0
   name                = "${local.name}-local-gateway"
   resource_group_name = local.resource_group_name
   location            = var.location
   gateway_address     = data.azurerm_key_vault_secret.public_ip.value
   address_space       = ["10.151.0.0/18"]
+}
+
+resource "random_string" "shared_key" {
+  count   = var.cloud_vpn_gateway.active ? 1 : 0
+  length  = 64
+  special = false
+}
+
+resource "azurerm_key_vault_secret" "shared_key" {
+  count        = var.cloud_vpn_gateway.active ? 1 : 0
+  key_vault_id = data.azurerm_key_vault.vault.id
+  name         = "${local.name}-shared-key"
+  value        = random_string.shared_key[0].result
+}
+
+resource "azurerm_virtual_network_gateway_connection" "lab-s2s" {
+  name                = "${local.name}-s2s-connection"
+  location            = var.location
+  resource_group_name = local.resource_group_name
+
+  type                       = "IPsec"
+  virtual_network_gateway_id = azurerm_virtual_network_gateway.this[0].id
+  local_network_gateway_id   = azurerm_local_network_gateway.lab[0].id
+
+  shared_key          = random_string.shared_key[0].result
+  connection_protocol = "IKEv1"
+
 }
