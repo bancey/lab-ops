@@ -28,7 +28,7 @@ resource "azurerm_local_network_gateway" "lab" {
   address_space       = ["10.151.0.0/18"]
 }
 
-resource "random_string" "shared_key" {
+resource "random_password" "shared_key" {
   count   = var.cloud_vpn_gateway.active ? 1 : 0
   length  = 64
   special = false
@@ -38,7 +38,7 @@ resource "azurerm_key_vault_secret" "shared_key" {
   count        = var.cloud_vpn_gateway.active ? 1 : 0
   key_vault_id = data.azurerm_key_vault.vault.id
   name         = "${local.name}-shared-key"
-  value        = random_string.shared_key[0].result
+  value        = random_password.shared_key[0].result
 }
 
 resource "azurerm_virtual_network_gateway_connection" "lab-s2s" {
@@ -50,7 +50,7 @@ resource "azurerm_virtual_network_gateway_connection" "lab-s2s" {
   virtual_network_gateway_id = azurerm_virtual_network_gateway.this[0].id
   local_network_gateway_id   = azurerm_local_network_gateway.lab[0].id
 
-  shared_key          = random_string.shared_key[0].result
+  shared_key          = random_password.shared_key[0].result
   connection_protocol = "IKEv1"
 
 }
