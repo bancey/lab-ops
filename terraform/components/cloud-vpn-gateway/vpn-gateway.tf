@@ -51,6 +51,6 @@ resource "azurerm_virtual_network_gateway_connection" "lab-s2s" {
   local_network_gateway_id   = azurerm_local_network_gateway.lab[0].id
 
   shared_key          = random_password.shared_key[0].result
-  connection_protocol = "IKEv1"
-
+  connection_protocol = "IKEv2"
+  connection_mode     = "Default"
 }
