@@ -21,7 +21,7 @@ spec:
     image:
       registry: index.docker.io
       repository: plexinc/pms-docker
-      tag: 1.41.3.9292-bc7397402
+      tag: 1.41.3.9314-a0bfb8370
     ingress:
       enabled: true
       url: https://plex.bancey.xyz
