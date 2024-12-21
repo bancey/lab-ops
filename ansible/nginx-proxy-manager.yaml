@@ -1,0 +1,9 @@
+- name: Update system and setup ADO agents
+  hosts: npm-test
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+    - role: prep
+      install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common"]
+    - role: install-docker

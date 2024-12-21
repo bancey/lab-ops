@@ -49,7 +49,22 @@ kubernetes_virtual_machines = {
   }
 }
 
-virtual_machines = {}
+virtual_machines = {
+  npm-test = {
+    node                = "hela"
+    vm_id               = 300
+    vm_description      = "NGINX Proxy Manager Test VM"
+    cpu_cores           = 1
+    memory              = 4096
+    ip_address          = "10.151.14.200"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 1
+    storage             = "local-lvm"
+    image               = "jammy-server-cloudimg-amd64.img"
+  }
+}
 
 containers = {
   haproxy0 = {
@@ -103,6 +118,10 @@ ansible = {
     secrets = {
       "keepalived_pass" = "keepalived-pass"
     }
+  }
+  "nginx-proxy-manager" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "nginx-proxy-manager.yaml"
   }
 }
 
