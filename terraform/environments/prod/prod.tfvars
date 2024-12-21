@@ -120,7 +120,7 @@ ansible = {
     }
   }
   "nginx-proxy-manager" = {
-    nodes    = ["hela"]
+    nodes    = ["hela", "loki", "thor"]
     playbook = "nginx-proxy-manager.yaml"
   }
 }
