@@ -176,6 +176,22 @@ twingate_resources = {
       }
     }
   }
+  "npm-test" = {
+    record = "10.151.14.200/32"
+    twingate = {
+      network = "banceylab"
+      access = {
+        groups           = ["all"]
+        service_accounts = ["AzureDevOps"]
+      }
+      protocols = {
+        tcp = {
+          policy = "RESTRICTED"
+          ports  = ["22", "443", "80"]
+        }
+      }
+    }
+  }
 }
 
 adguard_filters = {
