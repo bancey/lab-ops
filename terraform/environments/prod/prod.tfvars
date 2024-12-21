@@ -62,6 +62,7 @@ virtual_machines = {
     startup_order       = 1
     startup_delay       = 1
     storage             = "local-lvm"
+    image               = "jammy-server-cloudimg-amd64.img"
   }
 }
 
@@ -117,6 +118,10 @@ ansible = {
     secrets = {
       "keepalived_pass" = "keepalived-pass"
     }
+  }
+  "nginx-proxy-manager" = {
+    nodes    = ["hela"]
+    playbook = "nginx-proxy-manager.yaml"
   }
 }
 
