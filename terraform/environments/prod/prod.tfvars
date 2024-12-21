@@ -122,6 +122,7 @@ ansible = {
   "nginx-proxy-manager" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "nginx-proxy-manager.yaml"
+    trigger = "21_12_2024_1615"
   }
 }
 
