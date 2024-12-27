@@ -203,8 +203,8 @@ twingate_resources = {
       }
     }
   }
-  "npm-test" = {
-    record = "10.151.14.200/32"
+  "test-vms" = {
+    record = "10.151.14.192/27"
     twingate = {
       network = "banceylab"
       access = {
