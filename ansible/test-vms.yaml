@@ -1,5 +1,8 @@
-- name: Update system and setup ADO agents
-  hosts: npm-test
+- name: Update system and install docker
+  hosts: 
+    - npm-test
+    - technitium-test
+    - bunkerweb-test
   become: true
   become_user: root
   become_method: sudo

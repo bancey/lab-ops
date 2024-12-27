@@ -147,10 +147,9 @@ ansible = {
       "keepalived_pass" = "keepalived-pass"
     }
   }
-  "nginx-proxy-manager" = {
+  "test-vms" = {
     nodes    = ["hela", "loki", "thor"]
-    playbook = "nginx-proxy-manager.yaml"
-    trigger = "21_12_2024_1615"
+    playbook = "test-vms.yaml"
   }
 }
 
