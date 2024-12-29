@@ -30,6 +30,12 @@
       "infra-pipeline.yaml"
     ]
   },
+  "docker-compose": {
+    "fileMatch": [
+      "(^|/)(?:docker-)?compose[^/]*\\.ya?ml$",
+      "(^|/)(?:docker-)?compose[^/]*\\.ya?ml.j2$"
+    ]
+  },
   "customManagers": [
     {
       "customType": "regex",
