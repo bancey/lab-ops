@@ -1,0 +1,31 @@
+version: "3.2"
+services:
+  adguard:
+    image: adguard/adguardhome:v0.107.48
+    container_name: adguard
+    restart: always
+    volumes:
+      - /opt/adguard/work:/opt/adguardhome/work
+      - /opt/adguard/config:/opt/adguardhome/conf
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 80:80/tcp
+      - 3000:3000/tcp
+  portainer:
+    image: portainer/portainer-ce:2.19.4
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/portainer:/data
+    ports:
+      - 8000:8000
+      - 9000:9000
+  twingate:
+    image: twingate/connector:1.68.0
+    container_name: banceylab-connector
+    restart: always
+    environment:
+      - TWINGATE_REFRESH_TOKEN: {{ twingate[inventory_hostname].refresh_token }}
+      - TWINGATE_ACCESS_TOKEN: {{ twingate[inventory_hostname].access_token }}
+      - TWINGATE_NETWORK: {{ twingate.network }}
