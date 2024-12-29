@@ -7,6 +7,12 @@ module "adguard_thanos" {
   adguard_rewrites   = local.adguard_rewrites
   adguard_filters    = var.adguard_filters
   adguard_user_rules = var.adguard_user_rules
+
+  adguard_config = {
+    dns = {
+      upstream_dns = ["https://dns10.quad9.net/dns-query", "[/*.home.bancey.xyz/]10.151.14.1"]
+    }
+  }
 }
 
 module "adguard_gamora" {
@@ -18,4 +24,9 @@ module "adguard_gamora" {
   adguard_rewrites   = local.adguard_rewrites
   adguard_filters    = var.adguard_filters
   adguard_user_rules = var.adguard_user_rules
+  adguard_config = {
+    dns = {
+      upstream_dns = ["https://dns10.quad9.net/dns-query", "[/*.home.bancey.xyz/]10.151.14.1"]
+    }
+  }
 }
