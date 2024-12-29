@@ -1,5 +1,5 @@
 - name: Update system and install docker
-  hosts: 
+  hosts:
     - npm-test
     - technitium-test
     - bunkerweb-test
