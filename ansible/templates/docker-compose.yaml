@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   adguard:
-    image: adguard/adguardhome
+    image: adguard/adguardhome:v0.107.48
     container_name: adguard
     restart: always
     volumes:
@@ -13,7 +13,7 @@ services:
       - 80:80/tcp
       - 3000:3000/tcp
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ce:2.19.4
     container_name: portainer
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
