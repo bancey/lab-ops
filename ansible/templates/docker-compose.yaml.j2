@@ -24,6 +24,7 @@ services:
     image: twingate/connector:1.73.0
     container_name: banceylab-connector
     restart: always
+    network_mode: bridge
     sysctls:
       - net.ipv4.ping_group_range=0 2147483647
     environment:
