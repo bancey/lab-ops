@@ -19,7 +19,7 @@
         state: "BACKUP"
         priority: 100
     twingate:
-      network: "banceylab"
+      network: "bancetech"
       thanos:
         refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Refresh-Token') }}"
         access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Access-Token') }}"
