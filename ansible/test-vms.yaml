@@ -1,7 +1,6 @@
 - name: Update system and install docker
   hosts:
     - npm-test
-    - technitium-test
     - bunkerweb-test
   become: true
   become_user: root
