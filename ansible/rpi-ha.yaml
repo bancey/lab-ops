@@ -18,6 +18,14 @@
           "10.151.14.5"
         state: "BACKUP"
         priority: 100
+    twingate:
+      network: "banceylab"
+      thanos:
+        refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Refresh-Token') }}"
+        access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Access-Token') }}"
+      gamora:
+        refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Refresh-Token') }}"
+        access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Access-Token') }}"
   roles:
     - role: prep
       install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker"]
@@ -85,10 +93,10 @@
         - /opt/adguard/work
         - /opt/portainer
         - /opt/compose
-    - name: Copy docker-compose config
-      ansible.builtin.copy:
-        src: ./templates/docker-compose.yaml
-        dest: /opt/compose
+    - name: Copy docker-compose config template
+      template:
+        src: ./templates/docker-compose.yaml.j2
+        dest: /opt/compose/docker-compose.yaml
     - name: deploy Docker Compose stack
       community.docker.docker_compose_v2:
         project_src: /opt/compose

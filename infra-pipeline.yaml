@@ -192,6 +192,10 @@ parameters:
         playbook: rpi-ha.yaml
         secrets:
           - keepalived-pass
+          - Twingate-banceylab-connector-Refresh-Token
+          - Twingate-banceylab-connector-Access-Token
+          - Twingate-banceylab-connector-2-Refresh-Token
+          - Twingate-banceylab-connector-2-Access-Token
         localEnvironments:
           - thanos
           - gamora
