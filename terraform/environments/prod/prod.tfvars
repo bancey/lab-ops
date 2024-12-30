@@ -80,7 +80,7 @@ virtual_machines = {
   }
   amp-test = {
     node                = "thor"
-    vm_id               = 301
+    vm_id               = 302
     vm_description      = "AMP Test VM"
     cpu_cores           = 1
     memory              = 4096
