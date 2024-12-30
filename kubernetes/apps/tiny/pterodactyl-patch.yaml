@@ -8,3 +8,6 @@ spec:
   values:
     appConfig:
       url: "https://pterodactyl.heimelska.co.uk"
+    mariadb:
+      image:
+        tag: 10.5.27
