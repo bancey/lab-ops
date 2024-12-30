@@ -1,8 +1,6 @@
 env                            = "prod"
 gameservers_vnet_address_space = ["10.200.0.0/16"]
-gameservers = {
-  wings = {}
-}
+gameservers = {}
 
 cloudflare_records = {}
 
@@ -71,20 +69,6 @@ virtual_machines = {
     cpu_cores           = 1
     memory              = 4096
     ip_address          = "10.151.14.201"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64.img"
-  }
-  amp-test = {
-    node                = "thor"
-    vm_id               = 302
-    vm_description      = "AMP Test VM"
-    cpu_cores           = 1
-    memory              = 4096
-    ip_address          = "10.151.14.202"
     gateway_ip_address  = "10.151.14.1"
     network_bridge_name = "vmbr0"
     startup_order       = 1
