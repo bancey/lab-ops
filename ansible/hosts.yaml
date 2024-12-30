@@ -3,6 +3,8 @@ all:
   vars:
     ansible_user: bancey
   hosts:
+    amp-test:
+      ansible_host: 10.151.14.202
     bunkerweb-test:
       ansible_host: 10.151.14.201
     npm-test:
