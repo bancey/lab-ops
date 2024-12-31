@@ -230,3 +230,25 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  wings-local.heimelska.co.uk:
+    record: 10.151.14.100
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 8080
+            - 2022
+            - 22
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pterodactyl
+          - all
+        service_accounts:
+          - Pterodactyl
+          - AzureDevOps
