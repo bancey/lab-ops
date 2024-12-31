@@ -10,7 +10,6 @@ resources:
   - ./podinfo.yaml
   - ./traefik.yaml
   - ./longhorn.yaml
-  - ./codechem.yaml
   - ./plex.yaml
   - ./sebastiangaiser.yaml
   - ./grafana.yaml
