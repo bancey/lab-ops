@@ -149,6 +149,10 @@ ansible = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "test-vms.yaml"
   }
+  "wings-local" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "wings-node.yaml"
+  }
 }
 
 images = {
