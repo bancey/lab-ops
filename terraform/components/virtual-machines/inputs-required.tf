@@ -13,6 +13,7 @@ variable "virtual_machines" {
     vm_description      = string
     cname_required      = optional(bool, false)
     storage             = string
+    disk_size           = optional(number, 8)
     image               = optional(string)
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox."

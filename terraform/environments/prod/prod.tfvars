@@ -1,6 +1,6 @@
 env                            = "prod"
 gameservers_vnet_address_space = ["10.200.0.0/16"]
-gameservers = {}
+gameservers                    = {}
 
 cloudflare_records = {}
 
@@ -80,14 +80,15 @@ virtual_machines = {
     node                = "thor"
     vm_id               = 500
     vm_description      = "Local Wings node"
-    cpu_cores           = 1
-    memory              = 4096
+    cpu_cores           = 4
+    memory              = 12288
     ip_address          = "10.151.14.100"
     gateway_ip_address  = "10.151.14.1"
     network_bridge_name = "vmbr0"
     startup_order       = 1
     startup_delay       = 1
     storage             = "local-lvm"
+    disk_size           = 64
     image               = "jammy-server-cloudimg-amd64.img"
   }
 }

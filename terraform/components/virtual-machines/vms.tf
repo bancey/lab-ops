@@ -19,6 +19,7 @@ module "wanda_virtual_machines" {
   startup_order       = each.value.startup_order
   startup_delay       = each.value.startup_delay
   storage             = each.value.storage
+  disk_size           = each.value.disk_size
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = "local:iso/${each.value.image}"
@@ -45,6 +46,7 @@ module "tiny_virtual_machines" {
   startup_order       = each.value.startup_order
   startup_delay       = each.value.startup_delay
   storage             = each.value.storage
+  disk_size           = each.value.disk_size
   username            = data.azurerm_key_vault_secret.lab_vm_username.value
   password            = data.azurerm_key_vault_secret.lab_vm_password.value
   image_id            = "local:iso/${each.value.image}"
