@@ -1,5 +1,5 @@
 - name: Update system and install pterodactly wings pre-requisites
-  hosts: wings
+  hosts: wings-local
   become: true
   become_user: root
   become_method: sudo
