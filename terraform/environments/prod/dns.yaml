@@ -176,6 +176,24 @@ dns:
           - all
         service_accounts:
           - Pterodactyl
+  longhorn.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
   tiny-pve.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
