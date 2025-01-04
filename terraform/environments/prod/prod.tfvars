@@ -150,6 +150,13 @@ ansible = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "test-vms.yaml"
   }
+  "wings-local" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "wings-node.yaml"
+    secrets = {
+      "cloudflare_api_token" = "Cloudflare-Lab-API-Token"
+    }
+  }
 }
 
 images = {
