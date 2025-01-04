@@ -230,7 +230,7 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
-  wings-local.heimelska.co.uk:
+  wings-thor.heimelska.co.uk:
     record: 10.151.14.100
     twingate:
       network: banceylab

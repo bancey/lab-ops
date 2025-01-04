@@ -76,10 +76,10 @@ virtual_machines = {
     storage             = "local-lvm"
     image               = "jammy-server-cloudimg-amd64.img"
   }
-  wings-local = {
+  wings-thor = {
     node                = "thor"
     vm_id               = 500
-    vm_description      = "Local Wings node"
+    vm_description      = "Thor Wings node"
     cpu_cores           = 4
     memory              = 12288
     ip_address          = "10.151.14.100"
@@ -149,10 +149,6 @@ ansible = {
   "test-vms" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "test-vms.yaml"
-  }
-  "wings-local" = {
-    nodes    = ["hela", "loki", "thor"]
-    playbook = "wings-node.yaml"
   }
 }
 
