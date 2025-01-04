@@ -7,7 +7,7 @@ all:
       ansible_host: 10.151.14.201
     npm-test:
       ansible_host: 10.151.14.200
-    wings-local:
+    wings-thor:
       ansible_host: 10.151.14.100
     haproxy0:
       ansible_host: 10.151.16.201
