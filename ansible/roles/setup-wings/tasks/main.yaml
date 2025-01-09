@@ -5,10 +5,12 @@
   ansible.builtin.command: snap install --classic certbot
   become: true
   when: setup_certs
-- name: Install certbot cloudflare dns plugin
-  ansible.builtin.command: |-
-    snap set certbot trust-plugin-with-root=ok
-    snap install certbot-dns-cloudflare
+- name: Enable trust-plugin-with-root
+  ansible.builtin.command: snap set certbot trust-plugin-with-root=ok
+  become: true
+  when: setup_certs
+- name: Install certbot-dns-cloudflare
+  ansible.builtin.command: snap install certbot-dns-cloudflare
   become: true
   when: setup_certs
 - name: Create lets encrypt directory
@@ -20,9 +22,9 @@
     mode: 0775
   become: true
   when: setup_certs
-- name: Copy KeepAlived configuration template
+- name: Copy Cloudflare api token
   template:
-    src: files/cloundflare.ini.j2
+    src: files/cloudflare.ini.j2
     dest: /etc/letsencrypt/cloudflare.ini
     owner: root
     group: root
@@ -30,7 +32,7 @@
   become: true
   when: setup_certs
 - name: Run certbot
-  ansible.builtin.command: certbot certonly -d {{ domain }} --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini --post-hook "systemctl restart wings" --non-interactive --agree-tos --email abance@bancey.xyz
+  ansible.builtin.command: certbot certonly -d {{ domain }} --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini --non-interactive --agree-tos --email abance@bancey.xyz
   become: true
   when: setup_certs
 - name: Download wings

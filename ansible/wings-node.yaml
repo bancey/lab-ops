@@ -7,4 +7,3 @@
     - role: install-docker
     - role: setup-wings
       domain: "{{ inventory_hostname }}.heimelska.co.uk"
-
