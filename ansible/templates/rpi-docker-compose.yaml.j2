@@ -11,15 +11,6 @@ services:
       - 53:53/udp
       - 80:80/tcp
       - 3000:3000/tcp
-  portainer:
-    image: portainer/portainer-ce:2.25.1
-    container_name: portainer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/portainer:/data
-    ports:
-      - 8000:8000
-      - 9000:9000
   twingate:
     image: twingate/connector:1.73.0
     container_name: banceylab-connector

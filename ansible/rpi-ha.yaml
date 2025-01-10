@@ -95,7 +95,7 @@
         - /opt/compose
     - name: Copy docker-compose config template
       template:
-        src: ./templates/docker-compose.yaml.j2
+        src: ./templates/rpi-docker-compose.yaml.j2
         dest: /opt/compose/docker-compose.yaml
     - name: deploy Docker Compose stack
       community.docker.docker_compose_v2:
