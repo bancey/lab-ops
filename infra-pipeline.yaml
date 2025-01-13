@@ -50,6 +50,7 @@ parameters:
         preStep:
           - task: AzureCLI@2
             displayName: Download GitHub Private Key
+            condition: and(succeeded(), eq(variables['System.PullRequest.PullRequestNumber'], ''))
             inputs:
               azureSubscription: "MSDN Sub"
               scriptType: "bash"
