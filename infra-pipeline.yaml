@@ -47,6 +47,14 @@ parameters:
         component: inventory
         destroy: false
         deploy: true
+        preStep:
+          - task: AzureCLI@2
+            displayName: Download GitHub Private Key
+            inputs:
+              azureSubscription: "MSDN Sub"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
         dependsOn: []
       - deployment: prod_twingate
         environment: prod
