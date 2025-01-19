@@ -27,3 +27,5 @@ spec:
       config:
         enabled: true
         claimName: prowlarr-config-pvc-nfs-static
+      data:
+        enabled: false
