@@ -8,7 +8,7 @@ spec:
   releaseName: prowlarr
   chart:
     spec:
-      version: 0.2.5
+      version: 0.2.6
       chart: xarr
       sourceRef:
         kind: HelmRepository
