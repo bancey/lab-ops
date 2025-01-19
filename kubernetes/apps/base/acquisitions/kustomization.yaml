@@ -10,3 +10,5 @@ resources:
   - sabnzbd-route.yaml
   - sonarr-release.yaml
   - sonarr-route.yaml
+  - prowlarr-release.yaml
+  - prowlarr-route.yaml

@@ -21,6 +21,8 @@ resources:
   - radarr-config-pvc.yaml
   - radarr-data-pv.yaml
   - radarr-data-pvc.yaml
+  - prowlarr-config-pv.yaml
+  - prowlarr-config-pvc.yaml
   - ../base/acquisitions
   - ../base/capacitor
   - capacitor-ingress-route.yaml
@@ -46,3 +48,10 @@ patches:
     target:
       kind: IngressRoute
       name: radarr
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`prowlarr.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: prowlarr

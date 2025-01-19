@@ -1,0 +1,29 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prowlarr
+  namespace: acquisition
+spec:
+  releaseName: prowlarr
+  chart:
+    spec:
+      version: 0.2.1
+      chart: xarr
+      sourceRef:
+        kind: HelmRepository
+        name: bancey
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  values:
+    image: linuxserver/prowlarr:1.29.2
+    config:
+      port: 9696
+    persistence:
+      config:
+        enabled: true
+        claimName: prowlarr-config-pvc-nfs-static

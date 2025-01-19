@@ -137,6 +137,42 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  radarr.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - wanda_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  prowlarr.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - wanda_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
   dl.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -177,6 +213,24 @@ dns:
         service_accounts:
           - Pterodactyl
   longhorn.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  smokeping.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
       network: banceylab
