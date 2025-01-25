@@ -14,7 +14,7 @@ spec:
       kind: Rule
       services:
         - name: radarr-xarr
-          port: 8989
+          port: 7878
       middlewares:
         - name: default-headers
           namespace: traefik
