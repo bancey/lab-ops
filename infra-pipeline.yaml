@@ -6,6 +6,7 @@ trigger:
   paths:
     exclude:
       - ansible/hosts.yaml
+      - kubernetes/*
 
 pr:
   branches:
