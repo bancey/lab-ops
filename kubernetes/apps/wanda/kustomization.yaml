@@ -24,6 +24,8 @@ resources:
   - prowlarr-config-pv.yaml
   - prowlarr-config-pvc.yaml
   - mullvad-secret.sops.yaml
+  - qbittorrent-config-pv.yaml
+  - qbittorrent-config-pvc.yaml
   - ../base/acquisitions
   - ../base/capacitor
   - capacitor-ingress-route.yaml

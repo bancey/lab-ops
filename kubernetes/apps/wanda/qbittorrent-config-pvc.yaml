@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: qbittorrent-config-pvc-nfs-static
+  namespace: acquisition
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  volumeName: qbittorrent-config-pv-nfs
+  storageClassName: nfs-csi

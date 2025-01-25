@@ -101,7 +101,7 @@ spec:
 
     persistence:
       config:
-        existingClaim: qbittorrent-config
+        existingClaim: qbittorrent-config-pvc-nfs-static
         advancedMounts:
           main:
             main:
