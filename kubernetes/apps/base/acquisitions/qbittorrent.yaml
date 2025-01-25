@@ -23,21 +23,28 @@ spec:
     defaultPodOptions:
       automountServiceAccountToken: false
     controllers:
-      main:
+      qbittorrent-gluetun:
         pod:
           securityContext:
             fsGroup: 568
             fsGroupChangePolicy: "OnRootMismatch"
         containers:
-          main:
+          qbittorrent:
             image:
               repository: ghcr.io/onedr0p/qbittorrent
               tag: 5.0.3
             securityContext:
               runAsUser: 568
               runAsGroup: 568
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
           gluetun:
-            dependsOn: main
+            dependsOn: qbittorrent
             image:
               repository: ghcr.io/qdm12/gluetun
               tag: v3.40.0
@@ -66,6 +73,31 @@ spec:
               capabilities:
                 add:
                   - NET_ADMIN
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - /gluetun-entrypoint
+                      - healthcheck
+                  initialDelaySeconds: 0
+                  periodSeconds: 5
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  exec:
+                    command:
+                      - /gluetun-entrypoint
+                      - healthcheck
+                  initialDelaySeconds: 10
+                  periodSeconds: 5
+                  timeoutSeconds: 5
+                  failureThreshold: 3
           port-forward:
             dependsOn: gluetun
             image:
@@ -80,8 +112,8 @@ spec:
                 value: "/tmp/gluetun/forwarded_port"
 
     service:
-      main:
-        controller: main
+      qbittorrent:
+        controller: qbittorrent-gluetun
         type: ClusterIP
         ports:
           http:
@@ -93,13 +125,13 @@ spec:
       config:
         existingClaim: qbittorrent-config-pvc-nfs-static
         advancedMounts:
-          main:
-            main:
+          qbittorrent-glutun:
+            qbittorrent:
               - path: /config
       gluetun-data:
         type: emptyDir
         advancedMounts:
-          main:
+          qbittorrent-gluetun:
             gluetun:
               - path: /tmp/gluetun
             port-forward:
