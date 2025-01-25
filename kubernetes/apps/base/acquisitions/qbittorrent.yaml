@@ -125,7 +125,7 @@ spec:
       config:
         existingClaim: qbittorrent-config-pvc-nfs-static
         advancedMounts:
-          qbittorrent-glutun:
+          qbittorrent-gluetun:
             qbittorrent:
               - path: /config
       gluetun-data:
