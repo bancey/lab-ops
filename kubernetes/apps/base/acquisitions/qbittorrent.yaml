@@ -97,7 +97,7 @@ spec:
                 pathType: Prefix
                 service:
                   identifier: main
-                  port: http
+                  port: 8080
 
     persistence:
       config:
