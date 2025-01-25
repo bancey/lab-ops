@@ -58,3 +58,10 @@ patches:
     target:
       kind: IngressRoute
       name: prowlarr
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`qb.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: qbittorrent-gluetun

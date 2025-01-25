@@ -87,17 +87,7 @@ spec:
           http:
             port: 8080
 
-    ingress:
-      main:
-        className: "traefik"
-        hosts:
-          - host: "qb.heimelska.co.uk"
-            paths:
-              - path: /
-                pathType: Prefix
-                service:
-                  identifier: main
-                  port: 8080
+    ingress: {}
 
     persistence:
       config:
