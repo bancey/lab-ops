@@ -23,6 +23,7 @@ resources:
   - radarr-data-pvc.yaml
   - prowlarr-config-pv.yaml
   - prowlarr-config-pvc.yaml
+  - mullvad-secret.sops.yaml
   - ../base/acquisitions
   - ../base/capacitor
   - capacitor-ingress-route.yaml

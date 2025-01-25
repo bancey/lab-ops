@@ -12,3 +12,4 @@ resources:
   - sonarr-route.yaml
   - prowlarr-release.yaml
   - prowlarr-route.yaml
+  - qbittorrent.yaml
