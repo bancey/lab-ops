@@ -4,3 +4,8 @@ resource "azurerm_resource_group" "game_server" {
 
   tags = local.tags
 }
+
+moved {
+  from = azurerm_resource_group.gameserver
+  to   = azurerm_resource_group.game_server
+}
