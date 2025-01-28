@@ -21,9 +21,9 @@ module "pterodactyl_node" {
   }
   existing_public_ip = {
     name                = azurerm_public_ip.this[each.key].name
-    resource_group_name = azurerm_resource_group.gameserver.name
+    resource_group_name = azurerm_resource_group.game_server.name
   }
-  existing_resource_group_name = azurerm_resource_group.gameserver.name
+  existing_resource_group_name = azurerm_resource_group.game_server.name
   existing_subnet_id           = azurerm_subnet.this.id
   existing_nsg_id              = azurerm_network_security_group.this.id
   publicly_accessible          = true

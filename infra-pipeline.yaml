@@ -89,7 +89,7 @@ parameters:
           - test_vpn_gateway
       - deployment: test_gameserver
         environment: test
-        component: gameserver
+        component: game-server
         destroy: false
         deploy: true
         preStep:
@@ -131,7 +131,7 @@ parameters:
           - prod_twingate
       - deployment: prod_gameserver
         environment: prod
-        component: gameserver
+        component: game-server
         destroy: false
         deploy: true
         preStep:

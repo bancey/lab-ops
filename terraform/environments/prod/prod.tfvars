@@ -1,5 +1,5 @@
 env                            = "prod"
-gameservers_vnet_address_space = ["10.200.0.0/16"]
+game_server_vnet_address_space = ["10.151.201.0/24"]
 gameservers                    = {}
 
 cloudflare_records = {}
@@ -281,7 +281,7 @@ adguard_user_rules = [
 
 cloud_vpn_gateway = {
   name   = "lab-vpn"
-  active = false
+  active = true
   networking = {
     address_space                 = "10.151.200.0/24"
     gateway_subnet_address_prefix = "10.151.200.0/24"

@@ -1,5 +1,5 @@
 env                            = "test"
-gameservers_vnet_address_space = ["10.100.0.0/16"]
+game_server_vnet_address_space = ["10.151.191.0/24"]
 gameservers                    = {}
 
 cloud_vpn_gateway = {
