@@ -1,6 +1,12 @@
 env                            = "prod"
 game_server_vnet_address_space = ["10.151.201.0/24"]
-gameservers                    = {}
+game_server_vnet_peering       = {
+  prod-vpn = {
+    vnet_name                = "lab-vpn-vpn-prod"
+    vnet_resource_group_name = "lab-vpn-prod-rg"
+  }
+}
+game_servers                    = {}
 
 cloudflare_records = {}
 

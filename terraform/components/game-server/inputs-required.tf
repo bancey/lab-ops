@@ -1,4 +1,4 @@
-variable "gameservers" {
+variable "game_servers" {
   description = "Map of objects representing game servers to deploy"
   type = map(object({
     type                = optional(string, "pterodactyl")

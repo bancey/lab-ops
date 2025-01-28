@@ -1,5 +1,5 @@
 resource "azurerm_public_ip" "this" {
-  for_each            = var.gameservers
+  for_each            = var.game_servers
   name                = "${each.key}-${var.env}-pip"
   location            = azurerm_resource_group.game_server.location
   resource_group_name = azurerm_resource_group.game_server.name
@@ -40,23 +40,42 @@ resource "azurerm_virtual_network_peering" "remote_to_local" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "games-${var.env}-subnet"
+  for_each             = { private : cidrsubnet(var.game_server_vnet_address_space, 1, 0), public : cidrsubnet(var.game_server_vnet_address_space, 1, 1) }
+  name                 = "games-${var.env}-${each.key}-subnet"
   resource_group_name  = azurerm_resource_group.game_server.name
   virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = var.game_server_vnet_address_space
+  address_prefixes     = [each.value]
 }
 
 resource "azurerm_network_security_group" "this" {
-  name                = "games-${var.env}-nsg"
+  for_each            = toset("private", "public")
+  name                = "games-${var.env}-${each.key}-nsg"
   resource_group_name = azurerm_resource_group.game_server.name
   location            = azurerm_resource_group.game_server.location
   tags                = local.tags
 }
 
-resource "azurerm_network_security_rule" "this" {
-  for_each = merge(local.nsg_rules, var.nsg_rules)
+resource "azurerm_network_security_rule" "private" {
+  for_each = merge(module.private_nsg_rules.nsg_rules, var.nsg_rules)
 
-  network_security_group_name = azurerm_network_security_group.this.name
+  network_security_group_name = azurerm_network_security_group.this["private"].name
+  resource_group_name         = azurerm_resource_group.game_server.name
+
+  name                       = each.key
+  priority                   = each.value.priority
+  direction                  = each.value.direction
+  access                     = each.value.access
+  protocol                   = each.value.protocol
+  source_port_range          = each.value.source_port_range
+  destination_port_range     = each.value.destination_port_range
+  source_address_prefix      = each.value.source_address_prefix
+  destination_address_prefix = each.value.destination_address_prefix
+}
+
+resource "azurerm_network_security_rule" "public" {
+  for_each = merge(module.public_nsg_rules.nsg_rules, var.nsg_rules)
+
+  network_security_group_name = azurerm_network_security_group.this["public"].name
   resource_group_name         = azurerm_resource_group.game_server.name
 
   name                       = each.key
