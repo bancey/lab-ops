@@ -1,4 +1,4 @@
-resource "cloudflare_record" "wings_cname" {
+resource "cloudflare_dns_record" "wings_cname" {
   for_each = {
     for name, vm in var.virtual_machines : name => vm
     if vm.cname_required

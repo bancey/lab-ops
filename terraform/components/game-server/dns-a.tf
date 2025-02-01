@@ -1,4 +1,4 @@
-resource "cloudflare_record" "records" {
+resource "cloudflare_dns_record" "records" {
   for_each = var.gameservers
   zone_id  = data.azurerm_key_vault_secret.cloudflare_main_zone_id.value
   name     = "${each.key}-${var.env}"
