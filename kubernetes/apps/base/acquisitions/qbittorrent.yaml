@@ -28,7 +28,7 @@ spec:
           securityContext:
             fsGroup: 568
             fsGroupChangePolicy: "OnRootMismatch"
-        initcontainers:
+        initContainers:
           gluetun:
             image:
               repository: ghcr.io/qdm12/gluetun
