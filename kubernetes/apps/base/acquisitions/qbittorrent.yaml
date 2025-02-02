@@ -59,32 +59,6 @@ spec:
               capabilities:
                 add:
                   - NET_ADMIN
-            probes:
-              liveness: &probes
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command:
-                      - /gluetun-entrypoint
-                      - healthcheck
-                  initialDelaySeconds: 0
-                  periodSeconds: 5
-                  timeoutSeconds: 5
-                  failureThreshold: 3
-              readiness: *probes
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  exec:
-                    command:
-                      - /gluetun-entrypoint
-                      - healthcheck
-                  initialDelaySeconds: 10
-                  periodSeconds: 5
-                  timeoutSeconds: 5
-                  failureThreshold: 3
         containers:
           qbittorrent:
             image:
