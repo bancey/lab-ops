@@ -67,6 +67,8 @@ spec:
             securityContext:
               runAsUser: 568
               runAsGroup: 568
+            env:
+              QBT_WEBUI_PORT: 8080
             probes:
               liveness:
                 enabled: true
@@ -74,6 +76,9 @@ spec:
                 enabled: true
               startup:
                 enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
 
     service:
       qbittorrent:
