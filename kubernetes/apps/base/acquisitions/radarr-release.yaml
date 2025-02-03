@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: linuxserver/radarr:5.17.2
+    image: linuxserver/radarr:5.18.4
     config:
       port: 7878
     persistence:
