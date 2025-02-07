@@ -1,5 +1,5 @@
 resource "azurerm_public_ip" "this" {
-  for_each            = var.gameservers
+  for_each            = var.game_servers
   name                = "${each.key}-${var.env}-pip"
   location            = azurerm_resource_group.game_server.location
   resource_group_name = azurerm_resource_group.game_server.name
@@ -40,23 +40,31 @@ resource "azurerm_virtual_network_peering" "remote_to_local" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "games-${var.env}-subnet"
+  for_each             = { private : cidrsubnet(var.game_server_vnet_address_space[0], 1, 0), public : cidrsubnet(var.game_server_vnet_address_space[0], 1, 1) }
+  name                 = "games-${var.env}-${each.key}-subnet"
   resource_group_name  = azurerm_resource_group.game_server.name
   virtual_network_name = azurerm_virtual_network.this.name
-  address_prefixes     = var.game_server_vnet_address_space
+  address_prefixes     = [each.value]
 }
 
 resource "azurerm_network_security_group" "this" {
-  name                = "games-${var.env}-nsg"
+  for_each            = toset(["private", "public"])
+  name                = "games-${var.env}-${each.key}-nsg"
   resource_group_name = azurerm_resource_group.game_server.name
   location            = azurerm_resource_group.game_server.location
   tags                = local.tags
 }
 
-resource "azurerm_network_security_rule" "this" {
-  for_each = merge(local.nsg_rules, var.nsg_rules)
+resource "azurerm_subnet_network_security_group_association" "this" {
+  for_each                  = toset(["private", "public"])
+  subnet_id                 = azurerm_subnet.this[each.key].id
+  network_security_group_id = azurerm_network_security_group.this[each.key].id
+}
 
-  network_security_group_name = azurerm_network_security_group.this.name
+resource "azurerm_network_security_rule" "this" {
+  for_each = merge(local.private_nsg_rules, local.public_nsg_rules)
+
+  network_security_group_name = azurerm_network_security_group.this[each.value.type].name
   resource_group_name         = azurerm_resource_group.game_server.name
 
   name                       = each.key
@@ -68,9 +76,4 @@ resource "azurerm_network_security_rule" "this" {
   destination_port_range     = each.value.destination_port_range
   source_address_prefix      = each.value.source_address_prefix
   destination_address_prefix = each.value.destination_address_prefix
-}
-
-resource "azurerm_subnet_network_security_group_association" "this" {
-  subnet_id                 = azurerm_subnet.this.id
-  network_security_group_id = azurerm_network_security_group.this.id
 }
