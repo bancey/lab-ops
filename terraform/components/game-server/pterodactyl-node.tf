@@ -2,7 +2,7 @@ module "pterodactyl_node" {
   source = "github.com/bancey/terraform-azurerm-pterodactyl-node.git?ref=main"
 
   depends_on = [
-    cloudflare_record.records
+    cloudflare_dns_record.records
   ]
 
   for_each = { for k, v in var.game_servers : k => v if v.type == "pterodactyl" }

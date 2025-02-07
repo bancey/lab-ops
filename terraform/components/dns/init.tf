@@ -3,11 +3,11 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.16.0"
+      version = "4.17.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "4.51.0"
+      version = "5.0.0"
     }
     adguard = {
       source  = "gmichels/adguard"

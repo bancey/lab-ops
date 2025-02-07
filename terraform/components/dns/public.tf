@@ -1,4 +1,4 @@
-resource "cloudflare_record" "records" {
+resource "cloudflare_dns_record" "records" {
   provider = cloudflare.lab
   for_each = { for key, value in var.cloudflare_records : key => value if value.zone == "lab" }
 
@@ -10,7 +10,7 @@ resource "cloudflare_record" "records" {
   ttl     = each.value.ttl
 }
 
-resource "cloudflare_record" "main_records" {
+resource "cloudflare_dns_record" "main_records" {
   provider = cloudflare.main
   for_each = { for key, value in var.cloudflare_records : key => value if value.zone == "main" }
 
