@@ -40,7 +40,7 @@ resource "azurerm_virtual_network_peering" "remote_to_local" {
 }
 
 resource "azurerm_subnet" "this" {
-  for_each             = { private : cidrsubnet(var.game_server_vnet_address_space, 1, 0), public : cidrsubnet(var.game_server_vnet_address_space, 1, 1) }
+  for_each             = { private : cidrsubnet(var.game_server_vnet_address_space[0], 1, 0), public : cidrsubnet(var.game_server_vnet_address_space[0], 1, 1) }
   name                 = "games-${var.env}-${each.key}-subnet"
   resource_group_name  = azurerm_resource_group.game_server.name
   virtual_network_name = azurerm_virtual_network.this.name
@@ -48,7 +48,7 @@ resource "azurerm_subnet" "this" {
 }
 
 resource "azurerm_network_security_group" "this" {
-  for_each            = toset("private", "public")
+  for_each            = toset(["private", "public"])
   name                = "games-${var.env}-${each.key}-nsg"
   resource_group_name = azurerm_resource_group.game_server.name
   location            = azurerm_resource_group.game_server.location
@@ -56,7 +56,7 @@ resource "azurerm_network_security_group" "this" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
-  for_each                  = toset("private", "public")
+  for_each                  = toset(["private", "public"])
   subnet_id                 = azurerm_subnet.this[each.key].id
   network_security_group_id = azurerm_network_security_group.this[each.key].id
 }
