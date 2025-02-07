@@ -1,6 +1,6 @@
 env                            = "prod"
 game_server_vnet_address_space = ["10.151.201.0/24"]
-game_server_vnet_peering = {
+game_server_vnet_peerings = {
   prod-vpn = {
     vnet_name                = "lab-vpn-vpn-prod"
     vnet_resource_group_name = "lab-vpn-prod-rg"
