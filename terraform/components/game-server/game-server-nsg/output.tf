@@ -46,7 +46,7 @@ output "nsg_rules" {
       access                     = "Allow"
       protocol                   = "*"
       source_port_range          = "*"
-      destination_port_range     = var.source_address_prefix
+      destination_port_range     = "27000-27100"
       source_address_prefix      = var.publicly_accessible ? "*" : var.source_address_prefix
       destination_address_prefix = "*"
     }
