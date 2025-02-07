@@ -55,41 +55,25 @@ resource "azurerm_network_security_group" "this" {
   tags                = local.tags
 }
 
-resource "azurerm_network_security_rule" "private" {
-  for_each = merge(module.private_nsg_rules.nsg_rules, var.nsg_rules)
-
-  network_security_group_name = azurerm_network_security_group.this["private"].name
-  resource_group_name         = azurerm_resource_group.game_server.name
-
-  name                       = each.key
-  priority                   = each.value.priority
-  direction                  = each.value.direction
-  access                     = each.value.access
-  protocol                   = each.value.protocol
-  source_port_range          = each.value.source_port_range
-  destination_port_range     = each.value.destination_port_range
-  source_address_prefix      = each.value.source_address_prefix
-  destination_address_prefix = each.value.destination_address_prefix
-}
-
-resource "azurerm_network_security_rule" "public" {
-  for_each = merge(module.public_nsg_rules.nsg_rules, var.nsg_rules)
-
-  network_security_group_name = azurerm_network_security_group.this["public"].name
-  resource_group_name         = azurerm_resource_group.game_server.name
-
-  name                       = each.key
-  priority                   = each.value.priority
-  direction                  = each.value.direction
-  access                     = each.value.access
-  protocol                   = each.value.protocol
-  source_port_range          = each.value.source_port_range
-  destination_port_range     = each.value.destination_port_range
-  source_address_prefix      = each.value.source_address_prefix
-  destination_address_prefix = each.value.destination_address_prefix
-}
-
 resource "azurerm_subnet_network_security_group_association" "this" {
-  subnet_id                 = azurerm_subnet.this.id
-  network_security_group_id = azurerm_network_security_group.this.id
+  for_each                  = toset("private", "public")
+  subnet_id                 = azurerm_subnet.this[each.key].id
+  network_security_group_id = azurerm_network_security_group.this[each.key].id
+}
+
+resource "azurerm_network_security_rule" "this" {
+  for_each = { private : module.private_nsg_rules.nsg_rules, public : module.public_nsg_rules.nsg_rules }
+
+  network_security_group_name = azurerm_network_security_group.this[each.key].name
+  resource_group_name         = azurerm_resource_group.game_server.name
+
+  name                       = each.key
+  priority                   = each.value.priority
+  direction                  = each.value.direction
+  access                     = each.value.access
+  protocol                   = each.value.protocol
+  source_port_range          = each.value.source_port_range
+  destination_port_range     = each.value.destination_port_range
+  source_address_prefix      = each.value.source_address_prefix
+  destination_address_prefix = each.value.destination_address_prefix
 }
