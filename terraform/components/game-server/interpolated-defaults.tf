@@ -12,9 +12,9 @@ module "private_nsg_rules" {
 }
 
 module "public_nsg_rules" {
-  source = "./game-server-nsg"
+  source                = "./game-server-nsg"
   source_address_prefix = data.azurerm_key_vault_secret.public_ip.value
-  publicly_accessible = true
+  publicly_accessible   = true
 }
 
 data "azurerm_key_vault" "vault" {
