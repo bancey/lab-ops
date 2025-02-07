@@ -5,6 +5,13 @@ locals {
     "application" = "game_servers",
     "environment" = var.env,
   }
+
+  private_nsg_rules = {
+    for k, v in module.private_nsg_rules.nsg_rules : k => merge(v, { type = "private" })
+  }
+  public_nsg_rules = {
+    for k, v in module.public_nsg_rules.nsg_rules : k => merge(v, { type = "public" })
+  }
 }
 
 module "private_nsg_rules" {

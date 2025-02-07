@@ -62,9 +62,9 @@ resource "azurerm_subnet_network_security_group_association" "this" {
 }
 
 resource "azurerm_network_security_rule" "this" {
-  for_each = { private : module.private_nsg_rules.nsg_rules, public : module.public_nsg_rules.nsg_rules }
+  for_each = merge(local.private_nsg_rules, local.public_nsg_rules)
 
-  network_security_group_name = azurerm_network_security_group.this[each.key].name
+  network_security_group_name = azurerm_network_security_group.this[each.value.type].name
   resource_group_name         = azurerm_resource_group.game_server.name
 
   name                       = each.key
