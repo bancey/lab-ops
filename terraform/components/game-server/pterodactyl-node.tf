@@ -24,8 +24,8 @@ module "pterodactyl_node" {
     resource_group_name = azurerm_resource_group.game_server.name
   }
   existing_resource_group_name = azurerm_resource_group.game_server.name
-  existing_subnet_id           = azurerm_subnet.this.id
-  existing_nsg_id              = azurerm_network_security_group.this.id
+  existing_subnet_id           = each.value.publicly_accessible ? azurerm_subnet.this["public"].id : azurerm_subnet.this["private"].id
+  existing_nsg_id              = each.value.publicly_accessible ? azurerm_network_security_group.this["public"].id : azurerm_network_security_group.this["private"].id
   publicly_accessible          = true
 
   vm_shutdown_schedule = {
