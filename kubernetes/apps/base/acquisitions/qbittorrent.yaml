@@ -8,7 +8,7 @@ spec:
   releaseName: qbittorrent-gluetun
   chart:
     spec:
-      version: 3.7.0
+      version: 3.7.1
       chart: app-template
       sourceRef:
         kind: HelmRepository
