@@ -24,3 +24,10 @@ services:
       TWINGATE_NETWORK: {{ twingate.network }}
       TWINGATE_DNS: 10.151.14.1
       TWINGATE_LABEL_MACHINE_NAME: {{ inventory_hostname }}
+  gatus:
+    image: twinproduction/gatus:v5.15.0
+    ports:
+      - "8080:8080"
+    volumes:
+      - /opt/gatus/config:/config
+      - /opt/gatus/data:/data
