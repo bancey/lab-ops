@@ -93,6 +93,12 @@
         - /opt/adguard/work
         - /opt/portainer
         - /opt/compose
+        - /opt/gatus/config
+        - /opt/gatus/data
+    - name: Copy Gatus configuration file
+      copy:
+        src: ./templates/gatus-config.yaml
+        dest: /opt/gatus/config/config.yaml
     - name: Copy docker-compose config template
       template:
         src: ./templates/rpi-docker-compose.yaml.j2
