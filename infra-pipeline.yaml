@@ -196,21 +196,21 @@ parameters:
           - generate_ansible_inventory
   - name: ansible_deployments
     type: object
-    default:
-      - deployment: rpi_ansible
-        environment: prod
-        playbook: rpi-ha.yaml
-        secrets:
-          - keepalived-pass
-          - Twingate-banceylab-connector-Refresh-Token
-          - Twingate-banceylab-connector-Access-Token
-          - Twingate-banceylab-connector-2-Refresh-Token
-          - Twingate-banceylab-connector-2-Access-Token
-        localEnvironments:
-          - thanos
-          - gamora
-        dependsOn:
-          - generate_ansible_inventory
+    default: []
+      # - deployment: rpi_ansible
+      #   environment: prod
+      #   playbook: rpi-ha.yaml
+      #   secrets:
+      #     - keepalived-pass
+      #     - Twingate-banceylab-connector-Refresh-Token
+      #     - Twingate-banceylab-connector-Access-Token
+      #     - Twingate-banceylab-connector-2-Refresh-Token
+      #     - Twingate-banceylab-connector-2-Access-Token
+      #   localEnvironments:
+      #     - thanos
+      #     - gamora
+      #   dependsOn:
+      #     - generate_ansible_inventory
 
 variables:
   - name: agentImage
