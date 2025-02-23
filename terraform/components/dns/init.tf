@@ -41,11 +41,11 @@ provider "adguard" {
   timeout  = 60
 }
 
-provider "adguard" {
-  alias    = "gamora"
-  host     = data.azurerm_key_vault_secret.adguard_gamora_host.value
-  username = data.azurerm_key_vault_secret.adguard_gamora_username.value
-  password = data.azurerm_key_vault_secret.adguard_gamora_password.value
-  scheme   = "http"
-  timeout  = 60
-}
+#provider "adguard" {
+#  alias    = "gamora"
+#  host     = data.azurerm_key_vault_secret.adguard_gamora_host.value
+#  username = data.azurerm_key_vault_secret.adguard_gamora_username.value
+#  password = data.azurerm_key_vault_secret.adguard_gamora_password.value
+#  scheme   = "http"
+#  timeout  = 60
+#}

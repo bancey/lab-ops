@@ -14,6 +14,7 @@ cloudflare_records = {
     type    = "A"
     value   = "PublicIP"
     proxied = false
+    ttl     = 60
   }
 }
 
