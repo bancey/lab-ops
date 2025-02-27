@@ -64,16 +64,16 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: prod_dns
-        environment: prod
-        component: dns
-        destroy: false
-        deploy: true
-        localEnvironments:
-          - thanos
-          - gamora
-        dependsOn:
-          - prod_twingate
+      #- deployment: prod_dns
+      #  environment: prod
+      #  component: dns
+      #  destroy: false
+      #  deploy: true
+      #  localEnvironments:
+      #    - thanos
+      #    - gamora
+      #  dependsOn:
+      #    - prod_twingate
       - deployment: test_vpn_gateway
         environment: test
         component: cloud-vpn-gateway
@@ -196,21 +196,21 @@ parameters:
           - generate_ansible_inventory
   - name: ansible_deployments
     type: object
-    default: []
-      # - deployment: rpi_ansible
-      #   environment: prod
-      #   playbook: rpi-ha.yaml
-      #   secrets:
-      #     - keepalived-pass
-      #     - Twingate-banceylab-connector-Refresh-Token
-      #     - Twingate-banceylab-connector-Access-Token
-      #     - Twingate-banceylab-connector-2-Refresh-Token
-      #     - Twingate-banceylab-connector-2-Access-Token
-      #   localEnvironments:
-      #     - thanos
-      #     - gamora
-      #   dependsOn:
-      #     - generate_ansible_inventory
+    default:
+      - deployment: rpi_ansible
+        environment: prod
+        playbook: rpi-ha.yaml
+        secrets:
+          - keepalived-pass
+          - Twingate-banceylab-connector-Refresh-Token
+          - Twingate-banceylab-connector-Access-Token
+          - Twingate-banceylab-connector-2-Refresh-Token
+          - Twingate-banceylab-connector-2-Access-Token
+        localEnvironments:
+          - thanos
+          - gamora
+        dependsOn:
+          - generate_ansible_inventory
 
 variables:
   - name: agentImage
