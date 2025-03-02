@@ -3,40 +3,51 @@ storage:
   path: /data/data.db
 
 endpoints:
-  - name: back-end
-    group: core
-    url: "https://example.org/"
-    interval: 5m
+  - name: thanos
+    group: hosts
+    url: "tcp://thanos.heimelska.co.uk:22"
+    interval: 1m
     conditions:
-      - "[STATUS] == 200"
-      - "[CERTIFICATE_EXPIRATION] > 48h"
-
-  - name: monitoring
-    group: internal
-    url: "https://example.org/"
-    interval: 5m
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.5"
+  - name: gamora
+    group: hosts
+    url: "tcp://gamora.heimelska.co.uk:22"
+    interval: 1m
     conditions:
-      - "[STATUS] == 200"
-
-  - name: nas
-    group: internal
-    url: "https://example.org/"
-    interval: 5m
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.6"
+  - name: thor
+    group: hosts
+    url: "tcp://thor.heimelska.co.uk:22"
+    interval: 1m
     conditions:
-      - "[STATUS] == 200"
-
-  - name: example-dns-query
-    url: "8.8.8.8" # Address of the DNS server to use
-    interval: 5m
-    dns:
-      query-name: "example.com"
-      query-type: "A"
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.13"
+  - name: loki
+    group: hosts
+    url: "tcp://loki.heimelska.co.uk:22"
+    interval: 1m
     conditions:
-      - "[BODY] == 93.184.215.14"
-      - "[DNS_RCODE] == NOERROR"
-
-  - name: icmp-ping
-    url: "icmp://example.org"
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.14"
+  - name: hela
+    group: hosts
+    url: "tcp://hela.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.12"
+  - name: wanda
+    group: hosts
+    url: "tcp://wanda.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.12"
+  - name: wanda-mgmt
+    group: hosts
+    url: "tcp://10.151.14.10:443"
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
