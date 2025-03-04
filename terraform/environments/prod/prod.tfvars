@@ -163,6 +163,7 @@ ansible = {
   "test-vms" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "test-vms.yaml"
+    trigger = "04032025"
   }
   "wings-local" = {
     nodes    = ["hela", "loki", "thor"]
