@@ -1,7 +1,7 @@
 - name: Update system and install docker
   hosts:
-    - npm-test
     - bunkerweb-test
+    - bunkerweb-test-1
   become: true
   become_user: root
   become_method: sudo

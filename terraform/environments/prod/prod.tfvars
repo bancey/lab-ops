@@ -62,20 +62,6 @@ kubernetes_virtual_machines = {
 }
 
 virtual_machines = {
-  npm-test = {
-    node                = "hela"
-    vm_id               = 300
-    vm_description      = "NGINX Proxy Manager Test VM"
-    cpu_cores           = 1
-    memory              = 4096
-    ip_address          = "10.151.14.200"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64.img"
-  }
   bunkerweb-test = {
     node                = "loki"
     vm_id               = 301
@@ -83,6 +69,20 @@ virtual_machines = {
     cpu_cores           = 1
     memory              = 4096
     ip_address          = "10.151.14.201"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 1
+    storage             = "local-lvm"
+    image               = "jammy-server-cloudimg-amd64.img"
+  }
+    bunkerweb-test-1 = {
+    node                = "hela"
+    vm_id               = 302
+    vm_description      = "BunkerWeb Test VM"
+    cpu_cores           = 1
+    memory              = 4096
+    ip_address          = "10.151.14.202"
     gateway_ip_address  = "10.151.14.1"
     network_bridge_name = "vmbr0"
     startup_order       = 1
