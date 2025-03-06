@@ -62,7 +62,7 @@ kubernetes_virtual_machines = {
 }
 
 virtual_machines = {
-  bunkerweb-test = {
+  bunkerweb0 = {
     node                = "loki"
     vm_id               = 301
     vm_description      = "BunkerWeb Test VM"
@@ -76,9 +76,9 @@ virtual_machines = {
     storage             = "local-lvm"
     image               = "jammy-server-cloudimg-amd64.img"
   }
-    bunkerweb-test-1 = {
-    node                = "hela"
-    vm_id               = 302
+  bunkerweb1 = {
+    node                = "loki"
+    vm_id               = 301
     vm_description      = "BunkerWeb Test VM"
     cpu_cores           = 1
     memory              = 4096
@@ -159,11 +159,6 @@ ansible = {
     secrets = {
       "keepalived_pass" = "keepalived-pass"
     }
-  }
-  "test-vms" = {
-    nodes    = ["hela", "loki", "thor"]
-    playbook = "test-vms.yaml"
-    trigger = "04032025"
   }
   "wings-local" = {
     nodes    = ["hela", "loki", "thor"]

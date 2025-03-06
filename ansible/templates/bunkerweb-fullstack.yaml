@@ -1,0 +1,63 @@
+x-ui-env: &bw-ui-env
+  DATABASE_URI: "mariadb+pymysql://bunkerweb:{{ bunkerweb_db_password }}@bw-db:3306/db"
+
+x-api-env: &bw-api-env
+  API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24 10.151.14.0/24"
+
+include:
+  - "bunkerweb-standalone.yaml"
+
+services:
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.0
+    environment:
+      <<: *bw-ui-env
+      <<: *bw-api-env
+      BUNKERWEB_INSTANCES: "bunkerweb bunkerweb-test-1.heimelska.co.uk"
+      SERVER_NAME: ""
+      MULTISITE: "yes"
+      UI_HOST: "http://bw-ui:7000"
+    volumes:
+      - /opt/bunkerweb/data:/data
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.0
+    environment:
+      <<: *bw-ui-env
+      TOTP_SECRETS: "{{ bunkerweb_totp_secrets }}"
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+
+  bw-db:
+    image: mariadb:11
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "bunkerweb"
+      MYSQL_PASSWORD: "{{ bunkerweb_db_password }}"
+    volumes:
+      - /opt/bunkerweb/db:/var/lib/mysql
+    restart: "unless-stopped"
+    networks:
+      - bw-db
+
+volumes:
+  bw-storage:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24
+  bw-services:
+    name: bw-services
+  bw-db:
+    name: bw-db
