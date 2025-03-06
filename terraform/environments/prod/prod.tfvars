@@ -167,6 +167,13 @@ ansible = {
       "cloudflare_api_token" = "Cloudflare-Lab-API-Token"
     }
   }
+  "bunkerweb" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "test-vms.yaml"
+    secrets = {
+      "keepalived_pass" = "keepalived-pass"
+    }
+  }
 }
 
 images = {
