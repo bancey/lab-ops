@@ -3,9 +3,9 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    bunkerweb-test:
+    bunkerweb0:
       ansible_host: 10.151.14.201
-    bunkerweb-test-1:
+    bunkerweb1:
       ansible_host: 10.151.14.202
     wings-thor:
       ansible_host: 10.151.14.100
