@@ -1,12 +1,12 @@
 dns:
   unifi.bancey.xyz:
     record: 10.151.11.1
-  bunkerweb-test.heimelska.co.uk:
+  bunkerweb0.heimelska.co.uk:
     record: 10.151.14.201
-  bunkerweb-test-1.heimelska.co.uk:
+  bunkerweb-mgmt.heimelska.co.uk:
+    record: 10.151.14.201
+  bunkerweb1.heimelska.co.uk:
     record: 10.151.14.202
-  bunkerweb.heimelska.co.uk:
-    record: 10.151.14.200
   thanos.heimelska.co.uk:
     record: 10.151.14.5
     twingate:

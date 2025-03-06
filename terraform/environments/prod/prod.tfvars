@@ -77,8 +77,8 @@ virtual_machines = {
     image               = "jammy-server-cloudimg-amd64.img"
   }
   bunkerweb1 = {
-    node                = "loki"
-    vm_id               = 301
+    node                = "hela"
+    vm_id               = 302
     vm_description      = "BunkerWeb Test VM"
     cpu_cores           = 1
     memory              = 4096
