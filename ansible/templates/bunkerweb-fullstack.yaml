@@ -13,9 +13,9 @@ services:
     environment:
       <<: *bw-env
     restart: "unless-stopped"
-  networks:
-    - bw-universe
-    - bw-services
+    networks:
+      - bw-universe
+      - bw-services
 
   bw-scheduler:
     depends_on:
@@ -27,10 +27,34 @@ services:
     image: bunkerity/bunkerweb-scheduler:1.6.0
     environment:
       <<: *bw-env
-      BUNKERWEB_INSTANCES: "bunkerweb bunkerweb-test-1.heimelska.co.uk"
-      SERVER_NAME: ""
+      BUNKERWEB_INSTANCES: "bunkerweb bunkerweb1.heimelska.co.uk"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk"
       MULTISITE: "yes"
-      UI_HOST: "http://bw-ui:7000"
+      SERVE_FILES: "no"
+      DISABLE_DEFAULT_SERVER: "yes"
+      USE_CLIENT_CACHE: "yes"
+      USE_GZIP: "yes"
+      USE_REVERSE_PROXY: "yes"
+      AUTO_LETS_ENCRYPT: "yes"
+      EMAIL_LETS_ENCRYPT: "abance@bancey.xyz"
+      LETS_ENCRYPT_CHALLENGE: "dns"
+      LETS_ENCRYPT_DNS_PROVIDER: "cloudflare"
+      LETS_ENCRYPT_DNS_PROPAGATION: "default"
+      LETS_ENCRYPT_DNS_CREDENTIAL_ITEM: "cloudflare_api_token {{ cloudflare_api_token }}"
+      BAD_BEHAVIOR_THRESHOLD: 60
+      bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
+      bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://bw-ui:7000"
+      bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      gatus.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://10.151.14.6:8080"
+      gatus.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      CUSTOM_CONF_HTTP_upstream: |
+        upstream pve-tiny {
+          ip-hash;
+          server hela.heimelska.co.uk:8006;
+          server thor.heimelska.co.uk:8006;
+          server loki.heimelska.co.uk:8006;
+        }
+      tiny-pve.heimelska.co.uk_REVERSE_PROXY_HOST: "https://pve-tiny"
     volumes:
       - /opt/bunkerweb/data:/data
     restart: "unless-stopped"
@@ -49,6 +73,8 @@ services:
     environment:
       <<: *bw-env
       TOTP_SECRETS: "{{ bunkerweb_totp_secrets }}"
+      ADMIN_USERNAME: "{{ bunkerweb_mgmt_admin_username }}"
+      ADMIN_PASSWORD: "{{ bunkerweb_mgmt_admin_password }}"
     restart: "unless-stopped"
     networks:
       - bw-universe
