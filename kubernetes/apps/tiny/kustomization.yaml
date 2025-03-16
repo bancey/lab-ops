@@ -13,8 +13,8 @@ resources:
   - ../base/capacitor
   - ./capacitor-certificates.yaml
   - ./capacitor-ingress-route.yaml
-  - ../base/grafana-cloud-monitoring
-  - ./grafana-cloud-monitoring-secret.sops.yaml
+  #- ../base/grafana-cloud-monitoring
+  #- ./grafana-cloud-monitoring-secret.sops.yaml
 patchesStrategicMerge:
   - longhorn-certificate-patch.yaml
   - longhorn-ingress-route-patch.yaml
@@ -28,4 +28,4 @@ patchesStrategicMerge:
   - penpot-certificate-patch.yaml
   - penpot-ingress-route-patch.yaml
   - penpot-patch.yaml
-  - grafana-cloud-monitoring-patch.yaml
+  #- grafana-cloud-monitoring-patch.yaml
