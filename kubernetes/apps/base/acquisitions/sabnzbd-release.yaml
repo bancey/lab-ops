@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: linuxserver/sabnzbd:4.4.1
+    image: linuxserver/sabnzbd:4.5.0
     persistence:
       config:
         enabled: true
