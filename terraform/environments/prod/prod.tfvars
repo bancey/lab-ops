@@ -8,15 +8,7 @@ game_server_vnet_peerings = {
 }
 game_servers = {}
 
-cloudflare_records = {
-  home = {
-    zone    = "main"
-    type    = "A"
-    value   = "PublicIP"
-    proxied = false
-    ttl     = 60
-  }
-}
+cloudflare_records = {}
 
 kubernetes_virtual_machines = {
   wanda = {
