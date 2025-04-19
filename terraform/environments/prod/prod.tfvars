@@ -286,6 +286,8 @@ adguard_user_rules = [
   "@@||b-graph.facebook.com^$important",
   "@@||web.facebook.com^$important",
   "@@||graph.instagram.com^$important",
+  "@@||e.reddit.com^$important",
+  "@@||alb.reddit.com^$important",
 ]
 
 cloud_vpn_gateway = {
