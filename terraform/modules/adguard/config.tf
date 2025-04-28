@@ -22,4 +22,9 @@ resource "adguard_config" "config" {
     bootstrap_dns = var.adguard_config.dns.bootstrap_dns
     rate_limit    = var.adguard_config.dns.rate_limit
   }
+
+  dhcp = {
+    enabled   = false
+    interface = "eth0"
+  }
 }
