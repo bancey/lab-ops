@@ -53,7 +53,7 @@ parameters:
             displayName: Download GitHub Private Key
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
             inputs:
-              azureSubscription: "MSDN Sub"
+              azureSubscription: "MSDN New"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
@@ -97,7 +97,7 @@ parameters:
           displayName: Start Stopped VMs
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
-            azureSubscription: "MSDN Sub"
+            azureSubscription: "MSDN New"
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
@@ -115,7 +115,7 @@ parameters:
           displayName: Stop VMs
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
-            azureSubscription: "MSDN Sub"
+            azureSubscription: "MSDN New"
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
@@ -139,7 +139,7 @@ parameters:
           displayName: Start Stopped VMs
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
-            azureSubscription: "MSDN Sub"
+            azureSubscription: "MSDN New"
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
@@ -157,7 +157,7 @@ parameters:
           displayName: Stop VMs
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
           inputs:
-            azureSubscription: "MSDN Sub"
+            azureSubscription: "MSDN New"
             scriptType: "bash"
             addSpnToEnvironment: true
             scriptLocation: "inlineScript"
@@ -218,7 +218,7 @@ variables:
   - name: stateStorageAccount
     value: banceystatestor
   - name: serviceConnection
-    value: "MSDN Sub"
+    value: "MSDN New"
 
 stages:
   - template: stages/check-hosts-online.yaml@azuredevops-lib
