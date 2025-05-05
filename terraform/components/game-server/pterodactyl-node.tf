@@ -61,7 +61,7 @@ module "pterodactyl_node" {
 
 resource "azurerm_role_assignment" "reader" {
   for_each             = { for k, v in var.game_servers : k => v if v.type == "pterodactyl" }
-  scope                = "/subscriptions/5a8abf1c-0a69-49c6-bcf1-676843b64217/resourceGroups/common/providers/Microsoft.KeyVault/vaults/bancey-vault"
+  scope                = "/subscriptions/ca9663cd-26bb-4c47-b084-e527a512d372/resourceGroups/common/providers/Microsoft.KeyVault/vaults/bancey-vault"
   role_definition_name = "Reader"
   principal_id         = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
