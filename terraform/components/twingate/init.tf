@@ -7,7 +7,7 @@ terraform {
     }
     twingate = {
       source  = "Twingate/twingate"
-      version = "3.0.19"
+      version = "3.1.0"
     }
   }
 
