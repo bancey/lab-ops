@@ -9,7 +9,8 @@ spec:
   calicoNetwork:
     bgp: Disabled
     ipPools:
-      - blockSize: 26
+      - name: default-ipv4-ippool
+        blockSize: 26
         cidr: "{{ k3s_server['cluster-cidr'] }}"
         encapsulation: VXLAN
 ---
@@ -18,3 +19,13 @@ kind: APIServer
 metadata: 
   name: default 
 spec: {}
+---
+apiVersion: operator.tigera.io/v1
+kind: Goldmane
+metadata:
+  name: default
+---
+apiVersion: operator.tigera.io/v1
+kind: Whisker
+metadata:
+  name: default
