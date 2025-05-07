@@ -30,16 +30,7 @@
         k3s_release_version: "{{ k3s_version }}"
         k3s_install_hard_links: true
         k3s_become: true
-        k3s_server_manifests_urls:
-          - url: https://raw.githubusercontent.com/projectcalico/calico/v3.30.0/manifests/operator-crds.yaml
-            filename: operator-crds.yaml
-          - url: https://raw.githubusercontent.com/projectcalico/calico/v3.30.0/manifests/tigera-operator.yaml
-            filename: tigera-operator.yaml
-          - url: https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
-            filename: metallb-native.yaml
         k3s_server_manifests_templates:
-          - calico-install.yaml.j2
-          - metallb-config.yaml.j2
           - coredns-custom.yaml
     - name: Resource Readiness Check
       run_once: true
@@ -52,17 +43,9 @@
         wait_sleep: 10
         wait_timeout: 360
       loop:
-        - kind: Deployment
-          name: tigera-operator
-          namespace: tigera-operator
-        - kind: Installation
-          name: default
-        - kind: IPAddressPool
-          name: default
-          namespace: metallb-system
-        - kind: L2Advertisement
-          name: default
-          namespace: metallb-system
+        - kind: ConfigMap
+          name: coredns-custom
+          namespace: kube-system
       register: resource_check
       when:
         - k3s_server_manifests_templates | length > 0
