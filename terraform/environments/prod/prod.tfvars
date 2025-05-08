@@ -290,6 +290,7 @@ adguard_user_rules = [
   "@@||alb.reddit.com^$important",
   "@@||applicationinsights.azure.com^$important",
   "@@||api.loganalytics.io^$important",
+  "@@||dynatrace.com^$important",
 ]
 
 cloud_vpn_gateway = {
