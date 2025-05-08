@@ -32,6 +32,7 @@ all:
             - servicelb
             - traefik
           disable-network-policy: true
+          disable-kube-proxy: true
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.42.0.0/16
           service-cidr: 10.43.0.0/16%{ if cluster.load_balancer_address != null }
