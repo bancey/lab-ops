@@ -213,7 +213,7 @@ twingate_resources = {
       protocols = {
         tcp = {
           policy = "RESTRICTED"
-          ports  = ["22"]
+          ports  = ["22", "6443"]
         }
       }
     }
