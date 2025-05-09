@@ -9,127 +9,145 @@
   become_user: root
   become_method: sudo
   pre_tasks:
-    - name: Set cluster_name
-      ansible.builtin.set_fact:
-        cluster_name: "{{ inventory_hostname.split('_')[0] }}"
-    - name: Set master nodes to be a control node
-      ansible.builtin.set_fact:
-        k3s_control_node: true
-      when: "'master' in inventory_hostname"
-    - name: Add node-ip to k3s_server conf
-      ansible.builtin.set_fact:
-        k3s_server: "{{ k3s_server | combine({ 'node-ip': ansible_host}) }}"
+  - name: Set cluster_name
+    ansible.builtin.set_fact:
+      cluster_name: "{{ inventory_hostname.split('_')[0] }}"
+  - name: Set master nodes to be a control node
+    ansible.builtin.set_fact:
+      k3s_control_node: true
+    when: "'master' in inventory_hostname"
+  - name: Add node-ip to k3s_server conf
+    ansible.builtin.set_fact:
+      k3s_server: "{{ k3s_server | combine({ 'node-ip': ansible_host}) }}"
   tasks:
-    - name: K3S Prepare
-      when: run_prep
-      ansible.builtin.include_role:
-        name: prep
-    - name: Install K3S
-      when: run_install
-      ansible.builtin.include_role:
-        name: xanmanning.k3s
-        public: true
-      vars:
-        k3s_release_version: "{{ k3s_version }}"
-        k3s_install_hard_links: true
-        k3s_become: true
-        k3s_server_manifests_templates:
-          - coredns-custom.yaml
-    - name: Resource Readiness Check
-      run_once: true
-      kubernetes.core.k8s_info:
-        kubeconfig: /etc/rancher/k3s/k3s.yaml
-        kind: "{{ item.kind }}"
-        name: "{{ item.name }}"
-        namespace: "{{ item.namespace | default('') }}"
-        wait: true
-        wait_sleep: 10
-        wait_timeout: 360
-      loop:
-        - kind: ConfigMap
-          name: coredns-custom
-          namespace: kube-system
-      register: resource_check
-      when:
-        - run_install
-        - k3s_server_manifests_templates | length > 0
-            or k3s_server_manifests_urls | length > 0
-        - k3s_control_node is defined
-        - k3s_control_node
-    - name: Remove deployed manifest templates
-      ansible.builtin.file:
-        path: "{{ k3s_server_manifests_dir }}/{{ item | basename |
-          regex_replace('\\.j2$', '') }}"
-        state: absent
-      loop: "{{ k3s_server_manifests_templates | default([]) }}"
-      when: run_install
-    - name: Remove deployed manifest urls
-      ansible.builtin.file:
-        path: "{{ k3s_server_manifests_dir }}/{{ item.filename }}"
-        state: absent
-      loop: "{{ k3s_server_manifests_urls | default([]) }}"
-      when: run_install
-    - name: Set k8s_service_host
-      run_once: true
-      ansible.builtin.set_fact:
-        k8s_service_host: "{{ k3s_server['tls-san'] }}"
-      when: k3s_server['tls-san'] is defined
-      delegate_to: localhost
-    - name: Set single_control_plane_name
-      run_once: true
-      ansible.builtin.set_fact:
-        single_control_plane_name: "{{ hostvars.keys() | select('search', 'master') | select('search', cluster_name) | first }}"
-      when: k3s_server['tls-san'] is not defined
-      delegate_to: localhost
-    - name: Set k8s_service_host
-      run_once: true
-      ansible.builtin.set_fact:
-        k8s_service_host: "{{ hostvars[single_control_plane_name]['ansible_host'] }}"
-      when: k3s_server['tls-san'] is not defined
-      delegate_to: localhost
-    - name: Fetch kubeconfig
-      when: "'master' in inventory_hostname"
-      run_once: true
-      ansible.builtin.fetch:
-        src: /etc/rancher/k3s/k3s.yaml
-        dest: ./k3s-kubeconfig.yaml
-        flat: yes
-    - name: Update kubeconfig with server address
-      delegate_to: localhost
-      run_once: true
-      become: false
-      ansible.builtin.lineinfile:
-        path: ./k3s-kubeconfig.yaml
-        regexp: "server: https://127.0.0.1:6443"
-        line: "    server: https://{{ k8s_service_host }}:6443"
-    - name: Add cilium chart repo
-      run_once: true
-      become: false
-      kubernetes.core.helm_repository:
-        name: cilium
-        repo_url: https://helm.cilium.io
-      delegate_to: localhost
-    - name: debug
-      run_once: true
-      debug:
-        msg: "k8s_service_host: {{ k8s_service_host }}"
-      delegate_to: localhost
-    - name: Install Cilium
-      run_once: true
-      become: false
-      kubernetes.core.helm:
-        release_name: cilium
-        chart_ref: cilium/cilium
-        chart_version: 1.17.3
-        namespace: kube-system
-        create_namespace: false
-        kubeconfig: ./k3s-kubeconfig.yaml
-        context: default
-        values:
-          kubeProxyReplacement: true
-          k8sServiceHost: "{{ k8s_service_host }}"
-          k8sServicePort: 6443
-          hubble.relay.enabled: true
-          hubble.ui.enabled: true
-      delegate_to: localhost
-      when: run_install
+  - name: K3S Prepare
+    when: run_prep
+    ansible.builtin.include_role:
+      name: prep
+  - name: Install K3S
+    when: run_install
+    ansible.builtin.include_role:
+      name: xanmanning.k3s
+      public: true
+    vars:
+      k3s_release_version: "{{ k3s_version }}"
+      k3s_install_hard_links: true
+      k3s_become: true
+      k3s_server_manifests_templates:
+      - coredns-custom.yaml
+  - name: Resource Readiness Check
+    run_once: true
+    kubernetes.core.k8s_info:
+      kubeconfig: /etc/rancher/k3s/k3s.yaml
+      kind: "{{ item.kind }}"
+      name: "{{ item.name }}"
+      namespace: "{{ item.namespace | default('') }}"
+      wait: true
+      wait_sleep: 10
+      wait_timeout: 360
+    loop:
+    - kind: ConfigMap
+      name: coredns-custom
+      namespace: kube-system
+    register: resource_check
+    when:
+    - run_install
+    - k3s_server_manifests_templates | length > 0 or k3s_server_manifests_urls | length > 0
+    - k3s_control_node is defined
+    - k3s_control_node
+  - name: Remove deployed manifest templates
+    ansible.builtin.file:
+      path: "{{ k3s_server_manifests_dir }}/{{ item | basename | regex_replace('\\.j2$', '') }}"
+      state: absent
+    loop: "{{ k3s_server_manifests_templates | default([]) }}"
+    when: run_install
+  - name: Remove deployed manifest urls
+    ansible.builtin.file:
+      path: "{{ k3s_server_manifests_dir }}/{{ item.filename }}"
+      state: absent
+    loop: "{{ k3s_server_manifests_urls | default([]) }}"
+    when: run_install
+  - name: Check if Cilium is installed
+    run_once: true
+    kubernetes.core.k8s_info:
+      kubeconfig: /etc/rancher/k3s/k3s.yaml
+      kind: Deployment
+      name: cilium-operator
+      namespace: kube-system
+    register: cilium_check
+    when: run_install
+  - name: Set k8s_service_host
+    run_once: true
+    ansible.builtin.set_fact:
+      k8s_service_host: "{{ k3s_server['tls-san'] }}"
+    when: k3s_server['tls-san'] is defined
+    delegate_to: localhost
+  - name: Set single_control_plane_name
+    run_once: true
+    ansible.builtin.set_fact:
+      single_control_plane_name: "{{ hostvars.keys() | select('search', 'master') | select('search', cluster_name) | first }}"
+    when: k3s_server['tls-san'] is not defined
+    delegate_to: localhost
+  - name: Set k8s_service_host
+    run_once: true
+    ansible.builtin.set_fact:
+      k8s_service_host: "{{ hostvars[single_control_plane_name]['ansible_host'] }}"
+    when: k3s_server['tls-san'] is not defined
+    delegate_to: localhost
+  - name: Fetch kubeconfig
+    when: "'master' in inventory_hostname"
+    run_once: true
+    ansible.builtin.fetch:
+      src: /etc/rancher/k3s/k3s.yaml
+      dest: ./k3s-kubeconfig.yaml
+      flat: yes
+  - name: Update kubeconfig with server address
+    delegate_to: localhost
+    run_once: true
+    become: false
+    ansible.builtin.lineinfile:
+      path: ./k3s-kubeconfig.yaml
+      regexp: "server: https://127.0.0.1:6443"
+      line: "    server: https://{{ k8s_service_host }}:6443"
+  - name: Add cilium chart repo
+    run_once: true
+    become: false
+    kubernetes.core.helm_repository:
+      name: cilium
+      repo_url: https://helm.cilium.io
+      force_update: true
+    delegate_to: localhost
+    when:
+    - cilium_check.resources | length == 0
+    - run_install
+  - name: Install Cilium
+    run_once: true
+    become: false
+    kubernetes.core.helm:
+      release_name: cilium
+      chart_ref: cilium/cilium
+      chart_version: 1.17.3
+      namespace: kube-system
+      create_namespace: false
+      kubeconfig: ./k3s-kubeconfig.yaml
+      context: default
+      values:
+        kubeProxyReplacement: true
+        k8sServiceHost: "{{ k8s_service_host }}"
+        k8sServicePort: 6443
+        hubble:
+          enabled: true
+          relay:
+            enabled: true
+          ui:
+            enabled: true
+        bgpControlPlane:
+          enabled: true
+        ipam:
+          operator:
+            clusterPoolIPv4PodCIDRList: [ "{{ k3s_server['cluster-cidr'] }}" ]
+            clusterPoolIPv4MaskSize: 23
+    delegate_to: localhost
+    when:
+    - cilium_check.resources | length == 0
+    - run_install
