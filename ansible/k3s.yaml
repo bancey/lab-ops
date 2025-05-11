@@ -168,8 +168,10 @@
     ansible.builtin.shell: |
       export KUBECONFIG=./k3s-kubeconfig.yaml
       kubectl apply -f ./../kubernetes/flux/clusters/{{ cluster_name }}/flux-system/gotk-components.yaml
-      sops --decrypt ./../kubernetes/bootstrap/sops-age-secret.sops.yaml | kubectl apply -f -
-      sops --decrypt ./../kubernetes/bootstrap/deploy-key.sops.yaml | kubectl apply -f -
+      sops --decrypt --in-place ./../kubernetes/bootstrap/sops-age-secret.sops.yaml
+      kubectl apply -f ./../kubernetes/bootstrap/sops-age-secret.sops.yaml
+      sops --decrypt --in-place ./../kubernetes/bootstrap/deploy-key.sops.yaml
+      kubectl apply -f ./../kubernetes/bootstrap/deploy-key.sops.yaml
       kubectl apply -f ./../kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-source.yaml
       kubectl apply -f ./../kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-cluster.yaml
     delegate_to: localhost
