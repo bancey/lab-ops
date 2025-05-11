@@ -18,6 +18,9 @@ all:
     haproxy2:
       ansible_host: 10.151.16.203
       ansible_user: root
+    longhorn-backup:
+      ansible_host: 10.151.14.199
+      ansible_user: root
   children:
     rpi:
       hosts:
