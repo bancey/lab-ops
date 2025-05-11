@@ -11,7 +11,7 @@
   pre_tasks:
   - name: Set cluster_name
     ansible.builtin.set_fact:
-      cluster_name: "{{ inventory_hostname.split('_')[0] }}"
+      cluster_name: "{{ inventory_hostname.split('-')[0] }}"
   - name: Set master nodes to be a control node
     ansible.builtin.set_fact:
       k3s_control_node: true
@@ -154,6 +154,7 @@
   - name: Wait for all nodes to be ready
     shell: kubectl wait --for=condition=Ready nodes --all --timeout=1200s
     register: nodes_ready
+    when: "'master' in inventory_hostname"
   - name: Check if flux is installed
     run_once: true
     kubernetes.core.k8s_info:
@@ -162,9 +163,7 @@
       name: lab-ops
       namespace: flux-system
     register: flux_check
-    when:
-    - "'master' in inventory_hostname"
-    - run_install
+    when: run_install
   - name: Bootstrap Cluster with Fluxv2
     ansible.builtin.shell: |
       export KUBECONFIG=./k3s-kubeconfig.yaml
