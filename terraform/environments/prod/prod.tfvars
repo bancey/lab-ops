@@ -100,6 +100,20 @@ virtual_machines = {
 }
 
 containers = {
+  longhorn-backup = {
+    node                = "wanda"
+    ct_id               = 599
+    ct_description      = "Longhorn Backup LXC Container. Used to backup Longhorn volumes."
+    cpu_cores           = 4
+    memory              = 4096
+    ip_address          = "10.151.14.199"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "14"
+    startup_order       = 0
+    startup_delay       = 0
+    storage             = "local-lvm"
+  }
   haproxy0 = {
     node                = "hela"
     ct_id               = 250
@@ -191,7 +205,7 @@ twingate_resources = {
     twingate = {
       network = "banceylab"
       access = {
-        groups           = ["wanda_k8s", "all"]
+        groups           = ["tiny_k8s", "all"]
         service_accounts = ["AzureDevOps"]
       }
       protocols = {
@@ -207,7 +221,7 @@ twingate_resources = {
     twingate = {
       network = "banceylab"
       access = {
-        groups           = ["tiny_k8s", "all"]
+        groups           = ["wanda_k8s", "all"]
         service_accounts = ["AzureDevOps"]
       }
       protocols = {

@@ -9,7 +9,7 @@ spec:
   ports:
     - name: https
       port: 443
-  externalName: 10.151.15.50
+  externalName: 10.152.15.50
 ---
 apiVersion: v1
 kind: Service
