@@ -182,6 +182,16 @@ parameters:
           - wanda
         dependsOn:
           - generate_ansible_inventory
+        preStep:
+          script: |
+            sudo apt install age
+            age --version
+            curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+            mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
+            chmod +x /usr/local/bin/sops
+            sops --version
+            mkdir -p ~/.config/sops/age
+          displayName: Install SOPS and Age
       #- deployment: tiny_virtual_machines
       #  environment: prod
       #  component: virtual-machines

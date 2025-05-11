@@ -1,3 +1,13 @@
+data "azurerm_key_vault_secret" "age_key" {
+  name         = "Flux-Age-Key"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+resource "local_sensitive_file" "age_key" {
+  content  = data.azurerm_key_vault_secret.age_key.value
+  filename = "~/.config/sops/age/keys.txt"
+}
+
 resource "terraform_data" "k8s_ansible" {
   for_each = { for key, value in var.kubernetes_virtual_machines : key => value if var.target_nodes == value.target_nodes }
 

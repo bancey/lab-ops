@@ -151,3 +151,28 @@
     when:
     - cilium_check.resources | length == 0
     - run_install
+  - name: Wait for all nodes to be ready
+    shell: kubectl wait --for=condition=Ready nodes --all --timeout=1200s
+    register: nodes_ready
+  - name: Check if flux is installed
+    run_once: true
+    kubernetes.core.k8s_info:
+      kubeconfig: /etc/rancher/k3s/k3s.yaml
+      kind: GitRepository
+      name: lab-ops
+      namespace: flux-system
+    register: flux_check
+    when: run_install
+  - name: Bootstrap Cluster with Fluxv2
+    ansible.builtin.shell: |
+      export KUBECONFIG=./k3s-kubeconfig.yaml
+      kubectl apply -f ./kubernetes/flux/clusters/{{ cluster_name }}/flux-system/gotk-components.yaml
+      sops --decrypt ./kubernetes/bootstrap/sops-age-secret.sops.yaml | kubectl apply -f -
+      sops --decrypt ./kubernetes/bootstrap/deploy-key.sops.yaml | kubectl apply -f -
+      kubectl apply -f ./kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-source.yaml
+      kubectl apply -f ./kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-cluster.yaml
+    delegate_to: localhost
+    run_once: true
+    when:
+    - flux_check.resources | length == 0
+    - run_install
