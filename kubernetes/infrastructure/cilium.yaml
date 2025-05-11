@@ -1,0 +1,37 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cilium
+  namespace: kube-system
+spec:
+  releaseName: cilium
+  chart:
+    spec:
+      chart: cilium
+      version: 1.17.3
+      sourceRef:
+        kind: HelmRepository
+        name: cilium
+        namespace: flux-system
+  interval: 1h0m0s
+  install:
+    remediation:
+      retries: 3
+  values:
+    bgpControlPlane:
+      enabled: true
+    hubble:
+      enabled: true
+      relay:
+        enabled: true
+      ui:
+        enabled: true
+    ipam:
+      operator:
+        clusterPoolIPv4MaskSize: 23
+        clusterPoolIPv4PodCIDRList:
+          - 10.42.0.0/16
+    k8sServiceHost: 10.10.10.10
+    k8sServicePort: 6443
+    kubeProxyReplacement: true

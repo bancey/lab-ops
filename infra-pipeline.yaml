@@ -182,18 +182,18 @@ parameters:
           - wanda
         dependsOn:
           - generate_ansible_inventory
-      - deployment: tiny_virtual_machines
-        environment: prod
-        component: virtual-machines
-        extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
-        destroy: false
-        deploy: true
-        localEnvironments:
-          - hela
-          - loki
-          - thor
-        dependsOn:
-          - generate_ansible_inventory
+      #- deployment: tiny_virtual_machines
+      #  environment: prod
+      #  component: virtual-machines
+      #  extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
+      #  destroy: false
+      #  deploy: true
+      #  localEnvironments:
+      #    - hela
+      #    - loki
+      #    - thor
+      #  dependsOn:
+      #    - generate_ansible_inventory
   - name: ansible_deployments
     type: object
     default:

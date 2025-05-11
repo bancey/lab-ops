@@ -14,3 +14,4 @@ resources:
   - ./plex.yaml
   - ./sebastiangaiser.yaml
   - ./grafana.yaml
+  - ./cilium.yaml
