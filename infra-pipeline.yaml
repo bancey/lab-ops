@@ -195,7 +195,7 @@ parameters:
           - task: AzureCLI@2
             displayName: Get Age Key
             inputs:
-              azureSubscription: ${{ parameters.serviceConnection }}
+              azureSubscription: "MSDN New"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
@@ -227,7 +227,7 @@ parameters:
           - task: AzureCLI@2
             displayName: Get Age Key
             inputs:
-              azureSubscription: ${{ parameters.serviceConnection }}
+              azureSubscription: "MSDN New"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
