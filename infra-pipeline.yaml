@@ -48,7 +48,7 @@ parameters:
         component: inventory
         destroy: false
         deploy: true
-        preStep:
+        preSteps:
           - task: AzureCLI@2
             displayName: Download GitHub Private Key
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
@@ -92,7 +92,7 @@ parameters:
         component: game-server
         destroy: false
         deploy: true
-        preStep:
+        preSteps:
           task: AzureCLI@2
           displayName: Start Stopped VMs
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
@@ -134,7 +134,7 @@ parameters:
         component: game-server
         destroy: false
         deploy: true
-        preStep:
+        preSteps:
           task: AzureCLI@2
           displayName: Start Stopped VMs
           condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
@@ -182,16 +182,26 @@ parameters:
           - wanda
         dependsOn:
           - generate_ansible_inventory
-        preStep:
-          script: |
-            sudo apt install age
-            age --version
-            curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
-            mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
-            chmod +x /usr/local/bin/sops
-            sops --version
-            mkdir -p ~/.config/sops/age
-          displayName: Install SOPS and Age
+        preSteps:
+          - script: |
+              sudo apt install age
+              age --version
+              curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+              mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
+              chmod +x /usr/local/bin/sops
+              sops --version
+              mkdir -p ~/.config/sops/age
+            displayName: Install SOPS and Age
+          - task: AzureCLI@2
+            displayName: Get Age Key
+            inputs:
+              azureSubscription: ${{ parameters.serviceConnection }}
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/age-key.txt
+                chmod 600 ~/.config/sops/age/age-key.txt
+                ls -la ~/.config/sops/age
       - deployment: tiny_virtual_machines
         environment: prod
         component: virtual-machines
@@ -204,16 +214,26 @@ parameters:
           - thor
         dependsOn:
           - generate_ansible_inventory
-        preStep:
-          script: |
-            sudo apt install age
-            age --version
-            curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
-            mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
-            chmod +x /usr/local/bin/sops
-            sops --version
-            mkdir -p ~/.config/sops/age
-          displayName: Install SOPS and Age
+        preSteps:
+          - script: |
+              sudo apt install age
+              age --version
+              curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+              mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
+              chmod +x /usr/local/bin/sops
+              sops --version
+              mkdir -p ~/.config/sops/age
+            displayName: Install SOPS and Age
+          - task: AzureCLI@2
+            displayName: Get Age Key
+            inputs:
+              azureSubscription: ${{ parameters.serviceConnection }}
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/age-key.txt
+                chmod 600 ~/.config/sops/age/age-key.txt
+                ls -la ~/.config/sops/age
   - name: ansible_deployments
     type: object
     default:
@@ -265,8 +285,8 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
-              - ${{ if deployment.preStep }}:
-                  - ${{ deployment.preStep }}
+              - ${{ if deployment.preSteps }}:
+                  - ${{ deployment.preSteps }}
               - ${{ if deployment.localEnvironments }}:
                   - template: steps/twingate-connect.yaml@azuredevops-lib
                     parameters:
