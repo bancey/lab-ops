@@ -9,5 +9,5 @@ resources:
   - traefik-namespace.yaml
   - traefik.yaml
   - longhorn-namespace.yaml
-  - longhorn-release.yaml
+  - longhorn.yaml
   - longhorn-azblob-secret.sops.yaml
