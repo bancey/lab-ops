@@ -166,16 +166,16 @@
     when: run_install
   - name: Bootstrap Cluster with Fluxv2
     ansible.builtin.shell: |
-      export KUBECONFIG=./k3s-kubeconfig.yaml
-      kubectl apply -f ./../kubernetes/flux/clusters/{{ cluster_name }}/flux-system/gotk-components.yaml
-      sops --decrypt --in-place ./../kubernetes/bootstrap/sops-age-secret.sops.yaml
-      kubectl apply -f ./../kubernetes/bootstrap/sops-age-secret.sops.yaml
-      sops --decrypt --in-place ./../kubernetes/bootstrap/deploy-key.sops.yaml
-      kubectl apply -f ./../kubernetes/bootstrap/deploy-key.sops.yaml
-      kubectl apply -f ./../kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-source.yaml
-      kubectl apply -f ./../kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-cluster.yaml
+      cd ..
+      kubectl apply --kubeconfig ./ansible/k3s-kubeconfig.yaml -f ./kubernetes/flux/clusters/{{ cluster_name }}/flux-system/gotk-components.yaml
+      sops --decrypt --in-place ./kubernetes/bootstrap/sops-age-secret.sops.yaml
+      kubectl apply --kubeconfig ./ansible/k3s-kubeconfig.yaml -f ./kubernetes/bootstrap/sops-age-secret.sops.yaml
+      sops --decrypt --in-place ./kubernetes/bootstrap/deploy-key.sops.yaml
+      kubectl apply --kubeconfig ./ansible/k3s-kubeconfig.yaml -f ./kubernetes/bootstrap/deploy-key.sops.yaml
+      kubectl apply --kubeconfig ./ansible/k3s-kubeconfig.yaml -f ./kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-source.yaml
+      kubectl apply --kubeconfig ./ansible/k3s-kubeconfig.yaml -f ./kubernetes/flux/clusters/{{ cluster_name }}/flux-system/flux-cluster.yaml
     delegate_to: localhost
+    become: false
     run_once: true
     when:
-    - flux_check.resources | length == 0
     - run_install
