@@ -27,6 +27,13 @@ spec:
         name: cilium
     - patch: |
         - op: add
+          path: /spec/bgpInstances/0/localASN
+          value: 64602
+      target:
+        kind: CiliumBGPClusterConfig
+        name: cilium-bgp-unifi
+    - patch: |
+        - op: add
           path: /spec/values/ipam/operator/clusterPoolIPv4PodCIDRList
           value: 
             - 10.43.0.0/16
@@ -36,7 +43,7 @@ spec:
     - patch: |
         - op: add
           path: /spec/blocks/0/cidr
-          value: 10.152.6.0/24
+          value: 10.152.16.0/24
       target:
         kind: CiliumLoadBalancerIPPool
         name: cilium-lb-pool
