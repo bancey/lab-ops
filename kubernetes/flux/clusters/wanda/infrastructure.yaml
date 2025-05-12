@@ -40,6 +40,13 @@ spec:
       target:
         kind: CiliumLoadBalancerIPPool
         name: cilium-lb-pool
+    - patch: |
+        - op: add
+          path: /spec/bgpInstances/0/name
+          value: "cilium-wanda-unifi"
+      target:
+        kind: CiliumBGPClusterConfig
+        name: cilium-bgp-unifi
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
