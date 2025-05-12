@@ -42,8 +42,7 @@ all:
           disable-network-policy: true
           disable-kube-proxy: true
           write-kubeconfig-mode: "0644"
-          cluster-cidr: 10.42.0.0/16
-          service-cidr: 10.43.0.0/16
+          cluster-cidr: 10.43.0.0/16
           tls-san: 10.151.16.200
         k3s_registration_address: 10.151.16.200
       hosts:
@@ -74,7 +73,6 @@ all:
           disable-kube-proxy: true
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.42.0.0/16
-          service-cidr: 10.43.0.0/16
       hosts:
         wanda-master0:
           ansible_host: 10.151.15.8
