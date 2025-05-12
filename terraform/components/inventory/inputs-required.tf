@@ -23,6 +23,7 @@ variable "kubernetes_virtual_machines" {
     disk_size             = optional(number)
     k3s_etcd_datastore    = optional(bool, false)
     metallb_ip_range      = string
+    cluster_cidr          = string
     load_balancer_address = optional(string, null)
     master = object({
       count               = optional(number, 1)

@@ -3,6 +3,7 @@ locals {
     for cluster_key, cluster in var.kubernetes_virtual_machines : "${cluster_key}_k3s_cluster" => {
       target_nodes          = cluster.target_nodes
       k3s_etcd_datastore    = cluster.k3s_etcd_datastore
+      cidr                  = cluster.cluster_cidr
       metallb_ip_range      = cluster.metallb_ip_range
       load_balancer_address = cluster.load_balancer_address
       masters = {
