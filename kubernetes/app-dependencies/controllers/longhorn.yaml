@@ -1,0 +1,25 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+spec:
+  releaseName: longhorn
+  chart:
+    spec:
+      version: 1.8.1
+      chart: longhorn
+      sourceRef:
+        kind: HelmRepository
+        name: longhorn
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  values:
+    defaultSettings:
+      backupTarget: azblob://backup@core.windows.net/longhorn/
+      backupTargetCredentialSecret: azblob-secret
