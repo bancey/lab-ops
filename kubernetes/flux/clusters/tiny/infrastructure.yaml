@@ -2,7 +2,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-infrastructure-controllers
+  name: cluster-infrastructure
   namespace: flux-system
 spec:
   dependsOn:
@@ -11,7 +11,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: lab-ops
-  path: ./kubernetes/infrastructure/controllers
+  path: ./kubernetes/infrastructure
   prune: true
   decryption:
     provider: sops
@@ -20,82 +20,28 @@ spec:
   patches:
     - patch: |
         - op: add
-          path: /spec/values/service/spec/loadBalancerIP
-          value: 10.151.16.50
+          path: /spec/values/k8sServiceHost
+          value: 10.151.16.200
       target:
         kind: HelmRelease
-        name: traefik
+        name: cilium
     - patch: |
-        $patch: delete
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: nfs
+        - op: add
+          path: /spec/values/ipam/operator/clusterPoolIPv4PodCIDRList
+          value: 
+            - 10.43.0.0/16
       target:
-        kind: Namespace
-        name: nfs
+        kind: HelmRelease
+        name: cilium
     - patch: |
-        $patch: delete
-        apiVersion: helm.toolkit.fluxcd.io/v2beta1
-        kind: HelmRelease
-        metadata:
-          name: csi-driver-nfs
+        - op: add
+          path: /spec/blocks/0/cidr
+          value: 10.152.6.0/24
       target:
-        kind: HelmRelease
-        name: csi-driver-nfs
+        kind: CiliumLoadBalancerIPPool
+        name: cilium-lb-pool
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
-      name: cert-manager
-      namespace: cert-manager
-    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
-      kind: HelmRelease
-      name: traefik
-      namespace: traefik
-    #- apiVersion: helm.toolkit.fluxcd.io/v2beta1
-    #  kind: HelmRelease
-    #  name: ww-gitops
-    #  namespace: flux-system
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: cluster-infrastructure-configs
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: cluster-infrastructure-controllers
-  interval: 10m0s
-  sourceRef:
-    kind: GitRepository
-    name: lab-ops
-  path: ./kubernetes/infrastructure/config
-  prune: true
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-  patches:
-    - patch: |
-        - op: add
-          path: /spec/routes/0/match
-          value: Host(`traefik.tiny`)
-      target:
-        kind: IngressRoute
-        name: traefik-dashboard
-    #- patch: |
-    #    - op: add
-    #      path: /spec/routes/0/match
-    #      value: Host(`weave.tiny`)
-    #  target:
-    #    kind: IngressRoute
-    #    name: weave-gitops
-    - patch: |
-        $patch: delete
-        apiVersion: storage.k8s.io/v1
-        kind: StorageClass
-        metadata:
-          name: config-nfs-csi
-      target:
-        kind: StorageClass
-        name: config-nfs-csi
+      name: cilium
+      namespace: kube-system
