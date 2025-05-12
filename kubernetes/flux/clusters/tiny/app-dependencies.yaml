@@ -52,6 +52,10 @@ spec:
       kind: HelmRelease
       name: traefik
       namespace: traefik
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: longhorn
+      namespace: longhorn-system
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -88,3 +92,30 @@ spec:
       target:
         kind: StorageClass
         name: config-nfs-csi
+    - patch: |
+        - op: add
+          path: /spec/routes/0/match
+          value: Host(`longhorn.heimelska.co.uk`)
+      target:
+        kind: IngressRoute
+        name: longhorn
+    - patch: |
+        - op: add
+          path: /spec/commonName
+          value: "longhorn.heimelska.co.uk"
+        - op: add
+          path: /spec/dnsNames/0
+          value: "longhorn.heimelska.co.uk"
+      target:
+        kind: Certificate
+        name: longhorn-staging-tls
+    - patch: |
+        - op: add
+          path: /spec/commonName
+          value: "longhorn.heimelska.co.uk"
+        - op: add
+          path: /spec/dnsNames/0
+          value: "longhorn.heimelska.co.uk"
+      target:
+        kind: Certificate
+        name: longhorn-tls

@@ -2,8 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./external-services
-  - ../base/longhorn
-  - ./longhorn-azblob-secret.sops.yaml
   - ../base/smokeping
   - ../base/pterodactyl
   - ./penpot-secret.sops.yaml
@@ -16,9 +14,6 @@ resources:
   #- ../base/grafana-cloud-monitoring
   #- ./grafana-cloud-monitoring-secret.sops.yaml
 patchesStrategicMerge:
-  - longhorn-certificate-patch.yaml
-  - longhorn-ingress-route-patch.yaml
-  - longhorn-values.yaml
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml

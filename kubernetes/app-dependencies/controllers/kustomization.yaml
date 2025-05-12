@@ -8,3 +8,6 @@ resources:
   - csi-driver-nfs-release.yaml
   - traefik-namespace.yaml
   - traefik.yaml
+  - longhorn-namespace.yaml
+  - longhorn-release.yaml
+  - longhorn-azblob-secret.sops.yaml

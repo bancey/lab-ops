@@ -9,3 +9,5 @@ resources:
   - traefik-dashboard-auth.yaml
   - traefik-dashboard-ingress.yaml
   - traefik-default-headers.yaml
+  - longhorn-ingress.yaml
+  - longhorn-certificates.yaml
