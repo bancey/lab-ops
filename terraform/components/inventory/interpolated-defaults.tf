@@ -5,6 +5,7 @@ locals {
       k3s_etcd_datastore    = cluster.k3s_etcd_datastore
       cidr                  = cluster.cluster_cidr
       service_cidr          = cluster.service_cidr
+      bgp_as                = cluster.bgp_as
       load_balancer_address = cluster.load_balancer_address
       masters = {
         for i in range(cluster.master.count) : "${cluster_key}-master${i}" => cidrhost(cluster.master.cidr, i)
