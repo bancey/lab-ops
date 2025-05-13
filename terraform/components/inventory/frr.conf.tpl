@@ -18,6 +18,7 @@ router bgp 64600
 %{ for worker in cluster.workers ~}
  neighbor ${ worker } peer-group cilium-${ cluster.name }
 %{ endfor ~}
+
 %{ endfor ~}
 
  address-family ipv4
