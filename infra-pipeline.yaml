@@ -6,6 +6,7 @@ trigger:
   paths:
     exclude:
       - ansible/hosts.yaml
+      - ansible/frr.conf
       - kubernetes/*
 
 pr:
@@ -15,6 +16,7 @@ pr:
   paths:
     exclude:
       - ansible/hosts.yaml
+      - ansible/frr.conf
 
 resources:
   repositories:

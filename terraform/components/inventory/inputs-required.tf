@@ -24,6 +24,7 @@ variable "kubernetes_virtual_machines" {
     k3s_etcd_datastore    = optional(bool, false)
     cluster_cidr          = string
     service_cidr          = string
+    bgp_as                = number
     load_balancer_address = optional(string, null)
     master = object({
       count               = optional(number, 1)
