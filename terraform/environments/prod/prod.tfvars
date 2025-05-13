@@ -13,7 +13,7 @@ cloudflare_records = {}
 kubernetes_virtual_machines = {
   wanda = {
     target_nodes    = ["wanda"]
-    ansible_trigger = "08_05_2025_0721"
+    ansible_trigger = "13_05_2025_2225"
     cluster_cidr    = "10.42.0.0/16"
     service_cidr    = "10.43.0.0/16"
     bgp_as          = 64601
@@ -34,7 +34,7 @@ kubernetes_virtual_machines = {
   }
   tiny = {
     target_nodes          = ["hela", "loki", "thor"]
-    ansible_trigger       = "12_05_2025_1235"
+    ansible_trigger       = "13_05_2025_2225"
     k3s_etcd_datastore    = true
     disk_size             = 100
     image                 = "jammy-server-cloudimg-amd64.img"
