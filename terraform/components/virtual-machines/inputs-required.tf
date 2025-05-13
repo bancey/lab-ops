@@ -27,7 +27,6 @@ variable "kubernetes_virtual_machines" {
     k3s_etcd_datastore    = optional(bool, false)
     load_balancer_address = optional(string, null)
     image                 = string
-    metallb_ip_range      = string
     master = object({
       count               = optional(number, 1)
       vm_id_start         = optional(number, 200)

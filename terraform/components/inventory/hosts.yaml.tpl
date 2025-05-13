@@ -22,7 +22,6 @@ all:
 %{ for cluster_key, cluster in k8s ~}
     ${ cluster_key }:
       vars:
-        metallb_ip_range: "${ cluster.metallb_ip_range }"
         k3s_etcd_datastore: ${ cluster.k3s_etcd_datastore }
         k3s_server:
           flannel-backend: 'none'
@@ -34,7 +33,8 @@ all:
           disable-network-policy: true
           disable-kube-proxy: true
           write-kubeconfig-mode: "0644"
-          cluster-cidr: ${ cluster.cidr }%{ if cluster.load_balancer_address != null }
+          cluster-cidr: ${ cluster.cidr }
+          service-cidr: ${ cluster.service_cidr }%{ if cluster.load_balancer_address != null }
           tls-san: ${cluster.load_balancer_address}
         k3s_registration_address: ${cluster.load_balancer_address}%{ endif}
       hosts:

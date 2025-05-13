@@ -10,8 +10,7 @@ spec:
     name: letsencrypt-staging
     kind: ClusterIssuer
   commonName: "longhorn-fqdn"
-  dnsNames:
-    - "longhorn-fqdn"
+  dnsNames: []
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -24,5 +23,4 @@ spec:
     name: letsencrypt-production
     kind: ClusterIssuer
   commonName: "longhorn-fqdn"
-  dnsNames:
-    - "longhorn-fqdn"
+  dnsNames: []
