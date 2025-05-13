@@ -100,7 +100,7 @@
     ansible.builtin.fetch:
       src: /etc/rancher/k3s/k3s.yaml
       dest: ./k3s-kubeconfig.yaml
-      flat: yes
+      flat: true
   - name: Update kubeconfig with server address
     delegate_to: localhost
     run_once: true

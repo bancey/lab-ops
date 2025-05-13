@@ -42,7 +42,7 @@ spec:
     - patch: |
         - op: add
           path: /spec/values/ipam/operator/clusterPoolIPv4PodCIDRList
-          value: 
+          value:
             - 10.43.0.0/16
       target:
         kind: HelmRelease
