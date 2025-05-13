@@ -43,7 +43,7 @@ spec:
         - op: add
           path: /spec/values/ipam/operator/clusterPoolIPv4PodCIDRList
           value:
-            - 10.43.0.0/16
+            - 10.44.0.0/16
       target:
         kind: HelmRelease
         name: cilium
