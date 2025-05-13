@@ -40,6 +40,7 @@ all:
             - traefik
           disable-network-policy: true
           disable-kube-proxy: true
+          embedded-registry: true
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.44.0.0/16
           service-cidr: 10.45.0.0/16
@@ -70,6 +71,7 @@ all:
             - traefik
           disable-network-policy: true
           disable-kube-proxy: true
+          embedded-registry: true
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.42.0.0/16
           service-cidr: 10.43.0.0/16
