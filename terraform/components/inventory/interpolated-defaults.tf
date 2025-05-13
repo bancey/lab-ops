@@ -1,6 +1,7 @@
 locals {
   k8s_hosts = {
     for cluster_key, cluster in var.kubernetes_virtual_machines : "${cluster_key}_k3s_cluster" => {
+      name                  = cluster_key
       target_nodes          = cluster.target_nodes
       k3s_etcd_datastore    = cluster.k3s_etcd_datastore
       cidr                  = cluster.cluster_cidr
