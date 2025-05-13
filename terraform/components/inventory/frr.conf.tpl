@@ -20,7 +20,6 @@ router bgp 64600
 %{ endfor ~}
 
 %{ endfor ~}
-
  address-family ipv4
 %{ for cluster in k8s ~}
   neighbor cilium-${ cluster.name } activate
