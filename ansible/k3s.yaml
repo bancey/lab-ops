@@ -181,4 +181,5 @@
     become: false
     run_once: true
     when:
+    - flux_check.resources | length == 0
     - run_install
