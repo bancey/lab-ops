@@ -11,3 +11,5 @@ resources:
   - longhorn-namespace.yaml
   - longhorn.yaml
   - longhorn-azblob-secret.sops.yaml
+  - cloudnative-pg-namespace.yaml
+  - cloudnative-pg.yaml
