@@ -14,7 +14,8 @@ spec:
         kind: HelmRepository
         name: cilium
         namespace: flux-system
-  interval: 1h0m0s
+  interval: 5m
+  timeout: 30m
   install:
     remediation:
       retries: 3
