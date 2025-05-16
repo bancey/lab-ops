@@ -16,3 +16,4 @@ resources:
   - ./grafana.yaml
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
+  - ./mariadb-operator.yaml

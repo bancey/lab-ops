@@ -11,3 +11,4 @@ resources:
   - traefik-default-headers.yaml
   - longhorn-ingress.yaml
   - longhorn-certificates.yaml
+  - mariadb-operator.yaml

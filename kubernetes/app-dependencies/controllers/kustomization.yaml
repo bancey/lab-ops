@@ -13,3 +13,5 @@ resources:
   - longhorn-azblob-secret.sops.yaml
   - cloudnative-pg-namespace.yaml
   - cloudnative-pg.yaml
+  - mariadb-operator-namespace.yaml
+  - mariadb-operator-crds.yaml
