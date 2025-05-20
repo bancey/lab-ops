@@ -38,6 +38,7 @@
           "*":
       k3s_server_manifests_templates:
       - coredns-custom.yaml
+      - cluster-admins.yaml
   - name: Resource Readiness Check
     run_once: true
     kubernetes.core.k8s_info:
@@ -52,6 +53,8 @@
     - kind: ConfigMap
       name: coredns-custom
       namespace: kube-system
+    - kind: ClusterRoleBinding
+      name: oidc-cluster-admins
     register: resource_check
     when:
     - run_install
