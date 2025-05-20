@@ -42,11 +42,11 @@ all:
           disable-kube-proxy: true
           embedded-registry: true
           kube-apiserver-arg:
-              - "oidc-issuer-url=https://sts.windows.net/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613"
-              - "oidc-client-id=aff85c5e-bc23-48cf-a00b-635674cb74c6"
-              - "oidc-username-claim=email"
-              - "oidc-groups-claim=groups"
-              - "oidc-groups-prefix=azure:"
+            - "oidc-issuer-url=https://sts.windows.net/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613"
+            - "oidc-client-id=aff85c5e-bc23-48cf-a00b-635674cb74c6"
+            - "oidc-username-claim=email"
+            - "oidc-groups-claim=groups"
+            - "oidc-groups-prefix=entra:"
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.44.0.0/16
           service-cidr: 10.45.0.0/16
@@ -79,11 +79,11 @@ all:
           disable-kube-proxy: true
           embedded-registry: true
           kube-apiserver-arg:
-              - "oidc-issuer-url=https://sts.windows.net/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613"
-              - "oidc-client-id=aff85c5e-bc23-48cf-a00b-635674cb74c6"
-              - "oidc-username-claim=email"
-              - "oidc-groups-claim=groups"
-              - "oidc-groups-prefix=azure:"
+            - "oidc-issuer-url=https://sts.windows.net/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613"
+            - "oidc-client-id=aff85c5e-bc23-48cf-a00b-635674cb74c6"
+            - "oidc-username-claim=email"
+            - "oidc-groups-claim=groups"
+            - "oidc-groups-prefix=entra:"
           write-kubeconfig-mode: "0644"
           cluster-cidr: 10.42.0.0/16
           service-cidr: 10.43.0.0/16
