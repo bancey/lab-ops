@@ -38,7 +38,7 @@ all:
               - "oidc-client-id=aff85c5e-bc23-48cf-a00b-635674cb74c6"
               - "oidc-username-claim=email"
               - "oidc-groups-claim=groups"
-              - "oidc-groups-prefix=azure:"
+              - "oidc-groups-prefix=entra:"
           write-kubeconfig-mode: "0644"
           cluster-cidr: ${ cluster.cidr }
           service-cidr: ${ cluster.service_cidr }%{ if cluster.load_balancer_address != null }
