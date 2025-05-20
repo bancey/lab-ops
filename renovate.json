@@ -4,21 +4,21 @@
     "config:recommended"
   ],
   "kubernetes": {
-    "fileMatch": [
-      "^kubernetes/.*\\.yaml$"
+    "managerFilePatterns": [
+      "/^kubernetes/.*\\.yaml$/"
     ],
     "ignorePaths": [
       "**/flux-system/**"
     ]
   },
   "flux": {
-    "fileMatch": [
-      "^kubernetes/.*\\.yaml$"
+    "managerFilePatterns": [
+      "/^kubernetes/.*\\.yaml$/"
     ]
   },
   "helm-values": {
-    "fileMatch": [
-      "^kubernetes/.*\\.yaml$"
+    "managerFilePatterns": [
+      "/^kubernetes/.*\\.yaml$/"
     ],
     "ignorePaths": [
       "**/gotk-components.yaml"
@@ -26,21 +26,21 @@
   },
   "azure-pipelines": {
     "enabled": true,
-    "fileMatch": [
-      "infra-pipeline.yaml"
+    "managerFilePatterns": [
+      "/infra-pipeline.yaml/"
     ]
   },
   "docker-compose": {
-    "fileMatch": [
-      "(^|/)(?:docker-)?compose[^/]*\\.ya?ml$",
-      "(^|/).*(?:docker-)?compose[^/]*\\.ya?ml.j2$"
+    "managerFilePatterns": [
+      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/",
+      "/(^|/).*(?:docker-)?compose[^/]*\\.ya?ml.j2$/"
     ]
   },
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "^ansible/k3s.yaml$"
+      "managerFilePatterns": [
+        "/^ansible/k3s.yaml$/"
       ],
       "matchStrings": [
         "k3s_version: \"(?<currentValue>.*?)\""
@@ -50,8 +50,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^ansible/k3s.yaml$"
+      "managerFilePatterns": [
+        "/^ansible/k3s.yaml$/"
       ],
       "matchStrings": [
         "url: https://raw.githubusercontent.com/projectcalico/calico/(?<currentValue>.*?)/manifests/tigera-operator.yaml"
@@ -61,8 +61,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^ansible/k3s.yaml$"
+      "managerFilePatterns": [
+        "/^ansible/k3s.yaml$/"
       ],
       "matchStrings": [
         "url: https://raw.githubusercontent.com/metallb/metallb/(?<currentValue>.*?)/config/manifests/metallb-native.yaml"
