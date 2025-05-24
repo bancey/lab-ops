@@ -3,10 +3,6 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    bunkerweb0:
-      ansible_host: 10.151.14.201
-    bunkerweb1:
-      ansible_host: 10.151.14.202
     wings-thor:
       ansible_host: 10.151.14.100
     haproxy0:
