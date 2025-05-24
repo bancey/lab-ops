@@ -252,6 +252,7 @@ parameters:
           - BunkerWeb-TOTP-Secrets
           - BunkerWeb-MGMT-Admin-Username
           - BunkerWeb-MGMT-Admin-Password
+          - Cloudflare-Lab-API-Token
         localEnvironments:
           - thanos
           - gamora
