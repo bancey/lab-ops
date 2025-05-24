@@ -58,34 +58,6 @@ kubernetes_virtual_machines = {
 }
 
 virtual_machines = {
-  bunkerweb0 = {
-    node                = "loki"
-    vm_id               = 301
-    vm_description      = "BunkerWeb Test VM"
-    cpu_cores           = 1
-    memory              = 4096
-    ip_address          = "10.151.14.201"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64.img"
-  }
-  bunkerweb1 = {
-    node                = "hela"
-    vm_id               = 302
-    vm_description      = "BunkerWeb Test VM"
-    cpu_cores           = 1
-    memory              = 4096
-    ip_address          = "10.151.14.202"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    image               = "jammy-server-cloudimg-amd64.img"
-  }
   wings-thor = {
     node                = "thor"
     vm_id               = 500
@@ -175,13 +147,6 @@ ansible = {
     playbook = "wings-node.yaml"
     secrets = {
       "cloudflare_api_token" = "Cloudflare-Lab-API-Token"
-    }
-  }
-  "bunkerweb" = {
-    nodes    = ["hela", "loki", "thor"]
-    playbook = "test-vms.yaml"
-    secrets = {
-      "keepalived_pass" = "keepalived-pass"
     }
   }
 }
