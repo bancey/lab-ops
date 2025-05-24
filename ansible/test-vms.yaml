@@ -1,7 +1,7 @@
 - name: Update system and install docker
   hosts:
-    - bunkerweb0
-    - bunkerweb1
+  - bunkerweb0
+  - bunkerweb1
   become: true
   become_user: root
   become_method: sudo
@@ -19,8 +19,8 @@
         state: "BACKUP"
         priority: 100
   roles:
-    - role: prep
-      install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common"]
-    - role: install-docker
-    - role: keepalived
-      keepalived-pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
+  - role: prep
+    install_pkgs: [ "apt-transport-https", "ca-certificates", "curl", "software-properties-common" ]
+  - role: install-docker
+  - role: keepalived
+    keepalived-pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"

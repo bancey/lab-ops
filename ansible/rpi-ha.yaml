@@ -26,87 +26,91 @@
       gamora:
         refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Refresh-Token') }}"
         access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Access-Token') }}"
+    bunkerweb_db_password: "{{ lookup('ansible.builtin.file', 'BunkerWeb-DB-Password') }}"
+    bunkerweb_totp_secrets: "{{ lookup('ansible.builtin.file', 'BunkerWeb-TOTP-Secrets') }}"
+    bunkerweb_mgmt_admin_username: "{{ lookup('ansible.builtin.file', 'BunkerWeb-MGMT-Admin-Username') }}"
+    bunkerweb_mgmt_admin_password: "{{ lookup('ansible.builtin.file', 'BunkerWeb-MGMT-Admin-Password') }}"
   roles:
-    - role: prep
-      install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker"]
-    - role: install-docker
+  - role: prep
+    install_pkgs: [ "apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker" ]
+  - role: install-docker
   tasks:
-    - set_fact:
-        keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
-    - name: ensures /etc/keelalived dir exists
-      file:
-        path: /etc/keepalived
-        state: directory
-    - name: Copy KeepAlived configuration template
-      template:
-        src: templates/keepalived.conf.j2
-        dest: /etc/keepalived/keepalived.conf
-    - name: Update apt and install keepalived
-      apt:
-        pkg:
-          - keepalived
-          - libipset13
-        state: latest
-        update_cache: true
-      when: not ansible_check_mode
-    - name: ensures /etc/haproxy dir exists
-      file:
-        path: /etc/haproxy
-        state: directory
-    - name: Copy HAProxy configuration template
-      template:
-        src: templates/rpi-haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-    - name: Check if HAProxy GPG key exists
-      stat:
-        path: /usr/share/keyrings/haproxy.debian.net.gpg
-      register: haproxygpg
-    - name: Download HAProxy GPG Key
-      get_url:
-        url: https://haproxy.debian.net/bernat.debian.org.gpg
-        dest: /tmp/bernat.debian.org.gpg
-      when: not haproxygpg.stat.exists
-    - name: Dearmor HAProxy GPG Key
-      ansible.builtin.command: gpg -o /usr/share/keyrings/haproxy.debian.net.gpg --dearmor /tmp/bernat.debian.org.gpg
-      when: not haproxygpg.stat.exists
-    - name: Add HAProxy Repository
-      apt_repository:
-        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net bullseye-backports-2.8 main"
-        state: present
-    - name: Update apt and install HAProxy
-      apt:
-        pkg:
-          - haproxy=2.8.*
-        state: latest
-        update_cache: true
-      when: not ansible_check_mode
-    - name: create config directories
-      file:
-        path: "{{ item }}"
-        state: directory
-        owner: root
-        group: root
-        mode: 0775
-      loop:
-        - /opt/adguard
-        - /opt/adguard/config
-        - /opt/adguard/work
-        - /opt/portainer
-        - /opt/compose
-        - /opt/gatus/config
-        - /opt/gatus/data
-    - name: Copy Gatus configuration file
-      copy:
-        src: ./templates/gatus-config.yaml
-        dest: /opt/gatus/config/config.yaml
-    - name: Copy docker-compose config template
-      template:
-        src: ./templates/rpi-docker-compose.yaml.j2
-        dest: /opt/compose/docker-compose.yaml
-    - name: deploy Docker Compose stack
-      community.docker.docker_compose_v2:
-        project_src: /opt/compose
-        files:
-          - docker-compose.yaml
-      register: output
-      when: not ansible_check_mode
+  - set_fact:
+      keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
+  - name: ensures /etc/keelalived dir exists
+    file:
+      path: /etc/keepalived
+      state: directory
+  - name: Copy KeepAlived configuration template
+    template:
+      src: templates/keepalived.conf.j2
+      dest: /etc/keepalived/keepalived.conf
+  - name: Update apt and install keepalived
+    apt:
+      pkg:
+      - keepalived
+      - libipset13
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  #- name: ensures /etc/haproxy dir exists
+  #  file:
+  #    path: /etc/haproxy
+  #    state: directory
+  #- name: Copy HAProxy configuration template
+  #  template:
+  #    src: templates/rpi-haproxy.cfg.j2
+  #    dest: /etc/haproxy/haproxy.cfg
+  #- name: Check if HAProxy GPG key exists
+  #  stat:
+  #    path: /usr/share/keyrings/haproxy.debian.net.gpg
+  #  register: haproxygpg
+  #- name: Download HAProxy GPG Key
+  #  get_url:
+  #    url: https://haproxy.debian.net/bernat.debian.org.gpg
+  #    dest: /tmp/bernat.debian.org.gpg
+  #  when: not haproxygpg.stat.exists
+  #- name: Dearmor HAProxy GPG Key
+  #  ansible.builtin.command: gpg -o /usr/share/keyrings/haproxy.debian.net.gpg --dearmor /tmp/bernat.debian.org.gpg
+  #  when: not haproxygpg.stat.exists
+  #- name: Add HAProxy Repository
+  #  apt_repository:
+  #    repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net bullseye-backports-2.8 main"
+  #    state: present
+  #- name: Update apt and install HAProxy
+  #  apt:
+  #    pkg:
+  #      - haproxy=2.8.*
+  #    state: latest
+  #    update_cache: true
+  #  when: not ansible_check_mode
+  - name: create config directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: 775
+    loop:
+    - /opt/adguard
+    - /opt/adguard/config
+    - /opt/adguard/work
+    - /opt/portainer
+    - /opt/compose
+    - /opt/gatus/config
+    - /opt/gatus/data
+  - name: Copy Gatus configuration file
+    copy:
+      src: ./templates/gatus-config.yaml
+      dest: /opt/gatus/config/config.yaml
+  - name: Copy docker-compose config template
+    template:
+      src: ./templates/rpi-docker-compose.yaml.j2
+      dest: /opt/compose/docker-compose.yaml
+  - name: deploy Docker Compose stack
+    community.docker.docker_compose_v2:
+      project_src: /opt/compose
+      files:
+      - docker-compose.yaml
+    register: output
+    when: not ansible_check_mode

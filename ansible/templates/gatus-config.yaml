@@ -44,7 +44,7 @@ endpoints:
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
-      - "[IP] == 10.151.14.12"
+      - "[IP] == 10.151.14.11"
   - name: wanda-mgmt
     group: hosts
     url: "tcp://10.151.14.10:443"
