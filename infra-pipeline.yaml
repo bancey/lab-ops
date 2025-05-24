@@ -248,6 +248,10 @@ parameters:
           - Twingate-banceylab-connector-Access-Token
           - Twingate-banceylab-connector-2-Refresh-Token
           - Twingate-banceylab-connector-2-Access-Token
+          - BunkerWeb-DB-Password
+          - BunkerWeb-TOTP-Secrets
+          - BunkerWeb-MGMT-Admin-Username
+          - BunkerWeb-MGMT-Admin-Password
         localEnvironments:
           - thanos
           - gamora
