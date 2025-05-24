@@ -1,3 +1,7 @@
+x-ui-env: &bw-env
+  DATABASE_URI: "mariadb+pymysql://bunkerweb:{{ bunkerweb_db_password }}@bw-db:3306/db"
+  API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24 10.151.14.0/24"
+
 services:
   adguard:
     image: adguard/adguardhome:v0.107.61
@@ -6,11 +10,18 @@ services:
     volumes:
       - /opt/adguard/work:/opt/adguardhome/work
       - /opt/adguard/config:/opt/adguardhome/conf
+    {% if inventory_hostname == "gamora" %}
     ports:
       - 53:53/tcp
       - 53:53/udp
-      - 80:80/tcp
-      - 3000:3000/tcp
+    networks:
+      - bw-services
+    {% else %}
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 8000:80/tcp
+    {% endif %}
   twingate:
     image: twingate/connector:1.76.0
     container_name: banceylab-connector
@@ -26,8 +37,131 @@ services:
       TWINGATE_LABEL_MACHINE_NAME: {{ inventory_hostname }}
   gatus:
     image: twinproduction/gatus:v5.17.0
-    ports:
-      - "8080:8080"
     volumes:
       - /opt/gatus/config:/config
       - /opt/gatus/data:/data
+    {% if inventory_hostname == "gamora" %}
+    networks:
+      - bw-services
+    {% else %}
+    ports:
+      - "8080:8080/tcp"
+    {% endif %}
+{% if inventory_hostname == "gamora" %}
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.0
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp"
+      - "5000:5000/tcp"
+    environment:
+      <<: *bw-env
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-services
+  bw-scheduler:
+    depends_on:
+      bunkerweb:
+        condition: service_healthy
+      bw-db:
+        condition: service_started
+        restart: true
+    image: bunkerity/bunkerweb-scheduler:1.6.0
+    environment:
+      <<: *bw-env
+      BUNKERWEB_INSTANCES: "bunkerweb thanos.heimelska.co.uk"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk"
+      MULTISITE: "yes"
+      SERVE_FILES: "no"
+      DISABLE_DEFAULT_SERVER: "yes"
+      USE_CLIENT_CACHE: "yes"
+      USE_GZIP: "yes"
+      USE_REVERSE_PROXY: "yes"
+      AUTO_LETS_ENCRYPT: "yes"
+      EMAIL_LETS_ENCRYPT: "abance@bancey.xyz"
+      LETS_ENCRYPT_CHALLENGE: "dns"
+      LETS_ENCRYPT_DNS_PROVIDER: "cloudflare"
+      LETS_ENCRYPT_DNS_PROPAGATION: "default"
+      LETS_ENCRYPT_DNS_CREDENTIAL_ITEM: "cloudflare_api_token {{ cloudflare_api_token }}"
+      BAD_BEHAVIOR_THRESHOLD: 60
+      bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
+      bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://bw-ui:7000"
+      bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      gatus.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gatus:8080"
+      gatus.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      CUSTOM_CONF_HTTP_upstream: |
+        upstream pve-tiny {
+          ip-hash;
+          server hela.heimelska.co.uk:8006;
+          server thor.heimelska.co.uk:8006;
+          server loki.heimelska.co.uk:8006;
+        }
+      tiny-pve.heimelska.co.uk_REVERSE_PROXY_HOST: "https://pve-tiny"
+      adguard.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://adguard"
+      adguard.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      adguard.thanos.heimelska.co.uk_REVERSE_PROXY_HOST: "http://thanos.heimelska.co.uk:8000"
+      adguard.thanos.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+    volumes:
+      - /opt/bunkerweb/data:/data
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+  bw-ui:
+    depends_on:
+      bunkerweb:
+        condition: service_healthy
+      bw-db:
+        condition: service_started
+        restart: true
+    image: bunkerity/bunkerweb-ui:1.6.0
+    environment:
+      <<: *bw-env
+      TOTP_SECRETS: "{{ bunkerweb_totp_secrets }}"
+      ADMIN_USERNAME: "{{ bunkerweb_mgmt_admin_username }}"
+      ADMIN_PASSWORD: "{{ bunkerweb_mgmt_admin_password }}"
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+  bw-db:
+    image: mariadb:11
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "bunkerweb"
+      MYSQL_PASSWORD: "{{ bunkerweb_db_password }}"
+    volumes:
+      - /opt/bunkerweb/db:/var/lib/mysql
+    restart: "unless-stopped"
+    networks:
+      - bw-db
+
+volumes:
+  bw-storage:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24
+  bw-services:
+    name: bw-services
+  bw-db:
+    name: bw-db
+{% else %}
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.0
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp"
+      - "5000:5000/tcp"
+    environment:
+      API_WHITELIST_IP: "127.0. 0.0/8 10.20.30.0/24 10.151.14.0/24"
+    restart: "unless-stopped"
+{% endif %}

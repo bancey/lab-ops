@@ -4,6 +4,6 @@
   become_user: root
   become_method: sudo
   roles:
-    - role: install-docker
-    - role: setup-wings
-      domain: "{{ inventory_hostname }}.heimelska.co.uk"
+  - role: install-docker
+  - role: setup-wings
+    domain: "{{ inventory_hostname }}.heimelska.co.uk"

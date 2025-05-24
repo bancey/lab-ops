@@ -7,5 +7,5 @@ services:
       - "443:8443/udp"
       - "5000:5000/tcp"
     environment:
-      API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24 10.151.14.0/24"
+      API_WHITELIST_IP: "127.0. 0.0/8 10.20.30.0/24 10.151.14.0/24"
     restart: "unless-stopped"
