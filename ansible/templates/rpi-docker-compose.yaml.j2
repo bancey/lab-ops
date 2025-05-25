@@ -10,18 +10,18 @@ services:
     volumes:
       - /opt/adguard/work:/opt/adguardhome/work
       - /opt/adguard/config:/opt/adguardhome/conf
-    {% if inventory_hostname == "gamora" %}
+{% if inventory_hostname == "gamora" %}
     ports:
       - 53:53/tcp
       - 53:53/udp
     networks:
       - bw-services
-    {% else %}
+{% else %}
     ports:
       - 53:53/tcp
       - 53:53/udp
       - 8000:80/tcp
-    {% endif %}
+{% endif %}
   twingate:
     image: twingate/connector:1.76.0
     container_name: banceylab-connector
@@ -40,14 +40,15 @@ services:
     volumes:
       - /opt/gatus/config:/config
       - /opt/gatus/data:/data
-    {% if inventory_hostname == "gamora" %}
+{% if inventory_hostname == "gamora" %}
     networks:
       - bw-services
-    {% else %}
+{% else %}
     ports:
       - "8080:8080/tcp"
-    {% endif %}
-  {% if inventory_hostname == "gamora" %}bunkerweb:
+{% endif %}
+{% if inventory_hostname == "gamora" %}
+  bunkerweb:
     image: bunkerity/bunkerweb:1.6.1
     ports:
       - "80:8080/tcp"
@@ -152,7 +153,8 @@ networks:
     name: bw-services
   bw-db:
     name: bw-db
-  {% else %}bunkerweb:
+{% else %}
+  bunkerweb:
     image: bunkerity/bunkerweb:1.6.0
     ports:
       - "80:8080/tcp"
