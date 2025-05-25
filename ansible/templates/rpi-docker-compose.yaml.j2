@@ -68,7 +68,7 @@ services:
     environment:
       <<: *bw-env
       BUNKERWEB_INSTANCES: "bunkerweb thanos.heimelska.co.uk"
-      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk"
       MULTISITE: "yes"
       SERVE_FILES: "no"
       DISABLE_DEFAULT_SERVER: "yes"
@@ -83,9 +83,9 @@ services:
       LETS_ENCRYPT_DNS_CREDENTIAL_ITEM: "cloudflare_api_token {{ cloudflare_api_token }}"
       BAD_BEHAVIOR_THRESHOLD: 60
       bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
-      bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://bw-ui:7000"
+      bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:7000"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
-      gatus.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gatus:8080"
+      gatus.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:8080"
       gatus.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       CUSTOM_CONF_HTTP_upstream: |
         upstream pve-tiny {
@@ -94,7 +94,7 @@ services:
           server loki.heimelska.co.uk:8006;
         }
       tiny-pve.heimelska.co.uk_REVERSE_PROXY_HOST: "https://pve-tiny"
-      adguard.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://adguard"
+      adguard.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:8000"
       adguard.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       adguard.thanos.heimelska.co.uk_REVERSE_PROXY_HOST: "http://thanos.heimelska.co.uk:8000"
       adguard.thanos.heimelska.co.uk_REVERSE_PROXY_URL: "/"
@@ -120,6 +120,8 @@ services:
       ADMIN_USERNAME: "{{ bunkerweb_mgmt_admin_username }}"
       ADMIN_PASSWORD: "{{ bunkerweb_mgmt_admin_password }}"
     restart: "unless-stopped"
+    ports:
+      - "7000:7000/tcp"
     networks:
       - bw-universe
       - bw-db
