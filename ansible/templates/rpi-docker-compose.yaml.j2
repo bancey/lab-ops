@@ -10,17 +10,13 @@ services:
     volumes:
       - /opt/adguard/work:/opt/adguardhome/work
       - /opt/adguard/config:/opt/adguardhome/conf
-{% if inventory_hostname == "gamora" %}
-    ports:
-      - 53:53/tcp
-      - 53:53/udp
-    networks:
-      - bw-services
-{% else %}
     ports:
       - 53:53/tcp
       - 53:53/udp
       - 8000:80/tcp
+{% if inventory_hostname == "gamora" %}
+    networks:
+      - bw-services
 {% endif %}
   twingate:
     image: twingate/connector:1.76.0
