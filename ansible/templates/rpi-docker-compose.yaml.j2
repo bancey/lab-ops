@@ -93,7 +93,6 @@ services:
       gatus.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       CUSTOM_CONF_HTTP_upstream: |
         upstream pve-tiny {
-          ip-hash;
           server hela.heimelska.co.uk:8006;
           server thor.heimelska.co.uk:8006;
           server loki.heimelska.co.uk:8006;
@@ -164,6 +163,6 @@ networks:
       - "443:8443/udp"
       - "5000:5000/tcp"
     environment:
-      API_WHITELIST_IP: "127.0. 0.0/8 10.20.30.0/24 10.151.14.0/24"
+      API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24 10.151.14.0/24"
     restart: "unless-stopped"
 {% endif %}
