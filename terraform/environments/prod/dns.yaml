@@ -308,3 +308,7 @@ dns:
         service_accounts:
           - Pterodactyl
           - AzureDevOps
+  adguard.thanos.heimelska.co.uk:
+    record: 10.151.14.4
+  adguard.gamora.heimelska.co.uk:
+    record: 10.151.14.4
