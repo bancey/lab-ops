@@ -6,7 +6,7 @@ metadata:
   namespace: penpot
 spec:
   routes:
-    - match: Host(`penpot.heimelska.co.uk`)
+    - match: Host(`penpot.tiny.heimelska.co.uk`)
       kind: Rule
       services:
         - name: penpot

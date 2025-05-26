@@ -6,7 +6,7 @@ metadata:
   namespace: pterodactyl
 spec:
   routes:
-    - match: Host(`pterodactyl.heimelska.co.uk`)
+    - match: Host(`pterodactyl.tiny.heimelska.co.uk`)
       kind: Rule
       services:
         - name: pterodactyl-pterodactyl-panel

@@ -4,8 +4,6 @@ kind: Kustomization
 namespace: external-services
 resources:
   - namespace.yaml
-  - thanos.yaml
-  - thanos-certs.yaml
   - wanda.yaml
   - wanda-certs.yaml
   - unifi-certs.yaml

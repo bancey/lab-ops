@@ -6,7 +6,7 @@ metadata:
   namespace: smokeping
 spec:
   routes:
-    - match: Host(`smokeping.heimelska.co.uk`)
+    - match: Host(`smokeping.tiny.heimelska.co.uk`)
       kind: Rule
       services:
         - name: smokeping

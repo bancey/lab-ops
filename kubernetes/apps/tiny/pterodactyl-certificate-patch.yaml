@@ -5,9 +5,9 @@ metadata:
   name: pterodactyl-staging-tls
   namespace: default
 spec:
-  commonName: "pterodactyl.heimelska.co.uk"
+  commonName: "pterodactyl.tiny.heimelska.co.uk"
   dnsNames:
-    - "pterodactyl.heimelska.co.uk"
+    - "pterodactyl.tiny.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -15,6 +15,6 @@ metadata:
   name: pterodactyl-tls
   namespace: default
 spec:
-  commonName: "pterodactyl.heimelska.co.uk"
+  commonName: "pterodactyl.tiny.heimelska.co.uk"
   dnsNames:
-    - "pterodactyl.heimelska.co.uk"
+    - "pterodactyl.tiny.heimelska.co.uk"
