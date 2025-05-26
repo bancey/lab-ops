@@ -113,7 +113,7 @@ services:
       bw-db:
         condition: service_started
         restart: true
-    image: bunkerity/bunkerweb-ui:1.6.0
+    image: bunkerity/bunkerweb-ui:1.6.1
     environment:
       <<: *bw-env
       TOTP_SECRETS: "{{ bunkerweb_totp_secrets }}"
