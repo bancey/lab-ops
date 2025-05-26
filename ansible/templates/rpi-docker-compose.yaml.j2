@@ -47,10 +47,10 @@ services:
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.1
     ports:
-      - "80:8080/tcp"
-      - "443:8443/tcp"
-      - "443:8443/udp"
-      - "5000:5000/tcp"
+      - 80:8080/tcp
+      - 443:8443/tcp
+      - 443:8443/udp
+      - 5000:5000/tcp
     environment:
       <<: *bw-env
     restart: "unless-stopped"
@@ -102,10 +102,13 @@ services:
       wanda-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       pterodactyl.heimelska.co.uk_REVERSE_PROXY_HOST: "https://pterodactyl.tiny.heimelska.co.uk"
       pterodactyl.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      pterodactyl.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "pterodactyl.tiny.heimelska.co.uk"
       longhorn.heimelska.co.uk_REVERSE_PROXY_HOST: "https://longhorn.tiny.heimelska.co.uk"
       longhorn.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      longhorn.heimelska.co.uk_REVERSE_PROXY_WS: "yes"
       smokeping.heimelska.co.uk_REVERSE_PROXY_HOST: "https://smokeping.tiny.heimelska.co.uk"
       smokeping.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      smokeping.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "smokeping.tiny.heimelska.co.uk"
     volumes:
       - /opt/bunkerweb/data:/data
     restart: "unless-stopped"
@@ -162,10 +165,10 @@ networks:
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.1
     ports:
-      - "80:8080/tcp"
-      - "443:8443/tcp"
-      - "443:8443/udp"
-      - "5000:5000/tcp"
+      - 80:8080/tcp
+      - 443:8443/tcp
+      - 443:8443/udp
+      - 5000:5000/tcp
     environment:
       API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24 10.151.14.0/24"
     restart: "unless-stopped"
