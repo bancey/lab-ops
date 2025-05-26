@@ -218,6 +218,8 @@ dns:
           - all
         service_accounts:
           - Pterodactyl
+  pterodactyl.tiny.heimelska.co.uk:
+    record: 10.152.16.50
   longhorn.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -236,6 +238,8 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  longhorn.tiny.heimelska.co.uk:
+    record: 10.152.16.50
   smokeping.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -254,6 +258,8 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  smokeping.tiny.heimelska.co.uk:
+    record: 10.152.16.50
   tiny-pve.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
