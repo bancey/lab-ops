@@ -27,18 +27,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: wanda-mgmt
-  namespace: external-services
-spec:
-  type: ExternalName
-  ports:
-    - name: https
-      port: 443
-  externalName: 10.151.14.10
----
-apiVersion: v1
-kind: Service
-metadata:
   name: storage
   namespace: external-services
 spec:
@@ -67,25 +55,6 @@ spec:
           scheme: https
   tls:
     secretName: wanda-proxmox-tls
----
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
-metadata:
-  name: wanda-mgmt
-  namespace: external-services
-  annotations:
-    kubernetes.io/ingress.class: traefik-external
-spec:
-  entryPoints:
-    - websecure
-  routes:
-    - match: Host(`wanda-mgmt.heimelska.co.uk`)
-      kind: Rule
-      services:
-        - name: wanda-mgmt
-          port: 443
-  tls:
-    secretName: wanda-mgmt-tls
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute

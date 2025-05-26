@@ -30,34 +30,6 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wanda-mgmt-staging-tls
-  namespace: default
-spec:
-  secretName: wanda-mgmt-staging-tls
-  issuerRef:
-    name: letsencrypt-staging
-    kind: ClusterIssuer
-  commonName: "wanda-mgmt.heimelska.co.uk"
-  dnsNames:
-    - "wanda-mgmt.heimelska.co.uk"
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wanda-mgmt-tls
-  namespace: default
-spec:
-  secretName: wanda-mgmt-tls
-  issuerRef:
-    name: letsencrypt-production
-    kind: ClusterIssuer
-  commonName: "wanda-mgmt.heimelska.co.uk"
-  dnsNames:
-    - "wanda-mgmt.heimelska.co.uk"
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
   name: storage-staging-tls
   namespace: default
 spec:

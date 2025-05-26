@@ -14,6 +14,8 @@ dns:
           ports:
             - 22
             - 80
+            - 443
+            - 8000
         udp:
           policy: RESTRICTED
           ports:
@@ -35,6 +37,8 @@ dns:
           ports:
             - 22
             - 80
+            - 443
+            - 8000
         udp:
           policy: RESTRICTED
           ports:
