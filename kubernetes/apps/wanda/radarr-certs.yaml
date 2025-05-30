@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: radarr-staging-tls
+  namespace: flux-system
+spec:
+  secretName: radarr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "radarr.wanda.heimelska.co.uk"
+  dnsNames:
+    - "radarr.wanda.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: radarr-tls
+  namespace: flux-system
+spec:
+  secretName: radarr-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "radarr.wanda.heimelska.co.uk"
+  dnsNames:
+    - "radarr.wanda.heimelska.co.uk"

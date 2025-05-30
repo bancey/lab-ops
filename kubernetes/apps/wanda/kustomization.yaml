@@ -13,55 +13,60 @@ resources:
   - sabnzbd-config-pvc.yaml
   - sabnzbd-downloads-pv.yaml
   - sabnzbd-downloads-pvc.yaml
+  - sabnzbd-certs.yaml
   - sonarr-config-pv.yaml
   - sonarr-config-pvc.yaml
   - sonarr-data-pv.yaml
   - sonarr-data-pvc.yaml
+  - sonarr-certs.yaml
   - radarr-config-pv.yaml
   - radarr-config-pvc.yaml
   - radarr-data-pv.yaml
   - radarr-data-pvc.yaml
+  - radarr-certs.yaml
   - prowlarr-config-pv.yaml
   - prowlarr-config-pvc.yaml
+  - prowlarr-certs.yaml
   - mullvad-secret.sops.yaml
   - qbittorrent-config-pv.yaml
   - qbittorrent-config-pvc.yaml
   - ../base/acquisitions
   - ../base/capacitor
   - capacitor-ingress-route.yaml
+  - capacitor-certs.yaml
 patches:
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`dl.heimelska.co.uk`)
+        value: Host(`dl.wanda.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: sabnzbd
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`sonarr.heimelska.co.uk`)
+        value: Host(`sonarr.wanda.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: sonarr
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`radarr.heimelska.co.uk`)
+        value: Host(`radarr.wanda.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: radarr
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`prowlarr.heimelska.co.uk`)
+        value: Host(`prowlarr.wanda.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: prowlarr
   - patch: |
       - op: add
         path: /spec/routes/0/match
-        value: Host(`qb.heimelska.co.uk`)
+        value: Host(`qb.wanda.heimelska.co.uk`)
     target:
       kind: IngressRoute
       name: qbittorrent-gluetun

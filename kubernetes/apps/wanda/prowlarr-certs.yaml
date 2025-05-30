@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prowlarr-staging-tls
+  namespace: flux-system
+spec:
+  secretName: prowlarr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "prowlarr.wanda.heimelska.co.uk"
+  dnsNames:
+    - "prowlarr.wanda.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prowlarr-tls
+  namespace: flux-system
+spec:
+  secretName: prowlarr-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "prowlarr.wanda.heimelska.co.uk"
+  dnsNames:
+    - "prowlarr.wanda.heimelska.co.uk"

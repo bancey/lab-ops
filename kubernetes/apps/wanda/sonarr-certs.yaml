@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sonarr-staging-tls
+  namespace: flux-system
+spec:
+  secretName: sonarr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "sonarr.wanda.heimelska.co.uk"
+  dnsNames:
+    - "sonarr.wanda.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sonarr-tls
+  namespace: flux-system
+spec:
+  secretName: sonarr-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "sonarr.wanda.heimelska.co.uk"
+  dnsNames:
+    - "sonarr.wanda.heimelska.co.uk"
