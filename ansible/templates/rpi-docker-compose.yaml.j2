@@ -68,7 +68,7 @@ services:
     environment:
       <<: *bw-env
       BUNKERWEB_INSTANCES: "bunkerweb thanos.heimelska.co.uk"
-      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk"
       MULTISITE: "yes"
       SERVE_FILES: "no"
       DISABLE_DEFAULT_SERVER: "yes"
@@ -85,6 +85,8 @@ services:
       bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:7000"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      gatus.thanos.heimelska.co.uk_REVERSE_PROXY_HOST: "http://thanos.heimelska.co.uk:8080"
+      gatus.thanos.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       gatus.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:8080"
       gatus.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       CUSTOM_CONF_HTTP_upstream: |
@@ -106,9 +108,22 @@ services:
       longhorn.heimelska.co.uk_REVERSE_PROXY_HOST: "https://longhorn.tiny.heimelska.co.uk"
       longhorn.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       longhorn.heimelska.co.uk_REVERSE_PROXY_WS: "yes"
+      longhorn.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "longhorn.tiny.heimelska.co.uk"
       smokeping.heimelska.co.uk_REVERSE_PROXY_HOST: "https://smokeping.tiny.heimelska.co.uk"
       smokeping.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       smokeping.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "smokeping.tiny.heimelska.co.uk"
+      sonarr.heimelska.co.uk_REVERSE_PROXY_HOST: "https://sonarr.tiny.heimelska.co.uk"
+      sonarr.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      sonarr.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "sonarr.tiny.heimelska.co.uk"
+      radarr.heimelska.co.uk_REVERSE_PROXY_HOST: "https://radarr.tiny.heimelska.co.uk"
+      radarr.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      radarr.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "radarr.tiny.heimelska.co.uk"
+      prowlarr.heimelska.co.uk_REVERSE_PROXY_HOST: "https://prowlarr.tiny.heimelska.co.uk"
+      prowlarr.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      prowlarr.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "prowlarr.tiny.heimelska.co.uk"
+      dl.heimelska.co.uk_REVERSE_PROXY_HOST: "https://dl.tiny.heimelska.co.uk"
+      dl.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+      dl.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "dl.tiny.heimelska.co.uk"
     volumes:
       - /opt/bunkerweb/data:/data
     restart: "unless-stopped"

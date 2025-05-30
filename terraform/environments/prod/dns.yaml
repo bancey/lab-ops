@@ -143,6 +143,8 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  sonarr.wanda.heimelska.co.uk:
+    record: 10.152.15.50
   radarr.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -161,6 +163,8 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  radarr.wanda.heimelska.co.uk:
+    record: 10.152.15.50
   prowlarr.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -179,6 +183,8 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  prowlarr.wanda.heimelska.co.uk:
+    record: 10.152.15.50
   dl.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -197,6 +203,8 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  dl.wanda.heimelska.co.uk:
+    record: 10.152.15.50
   pterodactyl.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
