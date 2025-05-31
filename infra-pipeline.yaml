@@ -291,6 +291,7 @@ stages:
                   jsonStageDependencies: $[convertToJson(stageDependencies)]
                 steps:
                   - script: |
+                      set -xe
                       all_online=true
                       echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
                       processedStageDependencies=$(echo $jsonStageDependencies | jq 'walk(
