@@ -294,6 +294,7 @@ stages:
                       set -xe
                       all_online=true
                       echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
+                      echo $jsonStageDependencies
                       echo $jsonStageDependencies > stage_dependencies.json
                       cat stage_dependencies.json
                       jq 'walk(
