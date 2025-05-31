@@ -294,39 +294,39 @@ stages:
                     displayName: Check all hosts online
                     environment:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
-            - job: TerraformPlanApply
-              dependsOn: CheckAllHostsOnline
-              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
-              pool:
-                vmImage: $(agentImage)
-              steps:
-                - ${{ if deployment.preSteps }}:
-                    - ${{ deployment.preSteps }}
-                - ${{ if deployment.localEnvironments }}:
-                    - template: steps/twingate-connect.yaml@azuredevops-lib
-                      parameters:
-                        keyVaultName: bancey-vault
-                        serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                        serviceConnection: $(serviceConnection)
-                - ${{ if eq(deployment.component, 'virtual-machines') }}:
-                    - template: steps/ansible.yaml@azuredevops-lib
-                      parameters:
-                        serviceConnection: $(serviceConnection)
-                        keyVaultName: bancey-vault
-                        privateKeySecretName: Packer-Private-Key
-                - template: steps/terraform.yaml@azuredevops-lib
-                  parameters:
-                    backendStorageAccount: $(stateStorageAccount)
-                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                    azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
-                    serviceConnection: $(serviceConnection)
-                    variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                    ${{ if ne(deployment.extraCommandArgs, '') }}:
-                      extraCommandArgs: ${{ deployment.extraCommandArgs }}
-                    runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
-                    runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
-                - ${{ if deployment.postStep }}:
-                    - ${{ deployment.postStep }}
+              - job: TerraformPlanApply
+                dependsOn: CheckAllHostsOnline
+                condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
+                pool:
+                  vmImage: $(agentImage)
+                steps:
+                  - ${{ if deployment.preSteps }}:
+                      - ${{ deployment.preSteps }}
+                  - ${{ if deployment.localEnvironments }}:
+                      - template: steps/twingate-connect.yaml@azuredevops-lib
+                        parameters:
+                          keyVaultName: bancey-vault
+                          serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                          serviceConnection: $(serviceConnection)
+                  - ${{ if eq(deployment.component, 'virtual-machines') }}:
+                      - template: steps/ansible.yaml@azuredevops-lib
+                        parameters:
+                          serviceConnection: $(serviceConnection)
+                          keyVaultName: bancey-vault
+                          privateKeySecretName: Packer-Private-Key
+                  - template: steps/terraform.yaml@azuredevops-lib
+                    parameters:
+                      backendStorageAccount: $(stateStorageAccount)
+                      workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                      azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
+                      serviceConnection: $(serviceConnection)
+                      variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                      ${{ if ne(deployment.extraCommandArgs, '') }}:
+                        extraCommandArgs: ${{ deployment.extraCommandArgs }}
+                      runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                      runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                  - ${{ if deployment.postStep }}:
+                      - ${{ deployment.postStep }}
         ${{ else }}:
           jobs:
             - job: TerraformPlanApply
