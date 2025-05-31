@@ -304,7 +304,7 @@ stages:
                       ) | .check_hosts_online.check_hosts_online.outputs' stage_dependencies.json > processed_stage_dependencies.json
                       echo "Processed stage dependencies: $(cat processed_stage_dependencies.json)"
                       for host in $LOCAL_ENVIRONMENTS; do
-                        status=$(cat processed_stage_dependencies.json | jq ".checkOnline_${host}_online")
+                        status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
                         echo "Status for $host: $status"
                         if [ "$status" != "true" ]; then
                           all_online=false
