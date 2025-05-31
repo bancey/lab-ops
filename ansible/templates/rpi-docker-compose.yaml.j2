@@ -81,6 +81,7 @@ services:
       LETS_ENCRYPT_DNS_PROVIDER: "cloudflare"
       LETS_ENCRYPT_DNS_PROPAGATION: "default"
       LETS_ENCRYPT_DNS_CREDENTIAL_ITEM: "cloudflare_api_token {{ cloudflare_api_token }}"
+      LETS_ENCRYPT_DNS_PROPAGATION: 60
       BAD_BEHAVIOR_THRESHOLD: 60
       bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:7000"
