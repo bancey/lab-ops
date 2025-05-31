@@ -299,7 +299,7 @@ stages:
             ${{ if deployment.localEnvironments }}:
               condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
             ${{ else }}:
-            condition: succeeded()
+              condition: succeeded()
             pool:
               vmImage: $(agentImage)
             steps:
