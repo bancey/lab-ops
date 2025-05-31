@@ -290,15 +290,18 @@ stages:
                 steps:
                   - script: |
                       all_online=true
-                      for host in ${{ join(' ', deployment.localEnvironments) }}; do
-                        status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
-                        if [ "$status" != "true" ]; then
-                          all_online=false
-                          break
-                        fi
-                      done
-                      echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                      echo "$LOCAL_ENVIRONMENTS"
+                      #for host in ${{ join(' ', deployment.localEnvironments) }}; do
+                      #  status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
+                      #  if [ "$status" != "true" ]; then
+                      #    all_online=false
+                      #    break
+                      #  fi
+                      #done
+                      #echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
                     displayName: Check all hosts online
+                    environment:
+                      LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
             - job: TerraformPlanApply
               dependsOn: CheckAllHostsOnline
               condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
@@ -365,65 +368,65 @@ stages:
                     runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
                 - ${{ if deployment.postStep }}:
                     - ${{ deployment.postStep }}
-  - ${{ each ansible_deployment in parameters.ansible_deployments }}:
-      - stage: ${{ ansible_deployment.deployment }}
-        ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
-          dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
-        ${{ elseif ansible_deployment.localEnvironments }}:
-          dependsOn: check_hosts_online
-        ${{ else }}:
-          dependsOn: ${{ ansible_deployment.dependsOn }}
-        jobs:
-          - ${{ if ansible_deployment.localEnvironments }}:
-              - job: CheckAllHostsOnline
-                displayName: Check all required hosts are online
-                steps:
-                  - script: |
-                      all_online=true
-                      for host in ${{ join(' ', ansible_deployment.localEnvironments) }}; do
-                        status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
-                        if [ "$status" != "true" ]; then
-                          all_online=false
-                          break
-                        fi
-                      done
-                      echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
-                    displayName: Check all hosts online
-              - job: AnsibleCheckRun
-                dependsOn: CheckAllHostsOnline
-                condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
-                pool:
-                  vmImage: $(agentImage)
-                steps:
-                  - template: steps/twingate-connect.yaml@azuredevops-lib
-                    parameters:
-                      keyVaultName: bancey-vault
-                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                      serviceConnection: $(serviceConnection)
-                  - template: steps/ansible.yaml@azuredevops-lib
-                    parameters:
-                      serviceConnection: $(serviceConnection)
-                      keyVaultName: bancey-vault
-                      privateKeySecretName: Packer-Private-Key
-                      playbook: ${{ ansible_deployment.playbook }}
-                      secrets: ${{ ansible_deployment.secrets }}
-                      requirementsFile: ${{ ansible_deployment.requirementsFile }}
-        ${{ else }}:
-          jobs:
-            - job: AnsibleCheckRun
-              pool:
-                vmImage: $(agentImage)
-              steps:
-                - template: steps/twingate-connect.yaml@azuredevops-lib
-                  parameters:
-                    keyVaultName: bancey-vault
-                    serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                    serviceConnection: $(serviceConnection)
-                - template: steps/ansible.yaml@azuredevops-lib
-                  parameters:
-                    serviceConnection: $(serviceConnection)
-                    keyVaultName: bancey-vault
-                    privateKeySecretName: Packer-Private-Key
-                    playbook: ${{ ansible_deployment.playbook }}
-                    secrets: ${{ ansible_deployment.secrets }}
-                    requirementsFile: ${{ ansible_deployment.requirementsFile }}
+  #- ${{ each ansible_deployment in parameters.ansible_deployments }}:
+  #    - stage: ${{ ansible_deployment.deployment }}
+  #      ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
+  #        dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
+  #      ${{ elseif ansible_deployment.localEnvironments }}:
+  #        dependsOn: check_hosts_online
+  #      ${{ else }}:
+  #        dependsOn: ${{ ansible_deployment.dependsOn }}
+  #      jobs:
+  #        - ${{ if ansible_deployment.localEnvironments }}:
+  #            - job: CheckAllHostsOnline
+  #              displayName: Check all required hosts are online
+  #              steps:
+  #                - script: |
+  #                    all_online=true
+  #                    for host in ${{ join(' ', ansible_deployment.localEnvironments) }}; do
+  #                      status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
+  #                      if [ "$status" != "true" ]; then
+  #                        all_online=false
+  #                        break
+  #                      fi
+  #                    done
+  #                    echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+  #                  displayName: Check all hosts online
+  #            - job: AnsibleCheckRun
+  #              dependsOn: CheckAllHostsOnline
+  #              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
+  #              pool:
+  #                vmImage: $(agentImage)
+  #              steps:
+  #                - template: steps/twingate-connect.yaml@azuredevops-lib
+  #                  parameters:
+  #                    keyVaultName: bancey-vault
+  #                    serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+  #                    serviceConnection: $(serviceConnection)
+  #                - template: steps/ansible.yaml@azuredevops-lib
+  #                  parameters:
+  #                    serviceConnection: $(serviceConnection)
+  #                    keyVaultName: bancey-vault
+  #                    privateKeySecretName: Packer-Private-Key
+  #                    playbook: ${{ ansible_deployment.playbook }}
+  #                    secrets: ${{ ansible_deployment.secrets }}
+  #                    requirementsFile: ${{ ansible_deployment.requirementsFile }}
+  #      ${{ else }}:
+  #        jobs:
+  #          - job: AnsibleCheckRun
+  #            pool:
+  #              vmImage: $(agentImage)
+  #            steps:
+  #              - template: steps/twingate-connect.yaml@azuredevops-lib
+  #                parameters:
+  #                  keyVaultName: bancey-vault
+  #                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+  #                  serviceConnection: $(serviceConnection)
+  #              - template: steps/ansible.yaml@azuredevops-lib
+  #                parameters:
+  #                  serviceConnection: $(serviceConnection)
+  #                  keyVaultName: bancey-vault
+  #                  privateKeySecretName: Packer-Private-Key
+  #                  playbook: ${{ ansible_deployment.playbook }}
+  #                  secrets: ${{ ansible_deployment.secrets }}
+  #                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
