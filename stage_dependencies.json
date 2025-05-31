@@ -1,0 +1,60 @@
+{
+  "prod_twingate": {
+    "TerraformPlanApply": {
+      "outputs": {
+        "agent.version": "4.255.0",
+        "JobExtension_Init.agent.version": "4.255.0",
+        "AzureKeyVault.agent.version": "4.255.0",
+        "__system_1.agent.version": "4.255.0",
+        "AzureCLI.agent.version": "4.255.0",
+        "CmdLine2.agent.version": "4.255.0",
+        "CmdLine1.agent.version": "4.255.0",
+        "CmdLine3.agent.version": "4.255.0",
+        "CmdLine4.agent.version": "4.255.0",
+        "TerraformCLI1.agent.version": "4.255.0",
+        "TerraformCLI2.agent.version": "4.255.0",
+        "TerraformCLI3.agent.version": "4.255.0",
+        "JobExtension_Final.agent.version": "4.255.0",
+        "CmdLine5.agent.version": "4.255.0"
+      },
+      "identifier": null,
+      "name": "TerraformPlanApply",
+      "attempt": 1,
+      "startTime": null,
+      "finishTime": null,
+      "state": "NotStarted",
+      "result": "Succeeded"
+    }
+  },
+  "check_hosts_online": {
+    "check_hosts_online": {
+      "outputs": {
+        "agent.version": "4.255.0",
+        "JobExtension_Init.agent.version": "4.255.0",
+        "Checkout.agent.version": "4.255.0",
+        "AzureCLI.agent.version": "4.255.0",
+        "CmdLine.agent.version": "4.255.0",
+        "checkOnline_wanda.agent.version": "4.255.0",
+        "checkOnline_wanda.online": "false",
+        "checkOnline_thanos.agent.version": "4.255.0",
+        "checkOnline_thanos.online": "true",
+        "checkOnline_gamora.agent.version": "4.255.0",
+        "checkOnline_gamora.online": "true",
+        "checkOnline_thor.agent.version": "4.255.0",
+        "checkOnline_thor.online": "true",
+        "JobExtension_Final.agent.version": "4.255.0",
+        "checkOnline_loki.agent.version": "4.255.0",
+        "checkOnline_loki.online": "true",
+        "checkOnline_hela.agent.version": "4.255.0",
+        "checkOnline_hela.online": "true"
+      },
+      "identifier": null,
+      "name": "check_hosts_online",
+      "attempt": 1,
+      "startTime": null,
+      "finishTime": null,
+      "state": "NotStarted",
+      "result": "Succeeded"
+    }
+  }
+}
