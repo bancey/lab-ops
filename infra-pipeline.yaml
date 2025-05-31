@@ -291,14 +291,6 @@ stages:
                   - script: |
                       all_online=true
                       echo "$LOCAL_ENVIRONMENTS"
-                      # for host in ${{ join(' ', deployment.localEnvironments) }}; do
-                      #   status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
-                      #   if [ "$status" != "true" ]; then
-                      #     all_online=false
-                      #     break
-                      #   fi
-                      # done
-                      # echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
                     displayName: Check all hosts online
                     environment:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
