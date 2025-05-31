@@ -284,7 +284,7 @@ stages:
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
         ${{ if deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ deployment.localEnvironments[0] }}.online'], 'true'))
+          condition: and(succeeded(), ${{ join(' && ', fromJson('[''' + join(''',''', deployment.localEnvironments) + ''']') | map("eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_" + . + ".online'], 'true')") ) }})
         ${{ else }}: # yamllint disable-line rule:key-duplicates
           condition: succeeded()
         jobs:
@@ -328,7 +328,7 @@ stages:
         ${{ else }}:
           dependsOn: ${{ ansible_deployment.dependsOn }}
         ${{ if ansible_deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ ansible_deployment.localEnvironments[0] }}.online'], 'true'))
+          condition: and(succeeded(), ${{ join(' && ', fromJson('[''' + join(''',''', ansible_deployment.localEnvironments) + ''']') | map("eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_" + . + ".online'], 'true')") ) }})
         ${{ else }}: # yamllint disable-line rule:key-duplicates
           condition: succeeded()
         jobs:
