@@ -300,9 +300,10 @@ stages:
                           .
                         end
                       ) | .check_hosts_online.check_hosts_online.outputs')
+                      echo "Processed stage dependencies: $processedStageDependencies"
                       for host in $LOCAL_ENVIRONMENTS; do
                         status=$(echo $processedStageDependencies | jq ".checkOnline_${host}_online")
-                        echo $"Status for $host: $status"
+                        echo "Status for $host: $status"
                         if [ "$status" != "true" ]; then
                           all_online=false
                           break
