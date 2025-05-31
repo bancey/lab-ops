@@ -295,8 +295,8 @@ stages:
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
           - job: TerraformPlanApply
-            dependsOn: CheckAllHostsOnline
             ${{ if deployment.localEnvironments }}:
+              dependsOn: CheckAllHostsOnline
               condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
             ${{ else }}:
               condition: succeeded()
