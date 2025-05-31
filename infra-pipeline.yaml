@@ -287,6 +287,11 @@ stages:
           - ${{ if deployment.localEnvironments }}:
               - job: CheckAllHostsOnline
                 displayName: Check all required hosts are online
+                variables:
+                  TEST1: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
+                  TEST2: $[convertToJson(stageDependencies.check_hosts_online)]
+                  TEST3: $[convertToJson(stageDependencies)]
+                  CHECK_HOST_ONLINE_OUTPUTS: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
                 steps:
                   - script: |
                       all_online=true
@@ -309,10 +314,6 @@ stages:
                     displayName: Check all hosts online
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
-                      TEST1: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
-                      TEST2: $[convertToJson(stageDependencies.check_hosts_online)]
-                      TEST3: $[convertToJson(stageDependencies)]
-                      CHECK_HOST_ONLINE_OUTPUTS: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
           - job: TerraformPlanApply
             ${{ if deployment.localEnvironments }}:
               dependsOn: CheckAllHostsOnline
