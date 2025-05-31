@@ -288,27 +288,20 @@ stages:
               - job: CheckAllHostsOnline
                 displayName: Check all required hosts are online
                 variables:
-                  TEST2: $[convertToJson(stageDependencies.check_hosts_online)]
-                  TEST3: $[convertToJson(stageDependencies)]
-                  CHECK_HOST_ONLINE_OUTPUTS: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
+                  jsonStageDependencies: $[convertToJson(stageDependencies)]
                 steps:
                   - script: |
                       all_online=true
-                      echo "$LOCAL_ENVIRONMENTS"
-                      # echo "$TEST2"
-                      echo "Test3: $TEST3"
-                      echo "Test4: $CHECK_HOST_ONLINE_OUTPUTS"
-                      # for host in $LOCAL_ENVIRONMENTS; do
-                      #   varName="CHECK_ONLINE_RESULT_${host}"
-                      #   echo "$varName"
-                      #   status=${!varName}
-                      #   echo $"Status for $host: $status"
-                      #   if [ "$status" != "true" ]; then
-                      #     all_online=false
-                      #     break
-                      #   fi
-                      # done
-                      # echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                      echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
+                      for host in $LOCAL_ENVIRONMENTS; do
+                        status=$(echo $jsonStageDependencies | jq -r --arg host "$host" '.["check_hosts_online"].outputs["check_hosts_online.checkOnline_" + $host + ".online"]'')
+                        echo $"Status for $host: $status"
+                        if [ "$status" != "true" ]; then
+                          all_online=false
+                          break
+                        fi
+                      done
+                      echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
                     displayName: Check all hosts online
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
