@@ -294,16 +294,17 @@ stages:
                       set -xe
                       all_online=true
                       echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
-                      processedStageDependencies=$(echo $jsonStageDependencies | jq 'walk(
+                      echo $jsonStageDependencies > stage_dependencies.json
+                      jq 'walk(
                         if type == "object" and has("outputs") then
                           .outputs |= with_entries(.key |= gsub("\\."; "_"))
                         else
                           .
                         end
-                      ) | .check_hosts_online.check_hosts_online.outputs')
-                      echo "Processed stage dependencies: $processedStageDependencies"
+                      ) | .check_hosts_online.check_hosts_online.outputs' stage_dependencies.json > processed_stage_dependencies.json
+                      echo "Processed stage dependencies: $(cat processed_stage_dependencies.json)"
                       for host in $LOCAL_ENVIRONMENTS; do
-                        status=$(echo $processedStageDependencies | jq ".checkOnline_${host}_online")
+                        status=$(cat processed_stage_dependencies.json | jq ".checkOnline_${host}_online")
                         echo "Status for $host: $status"
                         if [ "$status" != "true" ]; then
                           all_online=false
