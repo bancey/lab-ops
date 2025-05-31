@@ -291,6 +291,9 @@ stages:
                   - script: |
                       all_online=true
                       echo "$LOCAL_ENVIRONMENTS"
+                      echo "$TEST1"
+                      echo "$TEST2"
+                      echo "$TEST3"
                       echo "$CHECK_HOST_ONLINE_OUTPUTS"
                       # for host in $LOCAL_ENVIRONMENTS; do
                       #   varName="CHECK_ONLINE_RESULT_${host}"
@@ -306,7 +309,10 @@ stages:
                     displayName: Check all hosts online
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
-                      CHECK_HOST_ONLINE_OUTPUTS: $(stageDependencies.check_hosts_online.outputs)
+                      TEST1: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
+                      TEST2: $[convertToJson(stageDependencies.check_hosts_online)]
+                      TEST3: $[convertToJson(stageDependencies)]
+                      CHECK_HOST_ONLINE_OUTPUTS: $[convertToJson(stageDependencies.check_hosts_online.outputs)]
           - job: TerraformPlanApply
             ${{ if deployment.localEnvironments }}:
               dependsOn: CheckAllHostsOnline
