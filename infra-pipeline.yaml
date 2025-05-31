@@ -283,42 +283,88 @@ stages:
           dependsOn: check_hosts_online
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
-        ${{ if deployment.localEnvironments }}:
-          condition: and(succeeded(), ${{ join(' && ', fromJson('[''' + join(''',''', deployment.localEnvironments) + ''']') | map("eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_" + . + ".online'], 'true')") ) }})
-        ${{ else }}: # yamllint disable-line rule:key-duplicates
-          condition: succeeded()
         jobs:
-          - job: TerraformPlanApply
-            pool:
-              vmImage: $(agentImage)
-            steps:
-              - ${{ if deployment.preSteps }}:
-                  - ${{ deployment.preSteps }}
-              - ${{ if deployment.localEnvironments }}:
-                  - template: steps/twingate-connect.yaml@azuredevops-lib
-                    parameters:
-                      keyVaultName: bancey-vault
-                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                      serviceConnection: $(serviceConnection)
-              - ${{ if eq(deployment.component, 'virtual-machines') }}:
-                  - template: steps/ansible.yaml@azuredevops-lib
-                    parameters:
-                      serviceConnection: $(serviceConnection)
-                      keyVaultName: bancey-vault
-                      privateKeySecretName: Packer-Private-Key
-              - template: steps/terraform.yaml@azuredevops-lib
-                parameters:
-                  backendStorageAccount: $(stateStorageAccount)
-                  workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
-                  azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
-                  serviceConnection: $(serviceConnection)
-                  variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
-                  ${{ if ne(deployment.extraCommandArgs, '') }}:
-                    extraCommandArgs: ${{ deployment.extraCommandArgs }}
-                  runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
-                  runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
-              - ${{ if deployment.postStep }}:
-                  - ${{ deployment.postStep }}
+          - ${{ if deployment.localEnvironments }}:
+              - job: CheckAllHostsOnline
+                displayName: Check all required hosts are online
+                steps:
+                  - script: |
+                      all_online=true
+                      for host in ${{ join(' ', deployment.localEnvironments) }}; do
+                        status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
+                        if [ "$status" != "true" ]; then
+                          all_online=false
+                          break
+                        fi
+                      done
+                      echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                    displayName: Check all hosts online
+            - job: TerraformPlanApply
+              dependsOn: CheckAllHostsOnline
+              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
+              pool:
+                vmImage: $(agentImage)
+              steps:
+                - ${{ if deployment.preSteps }}:
+                    - ${{ deployment.preSteps }}
+                - ${{ if deployment.localEnvironments }}:
+                    - template: steps/twingate-connect.yaml@azuredevops-lib
+                      parameters:
+                        keyVaultName: bancey-vault
+                        serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                        serviceConnection: $(serviceConnection)
+                - ${{ if eq(deployment.component, 'virtual-machines') }}:
+                    - template: steps/ansible.yaml@azuredevops-lib
+                      parameters:
+                        serviceConnection: $(serviceConnection)
+                        keyVaultName: bancey-vault
+                        privateKeySecretName: Packer-Private-Key
+                - template: steps/terraform.yaml@azuredevops-lib
+                  parameters:
+                    backendStorageAccount: $(stateStorageAccount)
+                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                    azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
+                    serviceConnection: $(serviceConnection)
+                    variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                    ${{ if ne(deployment.extraCommandArgs, '') }}:
+                      extraCommandArgs: ${{ deployment.extraCommandArgs }}
+                    runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                    runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                - ${{ if deployment.postStep }}:
+                    - ${{ deployment.postStep }}
+        ${{ else }}:
+          jobs:
+            - job: TerraformPlanApply
+              pool:
+                vmImage: $(agentImage)
+              steps:
+                - ${{ if deployment.preSteps }}:
+                    - ${{ deployment.preSteps }}
+                - ${{ if deployment.localEnvironments }}:
+                    - template: steps/twingate-connect.yaml@azuredevops-lib
+                      parameters:
+                        keyVaultName: bancey-vault
+                        serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                        serviceConnection: $(serviceConnection)
+                - ${{ if eq(deployment.component, 'virtual-machines') }}:
+                    - template: steps/ansible.yaml@azuredevops-lib
+                      parameters:
+                        serviceConnection: $(serviceConnection)
+                        keyVaultName: bancey-vault
+                        privateKeySecretName: Packer-Private-Key
+                - template: steps/terraform.yaml@azuredevops-lib
+                  parameters:
+                    backendStorageAccount: $(stateStorageAccount)
+                    workingDirectory: $(System.DefaultWorkingDirectory)/terraform/components/${{ deployment.component }}
+                    azureRmKey: tfstate/${{ deployment.deployment }}.tfstate
+                    serviceConnection: $(serviceConnection)
+                    variableFilePath: $(System.DefaultWorkingDirectory)/terraform/environments/${{ deployment.environment }}/${{ deployment.environment }}.tfvars
+                    ${{ if ne(deployment.extraCommandArgs, '') }}:
+                      extraCommandArgs: ${{ deployment.extraCommandArgs }}
+                    runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                    runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+                - ${{ if deployment.postStep }}:
+                    - ${{ deployment.postStep }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
@@ -327,25 +373,57 @@ stages:
           dependsOn: check_hosts_online
         ${{ else }}:
           dependsOn: ${{ ansible_deployment.dependsOn }}
-        ${{ if ansible_deployment.localEnvironments }}:
-          condition: and(succeeded(), ${{ join(' && ', fromJson('[''' + join(''',''', ansible_deployment.localEnvironments) + ''']') | map("eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_" + . + ".online'], 'true')") ) }})
-        ${{ else }}: # yamllint disable-line rule:key-duplicates
-          condition: succeeded()
         jobs:
-          - job: AnsibleCheckRun
-            pool:
-              vmImage: $(agentImage)
-            steps:
-              - template: steps/twingate-connect.yaml@azuredevops-lib
-                parameters:
-                  keyVaultName: bancey-vault
-                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                  serviceConnection: $(serviceConnection)
-              - template: steps/ansible.yaml@azuredevops-lib
-                parameters:
-                  serviceConnection: $(serviceConnection)
-                  keyVaultName: bancey-vault
-                  privateKeySecretName: Packer-Private-Key
-                  playbook: ${{ ansible_deployment.playbook }}
-                  secrets: ${{ ansible_deployment.secrets }}
-                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
+          - ${{ if ansible_deployment.localEnvironments }}:
+              - job: CheckAllHostsOnline
+                displayName: Check all required hosts are online
+                steps:
+                  - script: |
+                      all_online=true
+                      for host in ${{ join(' ', ansible_deployment.localEnvironments) }}; do
+                        status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
+                        if [ "$status" != "true" ]; then
+                          all_online=false
+                          break
+                        fi
+                      done
+                      echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                    displayName: Check all hosts online
+              - job: AnsibleCheckRun
+                dependsOn: CheckAllHostsOnline
+                condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
+                pool:
+                  vmImage: $(agentImage)
+                steps:
+                  - template: steps/twingate-connect.yaml@azuredevops-lib
+                    parameters:
+                      keyVaultName: bancey-vault
+                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                      serviceConnection: $(serviceConnection)
+                  - template: steps/ansible.yaml@azuredevops-lib
+                    parameters:
+                      serviceConnection: $(serviceConnection)
+                      keyVaultName: bancey-vault
+                      privateKeySecretName: Packer-Private-Key
+                      playbook: ${{ ansible_deployment.playbook }}
+                      secrets: ${{ ansible_deployment.secrets }}
+                      requirementsFile: ${{ ansible_deployment.requirementsFile }}
+        ${{ else }}:
+          jobs:
+            - job: AnsibleCheckRun
+              pool:
+                vmImage: $(agentImage)
+              steps:
+                - template: steps/twingate-connect.yaml@azuredevops-lib
+                  parameters:
+                    keyVaultName: bancey-vault
+                    serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                    serviceConnection: $(serviceConnection)
+                - template: steps/ansible.yaml@azuredevops-lib
+                  parameters:
+                    serviceConnection: $(serviceConnection)
+                    keyVaultName: bancey-vault
+                    privateKeySecretName: Packer-Private-Key
+                    playbook: ${{ ansible_deployment.playbook }}
+                    secrets: ${{ ansible_deployment.secrets }}
+                    requirementsFile: ${{ ansible_deployment.requirementsFile }}
