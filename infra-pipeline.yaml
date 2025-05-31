@@ -291,9 +291,22 @@ stages:
                   - script: |
                       all_online=true
                       echo "$LOCAL_ENVIRONMENTS"
+                      for host in $LOCAL_ENVIRONMENTS; do
+                        varName="CHECK_ONLINE_RESULT_${host}"
+                        echo "$varName"
+                        status=${!varName}
+                        echo $"Status for $host: $status"
+                        if [ "$status" != "true" ]; then
+                          all_online=false
+                          break
+                        fi
+                      done
+                      echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
                     displayName: Check all hosts online
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
+                      ${{ each host in deployment.localEnvironments }}:
+                        CHECK_ONLINE_RESULT_{{ host.name }}: ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host.name) }}
           - job: TerraformPlanApply
             ${{ if deployment.localEnvironments }}:
               dependsOn: CheckAllHostsOnline
