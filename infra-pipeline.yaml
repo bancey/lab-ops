@@ -269,7 +269,7 @@ variables:
 stages:
   - template: stages/check-hosts-online.yaml@azuredevops-lib
     parameters:
-      dependencies: prod_twingate
+      dependencies: []
       keyVaultName: bancey-vault
       serviceKeySecretName: Twingate-AzureDevOps-SA-Key
       serviceConnection: $(serviceConnection)
