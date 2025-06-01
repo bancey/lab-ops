@@ -294,9 +294,6 @@ stages:
                       set -xe
                       all_online=true
                       echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
-                      echo $(jsonStageDependencies)
-                      echo $(jsonStageDependencies) | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end)' > processed_stage_dependencies.json
-                      cat processed_stage_dependencies.json
                       echo '"$(jsonStageDependencies)"' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end)' > processed_stage_dependencies.json
                       cat processed_stage_dependencies.json
                       # for host in $LOCAL_ENVIRONMENTS; do
