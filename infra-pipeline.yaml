@@ -357,30 +357,30 @@ stages:
       jobs:
         - ${{ if ansible_deployment.localEnvironments }}:
           - job: CheckAllHostsOnline
-             displayName: Check all required hosts are online
-             variables:
-               jsonStageDependencies: $[convertToJson(stageDependencies)]
-             steps:
-               - task: CmdLine@2
-                 name: consolidate_hosts_online
-                 inputs:
-                   script: |
-                     set -e
-                     all_online=true
-                     echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
-                     echo '$(jsonStageDependencies)' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end) | .check_hosts_online.check_hosts_online.outputs' > processed_stage_dependencies.json
-                     for host in $LOCAL_ENVIRONMENTS; do
-                       status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
-                       echo "$host is online: $status"
-                       if [ "$status" != '"true"' ]; then
-                         all_online=false
-                       fi
-                     done
-                     echo "All hosts online: $all_online"
-                     echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
-                 displayName: Check all hosts online
-                 env:
-                   LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
+            displayName: Check all required hosts are online
+            variables:
+              jsonStageDependencies: $[convertToJson(stageDependencies)]
+            steps:
+              - task: CmdLine@2
+                name: consolidate_hosts_online
+                inputs:
+                  script: |
+                    set -e
+                    all_online=true
+                    echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
+                    echo '$(jsonStageDependencies)' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end) | .check_hosts_online.check_hosts_online.outputs' > processed_stage_dependencies.json
+                    for host in $LOCAL_ENVIRONMENTS; do
+                      status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
+                      echo "$host is online: $status"
+                      if [ "$status" != '"true"' ]; then
+                        all_online=false
+                      fi
+                    done
+                    echo "All hosts online: $all_online"
+                    echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                displayName: Check all hosts online
+                env:
+                  LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
           - job: AnsibleCheckRun
             ${{ if deployment.localEnvironments }}:
               dependsOn: CheckAllHostsOnline
