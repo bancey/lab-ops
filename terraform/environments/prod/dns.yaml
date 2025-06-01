@@ -330,3 +330,7 @@ dns:
     record: 10.151.14.4
   adguard.gamora.heimelska.co.uk:
     record: 10.151.14.4
+  gatus.thanos.heimelska.co.uk:
+    record: 10.151.14.4
+  gatus.gamora.heimelska.co.uk:
+    record: 10.151.14.4
