@@ -45,27 +45,27 @@ parameters:
   - name: terraform_deployments
     type: object
     default:
-      #- deployment: generate_ansible_inventory
-      #  environment: prod
-      #  component: inventory
-      #  destroy: false
-      #  deploy: true
-      #  preSteps:
-      #    - task: AzureCLI@2
-      #      displayName: Download GitHub Private Key
-      #      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-      #      inputs:
-      #        azureSubscription: "MSDN New"
-      #        scriptType: "bash"
-      #        scriptLocation: "inlineScript"
-      #        inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
-      #  dependsOn: []
-      #- deployment: prod_twingate
-      #  environment: prod
-      #  component: twingate
-      #  destroy: false
-      #  deploy: true
-      #  dependsOn: []
+      - deployment: generate_ansible_inventory
+        environment: prod
+        component: inventory
+        destroy: false
+        deploy: true
+        preSteps:
+          - task: AzureCLI@2
+            displayName: Download GitHub Private Key
+            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+            inputs:
+              azureSubscription: "MSDN New"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
+        dependsOn: []
+      - deployment: prod_twingate
+        environment: prod
+        component: twingate
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -74,167 +74,168 @@ parameters:
         localEnvironments:
           - thanos
           - gamora
+        dependsOn:
+          - prod_twingate
+      - deployment: test_vpn_gateway
+        environment: test
+        component: cloud-vpn-gateway
+        destroy: false
+        deploy: true
         dependsOn: []
-      #- deployment: test_vpn_gateway
-      #  environment: test
-      #  component: cloud-vpn-gateway
-      #  destroy: false
-      #  deploy: true
-      #  dependsOn: []
-      #- deployment: prod_vpn_gateway
-      #  environment: prod
-      #  component: cloud-vpn-gateway
-      #  destroy: false
-      #  deploy: true
-      #  dependsOn:
-      #    - test_vpn_gateway
-      #- deployment: test_gameserver
-      #  environment: test
-      #  component: game-server
-      #  destroy: false
-      #  deploy: true
-      #  preSteps:
-      #    task: AzureCLI@2
-      #    displayName: Start Stopped VMs
-      #    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-      #    inputs:
-      #      azureSubscription: "MSDN New"
-      #      scriptType: "bash"
-      #      addSpnToEnvironment: true
-      #      scriptLocation: "inlineScript"
-      #      inlineScript: |
-      #        ids=$( az vm list -g games-test-rg --query "[[?powerState!='VM running'].id]" -d -o tsv)
-      #        if [ -z "$ids" ]; then
-      #          echo "No VMs to start"
-      #        else
-      #          echo "Starting VMs: $ids"
-      #          az vm start --ids $ids
-      #        fi
-      #        echo "##vso[task.setvariable variable=testStoppedIds;isOutput=true]$ids"
-      #  postStep:
-      #    task: AzureCLI@2
-      #    displayName: Stop VMs
-      #    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-      #    inputs:
-      #      azureSubscription: "MSDN New"
-      #      scriptType: "bash"
-      #      addSpnToEnvironment: true
-      #      scriptLocation: "inlineScript"
-      #      inlineScript: |
-      #        if [ -z "$(testStoppedIds)" ]; then
-      #          echo "No VMs to start"
-      #        else
-      #          echo "Stopping VMs: $(testStoppedIds)"
-      #          az vm stop --ids $(testStoppedIds)
-      #          az vm deallocate --ids $(testStoppedIds)
-      #        fi
-      #  dependsOn:
-      #    - prod_twingate
-      #- deployment: prod_gameserver
-      #  environment: prod
-      #  component: game-server
-      #  destroy: false
-      #  deploy: true
-      #  preSteps:
-      #    task: AzureCLI@2
-      #    displayName: Start Stopped VMs
-      #    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-      #    inputs:
-      #      azureSubscription: "MSDN New"
-      #      scriptType: "bash"
-      #      addSpnToEnvironment: true
-      #      scriptLocation: "inlineScript"
-      #      inlineScript: |
-      #        ids=$( az vm list -g games-prod-rg --query "[[?powerState!='VM running'].id]" -d -o tsv)
-      #        if [ -z "$ids" ]; then
-      #          echo "No VMs to start"
-      #        else
-      #          echo "Starting VMs: $ids"
-      #          az vm start --ids $ids
-      #        fi
-      #        echo "##vso[task.setvariable variable=prodStoppedIds]$ids"
-      #  postStep:
-      #    task: AzureCLI@2
-      #    displayName: Stop VMs
-      #    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-      #    inputs:
-      #      azureSubscription: "MSDN New"
-      #      scriptType: "bash"
-      #      addSpnToEnvironment: true
-      #      scriptLocation: "inlineScript"
-      #      inlineScript: |
-      #        if [ -z "$(prodStoppedIds)" ]; then
-      #          echo "No VMs to start"
-      #        else
-      #          echo "Stopping VMs: $(prodStoppedIds)"
-      #          az vm stop --ids $(prodStoppedIds)
-      #          az vm deallocate --ids $(prodStoppedIds)
-      #        fi
-      #  dependsOn:
-      #    - prod_twingate
-      #    - test_gameserver
-      #- deployment: wanda_virtual_machines
-      #  environment: prod
-      #  component: virtual-machines
-      #  extraCommandArgs: -var "target_nodes=[\"wanda\"]"
-      #  destroy: false
-      #  deploy: true
-      #  localEnvironments:
-      #    - wanda
-      #  dependsOn:
-      #    - generate_ansible_inventory
-      #  preSteps:
-      #    - script: |
-      #        sudo apt install age
-      #        age --version
-      #        curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
-      #        mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
-      #        chmod +x /usr/local/bin/sops
-      #        sops --version
-      #        mkdir -p ~/.config/sops/age
-      #      displayName: Install SOPS and Age
-      #    - task: AzureCLI@2
-      #      displayName: Get Age Key
-      #      inputs:
-      #        azureSubscription: "MSDN New"
-      #        scriptType: "bash"
-      #        scriptLocation: "inlineScript"
-      #        inlineScript: |
-      #          az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/keys.txt
-      #          chmod 600 ~/.config/sops/age/keys.txt
-      #          ls -la ~/.config/sops/age
-      #- deployment: tiny_virtual_machines
-      #  environment: prod
-      #  component: virtual-machines
-      #  extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
-      #  destroy: false
-      #  deploy: true
-      #  localEnvironments:
-      #    - hela
-      #    - loki
-      #    - thor
-      #  dependsOn:
-      #    - generate_ansible_inventory
-      #  preSteps:
-      #    - script: |
-      #        sudo apt install age
-      #        age --version
-      #        curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
-      #        mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
-      #        chmod +x /usr/local/bin/sops
-      #        sops --version
-      #        mkdir -p ~/.config/sops/age
-      #      displayName: Install SOPS and Age
-      #    - task: AzureCLI@2
-      #      displayName: Get Age Key
-      #      inputs:
-      #        azureSubscription: "MSDN New"
-      #        scriptType: "bash"
-      #        scriptLocation: "inlineScript"
-      #        inlineScript: |
-      #          az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/keys.txt
-      #          chmod 600 ~/.config/sops/age/keys.txt
-      #          ls -la ~/.config/sops/age
+      - deployment: prod_vpn_gateway
+        environment: prod
+        component: cloud-vpn-gateway
+        destroy: false
+        deploy: true
+        dependsOn:
+          - test_vpn_gateway
+      - deployment: test_gameserver
+        environment: test
+        component: game-server
+        destroy: false
+        deploy: true
+        preSteps:
+          task: AzureCLI@2
+          displayName: Start Stopped VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          inputs:
+            azureSubscription: "MSDN New"
+            scriptType: "bash"
+            addSpnToEnvironment: true
+            scriptLocation: "inlineScript"
+            inlineScript: |
+              ids=$( az vm list -g games-test-rg --query "[[?powerState!='VM running'].id]" -d -o tsv)
+              if [ -z "$ids" ]; then
+                echo "No VMs to start"
+              else
+                echo "Starting VMs: $ids"
+                az vm start --ids $ids
+              fi
+              echo "##vso[task.setvariable variable=testStoppedIds;isOutput=true]$ids"
+        postStep:
+          task: AzureCLI@2
+          displayName: Stop VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          inputs:
+            azureSubscription: "MSDN New"
+            scriptType: "bash"
+            addSpnToEnvironment: true
+            scriptLocation: "inlineScript"
+            inlineScript: |
+              if [ -z "$(testStoppedIds)" ]; then
+                echo "No VMs to start"
+              else
+                echo "Stopping VMs: $(testStoppedIds)"
+                az vm stop --ids $(testStoppedIds)
+                az vm deallocate --ids $(testStoppedIds)
+              fi
+        dependsOn:
+          - prod_twingate
+      - deployment: prod_gameserver
+        environment: prod
+        component: game-server
+        destroy: false
+        deploy: true
+        preSteps:
+          task: AzureCLI@2
+          displayName: Start Stopped VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          inputs:
+            azureSubscription: "MSDN New"
+            scriptType: "bash"
+            addSpnToEnvironment: true
+            scriptLocation: "inlineScript"
+            inlineScript: |
+              ids=$( az vm list -g games-prod-rg --query "[[?powerState!='VM running'].id]" -d -o tsv)
+              if [ -z "$ids" ]; then
+                echo "No VMs to start"
+              else
+                echo "Starting VMs: $ids"
+                az vm start --ids $ids
+              fi
+              echo "##vso[task.setvariable variable=prodStoppedIds]$ids"
+        postStep:
+          task: AzureCLI@2
+          displayName: Stop VMs
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+          inputs:
+            azureSubscription: "MSDN New"
+            scriptType: "bash"
+            addSpnToEnvironment: true
+            scriptLocation: "inlineScript"
+            inlineScript: |
+              if [ -z "$(prodStoppedIds)" ]; then
+                echo "No VMs to start"
+              else
+                echo "Stopping VMs: $(prodStoppedIds)"
+                az vm stop --ids $(prodStoppedIds)
+                az vm deallocate --ids $(prodStoppedIds)
+              fi
+        dependsOn:
+          - prod_twingate
+          - test_gameserver
+      - deployment: wanda_virtual_machines
+        environment: prod
+        component: virtual-machines
+        extraCommandArgs: -var "target_nodes=[\"wanda\"]"
+        destroy: false
+        deploy: true
+        localEnvironments:
+          - wanda
+        dependsOn:
+          - generate_ansible_inventory
+        preSteps:
+          - script: |
+              sudo apt install age
+              age --version
+              curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+              mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
+              chmod +x /usr/local/bin/sops
+              sops --version
+              mkdir -p ~/.config/sops/age
+            displayName: Install SOPS and Age
+          - task: AzureCLI@2
+            displayName: Get Age Key
+            inputs:
+              azureSubscription: "MSDN New"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/keys.txt
+                chmod 600 ~/.config/sops/age/keys.txt
+                ls -la ~/.config/sops/age
+      - deployment: tiny_virtual_machines
+        environment: prod
+        component: virtual-machines
+        extraCommandArgs: -var "target_nodes=[\"hela\",\"loki\",\"thor\"]"
+        destroy: false
+        deploy: true
+        localEnvironments:
+          - hela
+          - loki
+          - thor
+        dependsOn:
+          - generate_ansible_inventory
+        preSteps:
+          - script: |
+              sudo apt install age
+              age --version
+              curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
+              mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
+              chmod +x /usr/local/bin/sops
+              sops --version
+              mkdir -p ~/.config/sops/age
+            displayName: Install SOPS and Age
+          - task: AzureCLI@2
+            displayName: Get Age Key
+            inputs:
+              azureSubscription: "MSDN New"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/keys.txt
+                chmod 600 ~/.config/sops/age/keys.txt
+                ls -la ~/.config/sops/age
   - name: ansible_deployments
     type: object
     default:
@@ -299,7 +300,7 @@ stages:
                         echo '$(jsonStageDependencies)' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end) | .check_hosts_online.check_hosts_online.outputs' > processed_stage_dependencies.json
                         for host in $LOCAL_ENVIRONMENTS; do
                           status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
-                          echo "Status for $host: $status"
+                          echo "$host is online: $status"
                           if [ "$status" != '"true"' ]; then
                             all_online=false
                           fi
@@ -345,65 +346,60 @@ stages:
                   runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
               - ${{ if deployment.postStep }}:
                   - ${{ deployment.postStep }}
-  #- ${{ each ansible_deployment in parameters.ansible_deployments }}:
-  #    - stage: ${{ ansible_deployment.deployment }}
-  #      ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
-  #        dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
-  #      ${{ elseif ansible_deployment.localEnvironments }}:
-  #        dependsOn: check_hosts_online
-  #      ${{ else }}:
-  #        dependsOn: ${{ ansible_deployment.dependsOn }}
-  #      jobs:
-  #        - ${{ if ansible_deployment.localEnvironments }}:
-  #            - job: CheckAllHostsOnline
-  #              displayName: Check all required hosts are online
-  #              steps:
-  #                - script: |
-  #                    all_online=true
-  #                    for host in ${{ join(' ', ansible_deployment.localEnvironments) }}; do
-  #                      status="$(echo ${{ format('$(stageDependencies.check_hosts_online.outputs[\'check_hosts_online.checkOnline_{0}.online\'])', host) }})"
-  #                      if [ "$status" != "true" ]; then
-  #                        all_online=false
-  #                        break
-  #                      fi
-  #                    done
-  #                    echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
-  #                  displayName: Check all hosts online
-  #            - job: AnsibleCheckRun
-  #              dependsOn: CheckAllHostsOnline
-  #              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
-  #              pool:
-  #                vmImage: $(agentImage)
-  #              steps:
-  #                - template: steps/twingate-connect.yaml@azuredevops-lib
-  #                  parameters:
-  #                    keyVaultName: bancey-vault
-  #                    serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-  #                    serviceConnection: $(serviceConnection)
-  #                - template: steps/ansible.yaml@azuredevops-lib
-  #                  parameters:
-  #                    serviceConnection: $(serviceConnection)
-  #                    keyVaultName: bancey-vault
-  #                    privateKeySecretName: Packer-Private-Key
-  #                    playbook: ${{ ansible_deployment.playbook }}
-  #                    secrets: ${{ ansible_deployment.secrets }}
-  #                    requirementsFile: ${{ ansible_deployment.requirementsFile }}
-  #      ${{ else }}:
-  #        jobs:
-  #          - job: AnsibleCheckRun
-  #            pool:
-  #              vmImage: $(agentImage)
-  #            steps:
-  #              - template: steps/twingate-connect.yaml@azuredevops-lib
-  #                parameters:
-  #                  keyVaultName: bancey-vault
-  #                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-  #                  serviceConnection: $(serviceConnection)
-  #              - template: steps/ansible.yaml@azuredevops-lib
-  #                parameters:
-  #                  serviceConnection: $(serviceConnection)
-  #                  keyVaultName: bancey-vault
-  #                  privateKeySecretName: Packer-Private-Key
-  #                  playbook: ${{ ansible_deployment.playbook }}
-  #                  secrets: ${{ ansible_deployment.secrets }}
-  #                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
+  - ${{ each ansible_deployment in parameters.ansible_deployments }}:
+    - stage: ${{ ansible_deployment.deployment }}
+      ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
+        dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
+      ${{ elseif ansible_deployment.localEnvironments }}:
+        dependsOn: check_hosts_online
+      ${{ else }}:
+        dependsOn: ${{ ansible_deployment.dependsOn }}
+      jobs:
+        - ${{ if ansible_deployment.localEnvironments }}:
+          - job: CheckAllHostsOnline
+             displayName: Check all required hosts are online
+             variables:
+               jsonStageDependencies: $[convertToJson(stageDependencies)]
+             steps:
+               - task: CmdLine@2
+                 name: consolidate_hosts_online
+                 inputs:
+                   script: |
+                     set -e
+                     all_online=true
+                     echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
+                     echo '$(jsonStageDependencies)' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end) | .check_hosts_online.check_hosts_online.outputs' > processed_stage_dependencies.json
+                     for host in $LOCAL_ENVIRONMENTS; do
+                       status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
+                       echo "$host is online: $status"
+                       if [ "$status" != '"true"' ]; then
+                         all_online=false
+                       fi
+                     done
+                     echo "All hosts online: $all_online"
+                     echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                 displayName: Check all hosts online
+                 env:
+                   LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
+          - job: AnsibleCheckRun
+            ${{ if deployment.localEnvironments }}:
+              dependsOn: CheckAllHostsOnline
+              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
+            ${{ else }}:
+              condition: succeeded()
+            pool:
+              vmImage: $(agentImage)
+            steps:
+              - template: steps/twingate-connect.yaml@azuredevops-lib
+                parameters:
+                  keyVaultName: bancey-vault
+                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                  serviceConnection: $(serviceConnection)
+              - template: steps/ansible.yaml@azuredevops-lib
+                parameters:
+                  serviceConnection: $(serviceConnection)
+                  keyVaultName: bancey-vault
+                  privateKeySecretName: Packer-Private-Key
+                  playbook: ${{ ansible_deployment.playbook }}
+                  secrets: ${{ ansible_deployment.secrets }}
+                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
