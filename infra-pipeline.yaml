@@ -380,9 +380,9 @@ stages:
                     echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
                 displayName: Check all hosts online
                 env:
-                  LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
+                  LOCAL_ENVIRONMENTS: ${{ join(' ', ansible_deployment.localEnvironments) }}
           - job: AnsibleCheckRun
-            ${{ if deployment.localEnvironments }}:
+            ${{ if ansible_deployment.localEnvironments }}:
               dependsOn: CheckAllHostsOnline
               condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
             ${{ else }}:
