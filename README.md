@@ -36,7 +36,9 @@ Deployment is automated via Azure DevOps pipelines (`infra-pipeline.yaml`). The 
 - Generate and apply Kubernetes manifests via Flux
 
 ### 3. Bootstrap Kubernetes Cluster
-After infrastructure is up, bootstrap Flux on the target cluster:
+If you're using the Terraform to deploy Proxmox VMs for the control and worker nodes it includes Ansible automation to automatically provision and bootstrap the cluster with some basic configuration as well as Flux.
+
+However, you can manually bootstrap the clusters using the taskfile. Replacing `<cluster-name>` with the name of your cluster, configuration will need to exist in the `kubernetes/flux/clusters` directory.
 
 ```bash
 task bootstrap -- <cluster-name>
