@@ -316,10 +316,10 @@ stages:
             variables:
               jsonDependencies: $[convertToJson(dependencies)]
             steps:
-              - script: echo $(jsonDependencies)
+              - script: echo '"$(jsonDependencies)"'
                 displayName: 'Print dependencies JSON'
-              - script: echo $(dependencies.CheckAllHostsOnline.outputs
-                displayName: 'Print dependencies JSON'
+              - script: echo '"$(dependencies.CheckAllHostsOnline.outputs)"'
+                displayName: 'Print dependencies'
           - job: TerraformPlanApply
             ${{ if deployment.localEnvironments }}:
               dependsOn: CheckAllHostsOnline
