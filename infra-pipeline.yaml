@@ -283,12 +283,17 @@ stages:
           dependsOn: check_hosts_online
         ${{ else }}:
           dependsOn: ${{ deployment.dependsOn }}
-        ${{ if deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ deployment.localEnvironments[0] }}.online'], 'true'))
-        ${{ else }}: # yamllint disable-line rule:key-duplicates
-          condition: succeeded()
         jobs:
+          - ${{ if deployment.localEnvironments }}:
+              - template: jobs/hosts-online-precheck.yaml@azuredevops-lib
+                parameters:
+                  localEnvironments: ${{ deployment.localEnvironments }}
           - job: TerraformPlanApply
+            ${{ if deployment.localEnvironments }}:
+              dependsOn: AllHostsOnlinePreCheck
+              condition: and(succeeded(), eq(dependencies.AllHostsOnlinePreCheck.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
+            ${{ else }}:
+              condition: succeeded()
             pool:
               vmImage: $(agentImage)
             steps:
@@ -327,25 +332,30 @@ stages:
           dependsOn: check_hosts_online
         ${{ else }}:
           dependsOn: ${{ ansible_deployment.dependsOn }}
-        ${{ if ansible_deployment.localEnvironments }}:
-          condition: and(succeeded(), eq(stageDependencies.check_hosts_online.outputs['check_hosts_online.checkOnline_${{ ansible_deployment.localEnvironments[0] }}.online'], 'true'))
-        ${{ else }}: # yamllint disable-line rule:key-duplicates
-          condition: succeeded()
         jobs:
-          - job: AnsibleCheckRun
-            pool:
-              vmImage: $(agentImage)
-            steps:
-              - template: steps/twingate-connect.yaml@azuredevops-lib
+          - ${{ if ansible_deployment.localEnvironments }}:
+              - template: jobs/hosts-online-precheck.yaml@azuredevops-lib
                 parameters:
-                  keyVaultName: bancey-vault
-                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                  serviceConnection: $(serviceConnection)
-              - template: steps/ansible.yaml@azuredevops-lib
-                parameters:
-                  serviceConnection: $(serviceConnection)
-                  keyVaultName: bancey-vault
-                  privateKeySecretName: Packer-Private-Key
-                  playbook: ${{ ansible_deployment.playbook }}
-                  secrets: ${{ ansible_deployment.secrets }}
-                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
+                  localEnvironments: ${{ ansible_deployment.localEnvironments }}
+              - job: AnsibleCheckRun
+                ${{ if ansible_deployment.localEnvironments }}:
+                  dependsOn: AllHostsOnlinePreCheck
+                  condition: and(succeeded(), eq(dependencies.AllHostsOnlinePreCheck.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
+                ${{ else }}:
+                  condition: succeeded()
+                pool:
+                  vmImage: $(agentImage)
+                steps:
+                  - template: steps/twingate-connect.yaml@azuredevops-lib
+                    parameters:
+                      keyVaultName: bancey-vault
+                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                      serviceConnection: $(serviceConnection)
+                  - template: steps/ansible.yaml@azuredevops-lib
+                    parameters:
+                      serviceConnection: $(serviceConnection)
+                      keyVaultName: bancey-vault
+                      privateKeySecretName: Packer-Private-Key
+                      playbook: ${{ ansible_deployment.playbook }}
+                      secrets: ${{ ansible_deployment.secrets }}
+                      requirementsFile: ${{ ansible_deployment.requirementsFile }}
