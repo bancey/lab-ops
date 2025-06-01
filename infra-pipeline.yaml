@@ -306,6 +306,15 @@ stages:
                     displayName: Check all hosts online
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
+          - job: test
+            dependsOn: CheckAllHostsOnline
+            pool:
+              vmImage: $(agentImage)
+            variables:
+              jsonDependencies: $[convertToJson(dependencies)]
+            steps:
+              - script: echo $(jsonDependencies)
+                displayName: 'Print dependencies JSON'
           - job: TerraformPlanApply
             #${{ if deployment.localEnvironments }}:
             dependsOn: CheckAllHostsOnline
