@@ -8,7 +8,7 @@ Configuration as code for my lab environment which spans Azure & on-premise devi
 - Azure subscription and access to Azure Key Vault
 - Proxmox nodes (on-prem)
 - Raspberry Pi devices (for HA and Twingate connectors)
-- [Task](https://taskfile.dev) installed for running automation tasks
+- [Task](https://taskfile.dev) installed for running automation tasks - not required but helpful.
 - [Ansible](https://www.ansible.com/) and required collections/roles (see `ansible/requirements.yaml`)
 - [Terraform](https://www.terraform.io/) and access to remote state
 
