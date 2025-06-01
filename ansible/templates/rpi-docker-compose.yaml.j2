@@ -39,10 +39,9 @@ services:
 {% if inventory_hostname == "gamora" %}
     networks:
       - bw-services
-{% else %}
+{% endif %}
     ports:
       - "8080:8080/tcp"
-{% endif %}
 {% if inventory_hostname == "gamora" %}
   bunkerweb:
     image: bunkerity/bunkerweb:1.6.1

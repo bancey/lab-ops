@@ -54,17 +54,6 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  - name: Add HAProxy Repository
-    apt_repository:
-      repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net bullseye-backports-2.8 main"
-      state: absent
-  - name: Update apt and install HAProxy
-    apt:
-      pkg:
-        - haproxy=2.8.*
-      state: absent
-      update_cache: true
-    when: not ansible_check_mode
   - name: create config directories
     file:
       path: "{{ item }}"
