@@ -300,8 +300,7 @@ stages:
                         for host in $LOCAL_ENVIRONMENTS; do
                           status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
                           echo "Status for $host: $status"
-                          echo "$status != true"
-                          if [ "$status" != "true" ]; then
+                          if [ "$status" != '"true"' ]; then
                             all_online=false
                           fi
                         done
