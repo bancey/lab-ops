@@ -45,27 +45,27 @@ parameters:
   - name: terraform_deployments
     type: object
     default:
-      - deployment: generate_ansible_inventory
-        environment: prod
-        component: inventory
-        destroy: false
-        deploy: true
-        preSteps:
-          - task: AzureCLI@2
-            displayName: Download GitHub Private Key
-            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-            inputs:
-              azureSubscription: "MSDN New"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
-        dependsOn: []
-      - deployment: prod_twingate
-        environment: prod
-        component: twingate
-        destroy: false
-        deploy: true
-        dependsOn: []
+      #- deployment: generate_ansible_inventory
+      #  environment: prod
+      #  component: inventory
+      #  destroy: false
+      #  deploy: true
+      #  preSteps:
+      #    - task: AzureCLI@2
+      #      displayName: Download GitHub Private Key
+      #      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      #      inputs:
+      #        azureSubscription: "MSDN New"
+      #        scriptType: "bash"
+      #        scriptLocation: "inlineScript"
+      #        inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
+      #  dependsOn: []
+      #- deployment: prod_twingate
+      #  environment: prod
+      #  component: twingate
+      #  destroy: false
+      #  deploy: true
+      #  dependsOn: []
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -74,8 +74,7 @@ parameters:
         localEnvironments:
           - thanos
           - gamora
-        dependsOn:
-          - prod_twingate
+        dependsOn: []
       #- deployment: test_vpn_gateway
       #  environment: test
       #  component: cloud-vpn-gateway
