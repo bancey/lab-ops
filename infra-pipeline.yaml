@@ -270,7 +270,7 @@ variables:
 stages:
   - template: stages/check-hosts-online.yaml@azuredevops-lib
     parameters:
-      dependencies: []
+      dependencies: prod_twingate
       keyVaultName: bancey-vault
       serviceKeySecretName: Twingate-AzureDevOps-SA-Key
       serviceConnection: $(serviceConnection)
@@ -347,59 +347,59 @@ stages:
               - ${{ if deployment.postStep }}:
                   - ${{ deployment.postStep }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
-    - stage: ${{ ansible_deployment.deployment }}
-      ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
-        dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
-      ${{ elseif ansible_deployment.localEnvironments }}:
-        dependsOn: check_hosts_online
-      ${{ else }}:
-        dependsOn: ${{ ansible_deployment.dependsOn }}
-      jobs:
-        - ${{ if ansible_deployment.localEnvironments }}:
-          - job: CheckAllHostsOnline
-            displayName: Check all required hosts are online
-            variables:
-              jsonStageDependencies: $[convertToJson(stageDependencies)]
-            steps:
-              - task: CmdLine@2
-                name: consolidate_hosts_online
-                inputs:
-                  script: |
-                    set -e
-                    all_online=true
-                    echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
-                    echo '$(jsonStageDependencies)' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end) | .check_hosts_online.check_hosts_online.outputs' > processed_stage_dependencies.json
-                    for host in $LOCAL_ENVIRONMENTS; do
-                      status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
-                      echo "$host is online: $status"
-                      if [ "$status" != '"true"' ]; then
-                        all_online=false
-                      fi
-                    done
-                    echo "All hosts online: $all_online"
-                    echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
-                displayName: Check all hosts online
-                env:
-                  LOCAL_ENVIRONMENTS: ${{ join(' ', ansible_deployment.localEnvironments) }}
-          - job: AnsibleCheckRun
-            ${{ if ansible_deployment.localEnvironments }}:
-              dependsOn: CheckAllHostsOnline
-              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
-            ${{ else }}:
-              condition: succeeded()
-            pool:
-              vmImage: $(agentImage)
-            steps:
-              - template: steps/twingate-connect.yaml@azuredevops-lib
-                parameters:
-                  keyVaultName: bancey-vault
-                  serviceKeySecretName: Twingate-AzureDevOps-SA-Key
-                  serviceConnection: $(serviceConnection)
-              - template: steps/ansible.yaml@azuredevops-lib
-                parameters:
-                  serviceConnection: $(serviceConnection)
-                  keyVaultName: bancey-vault
-                  privateKeySecretName: Packer-Private-Key
-                  playbook: ${{ ansible_deployment.playbook }}
-                  secrets: ${{ ansible_deployment.secrets }}
-                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
+      - stage: ${{ ansible_deployment.deployment }}
+        ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
+          dependsOn: ${{ split(format('{0},{1}', join(',', ansible_deployment.dependsOn), 'check_hosts_online'), ',') }}
+        ${{ elseif ansible_deployment.localEnvironments }}:
+          dependsOn: check_hosts_online
+        ${{ else }}:
+          dependsOn: ${{ ansible_deployment.dependsOn }}
+        jobs:
+          - ${{ if ansible_deployment.localEnvironments }}:
+              - job: CheckAllHostsOnline
+                displayName: Check all required hosts are online
+                variables:
+                  jsonStageDependencies: $[convertToJson(stageDependencies)]
+                steps:
+                  - task: CmdLine@2
+                    name: consolidate_hosts_online
+                    inputs:
+                      script: |
+                        set -e
+                        all_online=true
+                        echo "Checking online status for hosts: $LOCAL_ENVIRONMENTS"
+                        echo '$(jsonStageDependencies)' | jq 'walk(if type == "object" and has("outputs") then .outputs |= with_entries(.key |= gsub("\\."; "_")) else . end) | .check_hosts_online.check_hosts_online.outputs' > processed_stage_dependencies.json
+                        for host in $LOCAL_ENVIRONMENTS; do
+                          status=$(jq ".checkOnline_${host}_online" processed_stage_dependencies.json)
+                          echo "$host is online: $status"
+                          if [ "$status" != '"true"' ]; then
+                            all_online=false
+                          fi
+                        done
+                        echo "All hosts online: $all_online"
+                        echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
+                    displayName: Check all hosts online
+                    env:
+                      LOCAL_ENVIRONMENTS: ${{ join(' ', ansible_deployment.localEnvironments) }}
+              - job: AnsibleCheckRun
+                ${{ if ansible_deployment.localEnvironments }}:
+                  dependsOn: CheckAllHostsOnline
+                  condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
+                ${{ else }}:
+                  condition: succeeded()
+                pool:
+                  vmImage: $(agentImage)
+                steps:
+                  - template: steps/twingate-connect.yaml@azuredevops-lib
+                    parameters:
+                      keyVaultName: bancey-vault
+                      serviceKeySecretName: Twingate-AzureDevOps-SA-Key
+                      serviceConnection: $(serviceConnection)
+                  - template: steps/ansible.yaml@azuredevops-lib
+                    parameters:
+                      serviceConnection: $(serviceConnection)
+                      keyVaultName: bancey-vault
+                      privateKeySecretName: Packer-Private-Key
+                      playbook: ${{ ansible_deployment.playbook }}
+                      secrets: ${{ ansible_deployment.secrets }}
+                      requirementsFile: ${{ ansible_deployment.requirementsFile }}
