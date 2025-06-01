@@ -308,11 +308,11 @@ stages:
                     env:
                       LOCAL_ENVIRONMENTS: ${{ join(' ', deployment.localEnvironments) }}
           - job: TerraformPlanApply
-            ${{ if deployment.localEnvironments }}:
-              dependsOn: CheckAllHostsOnline
-              condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
-            ${{ else }}:
-              condition: succeeded()
+            #${{ if deployment.localEnvironments }}:
+            dependsOn: CheckAllHostsOnline
+            condition: and(succeeded(), eq(dependencies.CheckAllHostsOnline.outputs['allHostsOnline'], 'true'))
+            #${{ else }}:
+            #  condition: succeeded()
             pool:
               vmImage: $(agentImage)
             steps:
