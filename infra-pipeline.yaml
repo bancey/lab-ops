@@ -301,7 +301,6 @@ stages:
                         echo "Status for $host: $status"
                         if [ "$status" != "true" ]; then
                           all_online=false
-                          break
                         fi
                       done
                       echo "##vso[task.setvariable variable=allHostsOnline;isOutput=true]$all_online"
