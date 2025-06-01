@@ -54,37 +54,17 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  #- name: ensures /etc/haproxy dir exists
-  #  file:
-  #    path: /etc/haproxy
-  #    state: directory
-  #- name: Copy HAProxy configuration template
-  #  template:
-  #    src: templates/rpi-haproxy.cfg.j2
-  #    dest: /etc/haproxy/haproxy.cfg
-  #- name: Check if HAProxy GPG key exists
-  #  stat:
-  #    path: /usr/share/keyrings/haproxy.debian.net.gpg
-  #  register: haproxygpg
-  #- name: Download HAProxy GPG Key
-  #  get_url:
-  #    url: https://haproxy.debian.net/bernat.debian.org.gpg
-  #    dest: /tmp/bernat.debian.org.gpg
-  #  when: not haproxygpg.stat.exists
-  #- name: Dearmor HAProxy GPG Key
-  #  ansible.builtin.command: gpg -o /usr/share/keyrings/haproxy.debian.net.gpg --dearmor /tmp/bernat.debian.org.gpg
-  #  when: not haproxygpg.stat.exists
-  #- name: Add HAProxy Repository
-  #  apt_repository:
-  #    repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net bullseye-backports-2.8 main"
-  #    state: present
-  #- name: Update apt and install HAProxy
-  #  apt:
-  #    pkg:
-  #      - haproxy=2.8.*
-  #    state: latest
-  #    update_cache: true
-  #  when: not ansible_check_mode
+  - name: Add HAProxy Repository
+    apt_repository:
+      repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net bullseye-backports-2.8 main"
+      state: absent
+  - name: Update apt and install HAProxy
+    apt:
+      pkg:
+        - haproxy=2.8.*
+      state: absent
+      update_cache: true
+    when: not ansible_check_mode
   - name: create config directories
     file:
       path: "{{ item }}"
