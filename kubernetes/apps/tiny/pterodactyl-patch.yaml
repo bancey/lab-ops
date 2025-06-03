@@ -6,6 +6,5 @@ metadata:
   namespace: pterodactyl
 spec:
   values:
-    TEST: true
     appConfig:
       url: "https://pterodactyl.heimelska.co.uk"

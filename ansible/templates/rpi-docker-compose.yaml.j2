@@ -67,7 +67,7 @@ services:
     environment:
       <<: *bw-env
       BUNKERWEB_INSTANCES: "bunkerweb thanos.heimelska.co.uk"
-      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk, unifi.heimelska.co.uk"
       MULTISITE: "yes"
       SERVE_FILES: "no"
       DISABLE_DEFAULT_SERVER: "yes"
@@ -123,6 +123,8 @@ services:
       dl.heimelska.co.uk_REVERSE_PROXY_HOST: "https://dl.wanda.heimelska.co.uk"
       dl.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       dl.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "dl.wanda.heimelska.co.uk"
+      unifi.heimelska.co.uk_REVERSE_PROXY_HOST: "https://10.151.14.1"
+      unifi.heimelska.co.uk_REVERSE_PROXY_URL: "/"
     volumes:
       - /opt/bunkerweb/data:/data
     restart: "unless-stopped"
