@@ -1,6 +1,6 @@
 dns:
-  unifi.bancey.xyz:
-    record: 10.151.11.1
+  unifi.heimelska.co.uk:
+    record: 10.151.14.4
   bunkerweb-mgmt.heimelska.co.uk:
     record: 10.151.14.6
   thanos.heimelska.co.uk:
