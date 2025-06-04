@@ -334,3 +334,24 @@ dns:
     record: 10.151.14.4
   gatus.gamora.heimelska.co.uk:
     record: 10.151.14.4
+  plex.bancey.xyz:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - wanda_k8s
+          - all
+          - plex
+        service_accounts:
+          - AzureDevOps
+  plex.wanda.bancey.xyz:
+    record: 10.152.15.50

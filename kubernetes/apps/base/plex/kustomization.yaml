@@ -5,3 +5,4 @@ namespace: plex
 resources:
   - namespace.yaml
   - release.yaml
+  - ingress-route.yaml

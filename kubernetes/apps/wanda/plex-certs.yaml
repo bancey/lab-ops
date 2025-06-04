@@ -1,0 +1,30 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: plex-staging-tls
+  namespace: flux-system
+spec:
+  secretName: plex-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "plex.wanda.bancey.xyz"
+  dnsNames:
+    - "plex.wanda.bancey.xyz"
+    - "plex.bancey.xyz"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: plex-tls
+  namespace: flux-system
+spec:
+  secretName: plex-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "plex.wanda.bancey.xyz"
+  dnsNames:
+    - "plex.wanda.bancey.xyz"
+    - "plex.bancey.xyz"

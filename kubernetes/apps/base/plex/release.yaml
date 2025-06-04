@@ -26,6 +26,11 @@ spec:
       enabled: true
       url: https://plex.bancey.xyz
       ingressClassName: traefik
+      tls:
+        - hosts:
+            - plex.bancey.xyz
+            - plex.wanda.bancey.xyz
+          secretName: plex-tls
     service:
       type: LoadBalancer
       annotations:
