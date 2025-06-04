@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: linuxserver/prowlarr:1.36.3
+    image: linuxserver/prowlarr:1.37.0
     config:
       port: 9696
     persistence:
