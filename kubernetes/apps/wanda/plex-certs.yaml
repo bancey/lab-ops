@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: plex-staging-tls
-  namespace: flux-system
+  namespace: plex
 spec:
   secretName: plex-staging-tls
   issuerRef:
@@ -18,7 +18,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: plex-tls
-  namespace: flux-system
+  namespace: plex
 spec:
   secretName: plex-tls
   issuerRef:
