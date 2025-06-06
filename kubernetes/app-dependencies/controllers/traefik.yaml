@@ -19,9 +19,9 @@ spec:
     remediation:
       retries: 3
   values:
-    globalArguments:
-      - "--global.sendanonymoususage=false"
-      - "--global.checknewversion=false"
+    global:
+      checkNewVersion: false
+      sendAnonymousUsage: false
 
     additionalArguments:
       - "--serversTransport.insecureSkipVerify=true"
