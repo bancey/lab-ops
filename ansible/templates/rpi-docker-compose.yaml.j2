@@ -82,6 +82,7 @@ services:
       LETS_ENCRYPT_DNS_CREDENTIAL_ITEM: "cloudflare_api_token {{ cloudflare_api_token }}"
       BAD_BEHAVIOR_THRESHOLD: 100
       LIMIT_REQ_RATE: "10r/s"
+      ALLOWED_METHODS: "GET|POST|HEAD|DELETE|PUT|PATCH|OPTIONS"
       bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:7000"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
@@ -127,6 +128,10 @@ services:
       unifi.heimelska.co.uk_REVERSE_PROXY_HOST: "https://10.151.14.1"
       unifi.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       unifi.heimelska.co.uk_REVERSE_PROXY_WS: "yes"
+      plex.bancey.xyz_REVERSE_PROXY_HOST: "https://plex.wanda.bancey.xyz"
+      plex.bancey.xyz_REVERSE_PROXY_URL: "/"
+      plex.bancey.xyz_REVERSE_PROXY_CUSTOM_HOST: "plex.wanda.bancey.xyz"
+      plex.bancey.xyz_REVERSE_PROXY_WS: "yes"
     volumes:
       - /opt/bunkerweb/data:/data
     restart: "unless-stopped"
