@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: traefik
-      version: "35.4.0"
+      version: "36.0.0"
       sourceRef:
         kind: HelmRepository
         name: traefik
@@ -19,9 +19,9 @@ spec:
     remediation:
       retries: 3
   values:
-    globalArguments:
-      - "--global.sendanonymoususage=false"
-      - "--global.checknewversion=false"
+    global:
+      checkNewVersion: false
+      sendAnonymousUsage: false
 
     additionalArguments:
       - "--serversTransport.insecureSkipVerify=true"
