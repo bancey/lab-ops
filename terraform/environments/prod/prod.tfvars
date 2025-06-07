@@ -155,7 +155,7 @@ images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
 }
 
-twingate_groups = ["pve", "all", "tiny_k8s", "wanda_k8s", "pterodactyl", "plex"]
+twingate_groups = ["all", "birds", "plex", "pterodactyl", "pve", "tiny_k8s", "wanda_k8s"]
 twingate_service_accounts = {
   "AzureDevOps" = {}
   "Pterodactyl" = {
@@ -165,6 +165,9 @@ twingate_service_accounts = {
 twingate_networks = {
   banceylab = {
     connectors = ["banceylab-connector", "banceylab-connector-2"]
+  }
+  birds = {
+    connectors = ["birds-connector"]
   }
 }
 
@@ -209,10 +212,28 @@ twingate_resources = {
         groups           = ["all"]
         service_accounts = ["AzureDevOps"]
       }
+      protocols = { tcp = {
+        policy = "RESTRICTED"
+        ports  = ["22", "443", "80"]
+        }
+      }
+    }
+  }
+  "birds-gateway" = {
+    record = "192.168.1.250"
+    twingate = {
+      network = "birds"
+      access = {
+        groups           = ["birds", "all"]
+        service_accounts = []
+      }
       protocols = {
+        allow_icmp = true
         tcp = {
-          policy = "RESTRICTED"
-          ports  = ["22", "443", "80"]
+          policy = "ALLOW_ALL"
+        }
+        udp = {
+          policy = "ALLOW_ALL"
         }
       }
     }
