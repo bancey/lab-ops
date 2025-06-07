@@ -204,23 +204,8 @@ twingate_resources = {
       }
     }
   }
-  "test-vms" = {
-    record = "10.151.14.192/27"
-    twingate = {
-      network = "banceylab"
-      access = {
-        groups           = ["all"]
-        service_accounts = ["AzureDevOps"]
-      }
-      protocols = { tcp = {
-        policy = "RESTRICTED"
-        ports  = ["22", "443", "80"]
-        }
-      }
-    }
-  }
   "birds-gateway" = {
-    record = "192.168.1.250"
+    record = "192.168.68.250"
     twingate = {
       network = "birds"
       access = {
