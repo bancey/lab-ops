@@ -67,7 +67,7 @@ services:
     environment:
       <<: *bw-env
       BUNKERWEB_INSTANCES: "bunkerweb thanos.heimelska.co.uk"
-      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk unifi.heimelska.co.uk plex.bancey.xyz"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk unifi.heimelska.co.uk"
       MULTISITE: "yes"
       SERVE_FILES: "no"
       DISABLE_DEFAULT_SERVER: "yes"
@@ -82,7 +82,7 @@ services:
       LETS_ENCRYPT_DNS_CREDENTIAL_ITEM: "cloudflare_api_token {{ cloudflare_api_token }}"
       BAD_BEHAVIOR_THRESHOLD: 100
       LIMIT_REQ_RATE: "25r/s"
-      ALLOWED_METHODS: "GET|POST|HEAD|DELETE|PUT|PATCH|OPTIONS"
+      ALLOWED_METHODS: "GET|POST|HEAD|DELETE|PUT|PATCH|OPTIONS|CONNECT|TRACE"
       bunkerweb-mgmt.heimelska.co.uk_USE_TEMPLATE: "ui"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:7000"
       bunkerweb-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
@@ -128,10 +128,6 @@ services:
       unifi.heimelska.co.uk_REVERSE_PROXY_HOST: "https://10.151.14.1"
       unifi.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       unifi.heimelska.co.uk_REVERSE_PROXY_WS: "yes"
-      plex.bancey.xyz_REVERSE_PROXY_HOST: "https://plex.wanda.bancey.xyz"
-      plex.bancey.xyz_REVERSE_PROXY_URL: "/"
-      plex.bancey.xyz_REVERSE_PROXY_CUSTOM_HOST: "plex.wanda.bancey.xyz"
-      plex.bancey.xyz_REVERSE_PROXY_WS: "yes"
     volumes:
       - /opt/bunkerweb/data:/data
     restart: "unless-stopped"
