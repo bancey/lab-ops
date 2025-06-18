@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: ghcr.io/pterodactyl/panel:v1.11.10
+    image: ghcr.io/pterodactyl/panel:v1.11.11
     appConfig:
       mailSecretRef: "pterodactyl-mail-secret"
       secretName: pterodactyl-secret
