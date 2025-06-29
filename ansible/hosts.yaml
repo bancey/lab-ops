@@ -3,6 +3,8 @@ all:
   vars:
     ansible_user: bancey
   hosts:
+    crafty-controller:
+      ansible_host: 10.151.14.101
     wings-thor:
       ansible_host: 10.151.14.100
     haproxy0:
