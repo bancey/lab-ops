@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ./external-services
   - ../base/smokeping
-  - ../base/pterodactyl
+  #- ../base/pterodactyl
   - ./penpot-secret.sops.yaml
   - ../base/penpot
   - ./discord-bot-secret.sops.yaml
@@ -17,9 +17,9 @@ patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
-  - pterodactyl-certificate-patch.yaml
-  - pterodactyl-ingress-route-patch.yaml
-  - pterodactyl-patch.yaml
+  #- pterodactyl-certificate-patch.yaml
+  #- pterodactyl-ingress-route-patch.yaml
+  #- pterodactyl-patch.yaml
   - penpot-certificate-patch.yaml
   - penpot-ingress-route-patch.yaml
   - penpot-patch.yaml
