@@ -74,7 +74,7 @@ virtual_machines = {
     image               = "jammy-server-cloudimg-amd64.img"
   }
   crafty-controller = {
-    node                = "crafty"
+    node                = "loki"
     vm_id               = 501
     vm_description      = "Crafty Controller"
     cpu_cores           = 4
