@@ -1,0 +1,21 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: pelican-mariadb
+  namespace: pelican
+spec:
+  rootPasswordSecretKeyRef:
+    name: pelican-root-mariadb
+    key: password
+    generate: true
+
+  username: pelican
+  passwordSecretKeyRef:
+    name: pelican-mariadb
+    key: password
+    generate: true
+  database: panel
+
+  storage:
+    size: 1Gi
+    storageClassName: longhorn

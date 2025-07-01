@@ -4,6 +4,7 @@ resources:
   - ./external-services
   - ../base/smokeping
   #- ../base/pterodactyl
+  - ../base/pelican
   - ./penpot-secret.sops.yaml
   - ../base/penpot
   - ./discord-bot-secret.sops.yaml

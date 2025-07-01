@@ -2,6 +2,8 @@
 
 Configuration as code for my lab environment which spans Azure & on-premise devices.
 
+![Alt](https://repobeats.axiom.co/api/embed/5e99dee292ec3af09e50ecc4efd8e2be8c4b49da.svg "Repobeats analytics image")
+
 ## Deployment from Scratch
 
 ### Prerequisites
