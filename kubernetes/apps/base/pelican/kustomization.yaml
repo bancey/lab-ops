@@ -6,5 +6,5 @@ resources:
   - namespace.yaml
   - mariadb.yaml
   - dragonfly.yaml
-  - pelican-secret.yaml
+  - pelican-secret.sops.yaml
   - release.yaml
