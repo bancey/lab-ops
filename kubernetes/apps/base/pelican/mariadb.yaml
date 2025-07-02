@@ -5,15 +5,15 @@ metadata:
   namespace: pelican
 spec:
   rootPasswordSecretKeyRef:
-    name: pelican-root-mariadb
-    key: password
-    generate: true
+    name: pelican-secrets
+    key: DB_ROOT_PASSWORD
+    generate: false
 
   username: pelican
   passwordSecretKeyRef:
-    name: pelican-mariadb
-    key: password
-    generate: true
+    name: pelican-secrets
+    key: DB_PASSWORD
+    generate: false
   database: panel
 
   storage:
