@@ -15,3 +15,5 @@ resources:
   - cloudnative-pg.yaml
   - mariadb-operator-namespace.yaml
   - mariadb-operator-crds.yaml
+  - dragonfly-namespace.yaml
+  - dragonfly.yaml
