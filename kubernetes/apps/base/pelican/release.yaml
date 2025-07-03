@@ -34,7 +34,8 @@ spec:
               APP_DEBUG: "false"
               APP_TIMEZONE: UTC
               APP_URL: https://pelican.heimelska.co.uk
-              REDIS_CACHE_CONNECTION: pelican-dragonfly:6379
+              REDIS_HOST: pelican-dragonfly
+              REDIS_PORT: 6379
               CACHE_DRIVER: redis
               SESSION_DRIVER: redis
               QUEUE_CONNECTION: redis
