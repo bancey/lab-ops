@@ -5,13 +5,13 @@ metadata:
   namespace: pelican
 spec:
   rootPasswordSecretKeyRef:
-    name: pelican-secrets
+    name: pelican-secret
     key: DB_ROOT_PASSWORD
     generate: false
 
   username: pelican
   passwordSecretKeyRef:
-    name: pelican-secrets
+    name: pelican-secret
     key: DB_PASSWORD
     generate: false
   database: panel
