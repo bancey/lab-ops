@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: pelican
 resources:
   - namespace.yaml
-  #- mariadb.yaml
+  - mariadb.yaml
   - dragonfly.yaml
   - pelican-secret.sops.yaml
   #- release.yaml
