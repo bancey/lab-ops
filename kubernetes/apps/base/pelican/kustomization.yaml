@@ -7,4 +7,4 @@ resources:
   - mariadb.yaml
   - dragonfly.yaml
   - pelican-secret.sops.yaml
-  #- release.yaml
+  - release.yaml
