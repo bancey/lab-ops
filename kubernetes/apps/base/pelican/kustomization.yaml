@@ -8,3 +8,5 @@ resources:
   - dragonfly.yaml
   - pelican-secret.sops.yaml
   - release.yaml
+  - certificates.yaml
+  - ingress-route.yaml

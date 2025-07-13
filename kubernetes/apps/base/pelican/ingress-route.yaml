@@ -1,0 +1,22 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pelican
+  namespace: pelican
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`pelican.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: pelican
+          port: 80
+      middlewares:
+        - name: default-headers
+          namespace: traefik
+  tls:
+    secretName: pelican-tls

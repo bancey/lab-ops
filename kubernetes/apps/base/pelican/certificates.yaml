@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: pelican-staging-tls
+  namespace: default
+spec:
+  secretName: pelican-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "pelican.heimelska.co.uk"
+  dnsNames:
+    - "pelican.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: pelican-tls
+  namespace: default
+spec:
+  secretName: pelican-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "pelican.heimelska.co.uk"
+  dnsNames:
+    - "pelican.heimelska.co.uk"
