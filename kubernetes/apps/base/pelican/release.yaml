@@ -74,3 +74,9 @@ spec:
         size: 1Gi
         globalMounts:
           - path: /var/www/html/storage/logs
+      caddyfile:
+        type: configMap
+        enabled: true
+        name: pelican-caddyfile
+        globalMounts:
+          - path: /etc/caddy/
