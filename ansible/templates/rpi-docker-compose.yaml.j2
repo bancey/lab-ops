@@ -32,7 +32,7 @@ services:
       TWINGATE_DNS: 10.151.14.1
       TWINGATE_LABEL_MACHINE_NAME: {{ inventory_hostname }}
   gatus:
-    image: twinproduction/gatus:v5.19.0
+    image: twinproduction/gatus:v5.20.0
     volumes:
       - /opt/gatus/config:/config
       - /opt/gatus/data:/data
