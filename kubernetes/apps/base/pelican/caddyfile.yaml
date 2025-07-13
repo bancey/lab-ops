@@ -7,7 +7,7 @@ data:
     {
         admin off
         servers {
-            trusted_proxies static [UPSTREAM IP]
+            trusted_proxies static 10.0.0.0/8
         }
     }
 
