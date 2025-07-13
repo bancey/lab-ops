@@ -10,3 +10,4 @@ resources:
   - release.yaml
   - certificates.yaml
   - ingress-route.yaml
+  - caddyfile.yaml
