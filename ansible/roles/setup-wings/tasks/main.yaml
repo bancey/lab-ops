@@ -44,10 +44,21 @@
     dest: /usr/local/bin/wings
     mode: u+x
   when: not ansible_check_mode
-- name: Download wings systemd service
-  get_url:
-    url: "https://raw.githubusercontent.com/bancey/terraform-module-pterodactyl-node/develop/provision/wings.service"
+- name: Create pelican directory
+  file:
+    path: "/etc/pelican"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  become: true
+- name: Copy Cloudflare api token
+  template:
+    src: files/wings.service
     dest: /etc/systemd/system/wings.service
+    owner: root
+    group: root
+  become: true
 - name: Enable and start wings
   systemd:
     name: wings
