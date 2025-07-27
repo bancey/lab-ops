@@ -1,4 +1,4 @@
-- name: Update system and install Pterodactyl wings pre-requisites
+- name: Update system and install Pelican wings pre-requisites
   hosts: wings-thor
   become: true
   become_user: root

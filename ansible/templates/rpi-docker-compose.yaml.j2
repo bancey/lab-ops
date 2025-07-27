@@ -67,7 +67,7 @@ services:
     environment:
       <<: *bw-env
       BUNKERWEB_INSTANCES: "bunkerweb thanos.heimelska.co.uk"
-      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pterodactyl.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk unifi.heimelska.co.uk"
+      SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pelican.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk unifi.heimelska.co.uk"
       MULTISITE: "yes"
       SERVE_FILES: "no"
       DISABLE_DEFAULT_SERVER: "yes"
@@ -103,9 +103,6 @@ services:
       adguard.thanos.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       wanda-mgmt.heimelska.co.uk_REVERSE_PROXY_HOST: "https://10.151.14.10"
       wanda-mgmt.heimelska.co.uk_REVERSE_PROXY_URL: "/"
-      pterodactyl.heimelska.co.uk_REVERSE_PROXY_HOST: "https://10.152.16.50"
-      pterodactyl.heimelska.co.uk_REVERSE_PROXY_URL: "/"
-      pterodactyl.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "pterodactyl.heimelska.co.uk"
       pelican.heimelska.co.uk_REVERSE_PROXY_HOST: "https://pelican.tiny.heimelska.co.uk"
       pelican.heimelska.co.uk_REVERSE_PROXY_URL: "/"
       pelican.heimelska.co.uk_REVERSE_PROXY_WS: "yes"

@@ -205,29 +205,6 @@ dns:
           - AzureDevOps
   dl.wanda.heimelska.co.uk:
     record: 10.152.15.50
-  pterodactyl.heimelska.co.uk:
-    record: 10.151.14.4
-    twingate:
-      network: banceylab
-      protocols:
-        allow_icmp: false
-        tcp:
-          policy: RESTRICTED
-          ports:
-            - 8080
-            - 443
-            - 2022
-            - 22
-        udp:
-          policy: DENY_ALL
-      access:
-        groups:
-          - pterodactyl
-          - all
-        service_accounts:
-          - Pterodactyl
-  pterodactyl.tiny.heimelska.co.uk:
-    record: 10.152.16.50
   pelican.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -344,10 +321,10 @@ dns:
           policy: DENY_ALL
       access:
         groups:
-          - pterodactyl
+          - pelican
           - all
         service_accounts:
-          - Pterodactyl
+          - Pelican
           - AzureDevOps
   adguard.thanos.heimelska.co.uk:
     record: 10.151.14.4
