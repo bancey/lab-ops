@@ -18,5 +18,13 @@ spec:
       middlewares:
         - name: default-headers
           namespace: traefik
+    - match: Host(`pelican.tiny.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: pelican
+          port: 80
+      middlewares:
+        - name: default-headers
+          namespace: traefik
   tls:
     secretName: pelican-tls

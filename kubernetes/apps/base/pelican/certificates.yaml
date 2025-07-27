@@ -12,6 +12,7 @@ spec:
   commonName: "pelican.heimelska.co.uk"
   dnsNames:
     - "pelican.heimelska.co.uk"
+    - "pelican.tiny.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -26,3 +27,4 @@ spec:
   commonName: "pelican.heimelska.co.uk"
   dnsNames:
     - "pelican.heimelska.co.uk"
+    - "pelican.tiny.heimelska.co.uk"

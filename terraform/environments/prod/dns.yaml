@@ -228,6 +228,29 @@ dns:
           - Pterodactyl
   pterodactyl.tiny.heimelska.co.uk:
     record: 10.152.16.50
+  pelican.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 8080
+            - 443
+            - 2022
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pelican
+          - all
+        service_accounts:
+          - Pelican
+  pelican.tiny.heimelska.co.uk:
+    record: 10.152.16.50
   longhorn.heimelska.co.uk:
     record: 10.151.14.4
     twingate:

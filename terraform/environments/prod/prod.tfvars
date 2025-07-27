@@ -171,12 +171,10 @@ images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
 }
 
-twingate_groups = ["all", "birds", "plex", "pterodactyl", "pve", "tiny_k8s", "wanda_k8s"]
+twingate_groups = ["all", "birds", "plex", "pelican", "pve", "tiny_k8s", "wanda_k8s"]
 twingate_service_accounts = {
   "AzureDevOps" = {}
-  "Pterodactyl" = {
-    trigger_credential_replace = "03/09/24@1925"
-  }
+  "Pelican"     = {}
 }
 twingate_networks = {
   banceylab = {
