@@ -2,7 +2,9 @@ dns:
   unifi.heimelska.co.uk:
     record: 10.151.14.4
   bunkerweb-mgmt.heimelska.co.uk:
-    record: 10.151.14.6
+    record: 10.151.14.4
+  bunkerweb-mgmt.tiny.heimelska.co.uk:
+    record: 10.152.16.50
   thanos.heimelska.co.uk:
     record: 10.151.14.5
     twingate:
