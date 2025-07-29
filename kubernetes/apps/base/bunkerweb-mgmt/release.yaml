@@ -1,0 +1,90 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: bunkerwebmgmt
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.2.0
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      bunkerwebmgmt-scheduler:
+        containers:
+          scheduler:
+            image:
+              repository: bunkerity/bunkerweb-scheduler
+              tag: 1.6.2
+            envFrom:
+              - configMapRef:
+                  name: bunkerwebmgmt-config
+            env:
+              DATABASE_URI:
+                valueFrom:
+                  secretKeyRef:
+                    name: bunkerwebmgmt-secret
+                    key: DATABASE_URI
+              LETS_ENCRYPT_DNS_CREDENTIAL_ITEM:
+                valueFrom:
+                  secretKeyRef:
+                    name: bunkerwebmgmt-secret
+                    key: LETS_ENCRYPT_DNS_CREDENTIAL_ITEM
+      bunkerwebmgmt-ui:
+        containers:
+          ui:
+            image:
+              repository: bunkerity/bunkerweb-ui
+              tag: 1.6.2
+            envFrom:
+            env:
+              DATABASE_URI:
+                valueFrom:
+                  secretKeyRef:
+                    name: bunkerwebmgmt-secret
+                    key: DATABASE_URI
+              TOTP_SECRETS:
+                valueFrom:
+                  secretKeyRef:
+                    name: bunkerwebmgmt-secret
+                    key: TOTP_SECRETS
+              ADMIN_USERNAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: bunkerwebmgmt-secret
+                    key: ADMIN_USERNAME
+              ADMIN_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: bunkerwebmgmt-secret
+                    key: ADMIN_PASSWORD
+    service:
+      ui:
+        controller: ui
+        ports:
+          http:
+            port: 80
+    
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteMany
+        size: 1Gi
+        advancedMounts:
+          bunkerwebmgmt-ui:
+            ui:
+              - path: /appdata/config
+                readOnly: true

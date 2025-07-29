@@ -1,0 +1,21 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: bunkerwebmgmt-mariadb
+  namespace: bunkerweb-mgmt
+spec:
+  rootPasswordSecretKeyRef:
+    name: bunkerwebmgmt-secret
+    key: DB_ROOT_PASSWORD
+    generate: false
+
+  username: bunkerweb
+  passwordSecretKeyRef:
+    name: bunkerwebmgmt-secret
+    key: DB_PASSWORD
+    generate: false
+  database: db
+
+  storage:
+    size: 1Gi
+    storageClassName: longhorn

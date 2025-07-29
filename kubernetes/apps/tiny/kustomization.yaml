@@ -11,6 +11,7 @@ resources:
   - ../base/capacitor
   - ./capacitor-certificates.yaml
   - ./capacitor-ingress-route.yaml
+  - ../base/bunkerweb-mgmt
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
