@@ -72,7 +72,7 @@ spec:
                     key: ADMIN_PASSWORD
     service:
       ui:
-        controller: ui
+        controller: bunkerwebmgmt-ui
         ports:
           http:
             port: 80
