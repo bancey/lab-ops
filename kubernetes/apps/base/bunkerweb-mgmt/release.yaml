@@ -76,7 +76,7 @@ spec:
         ports:
           http:
             port: 80
-    
+
     persistence:
       data:
         type: persistentVolumeClaim
