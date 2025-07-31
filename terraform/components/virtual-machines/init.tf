@@ -7,7 +7,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.38.0"
+      version = "4.38.1"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
