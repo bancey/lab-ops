@@ -23,7 +23,7 @@ spec:
       retries: 3
   values:
     controllers:
-      bunkerwebmgmt-scheduler:
+      scheduler:
         containers:
           scheduler:
             image:
@@ -43,7 +43,7 @@ spec:
                   secretKeyRef:
                     name: bunkerwebmgmt-secret
                     key: LETS_ENCRYPT_DNS_CREDENTIAL_ITEM
-      bunkerwebmgmt-ui:
+      ui:
         containers:
           ui:
             image:
@@ -72,18 +72,18 @@ spec:
                     key: ADMIN_PASSWORD
     service:
       ui:
-        controller: bunkerwebmgmt-ui
+        controller: ui
         ports:
           http:
             port: 80
 
     persistence:
-      data:
+      bwdata:
         type: persistentVolumeClaim
         accessMode: ReadWriteMany
         size: 1Gi
         advancedMounts:
-          bunkerwebmgmt-ui:
+          scheduler:
             ui:
               - path: /data
                 readOnly: true
