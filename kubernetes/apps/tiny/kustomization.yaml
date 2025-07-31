@@ -4,8 +4,8 @@ resources:
   - ./external-services
   - ../base/smokeping
   - ../base/pelican
-  - ./penpot-secret.sops.yaml
-  - ../base/penpot
+  #- ./penpot-secret.sops.yaml
+  #- ../base/penpot
   - ./discord-bot-secret.sops.yaml
   - ../base/discord
   - ../base/capacitor
@@ -16,6 +16,6 @@ patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
-  - penpot-certificate-patch.yaml
-  - penpot-ingress-route-patch.yaml
-  - penpot-patch.yaml
+  #- penpot-certificate-patch.yaml
+  #- penpot-ingress-route-patch.yaml
+  #- penpot-patch.yaml
