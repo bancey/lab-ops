@@ -17,3 +17,4 @@ resources:
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
   - ./mariadb-operator.yaml
+  - ./twingate.yaml

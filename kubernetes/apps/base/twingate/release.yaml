@@ -1,0 +1,23 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: twingate
+  namespace: twingate
+spec:
+  releaseName: twingate
+  chart:
+    spec:
+      chart: connector
+      sourceRef:
+        kind: HelmRepository
+        name: twingate
+        namespace: flux-system
+  interval: 1h0m
+  install:
+    remediation:
+      retries: 3
+  values:
+    connector:
+      network: bancetech
+      existingSecret: twingate
