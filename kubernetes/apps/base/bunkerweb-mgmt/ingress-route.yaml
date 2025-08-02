@@ -14,7 +14,7 @@ spec:
       kind: Rule
       services:
         - name: bunkerwebmgmt
-          port: 80
+          port: 7000
       middlewares:
         - name: default-headers
           namespace: traefik
@@ -22,7 +22,7 @@ spec:
       kind: Rule
       services:
         - name: bunkerwebmgmt
-          port: 80
+          port: 7000
       middlewares:
         - name: default-headers
           namespace: traefik
