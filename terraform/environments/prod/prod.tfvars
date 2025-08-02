@@ -179,7 +179,7 @@ twingate_service_accounts = {
 }
 twingate_networks = {
   banceylab = {
-    connectors = ["banceylab-connector", "banceylab-connector-2"]
+    connectors = ["banceylab-connector", "banceylab-connector-2", "banceylab-tiny-k8s"]
   }
   birds = {
     connectors = ["birds-connector"]
