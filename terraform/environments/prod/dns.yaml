@@ -288,6 +288,24 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  wanda-pve.heimelska.co.uk:
+    record: 10.151.14.4
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
   wanda-mgmt.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
