@@ -5,4 +5,4 @@ install_pkgs:
   - grep
   - python3-kubernetes
   - python3-yaml
-  - python3-pip
+  - python3-netaddr

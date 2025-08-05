@@ -24,9 +24,6 @@
     when: run_prep
     ansible.builtin.include_role:
       name: prep
-  - name: Install netaddr python package
-    ansible.builtin.pip:
-      name: netaddr>=1.3.0
   - name: Install K3S
     when: run_install
     ansible.builtin.include_role:
