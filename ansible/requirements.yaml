@@ -2,6 +2,8 @@
 collections:
   - name: kubernetes.core
     version: 6.0.0
+  - name: ansible.utils
+    version: 6.0.0
 roles:
   - name: xanmanning.k3s
     version: v3.5.0
