@@ -14,7 +14,8 @@ spec:
         name: sonarr-secret
 
   storage:
-    size: 1Gi
+    size: 10Gi
+    storageClass: config-nfs-csi
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
@@ -32,4 +33,5 @@ spec:
         name: sonarr-secret
 
   storage:
-    size: 1Gi
+    size: 10Gi
+    storageClass: config-nfs-csi

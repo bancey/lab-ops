@@ -14,7 +14,9 @@ spec:
         name: radarr-secret
 
   storage:
-    size: 1Gi
+    size: 10Gi
+    storageClass: config-nfs-csi
+
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
@@ -32,4 +34,5 @@ spec:
         name: radarr-secret
 
   storage:
-    size: 1Gi
+    size: 10Gi
+    storageClass: config-nfs-csi
