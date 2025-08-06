@@ -13,6 +13,9 @@ spec:
       secret:
         name: sonarr-secret
 
+  postgresUID: 3001
+  postgresGID: 3001
+
   storage:
     size: 10Gi
     storageClass: config-nfs-csi
@@ -31,6 +34,9 @@ spec:
       owner: sonarr
       secret:
         name: sonarr-secret
+
+  postgresUID: 3001
+  postgresGID: 3001
 
   storage:
     size: 10Gi
