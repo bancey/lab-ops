@@ -1,17 +1,17 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: sonarr-main-pg
+  name: radarr-main-pg
   namespace: acquisition
 spec:
   instances: 1
 
   bootstrap:
     initdb:
-      database: sonarr-main
-      owner: sonarr
+      database: radarr-main
+      owner: radarr
       secret:
-        name: sonarr-secret
+        name: radarr-secret
 
   storage:
     size: 1Gi
@@ -19,17 +19,17 @@ spec:
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: sonarr-log-pg
+  name: radarr-log-pg
   namespace: acquisition
 spec:
   instances: 1
 
   bootstrap:
     initdb:
-      database: sonarr-log
-      owner: sonarr
+      database: radarr-log
+      owner: radarr
       secret:
-        name: sonarr-secret
+        name: radarr-secret
 
   storage:
     size: 1Gi
