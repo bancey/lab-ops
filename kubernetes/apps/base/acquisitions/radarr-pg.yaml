@@ -1,44 +1,29 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: radarr-main-pg
+  name: radarr-pg
   namespace: acquisition
 spec:
   instances: 1
-
+  postgresUID: 65534
+  postgresGID: 65534
   bootstrap:
     initdb:
       database: radarr-main
       owner: radarr
       secret:
         name: radarr-secret
-
-  postgresUID: 65534
-  postgresGID: 65534
-
   storage:
     size: 10Gi
     storageClass: nobody-nfs-csi
-
 ---
 apiVersion: postgresql.cnpg.io/v1
-kind: Cluster
+kind: Database
 metadata:
-  name: radarr-log-pg
+  name: radarr-log
   namespace: acquisition
 spec:
-  instances: 1
-
-  bootstrap:
-    initdb:
-      database: radarr-log
-      owner: radarr
-      secret:
-        name: radarr-secret
-
-  postgresUID: 65534
-  postgresGID: 65534
-
-  storage:
-    size: 10Gi
-    storageClass: nobody-nfs-csi
+  name: radarr-log
+  owner: radarr
+  cluster:
+    name: radarr-pg
