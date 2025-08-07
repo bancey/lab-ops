@@ -11,3 +11,16 @@ reclaimPolicy: Delete
 volumeBindingMode: Immediate
 mountOptions:
   - nfsvers=4.1
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nobody-nfs-csi
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: 10.151.14.15
+  share: /mnt/wanda-data/nfs-nobody
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+mountOptions:
+  - nfsvers=4.1
