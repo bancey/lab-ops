@@ -7,12 +7,12 @@ resources:
   - radarr-release.yaml
   - radarr-route.yaml
   - radarr-secret.sops.yaml
-  - radarr-pg.yaml
+  #- radarr-pg.yaml
   - sabnzbd-release.yaml
   - sabnzbd-route.yaml
   - sonarr-release.yaml
   - sonarr-route.yaml
-  - sonarr-pg.yaml
+  #- sonarr-pg.yaml
   - sonarr-secret.sops.yaml
   - prowlarr-release.yaml
   - prowlarr-route.yaml

@@ -13,9 +13,6 @@ spec:
       secret:
         name: radarr-secret
 
-  postgresUID: 3001
-  postgresGID: 3001
-
   storage:
     size: 10Gi
     storageClass: config-nfs-csi
@@ -35,9 +32,6 @@ spec:
       owner: radarr
       secret:
         name: radarr-secret
-
-  postgresUID: 3001
-  postgresGID: 3001
 
   storage:
     size: 10Gi
