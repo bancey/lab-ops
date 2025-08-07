@@ -13,9 +13,12 @@ spec:
       secret:
         name: radarr-secret
 
+  postgresUID: 65534
+  postgresGID: 65534
+
   storage:
     size: 10Gi
-    storageClass: config-nfs-csi
+    storageClass: nobody-nfs-csi
 
 ---
 apiVersion: postgresql.cnpg.io/v1
@@ -33,6 +36,9 @@ spec:
       secret:
         name: radarr-secret
 
+  postgresUID: 65534
+  postgresGID: 65534
+
   storage:
     size: 10Gi
-    storageClass: config-nfs-csi
+    storageClass: nobody-nfs-csi
