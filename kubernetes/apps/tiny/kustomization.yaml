@@ -14,6 +14,7 @@ resources:
   - ../base/bunkerweb-mgmt
   - ../base/twingate
   - ./monica-db-secret.yaml
+  - ./monica-certificates.yaml
   - ../base/monica
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
