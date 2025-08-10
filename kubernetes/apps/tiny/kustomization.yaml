@@ -13,6 +13,8 @@ resources:
   - ./capacitor-ingress-route.yaml
   - ../base/bunkerweb-mgmt
   - ../base/twingate
+  - ./monica-db-secret.yaml
+  - ../base/monica
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml

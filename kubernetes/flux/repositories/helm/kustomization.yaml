@@ -18,3 +18,4 @@ resources:
   - ./cloudnative-pg.yaml
   - ./mariadb-operator.yaml
   - ./twingate.yaml
+  - ./monica.yaml
