@@ -1,0 +1,18 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: monica-pg
+  namespace: monica
+spec:
+  instances: 1
+  postgresUID: 65534
+  postgresGID: 65534
+  bootstrap:
+    initdb:
+      database: monica
+      owner: monica
+      secret:
+        name: monica-db-secret
+  storage:
+    size: 8Gi
+    storageClass: longhorn

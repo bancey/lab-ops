@@ -1,0 +1,78 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: monica
+  namespace: monica
+spec:
+  releaseName: monica
+  chart:
+    spec:
+      version: 1.0.14
+      chart: monica
+      sourceRef:
+        kind: HelmRepository
+        name: monica
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/monicahq/monica-next
+      tag: main@sha256:365098f76f77b1309a949a5c5d834e31a58a24cc1c1b851fbfe37469b29f2b9c
+      pullPolicy: IfNotPresent
+
+    monica:
+      host: "crm.heimelska.co.uk"
+      cronjob:
+        enabled: true
+      queue:
+        enabled: true
+      extraEnv:
+        - name: QUEUE_CONNECTION
+          value: database
+        - name: CACHE_STORE
+          value: database
+
+    # Disable internal SQLite database
+    internalDatabase:
+      enabled: false
+
+    # Use external PostgreSQL database
+    externalDatabase:
+      enabled: true
+      type: postgresql
+      host: monica-pg-rw
+      user: monica
+      database: monica
+      existingSecret:
+        enabled: true
+        secretName: monica-db-secret
+        usernameKey: username
+        passwordKey: password
+
+    # Enable persistence for uploads and storage
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 8Gi
+      storageClass: longhorn
+
+    service:
+      type: ClusterIP
+      port: 80
+
+    # Disable built-in ingress since we'll use Traefik IngressRoute
+    ingress:
+      enabled: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
