@@ -21,3 +21,11 @@ pull_request_rules:
       review:
         type: APPROVE
         message: ":robot: LGTM! *beep* *boop*"
+  - name: Automatic approval of CoPilot pull requests when approved by bancey
+    conditions:
+      - author=copilot-swe-agent
+      - approved-reviews-by=bancey
+    actions:
+      review:
+        type: APPROVE
+        message: ":robot: LGTM! *beep* *boop*"
