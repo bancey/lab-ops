@@ -1,0 +1,67 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-database-postgres
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cluster-storage-longhorn
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/clusters/wanda/database-postgres
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: cloudnative-pg
+      namespace: cnpg-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-database-mariadb
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cluster-storage-longhorn
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/clusters/wanda/database-mariadb
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-database-dragonfly
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cluster-core-controllers
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/clusters/wanda/database-dragonfly
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: dragonfly
+      namespace: dragonfly-system

@@ -1,0 +1,6 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Placeholder for complex storage apps requiring both Longhorn and databases
+# Currently no such apps in wanda cluster
+resources: []

@@ -1,0 +1,71 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Apps requiring NFS storage - all the wanda media server apps
+  - ../../apps/wanda/plex-certs.yaml
+  - ../../apps/wanda/plex-config-pv.yaml
+  - ../../apps/wanda/plex-config-pvc.yaml
+  - ../../apps/wanda/plex-data-pv.yaml
+  - ../../apps/wanda/plex-data-pvc.yaml
+  - ../../apps/wanda/plex-data-private-pv.yaml
+  - ../../apps/wanda/plex-data-private-pvc.yaml
+  - ../../apps/base/plex
+  - ../../apps/wanda/sabnzbd-config-pv.yaml
+  - ../../apps/wanda/sabnzbd-config-pvc.yaml
+  - ../../apps/wanda/sabnzbd-downloads-pv.yaml
+  - ../../apps/wanda/sabnzbd-downloads-pvc.yaml
+  - ../../apps/wanda/sabnzbd-certs.yaml
+  - ../../apps/wanda/sonarr-config-pv.yaml
+  - ../../apps/wanda/sonarr-config-pvc.yaml
+  - ../../apps/wanda/sonarr-data-pv.yaml
+  - ../../apps/wanda/sonarr-data-pvc.yaml
+  - ../../apps/wanda/sonarr-certs.yaml
+  - ../../apps/wanda/radarr-config-pv.yaml
+  - ../../apps/wanda/radarr-config-pvc.yaml
+  - ../../apps/wanda/radarr-data-pv.yaml
+  - ../../apps/wanda/radarr-data-pvc.yaml
+  - ../../apps/wanda/radarr-certs.yaml
+  - ../../apps/wanda/prowlarr-config-pv.yaml
+  - ../../apps/wanda/prowlarr-config-pvc.yaml
+  - ../../apps/wanda/prowlarr-certs.yaml
+  - ../../apps/wanda/mullvad-secret.sops.yaml
+  - ../../apps/wanda/qbittorrent-config-pv.yaml
+  - ../../apps/wanda/qbittorrent-config-pvc.yaml
+  - ../../apps/base/acquisitions
+patches:
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`dl.wanda.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: sabnzbd
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`sonarr.wanda.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: sonarr
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`radarr.wanda.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: radarr
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`prowlarr.wanda.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: prowlarr
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`qb.wanda.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: qbittorrent-gluetun

@@ -1,0 +1,8 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Apps requiring only networking/ingress
+  - ../../apps/base/capacitor
+  - ../../apps/wanda/capacitor-ingress-route.yaml
+  - ../../apps/wanda/capacitor-certs.yaml
