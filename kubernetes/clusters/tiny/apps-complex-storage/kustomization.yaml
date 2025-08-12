@@ -1,0 +1,10 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Apps that need both storage and databases
+  - ../../apps/tiny/monica-db-secret.sops.yaml
+  - ../../apps/tiny/monica-certificates.yaml
+  - ../../apps/base/monica
+  - ../../apps/base/bunkerweb-mgmt
+  - ../../apps/base/pelican
