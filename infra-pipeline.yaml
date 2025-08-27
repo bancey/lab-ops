@@ -378,6 +378,8 @@ stages:
                       sudo cp -a /var/cache/apt/archives/* $(Pipeline.Workspace)/apt-cache/archives/ || true
                       mkdir -p $(Pipeline.Workspace)/apt-cache/lists
                       sudo cp -a /var/lib/apt/lists/* $(Pipeline.Workspace)/apt-cache/lists/ || true
+                      # Ensure the pipeline agent user owns the copied cache so subsequent steps can access it
+                      sudo chown -R $(id -u):$(id -g) $(Pipeline.Workspace)/apt-cache || true
                     displayName: Save APT caches from /var (workspace fallback)
               - ${{ if deployment.postStep }}:
                   - ${{ deployment.postStep }}
@@ -471,4 +473,6 @@ stages:
                           sudo cp -a /var/cache/apt/archives/* $(Pipeline.Workspace)/apt-cache/archives/ || true
                           mkdir -p $(Pipeline.Workspace)/apt-cache/lists
                           sudo cp -a /var/lib/apt/lists/* $(Pipeline.Workspace)/apt-cache/lists/ || true
+                          # Ensure the pipeline agent user owns the copied cache so subsequent steps can access it
+                          sudo chown -R $(id -u):$(id -g) $(Pipeline.Workspace)/apt-cache || true
                         displayName: Save APT caches from /var (workspace fallback)
