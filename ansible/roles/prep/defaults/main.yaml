@@ -6,3 +6,4 @@ install_pkgs:
   - python3-kubernetes
   - python3-yaml
   - python3-netaddr
+disable_multipath: true

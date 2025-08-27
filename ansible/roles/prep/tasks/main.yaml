@@ -35,3 +35,10 @@
 - name: Set timezone
   community.general.timezone:
     name: "Europe/London"
+- name: Disable multipathd service
+  ansible.builtin.systemd:
+    name: multipathd
+    enabled: false
+    state: stopped
+    masked: true
+  when: disable_multipath
