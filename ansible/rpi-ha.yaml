@@ -34,6 +34,7 @@
   roles:
   - role: prep
     install_pkgs: [ "apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker" ]
+    disable_multipath: false
   - role: install-docker
   tasks:
   - set_fact:
