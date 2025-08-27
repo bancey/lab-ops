@@ -186,7 +186,7 @@ parameters:
           - generate_ansible_inventory
         preSteps:
           - script: |
-              sudo apt install age
+              sudo apt-get install age
               age --version
               curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
               mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
@@ -218,7 +218,7 @@ parameters:
           - generate_ansible_inventory
         preSteps:
           - script: |
-              sudo apt install age
+              sudo apt-get install age
               age --version
               curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
               mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
@@ -297,6 +297,55 @@ stages:
             pool:
               vmImage: $(agentImage)
             steps:
+              - script: |
+                  if [ "$(id -u)" -eq 0 ]; then
+                    echo "Agent runs as root - will attempt direct Cache restore into /var"
+                    echo "##vso[task.setvariable variable=can_write_apt]true"
+                  else
+                    echo "Agent does not run as root - will use workspace cache + sudo copy"
+                    echo "##vso[task.setvariable variable=can_write_apt]false"
+                  fi
+                displayName: Check if agent can write to /var
+                name: CheckAptWrite
+              - script: |
+                  set -e
+                  # Compute a fingerprint of apt sources so cache invalidates when sources change
+                  S=$( (find /etc/apt -maxdepth 2 -type f -name '*.list' -print0 2>/dev/null | sort -z | xargs -0 cat 2>/dev/null) || true )
+                  if [ -z "$S" ]; then
+                    H=no-sources
+                  else
+                    H=$(printf "%s" "$S" | md5sum | awk '{print $1}')
+                  fi
+                  echo "Computed apt sources hash: $H"
+                  echo "##vso[task.setvariable variable=aptSourcesHash]$H"
+                displayName: Compute APT sources fingerprint
+              - ${{ if eq(variables['can_write_apt'], 'true') }}:
+                  - task: Cache@2
+                    displayName: "Restore APT lists (direct)"
+                    inputs:
+                      key: "apt-lists | $(Agent.OS) | $(aptSourcesHash)"
+                      path: /var/lib/apt/lists
+                  - task: Cache@2
+                    displayName: "Restore APT archives (direct)"
+                    inputs:
+                      key: "apt-archives | $(Agent.OS) | $(aptSourcesHash)"
+                      path: /var/cache/apt/archives
+              - ${{ if ne(variables['can_write_apt'], 'true') }}:
+                  - task: Cache@2
+                    displayName: "Restore APT cache (workspace)"
+                    inputs:
+                      key: "apt | $(Agent.OS) | $(aptSourcesHash)"
+                      path: $(Pipeline.Workspace)/apt-cache
+                  - script: |
+                      echo "Restoring APT cache into system locations (workspace fallback)"
+                      if [ -d "$(Pipeline.Workspace)/apt-cache/archives" ]; then
+                        sudo cp -a $(Pipeline.Workspace)/apt-cache/archives/* /var/cache/apt/archives/ || true
+                      fi
+                      if [ -d "$(Pipeline.Workspace)/apt-cache/lists" ]; then
+                        sudo rm -rf /var/lib/apt/lists/* || true
+                        sudo cp -a $(Pipeline.Workspace)/apt-cache/lists/* /var/lib/apt/lists/ || true
+                      fi
+                    displayName: Restore APT caches to /var (workspace fallback)
               - ${{ if deployment.preSteps }}:
                   - ${{ deployment.preSteps }}
               - ${{ if deployment.localEnvironments }}:
@@ -322,6 +371,30 @@ stages:
                     extraCommandArgs: ${{ deployment.extraCommandArgs }}
                   runApply: ${{ and(eq(deployment.deploy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
                   runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
+              - ${{ if eq(variables['can_write_apt'], 'true') }}:
+                  - task: Cache@2
+                    displayName: "Save APT lists (direct)"
+                    inputs:
+                      key: "apt-lists | $(Agent.OS) | $(aptSourcesHash)"
+                      path: /var/lib/apt/lists
+                  - task: Cache@2
+                    displayName: "Save APT archives (direct)"
+                    inputs:
+                      key: "apt-archives | $(Agent.OS) | $(aptSourcesHash)"
+                      path: /var/cache/apt/archives
+              - ${{ if ne(variables['can_write_apt'], 'true') }}:
+                  - script: |
+                      echo "Saving APT caches from system locations (workspace fallback)"
+                      mkdir -p $(Pipeline.Workspace)/apt-cache/archives
+                      sudo cp -a /var/cache/apt/archives/* $(Pipeline.Workspace)/apt-cache/archives/ || true
+                      mkdir -p $(Pipeline.Workspace)/apt-cache/lists
+                      sudo cp -a /var/lib/apt/lists/* $(Pipeline.Workspace)/apt-cache/lists/ || true
+                    displayName: Save APT caches from /var (workspace fallback)
+                  - task: Cache@2
+                    displayName: "Save APT cache (workspace)"
+                    inputs:
+                      key: "apt | $(Agent.OS) | $(aptSourcesHash)"
+                      path: $(Pipeline.Workspace)/apt-cache
               - ${{ if deployment.postStep }}:
                   - ${{ deployment.postStep }}
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
@@ -346,6 +419,54 @@ stages:
                 pool:
                   vmImage: $(agentImage)
                 steps:
+                  - script: |
+                      if [ "$(id -u)" -eq 0 ]; then
+                        echo "Agent runs as root - will attempt direct Cache restore into /var"
+                        echo "##vso[task.setvariable variable=can_write_apt]true"
+                      else
+                        echo "Agent does not run as root - will use workspace cache + sudo copy"
+                        echo "##vso[task.setvariable variable=can_write_apt]false"
+                      fi
+                    displayName: Check if agent can write to /var
+                    name: CheckAptWrite
+                  - script: |
+                      set -e
+                      S=$( (find /etc/apt -maxdepth 2 -type f -name '*.list' -print0 2>/dev/null | sort -z | xargs -0 cat 2>/dev/null) || true )
+                      if [ -z "$S" ]; then
+                        H=no-sources
+                      else
+                        H=$(printf "%s" "$S" | md5sum | awk '{print $1}')
+                      fi
+                      echo "Computed apt sources hash: $H"
+                      echo "##vso[task.setvariable variable=aptSourcesHash]$H"
+                    displayName: Compute APT sources fingerprint
+                  - ${{ if eq(variables['can_write_apt'], 'true') }}:
+                      - task: Cache@2
+                        displayName: "Restore APT lists (direct)"
+                        inputs:
+                          key: "apt-lists | $(Agent.OS) | $(aptSourcesHash)"
+                          path: /var/lib/apt/lists
+                      - task: Cache@2
+                        displayName: "Restore APT archives (direct)"
+                        inputs:
+                          key: "apt-archives | $(Agent.OS) | $(aptSourcesHash)"
+                          path: /var/cache/apt/archives
+                  - ${{ if ne(variables['can_write_apt'], 'true') }}:
+                      - task: Cache@2
+                        displayName: "Restore APT cache (workspace)"
+                        inputs:
+                          key: "apt | $(Agent.OS) | $(aptSourcesHash)"
+                          path: $(Pipeline.Workspace)/apt-cache
+                      - script: |
+                          echo "Restoring APT cache into system locations (workspace fallback)"
+                          if [ -d "$(Pipeline.Workspace)/apt-cache/archives" ]; then
+                            sudo cp -a $(Pipeline.Workspace)/apt-cache/archives/* /var/cache/apt/archives/ || true
+                          fi
+                          if [ -d "$(Pipeline.Workspace)/apt-cache/lists" ]; then
+                            sudo rm -rf /var/lib/apt/lists/* || true
+                            sudo cp -a $(Pipeline.Workspace)/apt-cache/lists/* /var/lib/apt/lists/ || true
+                          fi
+                        displayName: Restore APT caches to /var (workspace fallback)
                   - template: steps/twingate-connect.yaml@azuredevops-lib
                     parameters:
                       keyVaultName: bancey-vault
@@ -359,3 +480,27 @@ stages:
                       playbook: ${{ ansible_deployment.playbook }}
                       secrets: ${{ ansible_deployment.secrets }}
                       requirementsFile: ${{ ansible_deployment.requirementsFile }}
+                  - ${{ if eq(variables['can_write_apt'], 'true') }}:
+                      - task: Cache@2
+                        displayName: "Save APT lists (direct)"
+                        inputs:
+                          key: "apt-lists | $(Agent.OS) | $(aptSourcesHash)"
+                          path: /var/lib/apt/lists
+                      - task: Cache@2
+                        displayName: "Save APT archives (direct)"
+                        inputs:
+                          key: "apt-archives | $(Agent.OS) | $(aptSourcesHash)"
+                          path: /var/cache/apt/archives
+                  - ${{ if ne(variables['can_write_apt'], 'true') }}:
+                      - script: |
+                          echo "Saving APT caches from system locations (workspace fallback)"
+                          mkdir -p $(Pipeline.Workspace)/apt-cache/archives
+                          sudo cp -a /var/cache/apt/archives/* $(Pipeline.Workspace)/apt-cache/archives/ || true
+                          mkdir -p $(Pipeline.Workspace)/apt-cache/lists
+                          sudo cp -a /var/lib/apt/lists/* $(Pipeline.Workspace)/apt-cache/lists/ || true
+                        displayName: Save APT caches from /var (workspace fallback)
+                      - task: Cache@2
+                        displayName: "Save APT cache (workspace)"
+                        inputs:
+                          key: "apt | $(Agent.OS) | $(aptSourcesHash)"
+                          path: $(Pipeline.Workspace)/apt-cache
