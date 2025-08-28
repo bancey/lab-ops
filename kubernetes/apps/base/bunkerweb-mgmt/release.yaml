@@ -70,6 +70,7 @@ spec:
                   secretKeyRef:
                     name: bunkerwebmgmt-secret
                     key: ADMIN_PASSWORD
+              CHECK_PRIVATE_IP: 'no'
     service:
       ui:
         controller: ui
