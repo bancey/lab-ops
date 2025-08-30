@@ -73,31 +73,16 @@ virtual_machines = {
     disk_size           = 64
     image               = "jammy-server-cloudimg-amd64.img"
   }
-  crafty-controller = {
-    node                = "loki"
-    vm_id               = 501
-    vm_description      = "Crafty Controller"
-    cpu_cores           = 4
-    memory              = 12288
-    ip_address          = "10.151.14.101"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    disk_size           = 64
-    image               = "jammy-server-cloudimg-amd64.img"
-  }
 }
 
 containers = {
-  longhorn-backup = {
+  temp = {
     node                = "wanda"
-    ct_id               = 599
-    ct_description      = "Longhorn Backup LXC Container. Used to backup Longhorn volumes."
+    ct_id               = 700
+    ct_description      = "Temporary LXC Container"
     cpu_cores           = 4
     memory              = 4096
-    ip_address          = "10.151.14.199"
+    ip_address          = "10.151.14.102"
     gateway_ip_address  = "10.151.14.1"
     network_bridge_name = "vmbr1"
     vlan_tag            = "14"
