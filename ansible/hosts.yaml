@@ -3,8 +3,6 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    crafty-controller:
-      ansible_host: 10.151.14.101
     wings-thor:
       ansible_host: 10.151.14.100
     haproxy0:
@@ -16,8 +14,8 @@ all:
     haproxy2:
       ansible_host: 10.151.16.203
       ansible_user: root
-    longhorn-backup:
-      ansible_host: 10.151.14.199
+    temp:
+      ansible_host: 10.151.14.102
       ansible_user: root
   children:
     rpi:
