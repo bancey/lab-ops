@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../app-dependencies/config/cert-manager-issuers.yaml
+  - ../../../app-dependencies/config/cloudflare-api-token-secret.sops.yaml
+  - ../../../app-dependencies/config/traefik-dashboard-auth-secret.sops.yaml
+  - ../../../app-dependencies/config/traefik-dashboard-auth.yaml
+  - ../../../app-dependencies/config/traefik-dashboard-ingress.yaml
+  - ../../../app-dependencies/config/traefik-default-headers.yaml
+patches:
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`traefik.tiny`)
+    target:
+      kind: IngressRoute
+      name: traefik-dashboard

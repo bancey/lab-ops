@@ -1,0 +1,108 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-infrastructure-base
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cluster-repositories
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/infrastructure
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  patches:
+    - patch: |
+        - op: add
+          path: /spec/values/k8sServiceHost
+          value: 10.151.16.200
+      target:
+        kind: HelmRelease
+        name: cilium
+    - patch: |
+        - op: add
+          path: /spec/bgpInstances/0/localASN
+          value: 64602
+      target:
+        kind: CiliumBGPClusterConfig
+        name: cilium-bgp-unifi
+    - patch: |
+        - op: add
+          path: /spec/bgpInstances/0/name
+          value: "cilium-tiny-unifi"
+      target:
+        kind: CiliumBGPClusterConfig
+        name: cilium-bgp-unifi
+    - patch: |
+        - op: add
+          path: /spec/values/ipam/operator/clusterPoolIPv4PodCIDRList
+          value:
+            - 10.44.0.0/16
+      target:
+        kind: HelmRelease
+        name: cilium
+    - patch: |
+        - op: add
+          path: /spec/blocks/0/cidr
+          value: 10.152.16.0/24
+      target:
+        kind: CiliumLoadBalancerIPPool
+        name: cilium-lb-pool
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: cilium
+      namespace: kube-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-core-controllers
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cluster-infrastructure-base
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/clusters/tiny/core-controllers
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: cert-manager
+      namespace: cert-manager
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: traefik
+      namespace: traefik
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster-core-configs
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cluster-core-controllers
+  interval: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: lab-ops
+  path: ./kubernetes/clusters/tiny/core-configs
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
