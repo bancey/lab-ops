@@ -69,3 +69,10 @@ variable "disk_size" {
   description = "The size of the disk in GB."
   default     = 8
 }
+
+variable "unprivileged" {
+  type        = bool
+  description = "Should the container be unprivileged?"
+  default     = true
+
+}

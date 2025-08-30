@@ -57,7 +57,7 @@ resource "proxmox_virtual_environment_container" "this" {
     up_delay = var.startup_delay
   }
 
-  unprivileged = true
+  unprivileged = var.unprivileged
   features {
     nesting = true
   }

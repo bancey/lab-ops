@@ -27,6 +27,7 @@ variable "containers" {
     startup_delay       = number
     ct_description      = string
     storage             = string
+    unprivileged        = optional(bool, true)
   }))
   description = "Map containing information about LXC Containers to create in Proxmox."
 }

@@ -88,6 +88,7 @@ containers = {
     startup_order       = 0
     startup_delay       = 0
     storage             = "local-lvm"
+    unprivileged        = false
   }
   haproxy0 = {
     node                = "hela"
