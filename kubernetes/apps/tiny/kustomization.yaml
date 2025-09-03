@@ -16,6 +16,7 @@ resources:
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
   - ../base/monica
+  - ../base/monitoring
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
