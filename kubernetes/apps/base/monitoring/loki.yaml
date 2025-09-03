@@ -40,6 +40,15 @@ spec:
         enable_api: true
     minio:
       enabled: true
+    gateway:
+      ingress:
+        enabled: true
+        hosts:
+          - loki.tiny.heimelska.co.uk
+        annotations:
+          kubernetes.io/ingress.class: contour
+          projectcontour.io/tls-secret: monitoring/loki-tls
+          projectcontour.io/websocket-routes: /loki/api/v1/push,/loki/api/v1/query_range,/loki/api/v1/tail
     deploymentMode: SingleBinary
     singleBinary:
       replicas: 1
