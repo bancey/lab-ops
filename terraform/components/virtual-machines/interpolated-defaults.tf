@@ -8,7 +8,7 @@ locals {
         vm_id               = cluster.master.vm_id_start + i
         vm_description      = "k8s control plane"
         cpu_cores           = 4
-        memory              = 8192
+        memory              = cluster.master.memory
         disk_size           = cluster.disk_size
         ip_address          = cidrhost(cluster.master.cidr, i)
         gateway_ip_address  = cluster.master.gateway_ip_address
@@ -29,7 +29,7 @@ locals {
         vm_id               = cluster.worker.vm_id_start + i
         vm_description      = "k8s worker node"
         cpu_cores           = 2
-        memory              = 4096
+        memory              = cluster.worker.memory
         disk_size           = cluster.disk_size
         ip_address          = cidrhost(cluster.worker.cidr, i)
         gateway_ip_address  = cluster.worker.gateway_ip_address

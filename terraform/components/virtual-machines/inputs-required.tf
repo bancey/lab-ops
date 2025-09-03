@@ -34,6 +34,7 @@ variable "kubernetes_virtual_machines" {
       gateway_ip_address  = string
       vlan_tag            = string
       network_bridge_name = optional(string, "vmbr1")
+      memory              = optional(number, 8192)
     })
     worker = object({
       count               = optional(number, 3)
@@ -42,6 +43,7 @@ variable "kubernetes_virtual_machines" {
       gateway_ip_address  = string
       vlan_tag            = string
       network_bridge_name = optional(string, "vmbr1")
+      memory              = optional(number, 4096)
     })
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox for Kubernetes."
