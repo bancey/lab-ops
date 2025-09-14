@@ -6,17 +6,16 @@ metadata:
   namespace: monitoring
 spec:
   values:
-    mimir:
-      gateway:
+    gateway:
+      enabled: true
+      ingress:
         enabled: true
-        ingress:
-          enabled: true
-          hosts:
-            - host: "mimir.tiny.heimelska.co.uk"
-              paths:
-                - path: /
-                  pathType: ImplementationSpecific
-          tls:
-            - secretName: mimir-tls
-              hosts:
-                - "mimir.tiny.heimelska.co.uk"
+        hosts:
+          - host: "mimir.tiny.heimelska.co.uk"
+            paths:
+              - path: /
+                pathType: ImplementationSpecific
+        tls:
+          - secretName: mimir-tls
+            hosts:
+              - "mimir.tiny.heimelska.co.uk"
