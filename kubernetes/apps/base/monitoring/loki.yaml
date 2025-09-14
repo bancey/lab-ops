@@ -45,6 +45,8 @@ spec:
         enabled: true
         hosts:
           - host: loki.tiny.heimelska.co.uk
+            paths:
+              - path: /
     deploymentMode: SingleBinary
     singleBinary:
       replicas: 1
