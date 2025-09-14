@@ -44,7 +44,7 @@ spec:
       ingress:
         enabled: true
         hosts:
-          - loki.tiny.heimelska.co.uk
+          - host: loki.tiny.heimelska.co.uk
     deploymentMode: SingleBinary
     singleBinary:
       replicas: 1
