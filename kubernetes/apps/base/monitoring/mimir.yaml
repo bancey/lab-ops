@@ -1,0 +1,26 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mimir
+  namespace: monitoring
+spec:
+  releaseName: mimir
+  chart:
+    spec:
+      chart: mimir
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: flux-system
+  interval: 30m
+  timeout: 15m
+  install:
+    remediation:
+      retries: 3
+  values:
+    mimir:
+      gateway:
+        enabled: true
+        ingress:
+          enabled: true

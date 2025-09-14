@@ -1,0 +1,56 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: loki-staging-tls
+  namespace: monitoring
+spec:
+  secretName: loki-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "loki.tiny.heimelska.co.uk"
+  dnsNames:
+    - "loki.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: loki-tls
+  namespace: monitoring
+spec:
+  secretName: loki-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "loki.tiny.heimelska.co.uk"
+  dnsNames:
+    - "loki.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mimir-staging-tls
+  namespace: monitoring
+spec:
+  secretName: mimir-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "mimir.tiny.heimelska.co.uk"
+  dnsNames:
+    - "mimir.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mimir-tls
+  namespace: monitoring
+spec:
+  secretName: mimir-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "mimir.tiny.heimelska.co.uk"
+  dnsNames:
+    - "mimir.tiny.heimelska.co.uk"

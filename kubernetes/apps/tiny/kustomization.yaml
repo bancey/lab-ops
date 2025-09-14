@@ -17,7 +17,7 @@ resources:
   - ./monica-certificates.yaml
   - ../base/monica
   - ../base/monitoring
-  - ./loki-certificates.yaml
+  - ./monitoring-certificates.yaml
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -26,3 +26,4 @@ patchesStrategicMerge:
   #- penpot-ingress-route-patch.yaml
   #- penpot-patch.yaml
   - loki-patch.yaml
+  - mimir-patch.yaml
