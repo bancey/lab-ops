@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: loki-staging-tls
-  namespace: flux-system
+  namespace: monitoring
 spec:
   secretName: loki-staging-tls
   issuerRef:
@@ -17,7 +17,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: loki-tls
-  namespace: flux-system
+  namespace: monitoring
 spec:
   secretName: loki-tls
   issuerRef:
