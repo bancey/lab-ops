@@ -41,12 +41,7 @@ spec:
     minio:
       enabled: true
     gateway:
-      ingress:
-        enabled: true
-        hosts:
-          - host: loki.tiny.heimelska.co.uk
-            paths:
-              - path: /
+      enabled: true
     deploymentMode: SingleBinary
     singleBinary:
       replicas: 1

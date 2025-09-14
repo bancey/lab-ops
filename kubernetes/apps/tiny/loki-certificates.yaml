@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: loki-staging-tls
+  namespace: flux-system
+spec:
+  secretName: loki-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "loki.tiny.heimelska.co.uk"
+  dnsNames:
+    - "loki.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: loki-tls
+  namespace: flux-system
+spec:
+  secretName: loki-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "loki.tiny.heimelska.co.uk"
+  dnsNames:
+    - "loki.tiny.heimelska.co.uk"
