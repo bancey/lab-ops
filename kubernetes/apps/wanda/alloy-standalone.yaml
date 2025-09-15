@@ -1,0 +1,119 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: alloy-standalone
+  namespace: monitoring
+spec:
+  releaseName: alloy-standalone
+  chart:
+    spec:
+      version: 0.10.0
+      chart: alloy
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: flux-system
+  interval: 30m
+  timeout: 15m
+  install:
+    remediation:
+      retries: 3
+  values:
+    controller:
+      type: daemonset
+    alloy:
+      configMap:
+        create: true
+        content: |
+          // Kubernetes service discovery for pods
+          discovery.kubernetes "pods" {
+            role = "pod"
+          }
+
+          // Kubernetes service discovery for nodes
+          discovery.kubernetes "nodes" {
+            role = "node"
+          }
+
+          // Kubernetes service discovery for services
+          discovery.kubernetes "services" {
+            role = "service"
+          }
+
+          // Kubernetes service discovery for endpoints
+          discovery.kubernetes "endpoints" {
+            role = "endpoints"
+          }
+
+          // Node exporter metrics scraping
+          prometheus.scrape "node_exporter" {
+            targets = discovery.kubernetes.nodes.targets
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "15s"
+            metrics_path = "/metrics"
+            scheme = "http"
+          }
+
+          // Pod metrics scraping
+          prometheus.scrape "kubernetes_pods" {
+            targets = discovery.kubernetes.pods.targets
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "15s"
+            honor_labels = true
+          }
+
+          // Service metrics scraping
+          prometheus.scrape "kubernetes_services" {
+            targets = discovery.kubernetes.services.targets
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "30s"
+          }
+
+          // Endpoint metrics scraping
+          prometheus.scrape "kubernetes_endpoints" {
+            targets = discovery.kubernetes.endpoints.targets
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "30s"
+          }
+
+          // Prometheus remote write to Mimir on tiny cluster
+          prometheus.remote_write "mimir" {
+            endpoint {
+              url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+            }
+            external_labels = {
+              cluster = "wanda",
+            }
+          }
+
+          // Pod log collection
+          loki.source.kubernetes "pods" {
+            targets    = discovery.kubernetes.pods.targets
+            forward_to = [loki.write.loki.receiver]
+          }
+
+          // System journal log collection
+          loki.source.journal "system" {
+            forward_to = [loki.write.loki.receiver]
+            labels = {
+              job = "systemd-journal",
+              cluster = "wanda",
+            }
+          }
+
+          // Loki remote write to tiny cluster
+          loki.write "loki" {
+            endpoint {
+              url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+            }
+            external_labels = {
+              cluster = "wanda",
+            }
+          }
+    serviceAccount:
+      create: true
+    rbac:
+      create: true
+    service:
+      enabled: true

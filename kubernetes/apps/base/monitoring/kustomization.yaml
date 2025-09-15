@@ -7,3 +7,4 @@ resources:
   - loki.yaml
   - mimir.yaml
   - grafana.yaml
+  - grafana-cloud.yaml

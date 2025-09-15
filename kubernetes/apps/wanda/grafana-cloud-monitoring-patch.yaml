@@ -1,0 +1,8 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana-cloud-monitoring
+  namespace: monitoring
+spec:
+  suspend: true
