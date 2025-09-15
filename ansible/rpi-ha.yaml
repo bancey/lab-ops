@@ -70,10 +70,16 @@
     - /opt/compose
     - /opt/gatus/config
     - /opt/gatus/data
+    - /opt/alloy
+    - /opt/alloy/config
   - name: Copy Gatus configuration file
     copy:
       src: ./templates/gatus-config.yaml
       dest: /opt/gatus/config/config.yaml
+  - name: Copy Alloy configuration file
+    template:
+      src: ./templates/alloy-config.alloy.j2
+      dest: /opt/alloy/config/config.alloy
   - name: Copy docker-compose config template
     template:
       src: ./templates/rpi-docker-compose.yaml.j2
