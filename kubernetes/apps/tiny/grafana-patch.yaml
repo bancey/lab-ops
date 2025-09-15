@@ -1,0 +1,19 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  values:
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: traefik
+        cert-manager.io/cluster-issuer: letsencrypt-production
+      hosts:
+        - grafana.tiny.heimelska.co.uk
+      tls:
+        - secretName: grafana-tls
+          hosts:
+            - grafana.tiny.heimelska.co.uk
