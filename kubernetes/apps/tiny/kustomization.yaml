@@ -27,3 +27,4 @@ patchesStrategicMerge:
   #- penpot-patch.yaml
   - loki-patch.yaml
   - mimir-patch.yaml
+  - grafana-patch.yaml

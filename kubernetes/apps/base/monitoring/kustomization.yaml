@@ -6,3 +6,4 @@ resources:
   - namespace.yaml
   - loki.yaml
   - mimir.yaml
+  - grafana.yaml

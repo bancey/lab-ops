@@ -54,3 +54,31 @@ spec:
   commonName: "mimir.tiny.heimelska.co.uk"
   dnsNames:
     - "mimir.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-staging-tls
+  namespace: monitoring
+spec:
+  secretName: grafana-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "grafana.tiny.heimelska.co.uk"
+  dnsNames:
+    - "grafana.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-tls
+  namespace: monitoring
+spec:
+  secretName: grafana-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "grafana.tiny.heimelska.co.uk"
+  dnsNames:
+    - "grafana.tiny.heimelska.co.uk"
