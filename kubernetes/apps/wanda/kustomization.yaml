@@ -40,7 +40,7 @@ patchesStrategicMerge:
   - loki-patch.yaml
   - mimir-patch.yaml
   - grafana-patch.yaml
-  - local-monitoring-patch.yaml
+  - alloy-patch.yaml
 patches:
   - patch: |
       - op: add

@@ -7,4 +7,4 @@ resources:
   - loki.yaml
   - mimir.yaml
   - grafana.yaml
-  - local-monitoring.yaml
+  - alloy.yaml
