@@ -18,11 +18,11 @@ services:
     sysctls:
       - net.ipv4.ping_group_range=0 2147483647
     environment:
-      TWINGATE_REFRESH_TOKEN: {{ twingate[inventory_hostname].refresh_token }}
-      TWINGATE_ACCESS_TOKEN: {{ twingate[inventory_hostname].access_token }}
-      TWINGATE_NETWORK: {{ twingate.network }}
+      TWINGATE_REFRESH_TOKEN: "{{ twingate[inventory_hostname].refresh_token }}"
+      TWINGATE_ACCESS_TOKEN: "{{ twingate[inventory_hostname].access_token }}"
+      TWINGATE_NETWORK: "{{ twingate.network }}"
       TWINGATE_DNS: 10.151.14.1
-      TWINGATE_LABEL_MACHINE_NAME: {{ inventory_hostname }}
+      TWINGATE_LABEL_MACHINE_NAME: "{{ inventory_hostname }}"
   gatus:
     image: twinproduction/gatus:v5.23.2
     volumes:
@@ -40,3 +40,39 @@ services:
     environment:
       API_WHITELIST_IP: "127.0.0.0/8 10.151.14.0/24 10.151.16.0/24"
     restart: "unless-stopped"
+  alloy:
+    image: grafana/alloy:v1.5.1
+    container_name: alloy
+    restart: always
+    volumes:
+      - /opt/alloy/config:/etc/alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host/root:ro
+      - /sys:/host/sys:ro
+      - /proc:/host/proc:ro
+      - /var/log:/host/var/log:ro
+      - /run/udev:/host/udev:ro
+    ports:
+      - "12345:12345/tcp"
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    privileged: true
+    network_mode: host
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    container_name: cadvisor
+    restart: always
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8080:8080"
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
