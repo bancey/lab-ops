@@ -375,3 +375,9 @@ dns:
           - AzureDevOps
   plex.wanda.bancey.xyz:
     record: 10.152.15.50
+  loki.tiny.heimelska.co.uk:
+    record: 10.152.16.50
+  mimir.tiny.heimelska.co.uk:
+    record: 10.152.16.50
+  grafana.tiny.heimelska.co.uk:
+    record: 10.152.16.50
