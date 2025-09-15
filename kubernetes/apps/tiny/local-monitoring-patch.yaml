@@ -2,47 +2,19 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: grafana-cloud-monitoring
+  name: local-monitoring
   namespace: monitoring
 spec:
   values:
     cluster:
       name: tiny
-    externalServices:
-      prometheus:
-        secret:
-          create: false
-          name: grafana-cloud-monitoring
-          namespace: monitoring
-        hostKey: prometheus-host
-        basicAuth:
-          usernameKey: prometheus-username
-          passwordKey: prometheus-password
-      loki:
-        secret:
-          create: false
-          name: grafana-cloud-monitoring
-          namespace: monitoring
-        hostKey: loki-host
-        basicAuth:
-          usernameKey: loki-username
-          passwordKey: loki-password
-      tempo:
-        secret:
-          create: false
-          name: grafana-cloud-monitoring
-          namespace: monitoring
-        hostKey: tempo-host
-        basicAuth:
-          usernameKey: tempo-username
-          passwordKey: tempo-password
     metrics:
       enabled: true
       alloy:
         metricsTuning:
           useIntegrationAllowList: true
         extraConfig: |
-          // Additional local Mimir forwarding
+          // Local Mimir forwarding
           prometheus.remote_write "local_mimir" {
             endpoint {
               url = "http://mimir-gateway.monitoring.svc.cluster.local/api/v1/push"
@@ -68,7 +40,7 @@ spec:
         enabled: true
       alloy:
         extraConfig: |
-          // Additional local Loki forwarding
+          // Local Loki forwarding
           loki.write "local_loki" {
             endpoint {
               url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
@@ -79,14 +51,14 @@ spec:
             }
           }
     traces:
-      enabled: true
+      enabled: false
     receivers:
       grpc:
-        enabled: true
+        enabled: false
       http:
-        enabled: true
+        enabled: false
       zipkin:
-        enabled: true
+        enabled: false
       grafanaCloudMetrics:
         enabled: false
     opencost:
@@ -94,12 +66,6 @@ spec:
       opencost:
         exporter:
           defaultClusterId: tiny
-        prometheus:
-          existingSecretName: grafana-cloud-monitoring
-          username_key: prometheus-username
-          password_key: prometheus-password
-          external:
-            url: https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom
     kube-state-metrics:
       enabled: true
     prometheus-node-exporter:

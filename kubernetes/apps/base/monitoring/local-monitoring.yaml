@@ -1,0 +1,67 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: local-monitoring
+  namespace: monitoring
+spec:
+  releaseName: local-monitoring
+  chart:
+    spec:
+      chart: k8s-monitoring
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: flux-system
+  interval: 30m
+  timeout: 15m
+  install:
+    remediation:
+      retries: 3
+  values:
+    cluster:
+      name: my-cluster
+    metrics:
+      enabled: true
+      alloy:
+        metricsTuning:
+          useIntegrationAllowList: true
+      cost:
+        enabled: true
+      kepler:
+        enabled: true
+      node-exporter:
+        enabled: true
+    logs:
+      enabled: true
+      pod_logs:
+        enabled: true
+      cluster_events:
+        enabled: true
+    traces:
+      enabled: false
+    receivers:
+      grpc:
+        enabled: false
+      http:
+        enabled: false
+      zipkin:
+        enabled: false
+      grafanaCloudMetrics:
+        enabled: false
+    opencost:
+      enabled: true
+      opencost:
+        exporter:
+          defaultClusterId: my-cluster
+    kube-state-metrics:
+      enabled: true
+    prometheus-node-exporter:
+      enabled: true
+    prometheus-operator-crds:
+      enabled: true
+    kepler:
+      enabled: true
+    alloy: {}
+    alloy-events: {}
+    alloy-logs: {}
