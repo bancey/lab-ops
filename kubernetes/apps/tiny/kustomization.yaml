@@ -29,3 +29,4 @@ patchesStrategicMerge:
   - loki-patch.yaml
   - mimir-patch.yaml
   - grafana-patch.yaml
+  - alloy-patch.yaml
