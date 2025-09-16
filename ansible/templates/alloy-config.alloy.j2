@@ -53,13 +53,11 @@ prometheus.scrape "docker_metrics" {
   job_name = "docker-containers"
 }
 
-// Host logs collection (syslog, auth, daemon, kernel)
+// Host logs collection (syslog, auth)
 loki.source.file "host_logs" {
   targets = [
     {"__path__" = "/host/var/log/syslog", "job" = "syslog"},
     {"__path__" = "/host/var/log/auth.log", "job" = "auth"},
-    {"__path__" = "/host/var/log/daemon.log", "job" = "daemon"},
-    {"__path__" = "/host/var/log/kern.log", "job" = "kernel"},
   ]
   
   forward_to = [loki.process.host_logs.receiver]
@@ -72,7 +70,6 @@ loki.process "host_logs" {
   stage.static_labels {
     values = {
       hostname    = "{{ inventory_hostname }}",
-      environment = "production",
       source      = "host",
     }
   }
@@ -84,33 +81,15 @@ loki.process "host_logs" {
   stage.labels {
     values = {
       program = "program",
-      pid     = "pid",
     }
   }
 }
 
 // Docker container logs
 loki.source.docker "container_logs" {
-  host       = "unix:///var/run/docker.sock"
-  targets    = discovery.docker.containers.targets
-  forward_to = [loki.process.container_logs.receiver]
-  
-  relabel_rules {
-    source_labels = ["__meta_docker_container_name"]
-    target_label  = "container"
-  }
-  
-  relabel_rules {
-    source_labels = ["__meta_docker_container_id"]
-    target_label  = "container_id"
-    regex         = "(.{12})"
-    replacement   = "${1}"
-  }
-  
-  relabel_rules {
-    source_labels = ["__meta_docker_container_image"]
-    target_label  = "image"
-  }
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  forward_to    = [loki.process.container_logs.receiver]
 }
 
 // Process container logs
@@ -120,7 +99,6 @@ loki.process "container_logs" {
   stage.static_labels {
     values = {
       hostname    = "{{ inventory_hostname }}",
-      environment = "production",
       source      = "docker",
     }
   }
@@ -140,45 +118,5 @@ loki.process "container_logs" {
   
   stage.output {
     source = "log"
-  }
-}
-
-// Specific keepalived monitoring
-loki.source.file "keepalived_logs" {
-  targets = [
-    {"__path__" = "/host/var/log/syslog", "job" = "keepalived"},
-  ]
-  
-  forward_to = [loki.process.keepalived_logs.receiver]
-}
-
-loki.process "keepalived_logs" {
-  forward_to = [loki.write.loki.receiver]
-  
-  stage.match {
-    selector = "{job=\"keepalived\"}"
-    
-    stage.regex {
-      expression = ".*keepalived.*"
-    }
-    
-    stage.static_labels {
-      values = {
-        hostname    = "{{ inventory_hostname }}",
-        environment = "production",
-        service     = "keepalived",
-      }
-    }
-    
-    stage.regex {
-      expression = "^(?P<timestamp>\\w+\\s+\\d+\\s+\\d+:\\d+:\\d+)\\s+(?P<hostname>\\S+)\\s+(?P<program>keepalived)(?:\\[(?P<pid>\\d+)\\])?:\\s*(?P<message>.*)"
-    }
-    
-    stage.labels {
-      values = {
-        program = "program",
-        pid     = "pid",
-      }
-    }
   }
 }
