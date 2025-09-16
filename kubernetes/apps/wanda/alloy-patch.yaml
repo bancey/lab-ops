@@ -5,4 +5,159 @@ metadata:
   name: alloy
   namespace: monitoring
 spec:
-  suspend: true
+  values:
+    alloy:
+      configMap:
+        content: |
+          // Cluster-wide service discovery for node metrics
+          discovery.kubernetes "nodes" {
+            role = "node"
+          }
+
+          // Scrape node-exporter metrics
+          prometheus.scrape "node_exporter" {
+            targets    = discovery.kubernetes.nodes.targets
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "15s"
+            metrics_path = "/metrics"
+            scheme = "http"
+            job_name = "node-exporter"
+          }
+
+          // Cluster-wide service discovery for pods
+          discovery.kubernetes "pods" {
+            role = "pod"
+          }
+
+          // Scrape application metrics from pods with prometheus annotations
+          prometheus.scrape "kubernetes_pods" {
+            targets = discovery.relabel.kubernetes_pods.output
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "30s"
+            job_name = "kubernetes-pods"
+          }
+
+          // Relabeling for pod scraping
+          discovery.relabel "kubernetes_pods" {
+            targets = discovery.kubernetes.pods.targets
+            rule {
+              source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+              action = "keep"
+              regex = "true"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+              action = "replace"
+              target_label = "__metrics_path__"
+              regex = "(.+)"
+            }
+            rule {
+              source_labels = ["__address__", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
+              action = "replace"
+              regex = "([^:]+)(?::\\d+)?;(\\d+)"
+              replacement = "$1:$2"
+              target_label = "__address__"
+            }
+            rule {
+              action = "labelmap"
+              regex = "__meta_kubernetes_pod_label_(.+)"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              action = "replace"
+              target_label = "kubernetes_namespace"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_pod_name"]
+              action = "replace"
+              target_label = "kubernetes_pod_name"
+            }
+          }
+
+          // Service discovery for services
+          discovery.kubernetes "services" {
+            role = "service"
+          }
+
+          // Scrape service metrics
+          prometheus.scrape "kubernetes_services" {
+            targets = discovery.relabel.kubernetes_services.output
+            forward_to = [prometheus.remote_write.mimir.receiver]
+            scrape_interval = "30s"
+            job_name = "kubernetes-services"
+          }
+
+          // Relabeling for service scraping
+          discovery.relabel "kubernetes_services" {
+            targets = discovery.kubernetes.services.targets
+            rule {
+              source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_scrape"]
+              action = "keep"
+              regex = "true"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_path"]
+              action = "replace"
+              target_label = "__metrics_path__"
+              regex = "(.+)"
+            }
+            rule {
+              source_labels = ["__address__", "__meta_kubernetes_service_annotation_prometheus_io_port"]
+              action = "replace"
+              regex = "([^:]+)(?::\\d+)?;(\\d+)"
+              replacement = "$1:$2"
+              target_label = "__address__"
+            }
+            rule {
+              action = "labelmap"
+              regex = "__meta_kubernetes_service_label_(.+)"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              action = "replace"
+              target_label = "kubernetes_namespace"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_service_name"]
+              action = "replace"
+              target_label = "kubernetes_service_name"
+            }
+          }
+
+          // Remote write to Mimir on tiny cluster
+          prometheus.remote_write "mimir" {
+            endpoint {
+              url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+            }
+            external_labels = {
+              cluster = "wanda",
+              source = "alloy",
+            }
+          }
+
+          // Kubernetes log collection
+          discovery.kubernetes "pods_logs" {
+            role = "pod"
+          }
+
+          // Pod logs collection
+          loki.source.kubernetes "pod_logs" {
+            targets    = discovery.kubernetes.pods_logs.targets
+            forward_to = [loki.write.loki.receiver]
+          }
+
+          // Kubernetes events collection
+          loki.source.kubernetes_events "cluster_events" {
+            forward_to = [loki.write.loki.receiver]
+          }
+
+          // Remote write to Loki on tiny cluster
+          loki.write "loki" {
+            endpoint {
+              url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+            }
+            external_labels = {
+              cluster = "wanda",
+              source = "alloy",
+            }
+          }

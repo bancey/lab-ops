@@ -35,7 +35,6 @@ resources:
   - capacitor-ingress-route.yaml
   - capacitor-certs.yaml
   - ../base/monitoring
-  - alloy-standalone.yaml
 patchesStrategicMerge:
   - loki-patch.yaml
   - mimir-patch.yaml
