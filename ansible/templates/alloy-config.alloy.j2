@@ -44,7 +44,7 @@ prometheus.scrape "host_metrics" {
 
 // Docker container metrics via cAdvisor endpoint
 prometheus.scrape "docker_metrics" {
-  targets = [{"__address__" = "localhost:8080"}]
+  targets = [{"__address__" = "localhost:8081"}]
   forward_to = [prometheus.remote_write.mimir.receiver]
   
   metrics_path = "/metrics"
