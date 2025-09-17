@@ -17,6 +17,10 @@ prometheus.remote_write "mimir" {
   endpoint {
     url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
   }
+  
+  external_labels = {
+    hostname = "{{ inventory_hostname }}"
+  }
 }
 
 // Loki remote write
@@ -39,18 +43,27 @@ prometheus.scrape "host_metrics" {
   targets    = prometheus.exporter.unix.host_metrics.targets
   forward_to = [prometheus.remote_write.mimir.receiver]
   
-  scrape_interval = "15s"
+  {% if inventory_hostname == "thanos" %}
+  scrape_interval = "56s"
+  {% else %}
+  scrape_interval = "60s"
+  {% endif %}
+  job_name = "node-exporter-{{ inventory_hostname }}"
 }
 
 // Docker container metrics via cAdvisor endpoint
 prometheus.scrape "docker_metrics" {
-  targets = [{"__address__" = "localhost:8081"}]
+  targets = [{"__address__" = "localhost:8081", "instance" = "{{ inventory_hostname }}:8081"}]
   forward_to = [prometheus.remote_write.mimir.receiver]
   
   metrics_path = "/metrics"
-  scrape_interval = "15s"
+  {% if inventory_hostname == "thanos" %}
+  scrape_interval = "56s"
+  {% else %}
+  scrape_interval = "60s"
+  {% endif %}
   
-  job_name = "docker-containers"
+  job_name = "cadvisor-{{ inventory_hostname }}"
 }
 
 // Host logs collection (syslog, auth)
