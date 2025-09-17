@@ -43,11 +43,11 @@ prometheus.scrape "host_metrics" {
   targets    = prometheus.exporter.unix.host_metrics.targets
   forward_to = [prometheus.remote_write.mimir.receiver]
   
-  {% if inventory_hostname == "thanos" %}
+{% if inventory_hostname == "thanos" %}
   scrape_interval = "56s"
-  {% else %}
+{% else %}
   scrape_interval = "60s"
-  {% endif %}
+{% endif %}
   job_name = "node-exporter-{{ inventory_hostname }}"
 }
 
@@ -57,11 +57,11 @@ prometheus.scrape "docker_metrics" {
   forward_to = [prometheus.remote_write.mimir.receiver]
   
   metrics_path = "/metrics"
-  {% if inventory_hostname == "thanos" %}
+{% if inventory_hostname == "thanos" %}
   scrape_interval = "56s"
-  {% else %}
+{% else %}
   scrape_interval = "60s"
-  {% endif %}
+{% endif %}
   
   job_name = "cadvisor-{{ inventory_hostname }}"
 }
