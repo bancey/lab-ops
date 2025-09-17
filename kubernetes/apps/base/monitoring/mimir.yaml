@@ -27,3 +27,7 @@ spec:
       enabledNonEnterprise: true
       ingress:
         enabled: true
+    runtimeConfig:
+      limits:
+        max_label_names_per_series: 50
+        max_label_names_per_info_series: 100
