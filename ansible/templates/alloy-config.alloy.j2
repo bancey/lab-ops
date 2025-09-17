@@ -19,7 +19,7 @@ prometheus.remote_write "mimir" {
   }
   
   external_labels = {
-    hostname = "{{ inventory_hostname }}"
+    "hostname" = "{{ inventory_hostname }}",
   }
 }
 
