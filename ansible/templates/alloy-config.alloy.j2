@@ -112,12 +112,12 @@ loki.source.docker "container_logs" {
   host          = "unix:///var/run/docker.sock"
   targets       = discovery.docker.containers.targets
   forward_to    = [loki.process.container_logs.receiver]
+  relabel_rules = discovery.relabel.containers.rules
 }
 
 // Process container logs
 loki.process "container_logs" {
   forward_to = [loki.write.loki.receiver]
-  relabel_rules = discovery.relabel.containers.rules
   
   stage.static_labels {
     values = {
