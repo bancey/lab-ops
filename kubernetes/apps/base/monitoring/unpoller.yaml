@@ -29,6 +29,13 @@ spec:
             image:
               repository: ghcr.io/unpoller/unpoller
               tag: v2.15.4
+          alloy:
+            image:
+              repository: grafana/alloy
+              tag: v1.10.2
+            command: run
+            args:
+              - /etc/alloy/config.alloy
     persistence:
       unpoller:
         type: secret
@@ -39,3 +46,12 @@ spec:
               - path: /etc/unpoller/up.conf
                 readOnly: true
                 subPath: up.conf
+      alloy:
+        type: configMap
+        name: unpoller-alloy-config
+        advancedMounts:
+          unpoller:
+            alloy:
+              - path: /etc/alloy/config.alloy
+                readOnly: true
+                subPath: config.alloy

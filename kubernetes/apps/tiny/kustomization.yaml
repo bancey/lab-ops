@@ -20,6 +20,7 @@ resources:
   - ../base/monitoring
   - ./monitoring-certificates.yaml
   - ./unpoller-secret.sops.yaml
+  - ./unpoller-alloy-config.yaml
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
