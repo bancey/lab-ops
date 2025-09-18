@@ -42,6 +42,8 @@ spec:
         enable_api: true
     test:
       enabled: false
+    lokiCanary:
+      enabled: false
     minio:
       enabled: true
     gateway:
