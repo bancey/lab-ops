@@ -40,7 +40,7 @@ patchesStrategicMerge:
   - mimir-patch.yaml
   - grafana-patch.yaml
   - alloy-patch.yaml
-  - upoller-patch.yaml
+  - unpoller-patch.yaml
 patches:
   - patch: |
       - op: add

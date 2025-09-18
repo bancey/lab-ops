@@ -23,19 +23,19 @@ spec:
       retries: 3
   values:
     controllers:
-      upoller:
+      unpoller:
         containers:
-          upoller:
+          unpoller:
             image:
               repository: ghcr.io/unpoller/unpoller
               tag: v2.15.4
     persistence:
-      upoller:
+      unpoller:
         type: secret
-        name: upoller-config
+        name: unpoller-config
         advancedMounts:
-          upoller:
-            upoller:
-              - path: /etc/upoller/up.conf
+          unpoller:
+            unpoller:
+              - path: /etc/unpoller/up.conf
                 readOnly: true
                 subPath: up.conf

@@ -8,4 +8,4 @@ resources:
   - mimir.yaml
   - grafana.yaml
   - alloy.yaml
-  - upoller.yaml
+  - unpoller.yaml
