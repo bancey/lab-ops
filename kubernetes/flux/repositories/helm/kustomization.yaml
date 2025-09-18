@@ -19,3 +19,4 @@ resources:
   - ./mariadb-operator.yaml
   - ./twingate.yaml
   - ./monica.yaml
+  - ./upoller.yaml

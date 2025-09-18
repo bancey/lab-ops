@@ -19,6 +19,7 @@ resources:
   - ./grafana-admin-secret.sops.yaml
   - ../base/monitoring
   - ./monitoring-certificates.yaml
+  - ./upoller-secret.sops.yaml
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
