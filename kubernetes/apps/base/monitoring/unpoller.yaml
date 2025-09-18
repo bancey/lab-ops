@@ -33,8 +33,8 @@ spec:
             image:
               repository: grafana/alloy
               tag: v1.10.2
-            command: run
             args:
+              - run
               - /etc/alloy/config.alloy
     persistence:
       unpoller:
