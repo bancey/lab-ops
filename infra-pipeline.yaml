@@ -253,6 +253,8 @@ parameters:
           - BunkerWeb-MGMT-Admin-Username
           - BunkerWeb-MGMT-Admin-Password
           - Cloudflare-Lab-API-Token
+          - Adguard-Thanos-Username
+          - Adguard-Thanos-Password
         localEnvironments:
           - thanos
           - gamora

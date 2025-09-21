@@ -10,6 +10,18 @@ services:
       - 53:53/tcp
       - 53:53/udp
       - 8000:80/tcp
+  adguard_exporter:
+    image:  ghcr.io/henrywhitaker3/adguard-exporter:v1.2.1
+    container_name: adguard_exporter
+    restart: always
+    environment:
+      ADGUARD_SERVERS: http://adguard
+      ADGUARD_USERNAMES: "{{ adguard_username }}"
+      ADGUARD_PASSWORDS: "{{ adguard_password }}"
+    ports:
+      - "9618:9618"
+    depends_on:
+      - adguard
   twingate:
     image: twingate/connector:1.78.0
     container_name: banceylab-connector
@@ -76,3 +88,15 @@ services:
     privileged: true
     devices:
       - /dev/kmsg:/dev/kmsg
+  adguard_exporter:
+    image:  ghcr.io/henrywhitaker3/adguard-exporter:v1.2.1
+    container_name: adguard_exporter
+    restart: always
+    environment:
+      - ADGUARD_SERVERS: http://adguard
+      - ADGUARD_USERNAME: "{{ adguard_username }}"
+      - ADGUARD_PASSWORD: "{{ adguard_password }}"
+    ports:
+      - "9618:9618"
+    depends_on:
+      - adguard

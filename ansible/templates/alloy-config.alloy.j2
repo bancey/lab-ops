@@ -62,7 +62,7 @@ prometheus.scrape "host_metrics" {
 
 // Docker container metrics via cAdvisor endpoint
 prometheus.scrape "docker_metrics" {
-  targets = [{"__address__" = "cadvisor:8080", "instance" = "{{ inventory_hostname }}:8081"}]
+  targets = [{"__address__" = "cadvisor:8080"]
   forward_to = [prometheus.remote_write.mimir.receiver]
   
   metrics_path = "/metrics"
@@ -73,6 +73,33 @@ prometheus.scrape "docker_metrics" {
 {% endif %}
   
   job_name = "cadvisor-{{ inventory_hostname }}"
+}
+
+// Scrape logs from adguard_exporter
+prometheus.scrape "adguard_metrics" {
+  targets = [{"__address__" = "adguard_exporter:9618"]
+  forward_to = [prometheus.relabel.adguard.receiver]
+  
+  metrics_path = "/metrics"
+{% if inventory_hostname == "thanos" %}
+  scrape_interval = "56s"
+{% else %}
+  scrape_interval = "60s"
+{% endif %}
+
+  job_name = "adguard-{{ inventory_hostname }}"
+}
+
+// Relabel AdGuard metrics to modify server label
+prometheus.relabel "adguard" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+  
+  rule {
+    source_labels = ["server"]
+    regex = "http://(.+)"
+    target_label = "server"
+    replacement = "${1}-{{ inventory_hostname }}"
+  }
 }
 
 // Host logs collection (syslog, auth)
