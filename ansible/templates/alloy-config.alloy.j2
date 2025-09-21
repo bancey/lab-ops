@@ -62,7 +62,7 @@ prometheus.scrape "host_metrics" {
 
 // Docker container metrics via cAdvisor endpoint
 prometheus.scrape "docker_metrics" {
-  targets = [{"__address__" = "cadvisor:8080"]
+  targets = [{"__address__" = "cadvisor:8080"}]
   forward_to = [prometheus.remote_write.mimir.receiver]
   
   metrics_path = "/metrics"
@@ -77,7 +77,7 @@ prometheus.scrape "docker_metrics" {
 
 // Scrape logs from adguard_exporter
 prometheus.scrape "adguard_metrics" {
-  targets = [{"__address__" = "adguard_exporter:9618"]
+  targets = [{"__address__" = "adguard_exporter:9618"}]
   forward_to = [prometheus.relabel.adguard.receiver]
   
   metrics_path = "/metrics"
