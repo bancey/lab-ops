@@ -88,15 +88,3 @@ services:
     privileged: true
     devices:
       - /dev/kmsg:/dev/kmsg
-  adguard_exporter:
-    image:  ghcr.io/henrywhitaker3/adguard-exporter:v1.2.1
-    container_name: adguard_exporter
-    restart: always
-    environment:
-      - ADGUARD_SERVERS: http://adguard
-      - ADGUARD_USERNAME: "{{ adguard_username }}"
-      - ADGUARD_PASSWORD: "{{ adguard_password }}"
-    ports:
-      - "9618:9618"
-    depends_on:
-      - adguard
