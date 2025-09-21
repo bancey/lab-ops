@@ -16,12 +16,52 @@ spec:
 
           // Scrape node-exporter metrics
           prometheus.scrape "node_exporter" {
-            targets    = discovery.kubernetes.nodes.targets
+            targets    = discovery.relabel.node_exporter.output
             forward_to = [prometheus.remote_write.local_mimir.receiver]
             scrape_interval = "15s"
             metrics_path = "/metrics"
             scheme = "http"
             job_name = "node-exporter"
+            honor_timestamps = false
+            scrape_timeout = "10s"
+          }
+
+          // Relabeling for node exporter to ensure consistent labels
+          discovery.relabel "node_exporter" {
+            targets = discovery.kubernetes.nodes.targets
+
+            // Add cluster label consistently
+            rule {
+              target_label = "cluster"
+              replacement = "tiny"
+            }
+
+            // Add unique source identifier to prevent conflicts
+            rule {
+              target_label = "alloy_instance"
+              replacement = "tiny-alloy"
+            }
+
+            // Ensure instance label is consistent and unique
+            rule {
+              source_labels = ["__meta_kubernetes_node_name"]
+              target_label = "instance"
+              replacement = "tiny-${1}"
+            }
+
+            // Add node role label
+            rule {
+              source_labels = ["__meta_kubernetes_node_label_node_kubernetes_io_instance_type"]
+              target_label = "node_type"
+              regex = "(.+)"
+            }
+
+            // Set the address for node-exporter (assuming it runs on port 9100)
+            rule {
+              source_labels = ["__meta_kubernetes_node_address_InternalIP"]
+              target_label = "__address__"
+              replacement = "${1}:9100"
+            }
           }
 
           // Cluster-wide service discovery for pods
@@ -35,11 +75,20 @@ spec:
             forward_to = [prometheus.remote_write.local_mimir.receiver]
             scrape_interval = "30s"
             job_name = "kubernetes-pods"
+            honor_timestamps = false
+            scrape_timeout = "25s"
           }
 
           // Relabeling for pod scraping
           discovery.relabel "kubernetes_pods" {
             targets = discovery.kubernetes.pods.targets
+
+            // Ensure cluster label is consistent
+            rule {
+              target_label = "cluster"
+              replacement = "tiny"
+            }
+
             rule {
               source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
               action = "keep"
@@ -85,11 +134,20 @@ spec:
             forward_to = [prometheus.remote_write.local_mimir.receiver]
             scrape_interval = "30s"
             job_name = "kubernetes-services"
+            honor_timestamps = false
+            scrape_timeout = "25s"
           }
 
           // Relabeling for service scraping
           discovery.relabel "kubernetes_services" {
             targets = discovery.kubernetes.services.targets
+
+            // Ensure cluster label is consistent
+            rule {
+              target_label = "cluster"
+              replacement = "tiny"
+            }
+
             rule {
               source_labels = ["__meta_kubernetes_service_annotation_prometheus_io_scrape"]
               action = "keep"
@@ -128,10 +186,33 @@ spec:
           prometheus.remote_write "local_mimir" {
             endpoint {
               url = "http://mimir-gateway.monitoring.svc.cluster.local/api/v1/push"
+
+              // Add headers for better debugging
+              headers = {
+                "X-Scope-OrgID" = "anonymous"
+              }
             }
+
+            // Add queue configuration to handle out-of-order samples
+            queue_config {
+              capacity = 10000
+              max_samples_per_send = 2000
+              batch_send_deadline = "5s"
+              min_shards = 1
+              max_shards = 10
+              retry_on_http_429 = true
+            }
+
             external_labels = {
               cluster = "tiny",
-              source = "alloy",
+              source = "alloy-tiny",
+              alloy_instance = "tiny-cluster",
+            }
+
+            // Add metadata configuration
+            metadata_config {
+              send = true
+              send_interval = "1m"
             }
           }
 
@@ -158,6 +239,6 @@ spec:
             }
             external_labels = {
               cluster = "tiny",
-              source = "alloy",
+              source = "alloy-tiny",
             }
           }
