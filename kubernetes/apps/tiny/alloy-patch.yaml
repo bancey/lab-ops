@@ -186,11 +186,6 @@ spec:
           prometheus.remote_write "local_mimir" {
             endpoint {
               url = "http://mimir-gateway.monitoring.svc.cluster.local/api/v1/push"
-
-              // Add headers for better debugging
-              headers = {
-                "X-Scope-OrgID" = "anonymous"
-              }
             }
 
             // Add queue configuration to handle out-of-order samples

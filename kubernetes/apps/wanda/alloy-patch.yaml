@@ -186,11 +186,6 @@ spec:
           prometheus.remote_write "mimir" {
             endpoint {
               url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
-
-              // Add headers for better debugging
-              headers = {
-                "X-Scope-OrgID" = "anonymous"
-              }
             }
 
             // Add queue configuration to handle out-of-order samples
