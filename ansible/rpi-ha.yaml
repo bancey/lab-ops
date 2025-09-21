@@ -31,8 +31,8 @@
     bunkerweb_mgmt_admin_username: "{{ lookup('ansible.builtin.file', 'BunkerWeb-MGMT-Admin-Username') }}"
     bunkerweb_mgmt_admin_password: "{{ lookup('ansible.builtin.file', 'BunkerWeb-MGMT-Admin-Password') }}"
     cloudflare_api_token: "{{ lookup('ansible.builtin.file', 'Cloudflare-Lab-API-Token') }}"
-    adguard_username: "{{ lookup('ansible.builtin.file', 'AdGuard-Thanos-Username') }}"
-    adguard_password: "{{ lookup('ansible.builtin.file', 'AdGuard-Thanos-Password') }}"
+    adguard_username: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Username') }}"
+    adguard_password: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Password') }}"
   roles:
   - role: prep
     install_pkgs: [ "apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker" ]
