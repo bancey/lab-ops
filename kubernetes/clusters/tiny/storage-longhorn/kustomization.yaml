@@ -1,0 +1,37 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../app-dependencies/controllers/longhorn-namespace.yaml
+  - ../../../app-dependencies/controllers/longhorn.yaml
+  - ../../../app-dependencies/controllers/longhorn-azblob-secret.sops.yaml
+  - ../../../app-dependencies/config/longhorn-certificates.yaml
+  - ../../../app-dependencies/config/longhorn-ingress.yaml
+patches:
+  - patch: |
+      - op: add
+        path: /spec/routes/0/match
+        value: Host(`longhorn.tiny.heimelska.co.uk`)
+    target:
+      kind: IngressRoute
+      name: longhorn
+  - patch: |
+      - op: add
+        path: /spec/commonName
+        value: "longhorn.tiny.heimelska.co.uk"
+      - op: add
+        path: /spec/dnsNames/0
+        value: "longhorn.tiny.heimelska.co.uk"
+    target:
+      kind: Certificate
+      name: longhorn-staging-tls
+  - patch: |
+      - op: add
+        path: /spec/commonName
+        value: "longhorn.tiny.heimelska.co.uk"
+      - op: add
+        path: /spec/dnsNames/0
+        value: "longhorn.tiny.heimelska.co.uk"
+    target:
+      kind: Certificate
+      name: longhorn-tls
