@@ -22,7 +22,7 @@ resources:
   repositories:
     - repository: azuredevops-lib
       type: github
-      ref: refs/heads/main
+      ref: refs/heads/feat/caching
       name: bancey/azuredevops-lib
       endpoint: bancey
 
@@ -185,15 +185,9 @@ parameters:
         dependsOn:
           - generate_ansible_inventory
         preSteps:
-          - script: |
-              sudo apt install age
-              age --version
-              curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
-              mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
-              chmod +x /usr/local/bin/sops
-              sops --version
-              mkdir -p ~/.config/sops/age
-            displayName: Install SOPS and Age
+          - template: steps/install-sops-age.yaml@azuredevops-lib
+            parameters:
+              sopsVersion: "v3.10.2"
           - task: AzureCLI@2
             displayName: Get Age Key
             inputs:
@@ -217,15 +211,9 @@ parameters:
         dependsOn:
           - generate_ansible_inventory
         preSteps:
-          - script: |
-              sudo apt install age
-              age --version
-              curl -LO https://github.com/getsops/sops/releases/download/v3.10.2/sops-v3.10.2.linux.amd64
-              mv sops-v3.10.2.linux.amd64 /usr/local/bin/sops
-              chmod +x /usr/local/bin/sops
-              sops --version
-              mkdir -p ~/.config/sops/age
-            displayName: Install SOPS and Age
+          - template: steps/install-sops-age.yaml@azuredevops-lib
+            parameters:
+              sopsVersion: "v3.10.2"
           - task: AzureCLI@2
             displayName: Get Age Key
             inputs:
