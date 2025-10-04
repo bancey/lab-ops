@@ -195,6 +195,7 @@ parameters:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
+                mkdir -p ~/.config/sops/age
                 az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/keys.txt
                 chmod 600 ~/.config/sops/age/keys.txt
                 ls -la ~/.config/sops/age
