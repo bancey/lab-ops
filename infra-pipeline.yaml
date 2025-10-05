@@ -22,7 +22,7 @@ resources:
   repositories:
     - repository: azuredevops-lib
       type: github
-      ref: refs/heads/feat/caching
+      ref: refs/heads/main
       name: bancey/azuredevops-lib
       endpoint: bancey
 
