@@ -186,28 +186,28 @@ spec:
           prometheus.remote_write "local_mimir" {
             endpoint {
               url = "http://mimir-gateway.monitoring.svc.cluster.local/api/v1/push"
-            }
 
-            // Add queue configuration to handle out-of-order samples
-            queue_config {
-              capacity = 10000
-              max_samples_per_send = 2000
-              batch_send_deadline = "5s"
-              min_shards = 1
-              max_shards = 10
-              retry_on_http_429 = true
+              // Add queue configuration to handle out-of-order samples
+              queue_config {
+                capacity = 10000
+                max_samples_per_send = 2000
+                batch_send_deadline = "5s"
+                min_shards = 1
+                max_shards = 10
+                retry_on_http_429 = true
+              }
+
+              // Add metadata configuration
+              metadata_config {
+                send = true
+                send_interval = "1m"
+              }
             }
 
             external_labels = {
               cluster = "tiny",
               source = "alloy-tiny",
               alloy_instance = "tiny-cluster",
-            }
-
-            // Add metadata configuration
-            metadata_config {
-              send = true
-              send_interval = "1m"
             }
           }
 

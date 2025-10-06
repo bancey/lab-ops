@@ -3,15 +3,15 @@ terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.84.0"
+      version = "0.84.1"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.46.0"
+      version = "4.47.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.10.1"
+      version = "5.11.0"
     }
     local = {
       source  = "hashicorp/local"
