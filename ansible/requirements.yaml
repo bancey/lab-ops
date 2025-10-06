@@ -4,6 +4,10 @@ collections:
     version: 6.1.0
   - name: ansible.utils
     version: 6.0.0
+  - name: ansible.posix
+    version: 1.6.2
+  - name: community.general
+    version: 10.3.1
 roles:
   - name: xanmanning.k3s
     version: v3.6.1
