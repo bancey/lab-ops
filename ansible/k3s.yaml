@@ -21,11 +21,11 @@
       k3s_server: "{{ k3s_server | combine({ 'node-ip': ansible_host}) }}"
   tasks:
   - name: K3S Prepare
-    when: run_prep
+    when: run_prep | bool
     ansible.builtin.include_role:
       name: prep
   - name: Install K3S
-    when: run_install
+    when: run_install | bool
     ansible.builtin.include_role:
       name: xanmanning.k3s
       public: true
@@ -57,22 +57,22 @@
       name: oidc-cluster-admins
     register: resource_check
     when:
-    - run_install
+    - run_install | bool
     - k3s_server_manifests_templates | length > 0 or k3s_server_manifests_urls | length > 0
     - k3s_control_node is defined
-    - k3s_control_node
+    - k3s_control_node | bool
   - name: Remove deployed manifest templates
     ansible.builtin.file:
       path: "{{ k3s_server_manifests_dir }}/{{ item | basename | regex_replace('\\.j2$', '') }}"
       state: absent
     loop: "{{ k3s_server_manifests_templates | default([]) }}"
-    when: run_install
+    when: run_install | bool
   - name: Remove deployed manifest urls
     ansible.builtin.file:
       path: "{{ k3s_server_manifests_dir }}/{{ item.filename }}"
       state: absent
     loop: "{{ k3s_server_manifests_urls | default([]) }}"
-    when: run_install
+    when: run_install | bool
   - name: Check if Cilium is installed
     run_once: true
     kubernetes.core.k8s_info:
@@ -81,7 +81,7 @@
       name: cilium-operator
       namespace: kube-system
     register: cilium_check
-    when: run_install
+    when: run_install | bool
   - name: Set k8s_service_host
     run_once: true
     ansible.builtin.set_fact:
@@ -125,7 +125,7 @@
     delegate_to: localhost
     when:
     - cilium_check.resources | length == 0
-    - run_install
+    - run_install | bool
   - name: Install Cilium
     run_once: true
     become: false
@@ -156,7 +156,7 @@
     delegate_to: localhost
     when:
     - cilium_check.resources | length == 0
-    - run_install
+    - run_install | bool
   - name: Wait for all nodes to be ready
     shell: kubectl wait --for=condition=Ready nodes --all --timeout=1200s
     register: nodes_ready
@@ -169,7 +169,7 @@
       name: lab-ops
       namespace: flux-system
     register: flux_check
-    when: run_install
+    when: run_install | bool
   - name: Bootstrap Cluster with Fluxv2
     ansible.builtin.shell: |
       cd ..
@@ -185,4 +185,4 @@
     run_once: true
     when:
     - flux_check.resources | length == 0
-    - run_install
+    - run_install | bool
