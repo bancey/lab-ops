@@ -64,3 +64,21 @@
     - { limit_type: 'hard', limit_item: 'nofile', value: '65536' }
     - { limit_type: 'soft', limit_item: 'nproc', value: '65536' }
     - { limit_type: 'hard', limit_item: 'nproc', value: '65536' }
+- name: Reboot hosts one at a time
+  when: reboot_hosts
+  throttle: 1
+  block:
+    - name: Reboot host
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible prep role"
+        connect_timeout: 5
+        reboot_timeout: "{{ reboot_timeout }}"
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+    - name: Wait for host to come back online
+      ansible.builtin.wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 5
+        timeout: "{{ reboot_timeout }}"
