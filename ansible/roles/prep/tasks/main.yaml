@@ -41,7 +41,7 @@
     enabled: false
     state: stopped
     masked: true
-  when: disable_multipath
+  when: disable_multipath | bool
 - name: Configure inotify limits for Kubernetes
   ansible.posix.sysctl:
     name: "{{ item.name }}"
@@ -65,7 +65,7 @@
     - { limit_type: 'soft', limit_item: 'nproc', value: '65536' }
     - { limit_type: 'hard', limit_item: 'nproc', value: '65536' }
 - name: Reboot hosts one at a time
-  when: reboot_hosts
+  when: reboot_hosts | bool
   throttle: 1
   block:
     - name: Reboot host
