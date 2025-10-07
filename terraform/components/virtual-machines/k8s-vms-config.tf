@@ -6,13 +6,19 @@ resource "terraform_data" "k8s_ansible" {
     module.tiny_k8s_virtual_machines
   ]
 
-  triggers_replace = [
-    each.value.ansible_trigger,
-    module.wanda_k8s_virtual_machines,
-    module.tiny_k8s_virtual_machines,
-    file("../../../ansible/k3s.yaml")
-  ]
+  # Triggers replacement when:
+  # - ansible_trigger changes
+  # - VMs are recreated
+  # - k3s.yaml changes
+  # - ansible_reboot_hosts changes from false to true (or is true)
+  triggers_replace = {
+    ansible_trigger  = each.value.ansible_trigger
+    vm_modules       = jsonencode([module.wanda_k8s_virtual_machines, module.tiny_k8s_virtual_machines])
+    k3s_playbook     = filemd5("../../../ansible/k3s.yaml")
+    reboot_requested = each.value.ansible_reboot_hosts ? timestamp() : null
+  }
 
+  # Reboot only when the resource is being replaced (first run, VMs recreated, or reboot_hosts changed to true)
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
       playbook  = "k3s.yaml"
@@ -22,3 +28,6 @@ resource "terraform_data" "k8s_ansible" {
     interpreter = ["/bin/bash", "-c"]
   }
 }
+
+
+

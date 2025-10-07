@@ -23,7 +23,7 @@ variable "kubernetes_virtual_machines" {
   type = map(object({
     target_nodes          = list(string)
     ansible_trigger       = optional(string)
-    ansible_restart_hosts = optional(bool, false)
+    ansible_reboot_hosts  = optional(bool, false)
     disk_size             = optional(number)
     k3s_etcd_datastore    = optional(bool, false)
     load_balancer_address = optional(string, null)
