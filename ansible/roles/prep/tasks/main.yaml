@@ -42,6 +42,28 @@
     state: stopped
     masked: true
   when: disable_multipath
+- name: Configure inotify limits for Kubernetes
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    reload: true
+  loop:
+    - { name: 'fs.inotify.max_user_watches', value: '524288' }
+    - { name: 'fs.inotify.max_user_instances', value: '512' }
+    - { name: 'fs.file-max', value: '2097152' }
+- name: Configure file descriptor limits
+  community.general.pam_limits:
+    domain: '*'
+    limit_type: "{{ item.limit_type }}"
+    limit_item: "{{ item.limit_item }}"
+    value: "{{ item.value }}"
+  loop:
+    - { limit_type: 'soft', limit_item: 'nofile', value: '65536' }
+    - { limit_type: 'hard', limit_item: 'nofile', value: '65536' }
+    - { limit_type: 'soft', limit_item: 'nproc', value: '65536' }
+    - { limit_type: 'hard', limit_item: 'nproc', value: '65536' }
 - name: Reboot hosts one at a time
   when: reboot_hosts
   throttle: 1
