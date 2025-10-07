@@ -28,6 +28,3 @@ resource "terraform_data" "k8s_ansible" {
     interpreter = ["/bin/bash", "-c"]
   }
 }
-
-
-
