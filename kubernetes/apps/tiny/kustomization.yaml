@@ -13,6 +13,7 @@ resources:
   - ./capacitor-ingress-route.yaml
   - ../base/bunkerweb-mgmt
   - ../base/twingate
+  - ../base/headscale
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
   - ../base/monica

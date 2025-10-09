@@ -20,3 +20,4 @@ resources:
   - ./twingate.yaml
   - ./monica.yaml
   - ./unpoller.yaml
+  - ./gabe565.yaml
