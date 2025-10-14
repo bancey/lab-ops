@@ -381,3 +381,7 @@ dns:
     record: 10.152.16.50
   grafana.tiny.heimelska.co.uk:
     record: 10.152.16.50
+  hass.tiny.heimelska.co.uk:
+    record: 10.152.16.50
+  hass-code.tiny.heimelska.co.uk:
+    record: 10.152.16.50
