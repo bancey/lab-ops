@@ -1,0 +1,56 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: home-assistant-staging-tls
+  namespace: default
+spec:
+  secretName: home-assistant-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "home-assistant-fqdn"
+  dnsNames:
+    - "home-assistant-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: home-assistant-tls
+  namespace: default
+spec:
+  secretName: home-assistant-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "home-assistant-fqdn"
+  dnsNames:
+    - "home-assistant-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: home-assistant-code-staging-tls
+  namespace: default
+spec:
+  secretName: home-assistant-code-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "home-assistant-code-fqdn"
+  dnsNames:
+    - "home-assistant-code-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: home-assistant-code-tls
+  namespace: default
+spec:
+  secretName: home-assistant-code-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "home-assistant-code-fqdn"
+  dnsNames:
+    - "home-assistant-code-fqdn"

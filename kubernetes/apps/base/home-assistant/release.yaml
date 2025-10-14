@@ -1,0 +1,103 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: home-assistant
+  namespace: home-assistant
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.3.0
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    # Configure options applied to all pods
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: "OnRootMismatch"
+
+    controllers:
+      # Configure the main controller
+      main:
+        type: statefulset
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        containers:
+          # Configure the main application container
+          main:
+            image:
+              repository: ghcr.io/onedr0p/home-assistant
+              tag: 2025.1.6
+            env:
+              TZ: Europe/London
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512M
+              limits:
+                memory: 2Gi
+
+          # Configure the code-server sidecar
+          code:
+            dependsOn: main
+            image:
+              repository: ghcr.io/coder/code-server
+              tag: 4.96.2
+            args:
+              - --auth
+              - "none"
+              - --user-data-dir
+              - "/config/.vscode"
+              - --extensions-dir
+              - "/config/.vscode"
+              - --port
+              - "8081"
+              - "/config"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256M
+              limits:
+                memory: 1Gi
+
+    service:
+      # Configure a service for the main application
+      main:
+        controller: main
+        type: ClusterIP
+        ports:
+          http:
+            port: 8123
+      # Configure a service for the code-server sidecar
+      code:
+        type: ClusterIP
+        controller: main
+        ports:
+          http:
+            port: 8081
+
+    persistence:
+      # Configure the main configuration storage location
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 5Gi
+        globalMounts:
+          - path: /config
