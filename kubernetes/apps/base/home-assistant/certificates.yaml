@@ -54,3 +54,31 @@ spec:
   commonName: "home-assistant-code-fqdn"
   dnsNames:
     - "home-assistant-code-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: zigbee2mqtt-staging-tls
+  namespace: default
+spec:
+  secretName: zigbee2mqtt-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "zigbee2mqtt-fqdn"
+  dnsNames:
+    - "zigbee2mqtt-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: zigbee2mqtt-tls
+  namespace: default
+spec:
+  secretName: zigbee2mqtt-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "zigbee2mqtt-fqdn"
+  dnsNames:
+    - "zigbee2mqtt-fqdn"

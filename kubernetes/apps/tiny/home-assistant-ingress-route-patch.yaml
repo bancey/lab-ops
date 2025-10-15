@@ -30,3 +30,19 @@ spec:
       middlewares:
         - name: default-headers
           namespace: traefik
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: zigbee2mqtt
+  namespace: home-assistant
+spec:
+  routes:
+    - match: Host(`zigbee2mqtt.tiny.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: zigbee2mqtt-main
+          port: 8080
+      middlewares:
+        - name: default-headers
+          namespace: traefik
