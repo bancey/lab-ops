@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: home-assistant-staging-tls
-  namespace: default
+  namespace: home-assistant
 spec:
   commonName: "hass.tiny.heimelska.co.uk"
   dnsNames:
@@ -13,7 +13,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: home-assistant-tls
-  namespace: default
+  namespace: home-assistant
 spec:
   commonName: "hass.tiny.heimelska.co.uk"
   dnsNames:
@@ -23,7 +23,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: home-assistant-code-staging-tls
-  namespace: default
+  namespace: home-assistant
 spec:
   commonName: "hass-code.tiny.heimelska.co.uk"
   dnsNames:
@@ -33,7 +33,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: home-assistant-code-tls
-  namespace: default
+  namespace: home-assistant
 spec:
   commonName: "hass-code.tiny.heimelska.co.uk"
   dnsNames:
