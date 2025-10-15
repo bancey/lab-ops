@@ -41,7 +41,7 @@ spec:
     - match: Host(`zigbee2mqtt.tiny.heimelska.co.uk`)
       kind: Rule
       services:
-        - name: zigbee2mqtt-main
+        - name: zigbee2mqtt
           port: 8080
       middlewares:
         - name: default-headers
