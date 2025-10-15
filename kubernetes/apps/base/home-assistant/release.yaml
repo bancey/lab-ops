@@ -44,7 +44,7 @@ spec:
           # Configure the main application container
           main:
             image:
-              repository: ghcr.io/onedr0p/home-assistant
+              repository: ghcr.io/home-operations/home-assistant
               tag: 2025.10.2
             env:
               TZ: Europe/London
