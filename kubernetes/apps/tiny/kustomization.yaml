@@ -21,7 +21,6 @@ resources:
   - ./monitoring-certificates.yaml
   - ./unpoller-secret.sops.yaml
   - ./unpoller-alloy-config.yaml
-  - ./home-assistant-certificate-patch.yaml
   - ../base/home-assistant
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
