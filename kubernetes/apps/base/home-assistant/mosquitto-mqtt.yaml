@@ -28,9 +28,9 @@ spec:
     defaultPodOptions:
       automountServiceAccountToken: false
       securityContext:
-        runAsUser: 1883
-        runAsGroup: 1883
-        fsGroup: 1883
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
 
     controllers:
@@ -84,6 +84,6 @@ spec:
       log:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
-        size: 512Mi
+        size: 1Gi
         globalMounts:
           - path: /mosquitto/log
