@@ -37,9 +37,6 @@ spec:
       # Configure the main controller
       main:
         type: statefulset
-        annotations:
-          reloader.stakater.com/auto: "true"
-
         containers:
           # Configure the main application container
           main:
@@ -66,13 +63,13 @@ spec:
             protocol: TCP
 
     persistence:
-      # Configure the main configuration storage location
-      config:
-        type: persistentVolumeClaim
-        accessMode: ReadWriteOnce
-        size: 1Gi
+      # Mount ConfigMap for mosquitto configuration
+      config-file:
+        type: configMap
+        name: mosquitto-config
         globalMounts:
-          - path: /mosquitto/config
+          - path: /mosquitto/config/mosquitto.conf
+            subPath: mosquitto.conf
       # Configure data storage for MQTT persistence
       data:
         type: persistentVolumeClaim
