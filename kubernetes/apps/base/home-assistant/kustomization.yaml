@@ -7,3 +7,5 @@ resources:
   - release.yaml
   - ingress-route.yaml
   - certificates.yaml
+  - mosquitto-mqtt.yaml
+  - zigbee2mqtt.yaml
