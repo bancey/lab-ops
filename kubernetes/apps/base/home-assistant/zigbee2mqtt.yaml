@@ -42,7 +42,7 @@ spec:
           main:
             image:
               repository: koenkk/zigbee2mqtt
-              tag: 1.42.0
+              tag: 2.6.2
             envFrom:
               - secretRef:
                   name: zigbee-network-config
