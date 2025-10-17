@@ -1,0 +1,420 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-assistant-sonos-lb
+  namespace: home-assistant
+  annotations:
+    io.cilium/lb-ipam-ips: "auto"
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: home-assistant
+    app.kubernetes.io/instance: home-assistant
+    app.kubernetes.io/controller: main
+  ports:
+    - name: port-1400
+      protocol: TCP
+      port: 1400
+      targetPort: 1400
+    - name: port-1401
+      protocol: TCP
+      port: 1401
+      targetPort: 1401
+    - name: port-1402
+      protocol: TCP
+      port: 1402
+      targetPort: 1402
+    - name: port-1403
+      protocol: TCP
+      port: 1403
+      targetPort: 1403
+    - name: port-1404
+      protocol: TCP
+      port: 1404
+      targetPort: 1404
+    - name: port-1405
+      protocol: TCP
+      port: 1405
+      targetPort: 1405
+    - name: port-1406
+      protocol: TCP
+      port: 1406
+      targetPort: 1406
+    - name: port-1407
+      protocol: TCP
+      port: 1407
+      targetPort: 1407
+    - name: port-1408
+      protocol: TCP
+      port: 1408
+      targetPort: 1408
+    - name: port-1409
+      protocol: TCP
+      port: 1409
+      targetPort: 1409
+    - name: port-1410
+      protocol: TCP
+      port: 1410
+      targetPort: 1410
+    - name: port-1411
+      protocol: TCP
+      port: 1411
+      targetPort: 1411
+    - name: port-1412
+      protocol: TCP
+      port: 1412
+      targetPort: 1412
+    - name: port-1413
+      protocol: TCP
+      port: 1413
+      targetPort: 1413
+    - name: port-1414
+      protocol: TCP
+      port: 1414
+      targetPort: 1414
+    - name: port-1415
+      protocol: TCP
+      port: 1415
+      targetPort: 1415
+    - name: port-1416
+      protocol: TCP
+      port: 1416
+      targetPort: 1416
+    - name: port-1417
+      protocol: TCP
+      port: 1417
+      targetPort: 1417
+    - name: port-1418
+      protocol: TCP
+      port: 1418
+      targetPort: 1418
+    - name: port-1419
+      protocol: TCP
+      port: 1419
+      targetPort: 1419
+    - name: port-1420
+      protocol: TCP
+      port: 1420
+      targetPort: 1420
+    - name: port-1421
+      protocol: TCP
+      port: 1421
+      targetPort: 1421
+    - name: port-1422
+      protocol: TCP
+      port: 1422
+      targetPort: 1422
+    - name: port-1423
+      protocol: TCP
+      port: 1423
+      targetPort: 1423
+    - name: port-1424
+      protocol: TCP
+      port: 1424
+      targetPort: 1424
+    - name: port-1425
+      protocol: TCP
+      port: 1425
+      targetPort: 1425
+    - name: port-1426
+      protocol: TCP
+      port: 1426
+      targetPort: 1426
+    - name: port-1427
+      protocol: TCP
+      port: 1427
+      targetPort: 1427
+    - name: port-1428
+      protocol: TCP
+      port: 1428
+      targetPort: 1428
+    - name: port-1429
+      protocol: TCP
+      port: 1429
+      targetPort: 1429
+    - name: port-1430
+      protocol: TCP
+      port: 1430
+      targetPort: 1430
+    - name: port-1431
+      protocol: TCP
+      port: 1431
+      targetPort: 1431
+    - name: port-1432
+      protocol: TCP
+      port: 1432
+      targetPort: 1432
+    - name: port-1433
+      protocol: TCP
+      port: 1433
+      targetPort: 1433
+    - name: port-1434
+      protocol: TCP
+      port: 1434
+      targetPort: 1434
+    - name: port-1435
+      protocol: TCP
+      port: 1435
+      targetPort: 1435
+    - name: port-1436
+      protocol: TCP
+      port: 1436
+      targetPort: 1436
+    - name: port-1437
+      protocol: TCP
+      port: 1437
+      targetPort: 1437
+    - name: port-1438
+      protocol: TCP
+      port: 1438
+      targetPort: 1438
+    - name: port-1439
+      protocol: TCP
+      port: 1439
+      targetPort: 1439
+    - name: port-1440
+      protocol: TCP
+      port: 1440
+      targetPort: 1440
+    - name: port-1441
+      protocol: TCP
+      port: 1441
+      targetPort: 1441
+    - name: port-1442
+      protocol: TCP
+      port: 1442
+      targetPort: 1442
+    - name: port-1443
+      protocol: TCP
+      port: 1443
+      targetPort: 1443
+    - name: port-1444
+      protocol: TCP
+      port: 1444
+      targetPort: 1444
+    - name: port-1445
+      protocol: TCP
+      port: 1445
+      targetPort: 1445
+    - name: port-1446
+      protocol: TCP
+      port: 1446
+      targetPort: 1446
+    - name: port-1447
+      protocol: TCP
+      port: 1447
+      targetPort: 1447
+    - name: port-1448
+      protocol: TCP
+      port: 1448
+      targetPort: 1448
+    - name: port-1449
+      protocol: TCP
+      port: 1449
+      targetPort: 1449
+    - name: port-1450
+      protocol: TCP
+      port: 1450
+      targetPort: 1450
+    - name: port-1451
+      protocol: TCP
+      port: 1451
+      targetPort: 1451
+    - name: port-1452
+      protocol: TCP
+      port: 1452
+      targetPort: 1452
+    - name: port-1453
+      protocol: TCP
+      port: 1453
+      targetPort: 1453
+    - name: port-1454
+      protocol: TCP
+      port: 1454
+      targetPort: 1454
+    - name: port-1455
+      protocol: TCP
+      port: 1455
+      targetPort: 1455
+    - name: port-1456
+      protocol: TCP
+      port: 1456
+      targetPort: 1456
+    - name: port-1457
+      protocol: TCP
+      port: 1457
+      targetPort: 1457
+    - name: port-1458
+      protocol: TCP
+      port: 1458
+      targetPort: 1458
+    - name: port-1459
+      protocol: TCP
+      port: 1459
+      targetPort: 1459
+    - name: port-1460
+      protocol: TCP
+      port: 1460
+      targetPort: 1460
+    - name: port-1461
+      protocol: TCP
+      port: 1461
+      targetPort: 1461
+    - name: port-1462
+      protocol: TCP
+      port: 1462
+      targetPort: 1462
+    - name: port-1463
+      protocol: TCP
+      port: 1463
+      targetPort: 1463
+    - name: port-1464
+      protocol: TCP
+      port: 1464
+      targetPort: 1464
+    - name: port-1465
+      protocol: TCP
+      port: 1465
+      targetPort: 1465
+    - name: port-1466
+      protocol: TCP
+      port: 1466
+      targetPort: 1466
+    - name: port-1467
+      protocol: TCP
+      port: 1467
+      targetPort: 1467
+    - name: port-1468
+      protocol: TCP
+      port: 1468
+      targetPort: 1468
+    - name: port-1469
+      protocol: TCP
+      port: 1469
+      targetPort: 1469
+    - name: port-1470
+      protocol: TCP
+      port: 1470
+      targetPort: 1470
+    - name: port-1471
+      protocol: TCP
+      port: 1471
+      targetPort: 1471
+    - name: port-1472
+      protocol: TCP
+      port: 1472
+      targetPort: 1472
+    - name: port-1473
+      protocol: TCP
+      port: 1473
+      targetPort: 1473
+    - name: port-1474
+      protocol: TCP
+      port: 1474
+      targetPort: 1474
+    - name: port-1475
+      protocol: TCP
+      port: 1475
+      targetPort: 1475
+    - name: port-1476
+      protocol: TCP
+      port: 1476
+      targetPort: 1476
+    - name: port-1477
+      protocol: TCP
+      port: 1477
+      targetPort: 1477
+    - name: port-1478
+      protocol: TCP
+      port: 1478
+      targetPort: 1478
+    - name: port-1479
+      protocol: TCP
+      port: 1479
+      targetPort: 1479
+    - name: port-1480
+      protocol: TCP
+      port: 1480
+      targetPort: 1480
+    - name: port-1481
+      protocol: TCP
+      port: 1481
+      targetPort: 1481
+    - name: port-1482
+      protocol: TCP
+      port: 1482
+      targetPort: 1482
+    - name: port-1483
+      protocol: TCP
+      port: 1483
+      targetPort: 1483
+    - name: port-1484
+      protocol: TCP
+      port: 1484
+      targetPort: 1484
+    - name: port-1485
+      protocol: TCP
+      port: 1485
+      targetPort: 1485
+    - name: port-1486
+      protocol: TCP
+      port: 1486
+      targetPort: 1486
+    - name: port-1487
+      protocol: TCP
+      port: 1487
+      targetPort: 1487
+    - name: port-1488
+      protocol: TCP
+      port: 1488
+      targetPort: 1488
+    - name: port-1489
+      protocol: TCP
+      port: 1489
+      targetPort: 1489
+    - name: port-1490
+      protocol: TCP
+      port: 1490
+      targetPort: 1490
+    - name: port-1491
+      protocol: TCP
+      port: 1491
+      targetPort: 1491
+    - name: port-1492
+      protocol: TCP
+      port: 1492
+      targetPort: 1492
+    - name: port-1493
+      protocol: TCP
+      port: 1493
+      targetPort: 1493
+    - name: port-1494
+      protocol: TCP
+      port: 1494
+      targetPort: 1494
+    - name: port-1495
+      protocol: TCP
+      port: 1495
+      targetPort: 1495
+    - name: port-1496
+      protocol: TCP
+      port: 1496
+      targetPort: 1496
+    - name: port-1497
+      protocol: TCP
+      port: 1497
+      targetPort: 1497
+    - name: port-1498
+      protocol: TCP
+      port: 1498
+      targetPort: 1498
+    - name: port-1499
+      protocol: TCP
+      port: 1499
+      targetPort: 1499
+    - name: port-1500
+      protocol: TCP
+      port: 1500
+      targetPort: 1500
+
