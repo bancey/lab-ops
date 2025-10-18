@@ -417,4 +417,3 @@ spec:
       protocol: TCP
       port: 1500
       targetPort: 1500
-
