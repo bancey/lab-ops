@@ -13,7 +13,7 @@ cloudflare_records = {
     type    = "CNAME"
     value   = "home.bancey.xyz"
     proxied = true
-    ttl     = 300
+    ttl     = 1
     zone    = "lab"
   }
 }
