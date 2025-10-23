@@ -6,7 +6,7 @@ metadata:
 data:
   API_WHITELIST_IP: "127.0.0.0/8 10.151.14.0/24 10.151.16.0/24"
   BUNKERWEB_INSTANCES: "thanos.heimelska.co.uk gamora.heimelska.co.uk"
-  SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk wanda-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pelican.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk unifi.heimelska.co.uk"
+  SERVER_NAME: "bunkerweb-mgmt.heimelska.co.uk gatus.thanos.heimelska.co.uk gatus.gamora.heimelska.co.uk tiny-pve.heimelska.co.uk wanda-pve.heimelska.co.uk adguard.gamora.heimelska.co.uk adguard.thanos.heimelska.co.uk wanda-mgmt.heimelska.co.uk pelican.heimelska.co.uk longhorn.heimelska.co.uk smokeping.heimelska.co.uk sonarr.heimelska.co.uk radarr.heimelska.co.uk prowlarr.heimelska.co.uk dl.heimelska.co.uk unifi.heimelska.co.uk hass.heimelska.co.uk"
   MULTISITE: "yes"
   SERVE_FILES: "no"
   DISABLE_DEFAULT_SERVER: "yes"
@@ -66,3 +66,7 @@ data:
   unifi.heimelska.co.uk_REVERSE_PROXY_HOST: "https://10.151.14.1"
   unifi.heimelska.co.uk_REVERSE_PROXY_URL: "/"
   unifi.heimelska.co.uk_REVERSE_PROXY_WS: "yes"
+  hass.heimelska.co.uk_REVERSE_PROXY_HOST: "https://hass.tiny.heimelska.co.uk"
+  hass.heimelska.co.uk_REVERSE_PROXY_URL: "/"
+  hass.heimelska.co.uk_REVERSE_PROXY_WS: "yes"
+  hass.heimelska.co.uk_REVERSE_PROXY_CUSTOM_HOST: "hass.tiny.heimelska.co.uk"
