@@ -8,7 +8,15 @@ game_server_vnet_peerings = {
 }
 game_servers = {}
 
-cloudflare_records = {}
+cloudflare_records = {
+  "hass.heimelska.co.uk" = {
+    type    = "CNAME"
+    value   = "home.bancey.xyz"
+    proxied = true
+    ttl     = 300
+    zone    = "lab"
+  }
+}
 
 kubernetes_virtual_machines = {
   wanda = {
