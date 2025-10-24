@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../app-dependencies/controllers/longhorn-namespace.yaml
+  - ../../../app-dependencies/controllers/longhorn.yaml
+  - ../../../app-dependencies/controllers/longhorn-azblob-secret.sops.yaml
+  - ../../../app-dependencies/config/longhorn-certificates.yaml
+  - ../../../app-dependencies/config/longhorn-ingress.yaml
