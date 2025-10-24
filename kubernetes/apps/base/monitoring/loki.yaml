@@ -8,7 +8,7 @@ spec:
   releaseName: loki
   chart:
     spec:
-      version: 6.43.0
+      version: 6.44.0
       chart: loki
       sourceRef:
         kind: HelmRepository
