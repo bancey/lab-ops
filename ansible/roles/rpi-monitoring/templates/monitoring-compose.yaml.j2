@@ -1,0 +1,54 @@
+services:
+  adguard_exporter:
+    image:  ghcr.io/henrywhitaker3/adguard-exporter:v1.2.1
+    container_name: adguard_exporter
+    restart: always
+    environment:
+      ADGUARD_SERVERS: http://10.151.14.4:8000
+      ADGUARD_USERNAMES: "{{ adguard_username }}"
+      ADGUARD_PASSWORDS: "{{ adguard_password }}"
+    ports:
+      - "9618:9618"
+  gatus:
+    image: twinproduction/gatus:v5.30.0
+    volumes:
+      - /opt/gatus/config:/config
+      - /opt/gatus/data:/data
+    ports:
+      - "8080:8080/tcp"
+  alloy:
+    image: grafana/alloy:v1.11.3
+    container_name: alloy
+    restart: always
+    volumes:
+      - /opt/alloy/config:/etc/alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host/root:ro
+      - /sys:/host/sys:ro
+      - /proc:/host/proc:ro
+      - /var/log:/host/var/log:ro
+      - /run/udev:/host/udev:ro
+    ports:
+      - "12345:12345/tcp"
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - --disable-reporting
+    privileged: true
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: cadvisor
+    restart: always
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8081:8080"
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg

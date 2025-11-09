@@ -1,0 +1,47 @@
+---
+- name: Create monitoring stack directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /opt/compose/monitoring
+    - /opt/gatus/config
+    - /opt/gatus/data
+    - /opt/alloy
+    - /opt/alloy/config
+
+- name: Copy Gatus configuration file
+  copy:
+    src: "{{ gatus_config_src }}"
+    dest: /opt/gatus/config/config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy Alloy configuration file
+  template:
+    src: "{{ alloy_config_src }}"
+    dest: /opt/alloy/config/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy monitoring stack docker-compose config
+  template:
+    src: monitoring-compose.yaml.j2
+    dest: /opt/compose/monitoring/docker-compose.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy monitoring stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/compose/monitoring
+    project_name: monitoring
+    files:
+      - docker-compose.yaml
+  register: monitoring_output
+  when: not ansible_check_mode

@@ -1,0 +1,4 @@
+---
+# Default configuration file sources
+gatus_config_src: "../../templates/gatus-config.yaml"
+alloy_config_src: "../../templates/alloy-config.alloy.j2"
