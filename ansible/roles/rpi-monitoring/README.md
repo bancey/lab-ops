@@ -38,8 +38,16 @@ Required variables (passed from playbook):
 - `adguard_password`: Password for AdGuard Home API access
 
 Optional variables (with defaults):
-- `gatus_config_src`: Source path for Gatus config (default: `../../templates/gatus-config.yaml`)
-- `alloy_config_src`: Source path for Alloy config (default: `../../templates/alloy-config.alloy.j2`)
+- `gatus_config_file`: Gatus config file name (default: `gatus-config.yaml` - uses file from role's `files/` directory)
+- `alloy_config_template`: Alloy config template name (default: `alloy-config.alloy.j2` - uses template from role's `templates/` directory)
+
+To use custom configuration files, override these variables in your playbook:
+```yaml
+- role: rpi-monitoring
+  vars:
+    gatus_config_file: "/path/to/custom/gatus-config.yaml"
+    alloy_config_template: "/path/to/custom/alloy-config.alloy.j2"
+```
 
 ## Usage
 

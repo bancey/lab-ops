@@ -15,7 +15,7 @@
 
 - name: Copy Gatus configuration file
   copy:
-    src: "{{ gatus_config_src }}"
+    src: "{{ gatus_config_file }}"
     dest: /opt/gatus/config/config.yaml
     owner: root
     group: root
@@ -23,7 +23,7 @@
 
 - name: Copy Alloy configuration file
   template:
-    src: "{{ alloy_config_src }}"
+    src: "{{ alloy_config_template }}"
     dest: /opt/alloy/config/config.alloy
     owner: root
     group: root

@@ -1,0 +1,53 @@
+storage:
+  type: sqlite
+  path: /data/data.db
+
+endpoints:
+  - name: thanos
+    group: hosts
+    url: "tcp://thanos.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.5"
+  - name: gamora
+    group: hosts
+    url: "tcp://gamora.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.6"
+  - name: thor
+    group: hosts
+    url: "tcp://thor.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.13"
+  - name: loki
+    group: hosts
+    url: "tcp://loki.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.14"
+  - name: hela
+    group: hosts
+    url: "tcp://hela.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.12"
+  - name: wanda
+    group: hosts
+    url: "tcp://wanda.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.11"
+  - name: wanda-mgmt
+    group: hosts
+    url: "tcp://10.151.14.10:443"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"

@@ -1,0 +1,172 @@
+// Grafana Alloy configuration for RPI host monitoring
+// This configuration collects metrics and logs from both the host and Docker containers
+
+// Logging configuration
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Discovery for Docker containers
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = []
+  rule {
+      source_labels = ["__meta_docker_container_name"]
+      regex = "/(.*)"
+      target_label = "container"
+  }
+}
+
+// Prometheus remote write for Mimir
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+  }
+  
+  external_labels = {
+    "hostname" = "{{ inventory_hostname }}",
+  }
+}
+
+// Loki remote write
+loki.write "loki" {
+  endpoint {
+    url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+  }
+}
+
+// Node exporter for host metrics
+prometheus.exporter.unix "host_metrics" {
+  rootfs_path    = "/host/root"
+  procfs_path    = "/host/proc"
+  sysfs_path     = "/host/sys"
+  udev_data_path = "/host/udev"
+}
+
+// Scrape host metrics
+prometheus.scrape "host_metrics" {
+  targets    = prometheus.exporter.unix.host_metrics.targets
+  forward_to = [prometheus.remote_write.mimir.receiver]
+  
+{% if inventory_hostname == "thanos" %}
+  scrape_interval = "56s"
+{% else %}
+  scrape_interval = "60s"
+{% endif %}
+  job_name = "node-exporter-{{ inventory_hostname }}"
+}
+
+// Docker container metrics via cAdvisor endpoint
+prometheus.scrape "docker_metrics" {
+  targets = [{"__address__" = "cadvisor:8080"}]
+  forward_to = [prometheus.remote_write.mimir.receiver]
+  
+  metrics_path = "/metrics"
+{% if inventory_hostname == "thanos" %}
+  scrape_interval = "56s"
+{% else %}
+  scrape_interval = "60s"
+{% endif %}
+  
+  job_name = "cadvisor-{{ inventory_hostname }}"
+}
+
+// Scrape logs from adguard_exporter
+prometheus.scrape "adguard_metrics" {
+  targets = [{"__address__" = "adguard_exporter:9618"}]
+  forward_to = [prometheus.relabel.adguard.receiver]
+  
+  metrics_path = "/metrics"
+{% if inventory_hostname == "thanos" %}
+  scrape_interval = "56s"
+{% else %}
+  scrape_interval = "60s"
+{% endif %}
+
+  job_name = "adguard-{{ inventory_hostname }}"
+}
+
+// Relabel AdGuard metrics to modify server label
+prometheus.relabel "adguard" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+  
+  rule {
+    source_labels = ["server"]
+    regex = "http://(.+)"
+    target_label = "server"
+    replacement = "${1}-{{ inventory_hostname }}"
+  }
+}
+
+// Host logs collection (syslog, auth)
+loki.source.file "host_logs" {
+  targets = [
+    {"__path__" = "/host/var/log/syslog", "job" = "syslog"},
+    {"__path__" = "/host/var/log/auth.log", "job" = "auth"},
+  ]
+  
+  forward_to = [loki.process.host_logs.receiver]
+}
+
+// Process host logs
+loki.process "host_logs" {
+  forward_to = [loki.write.loki.receiver]
+  
+  stage.static_labels {
+    values = {
+      hostname    = "{{ inventory_hostname }}",
+      source      = "host",
+    }
+  }
+  
+  stage.regex {
+    expression = "^(?P<timestamp>\\w+\\s+\\d+\\s+\\d+:\\d+:\\d+)\\s+(?P<hostname>\\S+)\\s+(?P<program>\\S+?)(?:\\[(?P<pid>\\d+)\\])?:\\s*(?P<message>.*)"
+  }
+  
+  stage.labels {
+    values = {
+      program = "program",
+    }
+  }
+}
+
+// Docker container logs
+loki.source.docker "container_logs" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  forward_to    = [loki.process.container_logs.receiver]
+  relabel_rules = discovery.relabel.containers.rules
+}
+
+// Process container logs
+loki.process "container_logs" {
+  forward_to = [loki.write.loki.receiver]
+  
+  stage.static_labels {
+    values = {
+      hostname    = "{{ inventory_hostname }}",
+      source      = "docker",
+    }
+  }
+  
+  stage.json {
+    expressions = {
+      log       = "log",
+      stream    = "stream",
+      timestamp = "time",
+    }
+  }
+  
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+  }
+  
+  stage.output {
+    source = "log"
+  }
+}
