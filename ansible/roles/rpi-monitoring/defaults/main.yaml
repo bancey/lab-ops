@@ -1,0 +1,6 @@
+---
+# Default configuration file sources
+# These point to files included in the role by default
+# Users can override these by setting these variables to custom paths in their playbook
+gatus_config_file: "gatus-config.yaml"
+alloy_config_template: "alloy-config.alloy.j2"
