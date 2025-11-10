@@ -21,10 +21,11 @@ spec:
       retries: 3
   values:
     image: linuxserver/sabnzbd:4.5.5
+    # PVC names should be configured in cluster overlays
     persistence:
       config:
         enabled: true
-        claimName: sabnzbd-config-pvc-nfs-static
+        claimName: sabnzbd-config-pvc
       downloads:
         enabled: true
-        claimName: sabnzbd-downloads-pvc-nfs-static
+        claimName: sabnzbd-downloads-pvc

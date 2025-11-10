@@ -26,7 +26,8 @@ spec:
       pullPolicy: IfNotPresent
 
     monica:
-      host: "crm.heimelska.co.uk"
+      # Host should be configured in cluster overlays
+      host: "monica.example.com"
       cronjob:
         enabled: true
       queue:
@@ -55,11 +56,11 @@ spec:
         passwordKey: password
 
     # Enable persistence for uploads and storage
+    # Storage class should be configured in cluster overlays
     persistence:
       enabled: true
       accessMode: ReadWriteOnce
       size: 8Gi
-      storageClass: longhorn
 
     service:
       type: ClusterIP

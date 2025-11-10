@@ -23,9 +23,10 @@ spec:
     image: linuxserver/prowlarr:2.1.5
     config:
       port: 9696
+    # PVC names should be configured in cluster overlays
     persistence:
       config:
         enabled: true
-        claimName: prowlarr-config-pvc-nfs-static
+        claimName: prowlarr-config-pvc
       data:
         enabled: false

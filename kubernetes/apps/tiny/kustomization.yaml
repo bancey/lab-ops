@@ -29,9 +29,11 @@ patchesStrategicMerge:
   #- penpot-certificate-patch.yaml
   #- penpot-ingress-route-patch.yaml
   #- penpot-patch.yaml
+  - monica-patch.yaml
   - loki-patch.yaml
   - mimir-patch.yaml
   - grafana-patch.yaml
   - alloy-patch.yaml
+  - zigbee2mqtt-patch.yaml
   - home-assistant-certificate-patch.yaml
   - home-assistant-ingress-route-patch.yaml

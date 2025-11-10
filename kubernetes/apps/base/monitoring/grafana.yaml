@@ -39,12 +39,13 @@ spec:
             url: http://mimir-gateway.monitoring.svc.cluster.local/prometheus
             access: proxy
             isDefault: true
+    # Ingress should be configured in cluster overlays
     ingress:
-      enabled: true
+      enabled: false
+    # Persistence settings should be configured in cluster overlays
     persistence:
       enabled: true
       size: 10Gi
-      storageClassName: longhorn
     resources:
       requests:
         memory: 128Mi

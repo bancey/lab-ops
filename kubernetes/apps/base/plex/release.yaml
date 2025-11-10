@@ -22,28 +22,22 @@ spec:
       registry: index.docker.io
       repository: plexinc/pms-docker
       tag: 1.42.2.10156-f737b826c
+    # Ingress configuration should be defined in cluster overlays
     ingress:
-      enabled: true
-      url: https://plex.bancey.xyz
-      ingressClassName: traefik
-      tls:
-        - hosts:
-            - plex.bancey.xyz
-            - plex.wanda.bancey.xyz
-          secretName: plex-tls
+      enabled: false
+    # Service type should be defined in cluster overlays
     service:
-      type: LoadBalancer
-      annotations:
-        lbipam.cilium.io/ips: 10.152.15.51
+      type: ClusterIP
+    # PVC names should be defined in cluster overlays
     pms:
-      configExistingClaim: plex-config-pvc-nfs-static
+      configExistingClaim: plex-config-pvc
     extraVolumes:
       - name: data
         persistentVolumeClaim:
-          claimName: plex-data-pvc-nfs-static
+          claimName: plex-data-pvc
       - name: private-data
         persistentVolumeClaim:
-          claimName: plex-data-private-pvc-nfs-static
+          claimName: plex-data-private-pvc
     extraVolumeMounts:
       - name: data
         mountPath: /data
