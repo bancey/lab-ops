@@ -33,7 +33,8 @@ spec:
               APP_ENV: testing
               APP_DEBUG: "false"
               APP_TIMEZONE: UTC
-              APP_URL: https://pelican.heimelska.co.uk
+              # APP_URL should be configured in cluster overlays
+              APP_URL: https://pelican.example.com
               REDIS_HOST: pelican-dragonfly
               REDIS_PORT: 6379
               CACHE_DRIVER: redis
