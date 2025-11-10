@@ -43,7 +43,7 @@ spec:
       enabled: true
     persistence:
       enabled: true
-      size: 10Gi
+      size: 15Gi
       storageClassName: longhorn
     resources:
       requests:

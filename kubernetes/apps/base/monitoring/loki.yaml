@@ -46,6 +46,8 @@ spec:
       enabled: false
     minio:
       enabled: true
+      persistence:
+        size: 15Gi
     gateway:
       enabled: true
     deploymentMode: SingleBinary
