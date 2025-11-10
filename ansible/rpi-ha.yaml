@@ -1,6 +1,5 @@
 - name: Update system, install docker and setup keepalived
   hosts: rpi
-  serial: 1
   become: true
   become_user: root
   become_method: sudo

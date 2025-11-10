@@ -1,3 +1,19 @@
+vrrp_script check_adguard_dns {
+  script "/usr/bin/nslookup -timeout=2 localhost 127.0.0.1 > /dev/null 2>&1"
+  interval 5
+  weight -20
+  fall 2
+  rise 2
+}
+
+vrrp_script check_bunkerweb {
+  script "/usr/bin/curl -sf http://127.0.0.1:80 > /dev/null 2>&1"
+  interval 5
+  weight -20
+  fall 2
+  rise 2
+}
+
 vrrp_instance RPI {
   state {{ keepalive[inventory_hostname].state }}
   interface eth0
@@ -16,5 +32,10 @@ vrrp_instance RPI {
 
   virtual_ipaddress {
     {{ vip }}
+  }
+
+  track_script {
+    check_adguard_dns
+    check_bunkerweb
   }
 }
