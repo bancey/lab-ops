@@ -13,21 +13,42 @@
     - /opt/alloy
     - /opt/alloy/config
 
-- name: Copy Gatus configuration file
+- name: Copy Gatus configuration file from role
   copy:
     src: "{{ gatus_config_file }}"
     dest: /opt/gatus/config/config.yaml
     owner: root
     group: root
     mode: '0644'
+  when: not (gatus_config_file is match('^/') or gatus_config_file is match('^\\.'))
 
-- name: Copy Alloy configuration file
+- name: Copy Gatus configuration file from custom path
+  copy:
+    src: "{{ gatus_config_file }}"
+    dest: /opt/gatus/config/config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: false
+  when: gatus_config_file is match('^/') or gatus_config_file is match('^\\..')
+
+- name: Copy Alloy configuration template from role
   template:
     src: "{{ alloy_config_template }}"
     dest: /opt/alloy/config/config.alloy
     owner: root
     group: root
     mode: '0644'
+  when: not (alloy_config_template is match('^/') or alloy_config_template is match('^\\.'))
+
+- name: Copy Alloy configuration template from custom path
+  template:
+    src: "{{ alloy_config_template }}"
+    dest: /opt/alloy/config/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
+  when: alloy_config_template is match('^/') or alloy_config_template is match('^\\..')
 
 - name: Copy monitoring stack docker-compose config
   template:

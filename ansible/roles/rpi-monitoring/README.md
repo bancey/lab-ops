@@ -45,9 +45,12 @@ To use custom configuration files, override these variables in your playbook:
 ```yaml
 - role: rpi-monitoring
   vars:
+    # Absolute paths or relative paths (starting with ./ or ../) are supported
     gatus_config_file: "/path/to/custom/gatus-config.yaml"
     alloy_config_template: "/path/to/custom/alloy-config.alloy.j2"
 ```
+
+Note: When using custom paths, they must be absolute paths (e.g., `/path/to/file`) or relative paths starting with `./` or `../`. The paths should point to files on the Ansible control node.
 
 ## Usage
 
