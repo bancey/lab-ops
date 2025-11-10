@@ -6,6 +6,8 @@ This directory contains Ansible playbooks and roles for managing the lab infrast
 
 The Raspberry Pi hosts use a modular Docker Compose deployment strategy managed by Ansible. Services are organized into logical stacks that can be deployed, managed, and updated independently.
 
+**⚠️ Migrating from the old monolithic stack?** See [MIGRATION.md](MIGRATION.md) for step-by-step migration instructions to avoid service conflicts.
+
 ### Architecture
 
 Services are split into the following stacks:
