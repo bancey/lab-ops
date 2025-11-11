@@ -32,3 +32,7 @@ spec:
         limits:
           max_label_names_per_series: 50
           max_label_names_per_info_series: 100
+    minio:
+      enabled: true
+      persistence:
+        size: 15Gi

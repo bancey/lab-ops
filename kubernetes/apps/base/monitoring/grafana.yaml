@@ -45,7 +45,7 @@ spec:
     # Persistence settings should be configured in cluster overlays
     persistence:
       enabled: true
-      size: 10Gi
+      size: 15Gi
     resources:
       requests:
         memory: 128Mi

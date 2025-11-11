@@ -1,6 +1,5 @@
-- name: Update system, install docker and setup docker compose
+- name: Update system, install docker and setup keepalived
   hosts: rpi
-  serial: 1
   become: true
   become_user: root
   become_method: sudo
@@ -18,21 +17,6 @@
           "10.151.14.5"
         state: "BACKUP"
         priority: 100
-    twingate:
-      network: "bancetech"
-      thanos:
-        refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Refresh-Token') }}"
-        access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Access-Token') }}"
-      gamora:
-        refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Refresh-Token') }}"
-        access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Access-Token') }}"
-    bunkerweb_db_password: "{{ lookup('ansible.builtin.file', 'BunkerWeb-DB-Password') }}"
-    bunkerweb_totp_secrets: "{{ lookup('ansible.builtin.file', 'BunkerWeb-TOTP-Secrets') }}"
-    bunkerweb_mgmt_admin_username: "{{ lookup('ansible.builtin.file', 'BunkerWeb-MGMT-Admin-Username') }}"
-    bunkerweb_mgmt_admin_password: "{{ lookup('ansible.builtin.file', 'BunkerWeb-MGMT-Admin-Password') }}"
-    cloudflare_api_token: "{{ lookup('ansible.builtin.file', 'Cloudflare-Lab-API-Token') }}"
-    adguard_username: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Username') }}"
-    adguard_password: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Password') }}"
   roles:
   - role: prep
     install_pkgs: [ "apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker" ]
@@ -57,39 +41,50 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  - name: create config directories
+  - name: Create base compose directory
     file:
-      path: "{{ item }}"
+      path: /opt/compose
       state: directory
       owner: root
       group: root
-      mode: 775
-    loop:
-    - /opt/adguard
-    - /opt/adguard/config
-    - /opt/adguard/work
-    - /opt/portainer
-    - /opt/compose
-    - /opt/gatus/config
-    - /opt/gatus/data
-    - /opt/alloy
-    - /opt/alloy/config
-  - name: Copy Gatus configuration file
-    copy:
-      src: ./templates/gatus-config.yaml
-      dest: /opt/gatus/config/config.yaml
-  - name: Copy Alloy configuration file
-    template:
-      src: ./templates/alloy-config.alloy.j2
-      dest: /opt/alloy/config/config.alloy
-  - name: Copy docker-compose config template
-    template:
-      src: ./templates/rpi-docker-compose.yaml.j2
-      dest: /opt/compose/docker-compose.yaml
-  - name: deploy Docker Compose stack
-    community.docker.docker_compose_v2:
-      project_src: /opt/compose
-      files:
-      - docker-compose.yaml
-    register: output
-    when: not ansible_check_mode
+      mode: '0755'
+  - name: Create portainer directory
+    file:
+      path: /opt/portainer
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+
+- name: Deploy network stack
+  hosts: rpi
+  serial: 1
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: false
+  vars:
+    twingate:
+      network: "bancetech"
+      thanos:
+        refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Refresh-Token') }}"
+        access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-Access-Token') }}"
+      gamora:
+        refresh_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Refresh-Token') }}"
+        access_token: "{{ lookup('ansible.builtin.file', 'Twingate-banceylab-connector-2-Access-Token') }}"
+  roles:
+  - role: rpi-network
+    tags: [ network ]
+
+- name: Deploy monitoring stack
+  hosts: rpi
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: false
+  vars:
+    adguard_username: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Username') }}"
+    adguard_password: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Password') }}"
+  roles:
+  - role: rpi-monitoring
+    tags: [ monitoring ]

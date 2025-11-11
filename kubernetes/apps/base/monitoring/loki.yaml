@@ -40,12 +40,23 @@ spec:
         volume_enabled: true
       ruler:
         enable_api: true
+      storage:
+        bucketNames:
+          chunks: chunks
+          ruler: ruler
+          admin: admin
+        type: s3
+        s3:
+          s3ForcePathStyle: true
+          insecure: true
     test:
       enabled: false
     lokiCanary:
       enabled: false
     minio:
       enabled: true
+      persistence:
+        size: 15Gi
     gateway:
       enabled: true
     deploymentMode: SingleBinary

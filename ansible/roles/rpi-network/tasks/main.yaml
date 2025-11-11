@@ -1,0 +1,30 @@
+---
+- name: Create network stack directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /opt/compose/network
+    - /opt/adguard
+    - /opt/adguard/config
+    - /opt/adguard/work
+
+- name: Copy network stack docker-compose config
+  template:
+    src: network-compose.yaml.j2
+    dest: /opt/compose/network/docker-compose.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy network stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/compose/network
+    project_name: network
+    files:
+      - docker-compose.yaml
+  register: network_output
+  when: not ansible_check_mode

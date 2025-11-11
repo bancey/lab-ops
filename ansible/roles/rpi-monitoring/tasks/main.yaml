@@ -1,0 +1,68 @@
+---
+- name: Create monitoring stack directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /opt/compose/monitoring
+    - /opt/gatus/config
+    - /opt/gatus/data
+    - /opt/alloy
+    - /opt/alloy/config
+
+- name: Copy Gatus configuration file from role
+  copy:
+    src: "{{ gatus_config_file }}"
+    dest: /opt/gatus/config/config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+  when: not (gatus_config_file is match('^/') or gatus_config_file is match('^\\.'))
+
+- name: Copy Gatus configuration file from custom path
+  copy:
+    src: "{{ gatus_config_file }}"
+    dest: /opt/gatus/config/config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: false
+  when: gatus_config_file is match('^/') or gatus_config_file is match('^\\..')
+
+- name: Copy Alloy configuration template from role
+  template:
+    src: "{{ alloy_config_template }}"
+    dest: /opt/alloy/config/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
+  when: not (alloy_config_template is match('^/') or alloy_config_template is match('^\\.'))
+
+- name: Copy Alloy configuration template from custom path
+  template:
+    src: "{{ alloy_config_template }}"
+    dest: /opt/alloy/config/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
+  when: alloy_config_template is match('^/') or alloy_config_template is match('^\\..')
+
+- name: Copy monitoring stack docker-compose config
+  template:
+    src: monitoring-compose.yaml.j2
+    dest: /opt/compose/monitoring/docker-compose.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy monitoring stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/compose/monitoring
+    project_name: monitoring
+    files:
+      - docker-compose.yaml
+  register: monitoring_output
+  when: not ansible_check_mode
