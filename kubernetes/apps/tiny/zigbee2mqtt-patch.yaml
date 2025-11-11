@@ -11,7 +11,5 @@ spec:
         containers:
           main:
             env:
-              - name: ZIGBEE2MQTT_CONFIG_SERIAL_PORT
-                value: tcp://10.151.13.6:6638
-              - name: ZIGBEE2MQTT_CONFIG_FRONTEND_URL
-                value: https://zigbee2mqtt.tiny.heimelska.co.uk
+              ZIGBEE2MQTT_CONFIG_SERIAL_PORT: tcp://10.151.13.6:6638
+              ZIGBEE2MQTT_CONFIG_FRONTEND_URL: https://zigbee2mqtt.tiny.heimelska.co.uk
