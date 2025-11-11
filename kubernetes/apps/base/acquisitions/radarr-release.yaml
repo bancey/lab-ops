@@ -23,10 +23,11 @@ spec:
     image: linuxserver/radarr:5.28.0
     config:
       port: 7878
+    # PVC names should be configured in cluster overlays
     persistence:
       config:
         enabled: true
-        claimName: radarr-config-pvc-nfs-static
+        claimName: radarr-config-pvc
       data:
         enabled: true
-        claimName: radarr-data-pvc-nfs-static
+        claimName: radarr-data-pvc

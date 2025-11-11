@@ -1,0 +1,50 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: radarr
+  namespace: acquisition
+spec:
+  values:
+    persistence:
+      config:
+        claimName: radarr-config-pvc-nfs-static
+      data:
+        claimName: radarr-data-pvc-nfs-static
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sonarr
+  namespace: acquisition
+spec:
+  values:
+    persistence:
+      config:
+        claimName: sonarr-config-pvc-nfs-static
+      data:
+        claimName: sonarr-data-pvc-nfs-static
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prowlarr
+  namespace: acquisition
+spec:
+  values:
+    persistence:
+      config:
+        claimName: prowlarr-config-pvc-nfs-static
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sabnzbd
+  namespace: acquisition
+spec:
+  values:
+    persistence:
+      config:
+        claimName: sabnzbd-config-pvc-nfs-static
+      downloads:
+        claimName: sabnzbd-downloads-pvc-nfs-static

@@ -8,6 +8,7 @@ resources:
   - plex-data-pvc.yaml
   - plex-data-private-pv.yaml
   - plex-data-private-pvc.yaml
+  - plex-ingress-route.yaml
   - ../base/plex
   - sabnzbd-config-pv.yaml
   - sabnzbd-config-pvc.yaml
@@ -36,6 +37,8 @@ resources:
   - capacitor-certs.yaml
   - ../base/monitoring
 patchesStrategicMerge:
+  - plex-patch.yaml
+  - acquisitions-patch.yaml
   - loki-patch.yaml
   - mimir-patch.yaml
   - grafana-patch.yaml

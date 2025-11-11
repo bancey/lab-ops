@@ -18,4 +18,4 @@ spec:
 
   storage:
     size: 1Gi
-    storageClassName: longhorn
+    # storageClassName should be configured in cluster overlays

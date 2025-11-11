@@ -1,0 +1,17 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: zigbee2mqtt
+  namespace: home-assistant
+spec:
+  values:
+    controllers:
+      main:
+        containers:
+          main:
+            env:
+              - name: ZIGBEE2MQTT_CONFIG_SERIAL_PORT
+                value: tcp://10.151.13.6:6638
+              - name: ZIGBEE2MQTT_CONFIG_FRONTEND_URL
+                value: https://zigbee2mqtt.tiny.heimelska.co.uk

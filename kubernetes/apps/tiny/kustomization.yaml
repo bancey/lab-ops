@@ -12,6 +12,9 @@ resources:
   - ./capacitor-certificates.yaml
   - ./capacitor-ingress-route.yaml
   - ../base/bunkerweb-mgmt
+  - ./bunkerweb-mgmt-configmap.yaml
+  - ./bunkerweb-mgmt-certificates.yaml
+  - ./bunkerweb-mgmt-ingress-route.yaml
   - ../base/twingate
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
@@ -26,12 +29,16 @@ patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
+  - pelican-patch.yaml
+  - bunkerweb-mgmt-mariadb-patch.yaml
   #- penpot-certificate-patch.yaml
   #- penpot-ingress-route-patch.yaml
   #- penpot-patch.yaml
+  - monica-patch.yaml
   - loki-patch.yaml
   - mimir-patch.yaml
   - grafana-patch.yaml
   - alloy-patch.yaml
+  - zigbee2mqtt-patch.yaml
   - home-assistant-certificate-patch.yaml
   - home-assistant-ingress-route-patch.yaml

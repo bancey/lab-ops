@@ -1,0 +1,30 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: plex
+  namespace: plex
+spec:
+  values:
+    ingress:
+      enabled: true
+      url: https://plex.bancey.xyz
+      ingressClassName: traefik
+      tls:
+        - hosts:
+            - plex.bancey.xyz
+            - plex.wanda.bancey.xyz
+          secretName: plex-tls
+    service:
+      type: LoadBalancer
+      annotations:
+        lbipam.cilium.io/ips: 10.152.15.51
+    pms:
+      configExistingClaim: plex-config-pvc-nfs-static
+    extraVolumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: plex-data-pvc-nfs-static
+      - name: private-data
+        persistentVolumeClaim:
+          claimName: plex-data-private-pvc-nfs-static

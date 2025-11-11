@@ -7,9 +7,12 @@ metadata:
 spec:
   values:
     ingress:
+      enabled: true
       hosts:
         - grafana.tiny.heimelska.co.uk
       tls:
         - secretName: grafana-tls
           hosts:
             - grafana.tiny.heimelska.co.uk
+    persistence:
+      storageClassName: longhorn

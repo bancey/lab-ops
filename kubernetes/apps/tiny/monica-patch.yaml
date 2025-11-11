@@ -1,0 +1,12 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: monica
+  namespace: monica
+spec:
+  values:
+    monica:
+      host: "crm.heimelska.co.uk"
+    persistence:
+      storageClass: longhorn

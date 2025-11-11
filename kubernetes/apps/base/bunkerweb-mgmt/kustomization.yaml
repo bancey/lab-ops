@@ -7,6 +7,5 @@ resources:
   - mariadb.yaml
   - secret.sops.yaml
   - release.yaml
-  - certificates.yaml
-  - ingress-route.yaml
-  - configmap.yaml
+  # certificates and ingress-route should be in cluster overlays
+  # configmap is cluster-specific and should be in cluster overlays
