@@ -15,4 +15,6 @@ spec:
           hosts:
             - grafana.tiny.heimelska.co.uk
     persistence:
+      enabled: true
       storageClassName: longhorn
+      existingClaim: grafana-storage

@@ -22,6 +22,9 @@ resources:
   - ./grafana-admin-secret.sops.yaml
   - ../base/monitoring
   - ./monitoring-certificates.yaml
+  - ./mimir-minio-pvc.yaml
+  - ./loki-minio-pvc.yaml
+  - ./grafana-pvc.yaml
   - ./unpoller-secret.sops.yaml
   - ./unpoller-alloy-config.yaml
   - ../base/home-assistant

@@ -18,3 +18,7 @@ spec:
           - hosts:
               - loki.tiny.heimelska.co.uk
             secretName: loki-tls
+    minio:
+      persistence:
+        enabled: true
+        existingClaim: loki-minio

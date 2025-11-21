@@ -19,3 +19,7 @@ spec:
           - secretName: mimir-tls
             hosts:
               - "mimir.tiny.heimelska.co.uk"
+    minio:
+      persistence:
+        enabled: true
+        existingClaim: mimir-minio

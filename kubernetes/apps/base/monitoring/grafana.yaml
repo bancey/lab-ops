@@ -42,10 +42,9 @@ spec:
     # Ingress should be configured in cluster overlays
     ingress:
       enabled: false
-    # Persistence settings should be configured in cluster overlays
+    # Persistence will be configured with external PVC in cluster overlays
     persistence:
-      enabled: true
-      size: 15Gi
+      enabled: false
     resources:
       requests:
         memory: 128Mi

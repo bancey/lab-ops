@@ -32,7 +32,15 @@ spec:
         limits:
           max_label_names_per_series: 50
           max_label_names_per_info_series: 100
+          # Retention policy: keep metrics for 90 days
+          compactor_blocks_retention_period: 90d
+        compactor:
+          # How often compaction runs
+          compaction_interval: 10m
+          # Deletion delay for safety
+          deletion_delay: 2h
     minio:
       enabled: true
+      # MinIO persistence will be configured with external PVC in cluster overlays
       persistence:
-        size: 15Gi
+        enabled: false
