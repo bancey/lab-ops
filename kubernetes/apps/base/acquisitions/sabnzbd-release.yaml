@@ -21,6 +21,9 @@ spec:
       retries: 3
   values:
     image: linuxserver/sabnzbd:4.5.5
+    env:
+      - name: DOCKER_MODS
+        value: lscr.io/linuxserver/mods:universal-unrar6
     # PVC names should be configured in cluster overlays
     persistence:
       config:
