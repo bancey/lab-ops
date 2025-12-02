@@ -5,7 +5,6 @@ metadata:
   annotations:
     pv.kubernetes.io/provisioned-by: nfs.csi.k8s.io
   name: jellyfin-data-private-pv-nfs
-  namespace: jellyfin
 spec:
   capacity:
     storage: 15000Gi
