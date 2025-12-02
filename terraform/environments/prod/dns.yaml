@@ -355,7 +355,7 @@ dns:
   gatus.gamora.heimelska.co.uk:
     record: 10.151.14.4
   plex.bancey.xyz:
-    record: 10.152.15.51
+    record: 10.152.15.50
     twingate:
       network: banceylab
       protocols:
