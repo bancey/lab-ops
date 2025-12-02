@@ -1,0 +1,82 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.4.0
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    timeout: 20m
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    # Configure options applied to all pods
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: "OnRootMismatch"
+
+    controllers:
+      # Configure the main controller
+      main:
+        type: statefulset
+        containers:
+          # Configure the main application container
+          main:
+            image:
+              repository: jellyfin/jellyfin
+              tag: 10.10.3
+            env:
+              TZ: Europe/London
+              JELLYFIN_PublishedServerUrl: "https://jellyfin.bancey.xyz"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512M
+              limits:
+                memory: 4Gi
+
+    service:
+      # Configure a service for the main application
+      main:
+        controller: main
+        type: ClusterIP
+        ports:
+          http:
+            port: 8096
+
+    persistence:
+      # Configure the main configuration storage location
+      config:
+        type: persistentVolumeClaim
+        existingClaim: jellyfin-config-pvc
+        globalMounts:
+          - path: /config
+      # Configure shared media data volumes
+      data:
+        type: persistentVolumeClaim
+        existingClaim: jellyfin-data-pvc
+        globalMounts:
+          - path: /data
+      private-data:
+        type: persistentVolumeClaim
+        existingClaim: jellyfin-data-private-pvc
+        globalMounts:
+          - path: /private-data
