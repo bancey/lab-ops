@@ -69,14 +69,15 @@ spec:
         existingClaim: jellyfin-config-pvc
         globalMounts:
           - path: /config
+      # Configure cache storage
+      cache:
+        type: persistentVolumeClaim
+        existingClaim: jellyfin-cache-pvc
+        globalMounts:
+          - path: /cache
       # Configure shared media data volumes
-      data:
+      media:
         type: persistentVolumeClaim
-        existingClaim: jellyfin-data-pvc
+        existingClaim: jellyfin-media-pvc
         globalMounts:
-          - path: /data
-      private-data:
-        type: persistentVolumeClaim
-        existingClaim: jellyfin-data-private-pvc
-        globalMounts:
-          - path: /private-data
+          - path: /media

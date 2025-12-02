@@ -14,7 +14,7 @@ spec:
     persistence:
       config:
         existingClaim: jellyfin-config-pvc-nfs-static
-      data:
-        existingClaim: jellyfin-data-pvc-nfs-static
-      private-data:
-        existingClaim: jellyfin-data-private-pvc-nfs-static
+      cache:
+        existingClaim: jellyfin-cache-pvc-nfs-static
+      media:
+        existingClaim: jellyfin-media-pvc-nfs-static

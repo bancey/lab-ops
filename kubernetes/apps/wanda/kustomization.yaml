@@ -13,10 +13,10 @@ resources:
   - jellyfin-certs.yaml
   - jellyfin-config-pv.yaml
   - jellyfin-config-pvc.yaml
-  - jellyfin-data-pv.yaml
-  - jellyfin-data-pvc.yaml
-  - jellyfin-data-private-pv.yaml
-  - jellyfin-data-private-pvc.yaml
+  - jellyfin-cache-pv.yaml
+  - jellyfin-cache-pvc.yaml
+  - jellyfin-media-pv.yaml
+  - jellyfin-media-pvc.yaml
   - jellyfin-ingress-route.yaml
   - ../base/jellyfin
   - sabnzbd-config-pv.yaml
