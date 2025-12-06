@@ -1,6 +1,6 @@
 services:
   adguard:
-    image: adguard/adguardhome:v0.107.69
+    image: adguard/adguardhome:v0.107.70
     container_name: adguard
     restart: always
     volumes:
@@ -23,7 +23,7 @@ services:
     depends_on:
       - adguard
   twingate:
-    image: twingate/connector:1.80.0
+    image: twingate/connector:1.81.0
     container_name: banceylab-connector
     restart: always
     network_mode: bridge
@@ -53,7 +53,7 @@ services:
       API_WHITELIST_IP: "127.0.0.0/8 10.151.14.0/24 10.151.16.0/24"
     restart: "unless-stopped"
   alloy:
-    image: grafana/alloy:v1.11.3
+    image: grafana/alloy:v1.12.0
     container_name: alloy
     restart: always
     volumes:

@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 4.4.0
+      version: 4.5.0
       sourceRef:
         kind: HelmRepository
         name: bjw-s
@@ -28,11 +28,11 @@ spec:
           unpoller:
             image:
               repository: ghcr.io/unpoller/unpoller
-              tag: v2.15.4
+              tag: v2.16.0
           alloy:
             image:
               repository: grafana/alloy
-              tag: v1.11.3
+              tag: v1.12.0
             args:
               - run
               - /etc/alloy/config.alloy
