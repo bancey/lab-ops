@@ -10,6 +10,15 @@ resources:
   - plex-data-private-pvc.yaml
   - plex-ingress-route.yaml
   - ../base/plex
+  - jellyfin-certs.yaml
+  - jellyfin-config-pv.yaml
+  - jellyfin-config-pvc.yaml
+  - jellyfin-cache-pv.yaml
+  - jellyfin-cache-pvc.yaml
+  - jellyfin-media-pv.yaml
+  - jellyfin-media-pvc.yaml
+  - jellyfin-ingress-route.yaml
+  - ../base/jellyfin
   - sabnzbd-config-pv.yaml
   - sabnzbd-config-pvc.yaml
   - sabnzbd-downloads-pv.yaml
@@ -38,6 +47,7 @@ resources:
   - ../base/monitoring
 patchesStrategicMerge:
   - plex-patch.yaml
+  - jellyfin-patch.yaml
   - acquisitions-patch.yaml
   - loki-patch.yaml
   - mimir-patch.yaml

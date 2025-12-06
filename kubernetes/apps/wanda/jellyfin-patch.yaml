@@ -1,0 +1,20 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  values:
+    service:
+      main:
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: 10.152.15.52
+    persistence:
+      config:
+        existingClaim: jellyfin-config-pvc-nfs-static
+      cache:
+        existingClaim: jellyfin-cache-pvc-nfs-static
+      media:
+        existingClaim: jellyfin-media-pvc-nfs-static

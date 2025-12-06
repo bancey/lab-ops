@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jellyfin-media-pvc-nfs-static
+  namespace: jellyfin
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 15000Gi
+  volumeName: jellyfin-media-pv-nfs
+  storageClassName: nfs-csi
