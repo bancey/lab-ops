@@ -31,10 +31,6 @@ spec:
         runAsNonRoot: false
         seccompProfile:
           type: Unconfined
-        capabilities:
-          add:
-            - NET_ADMIN
-            - NET_RAW
 
     controllers:
       # Configure the main controller
@@ -46,6 +42,11 @@ spec:
             image:
               repository: ghcr.io/matter-js/python-matter-server
               tag: stable
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+                  - NET_RAW
             args:
               - --storage-path
               - /data
