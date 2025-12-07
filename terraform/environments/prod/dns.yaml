@@ -405,3 +405,5 @@ dns:
     record: 10.152.16.50
   zigbee2mqtt.tiny.heimelska.co.uk:
     record: 10.152.16.50
+  mqtt.tiny.heimelska.co.uk:
+    record: 10.152.16.52
