@@ -417,6 +417,7 @@ dns:
           policy: RESTRICTED
           ports:
             - 5580
+            - 22
         udp:
           policy: DENY_ALL
       access:
