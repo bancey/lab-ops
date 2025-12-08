@@ -176,7 +176,7 @@ ansible = {
     }
   }
   "matter-server" = {
-    nodes    = ["hela"]
+    nodes    = ["hela", "loki", "thor"]
     playbook = "matter-server.yaml"
   }
 }
