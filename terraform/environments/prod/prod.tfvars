@@ -175,10 +175,10 @@ ansible = {
       "cloudflare_api_token" = "Cloudflare-Lab-API-Token"
     }
   }
-  #"matter-server" = {
-  #  nodes    = ["hela"]
-  #  playbook = "matter-server.yaml"
-  #}
+  "matter-server" = {
+    nodes    = ["hela"]
+    playbook = "matter-server.yaml"
+  }
 }
 
 images = {
