@@ -407,3 +407,21 @@ dns:
     record: 10.152.16.50
   mqtt.tiny.heimelska.co.uk:
     record: 10.152.16.52
+  matter.heimelska.co.uk:
+    record: 10.151.14.110
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 5580
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps

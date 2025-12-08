@@ -143,6 +143,20 @@ containers = {
     startup_delay       = 0
     storage             = "local-lvm"
   }
+  matter-server = {
+    node                = "hela"
+    ct_id               = 260
+    ct_description      = "Matter Server LXC Container. Provides Matter controller for Home Assistant."
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.14.110"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 5
+    startup_delay       = 10
+    storage             = "local-lvm"
+    unprivileged        = false
+  }
 }
 
 ansible = {
@@ -161,6 +175,10 @@ ansible = {
       "cloudflare_api_token" = "Cloudflare-Lab-API-Token"
     }
   }
+  #"matter-server" = {
+  #  nodes    = ["hela"]
+  #  playbook = "matter-server.yaml"
+  #}
 }
 
 images = {
