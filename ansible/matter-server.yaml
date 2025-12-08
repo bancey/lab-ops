@@ -1,6 +1,6 @@
 ---
 - name: Deploy Matter Server on LXC Container
-  hosts: matter_server
+  hosts: matter-server
   become: true
   gather_facts: true
 
