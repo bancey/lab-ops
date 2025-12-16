@@ -18,7 +18,7 @@ spec:
     service:
       type: LoadBalancer
       annotations:
-        lbipam.cilium.io/ips: 10.152.15.51
+        lbipam.cilium.io/ips: 10.151.14.161
     pms:
       configExistingClaim: plex-config-pvc-nfs-static
     extraVolumes:

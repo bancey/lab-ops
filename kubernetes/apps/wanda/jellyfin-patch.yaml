@@ -10,7 +10,7 @@ spec:
       main:
         type: LoadBalancer
         annotations:
-          lbipam.cilium.io/ips: 10.152.15.52
+          lbipam.cilium.io/ips: 10.151.14.162
     persistence:
       config:
         existingClaim: jellyfin-config-pvc-nfs-static

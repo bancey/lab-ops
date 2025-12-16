@@ -50,7 +50,7 @@ spec:
     - patch: |
         - op: add
           path: /spec/blocks/0/cidr
-          value: 10.152.16.0/24
+          value: 10.151.14.128/27
       target:
         kind: CiliumLoadBalancerIPPool
         name: cilium-lb-pool

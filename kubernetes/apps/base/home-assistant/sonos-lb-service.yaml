@@ -5,7 +5,7 @@ metadata:
   name: home-assistant-sonos-lb
   namespace: home-assistant
   annotations:
-    io.cilium/lb-ipam-ips: "10.152.16.51"
+    io.cilium/lb-ipam-ips: "10.151.14.129"
 spec:
   type: LoadBalancer
   selector:
