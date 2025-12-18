@@ -90,7 +90,7 @@ spec:
     service:
       type: LoadBalancer
       annotations:
-        lbipam.cilium.io/ips: 10.151.14.163
+        lbipam.cilium.io/ips: 10.151.24.163
     ingress:
       enabled: true
     persistence:
@@ -200,7 +200,7 @@ spec:
     service:
       type: LoadBalancer
       annotations:
-        lbipam.cilium.io/ips: 10.151.14.161
+        lbipam.cilium.io/ips: 10.151.24.161
 ```
 
 ### PersistentVolume Claims

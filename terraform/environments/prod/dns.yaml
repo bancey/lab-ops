@@ -4,7 +4,7 @@ dns:
   bunkerweb-mgmt.heimelska.co.uk:
     record: 10.151.14.4
   bunkerweb-mgmt.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   thanos.heimelska.co.uk:
     record: 10.151.14.5
     twingate:
@@ -146,7 +146,7 @@ dns:
         service_accounts:
           - AzureDevOps
   sonarr.wanda.heimelska.co.uk:
-    record: 10.151.14.160
+    record: 10.151.24.160
   radarr.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -166,7 +166,7 @@ dns:
         service_accounts:
           - AzureDevOps
   radarr.wanda.heimelska.co.uk:
-    record: 10.151.14.160
+    record: 10.151.24.160
   prowlarr.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -186,7 +186,7 @@ dns:
         service_accounts:
           - AzureDevOps
   prowlarr.wanda.heimelska.co.uk:
-    record: 10.151.14.160
+    record: 10.151.24.160
   dl.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -206,7 +206,7 @@ dns:
         service_accounts:
           - AzureDevOps
   dl.wanda.heimelska.co.uk:
-    record: 10.151.14.160
+    record: 10.151.24.160
   pelican.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -229,7 +229,7 @@ dns:
         service_accounts:
           - Pelican
   pelican.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   longhorn.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -249,7 +249,7 @@ dns:
         service_accounts:
           - AzureDevOps
   longhorn.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   smokeping.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -269,7 +269,7 @@ dns:
         service_accounts:
           - AzureDevOps
   smokeping.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   tiny-pve.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -355,7 +355,7 @@ dns:
   gatus.gamora.heimelska.co.uk:
     record: 10.151.14.4
   plex.bancey.xyz:
-    record: 10.151.14.160
+    record: 10.151.24.160
     twingate:
       network: banceylab
       protocols:
@@ -374,13 +374,13 @@ dns:
         service_accounts:
           - AzureDevOps
   plex.wanda.bancey.xyz:
-    record: 10.151.14.160
+    record: 10.151.24.160
   loki.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   mimir.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   grafana.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   hass.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -400,13 +400,13 @@ dns:
         service_accounts:
           - AzureDevOps
   hass.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   hass-code.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   zigbee2mqtt.tiny.heimelska.co.uk:
-    record: 10.151.14.128
+    record: 10.151.24.128
   mqtt.tiny.heimelska.co.uk:
-    record: 10.151.14.130
+    record: 10.151.24.130
   matter.heimelska.co.uk:
     record: 10.151.14.110
     twingate:

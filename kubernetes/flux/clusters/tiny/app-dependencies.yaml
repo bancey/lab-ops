@@ -21,7 +21,7 @@ spec:
     - patch: |
         - op: add
           path: /spec/values/service/spec/loadBalancerIP
-          value: 10.151.14.128
+          value: 10.151.24.128
       target:
         kind: HelmRelease
         name: traefik
