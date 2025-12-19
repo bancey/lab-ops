@@ -28,3 +28,13 @@ spec:
       - name: private-data
         persistentVolumeClaim:
           claimName: plex-data-private-pvc-nfs-static
+      - name: plex-tls-cert
+        secret:
+          secretName: plex-tls
+          items:
+            - key: keystore.p12
+              path: plex.p12
+    extraVolumeMounts:
+      - name: plex-tls-cert
+        mountPath: /etc/plex/certs
+        readOnly: true
