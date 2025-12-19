@@ -48,7 +48,6 @@ spec:
 
             echo "iptables setup complete"
         securityContext:
-          privileged: true
           capabilities:
             add:
               - NET_ADMIN
