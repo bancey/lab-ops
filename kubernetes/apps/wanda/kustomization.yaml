@@ -9,6 +9,7 @@ resources:
   - plex-data-private-pv.yaml
   - plex-data-private-pvc.yaml
   - plex-ingress-route.yaml
+  - plex-keystore-secret.sops.yaml
   - ../base/plex
   - jellyfin-certs.yaml
   - jellyfin-config-pv.yaml
