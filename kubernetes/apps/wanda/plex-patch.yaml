@@ -48,7 +48,7 @@ spec:
     # Add cert-converter sidecar
     extraContainers:
       - name: cert-converter
-        image: alpine:latest
+        image: alpine:3.19
         command: ["/bin/sh", "/scripts/convert-cert.sh"]
         env:
           - name: P12_PASSWORD
