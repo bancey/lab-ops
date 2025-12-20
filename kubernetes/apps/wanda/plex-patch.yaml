@@ -31,14 +31,43 @@ spec:
       - name: plex-tls-cert
         secret:
           secretName: plex-tls
-          items:
-            - key: keystore.p12
-              path: plex.p12
+      - name: shared-certs
+        emptyDir: {}
+      - name: cert-converter-script
+        configMap:
+          name: plex-cert-converter
+          defaultMode: 0755
     extraVolumeMounts:
       - name: data
         mountPath: /data
       - name: private-data
         mountPath: /private-data
-      - name: plex-tls-cert
+      - name: shared-certs
         mountPath: /etc/plex/certs
         readOnly: true
+    # Add cert-converter sidecar
+    extraContainers:
+      - name: cert-converter
+        image: alpine:latest
+        command: ["/bin/sh", "/scripts/convert-cert.sh"]
+        env:
+          - name: P12_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: plex-keystore-secret
+                key: password
+        volumeMounts:
+          - name: plex-tls-cert
+            mountPath: /certs
+            readOnly: true
+          - name: shared-certs
+            mountPath: /shared-certs
+          - name: cert-converter-script
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi

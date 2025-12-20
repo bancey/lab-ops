@@ -13,12 +13,6 @@ spec:
   dnsNames:
     - "plex.wanda.bancey.xyz"
     - "plex.bancey.xyz"
-  keystores:
-    pkcs12:
-      create: true
-      passwordSecretRef:
-        name: plex-keystore-secret
-        key: password
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -34,9 +28,3 @@ spec:
   dnsNames:
     - "plex.wanda.bancey.xyz"
     - "plex.bancey.xyz"
-  keystores:
-    pkcs12:
-      create: true
-      passwordSecretRef:
-        name: plex-keystore-secret
-        key: password
