@@ -12,7 +12,7 @@ data:
     CERT_PATH="/certs/tls.crt"
     KEY_PATH="/certs/tls.key"
     P12_PATH="/shared-certs/plex.p12"
-    P12_PASSWORD="${P12_PASSWORD:-changeme}"
+    P12_PASSWORD="${P12_PASSWORD}"
 
     # Install required packages
     apk add --no-cache inotify-tools openssl
@@ -39,7 +39,8 @@ data:
     fi
 
     # Watch for certificate changes (renewals)
+    # Watch the directory to handle cases where files are replaced
     while true; do
-      inotifywait -qq -e modify,create,moved_to "$CERT_PATH" "$KEY_PATH" 2>/dev/null && convert_cert
+      inotifywait -qq -e modify,create,moved_to /certs 2>/dev/null && convert_cert
       sleep 5
     done
