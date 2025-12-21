@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plex-cert-converter
+  namespace: plex
+data:
+  convert-cert.sh: |
+    #!/bin/sh
+    set -e
+
+    CERT_PATH="/certs/tls.crt"
+    KEY_PATH="/certs/tls.key"
+    P12_PATH="/shared-certs/plex.p12"
+    P12_PASSWORD="${P12_PASSWORD}"
+
+    # Install required packages
+    apk add --no-cache inotify-tools openssl
+
+    convert_cert() {
+      echo "Converting certificate to P12 format with modern encryption..."
+      openssl pkcs12 -export \
+        -out "$P12_PATH" \
+        -inkey "$KEY_PATH" \
+        -in "$CERT_PATH" \
+        -keypbe AES-256-CBC \
+        -certpbe AES-256-CBC \
+        -macalg SHA256 \
+        -passout pass:"$P12_PASSWORD"
+      chmod 600 "$P12_PATH"
+      echo "Certificate converted successfully at $(date)"
+    }
+
+    # Wait for certificates to exist (for init container)
+    echo "Waiting for certificates..."
+    while [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; do
+      sleep 2
+    done
+
+    # Initial conversion
+    convert_cert
+
+    # If running as sidecar (not init container), watch for renewals
+    if [ "${WATCH_MODE}" = "true" ]; then
+      echo "Starting watch mode for certificate renewals..."
+      # Watch the directory to handle cases where files are replaced
+      while true; do
+        inotifywait -qq -e modify,create,moved_to /certs 2>/dev/null && convert_cert
+        sleep 5
+      done
+    else
+      echo "Init conversion complete, exiting..."
+    fi
