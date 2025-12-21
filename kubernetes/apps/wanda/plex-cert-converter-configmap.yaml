@@ -31,16 +31,23 @@ data:
       echo "Certificate converted successfully at $(date)"
     }
 
-    # Initial conversion
-    if [ -f "$CERT_PATH" ] && [ -f "$KEY_PATH" ]; then
-      convert_cert
-    else
-      echo "Waiting for certificates..."
-    fi
-
-    # Watch for certificate changes (renewals)
-    # Watch the directory to handle cases where files are replaced
-    while true; do
-      inotifywait -qq -e modify,create,moved_to /certs 2>/dev/null && convert_cert
-      sleep 5
+    # Wait for certificates to exist (for init container)
+    echo "Waiting for certificates..."
+    while [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; do
+      sleep 2
     done
+
+    # Initial conversion
+    convert_cert
+
+    # If running as sidecar (not init container), watch for renewals
+    if [ "${WATCH_MODE}" = "true" ]; then
+      echo "Starting watch mode for certificate renewals..."
+      # Watch the directory to handle cases where files are replaced
+      while true; do
+        inotifywait -qq -e modify,create,moved_to /certs 2>/dev/null && convert_cert
+        sleep 5
+      done
+    else
+      echo "Init conversion complete, exiting..."
+    fi

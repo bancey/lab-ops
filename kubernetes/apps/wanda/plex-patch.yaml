@@ -45,7 +45,35 @@ spec:
       - name: shared-certs
         mountPath: /etc/plex/certs
         readOnly: true
-    # Add cert-converter sidecar
+    # Add cert-converter init container to ensure P12 exists before Plex starts
+    initContainers:
+      - name: cert-converter-init
+        image: alpine:3.19
+        command: ["/bin/sh", "/scripts/convert-cert.sh"]
+        env:
+          - name: P12_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: plex-keystore-secret
+                key: password
+          - name: WATCH_MODE
+            value: "false"
+        volumeMounts:
+          - name: plex-tls-cert
+            mountPath: /certs
+            readOnly: true
+          - name: shared-certs
+            mountPath: /shared-certs
+          - name: cert-converter-script
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+    # Add cert-converter sidecar to watch for certificate renewals
     extraContainers:
       - name: cert-converter
         image: alpine:3.19
@@ -56,6 +84,8 @@ spec:
               secretKeyRef:
                 name: plex-keystore-secret
                 key: password
+          - name: WATCH_MODE
+            value: "true"
         volumeMounts:
           - name: plex-tls-cert
             mountPath: /certs
