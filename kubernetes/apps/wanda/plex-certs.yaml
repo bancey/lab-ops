@@ -9,9 +9,8 @@ spec:
   issuerRef:
     name: letsencrypt-staging
     kind: ClusterIssuer
-  commonName: "plex.wanda.bancey.xyz"
+  commonName: "plex.bancey.xyz"
   dnsNames:
-    - "plex.wanda.bancey.xyz"
     - "plex.bancey.xyz"
 ---
 apiVersion: cert-manager.io/v1
@@ -24,7 +23,6 @@ spec:
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "plex.wanda.bancey.xyz"
+  commonName: "plex.bancey.xyz"
   dnsNames:
-    - "plex.wanda.bancey.xyz"
     - "plex.bancey.xyz"
