@@ -48,7 +48,7 @@ spec:
     # Add cert-converter init container to ensure P12 exists before Plex starts
     initContainers:
       - name: cert-converter-init
-        image: alpine:3.19
+        image: alpine:3.23
         command: ["/bin/sh", "/scripts/convert-cert.sh"]
         env:
           - name: P12_PASSWORD
@@ -76,7 +76,7 @@ spec:
     # Add cert-converter sidecar to watch for certificate renewals
     extraContainers:
       - name: cert-converter
-        image: alpine:3.19
+        image: alpine:3.23
         command: ["/bin/sh", "/scripts/convert-cert.sh"]
         env:
           - name: P12_PASSWORD
