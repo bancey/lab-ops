@@ -11,7 +11,7 @@ data:
 
     CERT_PATH="/certs/tls.crt"
     KEY_PATH="/certs/tls.key"
-    P12_PATH="/shared-certs/plex.bancey.xyz.pfx"
+    P12_PATH="/config/Library/Application Support/Plex Media Server/plex.bancey.xyz.pfx"
     P12_PASSWORD="${P12_PASSWORD}"
 
     # Install required packages
@@ -27,8 +27,7 @@ data:
         -certpbe AES-256-CBC \
         -macalg SHA256 \
         -passout pass:"$P12_PASSWORD"
-      chmod 600 "$P12_PATH"
-      chown 3001:3001 "$P12_PATH"
+      chmod 644 "$P12_PATH"
       echo "Certificate converted successfully at $(date)"
     }
 

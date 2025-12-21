@@ -30,8 +30,6 @@ spec:
       - name: plex-tls-cert
         secret:
           secretName: plex-tls
-      - name: shared-certs
-        emptyDir: {}
       - name: cert-converter-script
         configMap:
           name: plex-cert-converter
@@ -41,9 +39,6 @@ spec:
         mountPath: /data
       - name: private-data
         mountPath: /private-data
-      - name: shared-certs
-        mountPath: /etc/plex/certs
-        readOnly: true
     # Add cert-converter init container to ensure P12 exists before Plex starts
     extraInitContainers:
       - name: cert-converter-init
@@ -61,8 +56,8 @@ spec:
           - name: plex-tls-cert
             mountPath: /certs
             readOnly: true
-          - name: shared-certs
-            mountPath: /shared-certs
+          - name: plex-config-pvc-nfs-static
+            mountPath: /config
           - name: cert-converter-script
             mountPath: /scripts
         resources:
@@ -89,8 +84,8 @@ spec:
           - name: plex-tls-cert
             mountPath: /certs
             readOnly: true
-          - name: shared-certs
-            mountPath: /shared-certs
+          - name: plex-config-pvc-nfs-static
+            mountPath: /config
           - name: cert-converter-script
             mountPath: /scripts
         resources:
