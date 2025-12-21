@@ -13,7 +13,6 @@ spec:
       tls:
         - hosts:
             - plex.bancey.xyz
-            - plex.wanda.bancey.xyz
           secretName: plex-tls
     service:
       type: LoadBalancer

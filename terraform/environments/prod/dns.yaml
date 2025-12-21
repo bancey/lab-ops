@@ -373,8 +373,6 @@ dns:
           - plex
         service_accounts:
           - AzureDevOps
-  plex.wanda.bancey.xyz:
-    record: 10.151.24.160
   loki.tiny.heimelska.co.uk:
     record: 10.151.24.10
   mimir.tiny.heimelska.co.uk:
