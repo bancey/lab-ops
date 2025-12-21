@@ -28,7 +28,6 @@ data:
         -macalg SHA256 \
         -passout pass:"$P12_PASSWORD"
       chmod 600 "$P12_PATH"
-      chown admin:users "$P12_PATH"
       echo "Certificate converted successfully at $(date)"
     }
 
