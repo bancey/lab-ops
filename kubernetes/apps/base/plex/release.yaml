@@ -31,6 +31,8 @@ spec:
     # PVC names should be defined in cluster overlays
     pms:
       configExistingClaim: plex-config-pvc
+    env:
+      CHANGE_CONFIG_DIR_OWNERSHIP: "false"
     extraVolumes:
       - name: data
         persistentVolumeClaim:

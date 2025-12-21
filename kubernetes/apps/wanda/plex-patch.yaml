@@ -46,7 +46,7 @@ spec:
         mountPath: /etc/plex/certs
         readOnly: true
     # Add cert-converter init container to ensure P12 exists before Plex starts
-    initContainers:
+    extraInitContainers:
       - name: cert-converter-init
         image: alpine:3.23
         command: ["/bin/sh", "/scripts/convert-cert.sh"]
