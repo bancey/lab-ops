@@ -84,6 +84,21 @@ virtual_machines = {
     disk_size           = 64
     image               = "jammy-server-cloudimg-amd64.img"
   }
+  amp = {
+    node                = "hela"
+    vm_id               = 501
+    vm_description      = "Hela AMP Server"
+    cpu_cores           = 6
+    memory              = 12288
+    ip_address          = "10.151.14.101"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 1
+    storage             = "local-lvm"
+    disk_size           = 64
+    image               = "noble-server-cloudimg-amd64.img"
+  }
 }
 
 containers = {
@@ -183,6 +198,7 @@ ansible = {
 
 images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
+  "noble-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img" }
 }
 
 twingate_groups = ["all", "birds", "plex", "pelican", "pterodactyl", "pve", "tiny_k8s", "wanda_k8s"]
