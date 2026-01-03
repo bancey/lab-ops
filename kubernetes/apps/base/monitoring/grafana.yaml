@@ -8,7 +8,7 @@ spec:
   releaseName: grafana
   chart:
     spec:
-      version: 10.4.0
+      version: 10.4.3
       chart: grafana
       sourceRef:
         kind: HelmRepository
