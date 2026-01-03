@@ -6,7 +6,13 @@ game_server_vnet_peerings = {
   #  vnet_resource_group_name = "lab-vpn-prod-rg"
   #}
 }
-game_servers = {}
+game_servers = {
+  wings = {
+    type                = "pelican"
+    size                = "Standard_D4as_v6"
+    publicly_accessible = true
+  }
+}
 
 cloudflare_records = {
   "hass.heimelska.co.uk" = {
@@ -84,38 +90,9 @@ virtual_machines = {
     disk_size           = 64
     image               = "jammy-server-cloudimg-amd64.img"
   }
-  amp = {
-    node                = "hela"
-    vm_id               = 501
-    vm_description      = "Hela AMP Server"
-    cpu_cores           = 6
-    memory              = 12288
-    ip_address          = "10.151.14.101"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    disk_size           = 64
-    image               = "noble-server-cloudimg-amd64.img"
-  }
 }
 
 containers = {
-  temp = {
-    node                = "wanda"
-    ct_id               = 700
-    ct_description      = "Temporary LXC Container"
-    cpu_cores           = 4
-    memory              = 4096
-    ip_address          = "10.151.14.102"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 0
-    startup_delay       = 0
-    storage             = "local-lvm"
-    unprivileged        = false
-  }
   haproxy0 = {
     node                = "hela"
     ct_id               = 250
@@ -329,7 +306,7 @@ adguard_user_rules = [
 
 cloud_vpn_gateway = {
   name   = "lab-vpn"
-  active = false
+  active = true
   networking = {
     address_space                 = "10.151.200.0/24"
     gateway_subnet_address_prefix = "10.151.200.0/24"
