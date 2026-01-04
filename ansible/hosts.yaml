@@ -17,9 +17,6 @@ all:
     matter-server:
       ansible_host: 10.151.14.110
       ansible_user: root
-    temp:
-      ansible_host: 10.151.14.102
-      ansible_user: root
   children:
     rpi:
       hosts:
