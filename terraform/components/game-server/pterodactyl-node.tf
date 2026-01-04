@@ -1,20 +1,21 @@
 module "pterodactyl_node" {
-  source = "github.com/bancey/terraform-azurerm-pterodactyl-node.git?ref=main"
+  source = "github.com/bancey/terraform-azurerm-game-server.git?ref=copilot/update-provisioning-for-pelican"
 
   depends_on = [
     cloudflare_dns_record.records
   ]
 
-  for_each = { for k, v in var.game_servers : k => v if v.type == "pterodactyl" }
+  for_each = var.game_servers
 
   name               = each.key
   env                = var.env
   location           = var.location
   vm_size            = each.value.size
   vm_image_publisher = "canonical"
-  vm_image_offer     = "0001-com-ubuntu-server-jammy"
-  vm_image_sku       = "22_04-lts-gen2"
+  vm_image_offer     = "ubuntu-24_04-lts"
+  vm_image_sku       = "server"
   vm_image_version   = "latest"
+  provisioning_type  = each.value.type
   certificate_config = {
     domain_name = each.value.domain_name == null ? "${each.key}-${var.env}.bancey.xyz" : each.value.domain_name
     email       = "abance@bancey.xyz"
@@ -60,14 +61,14 @@ module "pterodactyl_node" {
 }
 
 resource "azurerm_role_assignment" "reader" {
-  for_each             = { for k, v in var.game_servers : k => v if v.type == "pterodactyl" }
+  for_each             = var.game_servers
   scope                = "/subscriptions/ca9663cd-26bb-4c47-b084-e527a512d372/resourceGroups/common/providers/Microsoft.KeyVault/vaults/bancey-vault"
   role_definition_name = "Reader"
   principal_id         = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
 
 resource "azuread_group_member" "kv_reader" {
-  for_each         = { for k, v in var.game_servers : k => v if v.type == "pterodactyl" }
+  for_each         = var.game_servers
   group_object_id  = "9edd55d1-288c-482b-84a3-508efac9e683"
   member_object_id = module.pterodactyl_node[each.key].vm_identity[0].principal_id
 }
@@ -78,7 +79,7 @@ resource "terraform_data" "trigger_replace" {
 
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
   depends_on                 = [azuread_group_member.kv_reader, azurerm_role_assignment.reader]
-  for_each                   = { for k, v in var.game_servers : k => v if v.type == "pterodactyl" }
+  for_each                   = var.game_servers
   name                       = "SetupTwingate"
   virtual_machine_id         = module.pterodactyl_node[each.key].vm_id
   publisher                  = "Microsoft.CPlat.Core"

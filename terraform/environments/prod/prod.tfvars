@@ -6,7 +6,13 @@ game_server_vnet_peerings = {
   #  vnet_resource_group_name = "lab-vpn-prod-rg"
   #}
 }
-game_servers = {}
+game_servers = {
+  wings = {
+    type                = "pelican"
+    size                = "Standard_D4as_v6"
+    publicly_accessible = true
+  }
+}
 
 cloudflare_records = {
   "hass.heimelska.co.uk" = {
@@ -87,20 +93,6 @@ virtual_machines = {
 }
 
 containers = {
-  temp = {
-    node                = "wanda"
-    ct_id               = 700
-    ct_description      = "Temporary LXC Container"
-    cpu_cores           = 4
-    memory              = 4096
-    ip_address          = "10.151.14.102"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 0
-    startup_delay       = 0
-    storage             = "local-lvm"
-    unprivileged        = false
-  }
   haproxy0 = {
     node                = "hela"
     ct_id               = 250
@@ -183,6 +175,7 @@ ansible = {
 
 images = {
   "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
+  "noble-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img" }
 }
 
 twingate_groups = ["all", "birds", "plex", "pelican", "pterodactyl", "pve", "tiny_k8s", "wanda_k8s"]
