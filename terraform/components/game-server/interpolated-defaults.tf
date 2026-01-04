@@ -54,7 +54,7 @@ data "azurerm_key_vault_secret" "public_ip" {
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azurerm_key_vault_secret" "twingate_pterodactyl_sa_key" {
-  name         = "Twingate-Pterodactyl-SA-Key"
+data "azurerm_key_vault_secret" "twingate_pelican_sa_key" {
+  name         = "Twingate-Pelican-SA-Key"
   key_vault_id = data.azurerm_key_vault.vault.id
 }

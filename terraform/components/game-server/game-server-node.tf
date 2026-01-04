@@ -1,4 +1,4 @@
-module "pterodactyl_node" {
+module "game_server_node" {
   source = "github.com/bancey/terraform-azurerm-game-server.git?ref=copilot/update-provisioning-for-pelican"
 
   depends_on = [
@@ -64,24 +64,24 @@ resource "azurerm_role_assignment" "reader" {
   for_each             = var.game_servers
   scope                = "/subscriptions/ca9663cd-26bb-4c47-b084-e527a512d372/resourceGroups/common/providers/Microsoft.KeyVault/vaults/bancey-vault"
   role_definition_name = "Reader"
-  principal_id         = module.pterodactyl_node[each.key].vm_identity[0].principal_id
+  principal_id         = module.game_server_node[each.key].vm_identity[0].principal_id
 }
 
 resource "azuread_group_member" "kv_reader" {
   for_each         = var.game_servers
   group_object_id  = "9edd55d1-288c-482b-84a3-508efac9e683"
-  member_object_id = module.pterodactyl_node[each.key].vm_identity[0].principal_id
+  member_object_id = module.game_server_node[each.key].vm_identity[0].principal_id
 }
 
 resource "terraform_data" "trigger_replace" {
-  input = data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.expiration_date
+  input = data.azurerm_key_vault_secret.twingate_pelican_sa_key.expiration_date
 }
 
 resource "azurerm_virtual_machine_extension" "setup_twingate" {
   depends_on                 = [azuread_group_member.kv_reader, azurerm_role_assignment.reader]
   for_each                   = var.game_servers
   name                       = "SetupTwingate"
-  virtual_machine_id         = module.pterodactyl_node[each.key].vm_id
+  virtual_machine_id         = module.game_server_node[each.key].vm_id
   publisher                  = "Microsoft.CPlat.Core"
   type                       = "RunCommandLinux"
   type_handler_version       = "1.0"
@@ -90,7 +90,7 @@ resource "azurerm_virtual_machine_extension" "setup_twingate" {
 
   protected_settings = <<PROTECTED_SETTINGS
   {
-    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_pterodactyl_sa_key.value }))}"
+    "script": "${base64encode(templatefile("${path.module}/provision/setup-twingate.sh", { TWINGATE_SERVICE_KEY = data.azurerm_key_vault_secret.twingate_pelican_sa_key.value }))}"
   }
   PROTECTED_SETTINGS
 
