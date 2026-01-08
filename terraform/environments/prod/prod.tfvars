@@ -9,7 +9,7 @@ game_server_vnet_peerings = {
 game_servers = {
   wings = {
     type                = "pelican"
-    size                = "Standard_D4as_v6"
+    size                = "Standard_F2ams_v6"
     publicly_accessible = true
   }
 }
