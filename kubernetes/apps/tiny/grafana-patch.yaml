@@ -6,6 +6,8 @@ metadata:
   namespace: monitoring
 spec:
   values:
+    deploymentStrategy:
+      type: Recreate
     ingress:
       enabled: true
       hosts:
