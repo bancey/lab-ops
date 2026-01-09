@@ -5,6 +5,7 @@ namespace: bunkerweb-mgmt
 resources:
   - namespace.yaml
   - mariadb.yaml
+  - user.yaml
   - secret.sops.yaml
   - release.yaml
   # certificates and ingress-route should be in cluster overlays
