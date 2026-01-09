@@ -9,6 +9,11 @@ spec:
     key: DB_ROOT_PASSWORD
     generate: false
 
+  username: bunkerweb
+  passwordSecretKeyRef:
+    name: bunkerwebmgmt-secret
+    key: DB_PASSWORD
+    generate: false
   database: db
 
   myCnf: |
