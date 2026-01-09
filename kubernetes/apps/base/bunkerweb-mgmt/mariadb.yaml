@@ -16,6 +16,10 @@ spec:
     generate: false
   database: db
 
+  myCnf: |
+    [mariadb]
+    max_user_connections=100
+
   storage:
     size: 1Gi
     # storageClassName should be configured in cluster overlays
