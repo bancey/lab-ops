@@ -31,7 +31,7 @@ module "game_server_node" {
 
   vm_shutdown_schedule = {
     enabled  = true
-    time     = "0030"
+    time     = "0045"
     timezone = "GMT Standard Time"
   }
 
