@@ -20,6 +20,41 @@ spec:
         lbipam.cilium.io/ips: 10.151.24.161
     pms:
       configExistingClaim: plex-config-pvc-nfs-static
+    initContainers:
+      - name: setup-iptables
+        image: alpine:3.21
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -e
+            echo "Installing iptables..."
+            apk add --no-cache iptables
+
+            echo "Getting pod IP address..."
+            POD_IP=$(hostname -i | awk '{print $1}')
+            if [ -z "$POD_IP" ]; then
+              echo "ERROR: Could not determine pod IP address"
+              exit 1
+            fi
+            echo "Pod IP: $POD_IP"
+
+            # Extract the subnet (e.g., 10.42.9.231 -> 10.42)
+            POD_SUBNET=$(echo $POD_IP | cut -d'.' -f1-2)
+            echo "Pod Subnet: $POD_SUBNET.0.0/16"
+
+            echo "Setting up iptables NETMAP rule for port 32400..."
+            iptables -t nat -A PREROUTING -p tcp --dport 32400 -j NETMAP --to ${POD_SUBNET}.0.0/16
+
+            echo "Listing NAT table rules:"
+            iptables -t nat -L PREROUTING -n -v
+
+            echo "iptables setup complete"
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+              - NET_RAW
     extraVolumes:
       - name: data
         persistentVolumeClaim:
