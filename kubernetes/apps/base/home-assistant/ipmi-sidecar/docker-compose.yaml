@@ -1,0 +1,19 @@
+---
+# Docker Compose file for local testing of IPMI sidecar
+# Usage: docker-compose up
+# This allows testing the sidecar locally without deploying to Kubernetes
+
+services:
+  ipmi-sidecar:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # IMPORTANT: Replace these with your actual IPMI credentials for testing
+      API_KEY: "test-api-key-change-me"
+      BMC_HOST: "192.168.1.100"
+      BMC_USER: "ADMIN"
+      BMC_PASSWORD: "ADMIN"
+      BMC_CIPHER_SUITE: "3"
+      FLASK_ENV: "development"  # Use development mode for more verbose logging
+    restart: unless-stopped

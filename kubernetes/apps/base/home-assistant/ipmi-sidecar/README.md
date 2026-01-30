@@ -9,7 +9,14 @@ This sidecar runs alongside Home Assistant and provides a simple REST API for po
 ## Building the Image
 
 ```bash
-docker build -t ipmi-sidecar:latest .
+# Use the build script (recommended)
+./build.sh your-registry/username
+
+# Or build manually
+docker build -t your-registry/ipmi-sidecar:latest .
+
+# Push to your registry
+docker push your-registry/ipmi-sidecar:latest
 ```
 
 ## Environment Variables
@@ -86,6 +93,19 @@ Resets the server.
 
 ## Testing Locally
 
+### Using Docker Compose (recommended for testing)
+
+```bash
+# Update environment variables in docker-compose.yaml with your IPMI credentials
+# Then start the service
+docker-compose up
+
+# In another terminal, test the API
+./test-api.sh http://localhost:8080 test-api-key-change-me
+```
+
+### Manual Testing
+
 ```bash
 # Set environment variables
 export API_KEY="your-secret-key"
@@ -100,7 +120,10 @@ pip install -r requirements.txt
 # Run the application
 python app.py
 
-# Test the API
+# Test the API (in another terminal)
+./test-api.sh http://localhost:8080 your-secret-key
+
+# Or test manually with curl
 curl -H "X-API-Key: your-secret-key" http://localhost:8080/power/status
 ```
 
