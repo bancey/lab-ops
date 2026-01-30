@@ -87,9 +87,9 @@ spec:
             resources:
               requests:
                 cpu: 10m
-                memory: 64M
+                memory: 64Mi
               limits:
-                memory: 128M
+                memory: 128Mi
 
     service:
       # Configure a service for the main application

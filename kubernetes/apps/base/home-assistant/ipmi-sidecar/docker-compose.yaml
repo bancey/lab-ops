@@ -9,11 +9,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # IMPORTANT: Replace these with your actual IPMI credentials for testing
-      API_KEY: "test-api-key-change-me"
-      BMC_HOST: "192.168.1.100"
-      BMC_USER: "ADMIN"
-      BMC_PASSWORD: "ADMIN"
+      # IMPORTANT: Replace ALL these placeholder values with your actual IPMI credentials
+      API_KEY: "REPLACE_WITH_YOUR_API_KEY"
+      BMC_HOST: "YOUR_BMC_IP_ADDRESS"
+      BMC_USER: "YOUR_BMC_USERNAME"
+      BMC_PASSWORD: "YOUR_BMC_PASSWORD"
       BMC_CIPHER_SUITE: "3"
       FLASK_ENV: "development"  # Use development mode for more verbose logging
     restart: unless-stopped

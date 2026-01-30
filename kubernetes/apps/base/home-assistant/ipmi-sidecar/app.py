@@ -10,6 +10,8 @@ Home Assistant container.
 import os
 import subprocess
 import logging
+import sys
+import secrets
 from functools import wraps
 from flask import Flask, request, jsonify
 
@@ -32,14 +34,26 @@ BMC_CIPHER_SUITE = os.environ.get('BMC_CIPHER_SUITE', '3')
 # Validate required configuration
 if not all([API_KEY, BMC_HOST, BMC_USER, BMC_PASSWORD]):
     logger.error("Missing required environment variables: API_KEY, BMC_HOST, BMC_USER, BMC_PASSWORD")
+    sys.exit(1)
+
+# Allowed IPMI power commands (prevent command injection)
+ALLOWED_COMMANDS = {
+    'power on': ['power', 'on'],
+    'power off': ['power', 'off'],
+    'power soft': ['power', 'soft'],
+    'power status': ['power', 'status'],
+    'power cycle': ['power', 'cycle'],
+    'power reset': ['power', 'reset'],
+}
 
 
 def require_api_key(f):
     """Decorator to require API key authentication."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        provided_key = request.headers.get('X-API-Key')
-        if not provided_key or provided_key != API_KEY:
+        provided_key = request.headers.get('X-API-Key', '')
+        # Use constant-time comparison to prevent timing attacks
+        if not provided_key or not secrets.compare_digest(provided_key, API_KEY):
             logger.warning(f"Unauthorized access attempt from {request.remote_addr}")
             return jsonify({
                 'success': False,
@@ -49,18 +63,27 @@ def require_api_key(f):
     return decorated_function
 
 
-def run_ipmi_command(command):
+def run_ipmi_command(command_key):
     """
     Execute an IPMI command and return the result.
     
     Args:
-        command: The IPMI command to execute (e.g., 'power on', 'power status')
+        command_key: The IPMI command key (e.g., 'power on', 'power status')
     
     Returns:
         dict: Result containing success status and output/error message
     """
+    # Validate command against allowlist
+    if command_key not in ALLOWED_COMMANDS:
+        logger.error(f"Invalid command requested: {command_key}")
+        return {
+            'success': False,
+            'error': f'Invalid command: {command_key}',
+            'command': command_key
+        }
+    
     try:
-        # Build the ipmitool command
+        # Build the ipmitool command with validated arguments
         cmd = [
             'ipmitool',
             '-I', 'lanplus',
@@ -68,9 +91,11 @@ def run_ipmi_command(command):
             '-U', BMC_USER,
             '-P', BMC_PASSWORD,
             '-C', BMC_CIPHER_SUITE
-        ] + command.split()
+        ] + ALLOWED_COMMANDS[command_key]
         
-        logger.info(f"Executing IPMI command: {' '.join(cmd[:7])} [credentials hidden]")
+        # Log command without exposing credentials
+        safe_cmd = f"ipmitool -I lanplus -H {BMC_HOST} -U {BMC_USER} -P [REDACTED] -C {BMC_CIPHER_SUITE} {' '.join(ALLOWED_COMMANDS[command_key])}"
+        logger.info(f"Executing IPMI command: {safe_cmd}")
         
         # Execute the command
         result = subprocess.run(
@@ -85,29 +110,29 @@ def run_ipmi_command(command):
             return {
                 'success': True,
                 'output': result.stdout.strip(),
-                'command': command
+                'command': command_key
             }
         else:
             logger.error(f"IPMI command failed: {result.stderr.strip()}")
             return {
                 'success': False,
                 'error': result.stderr.strip(),
-                'command': command
+                'command': command_key
             }
             
     except subprocess.TimeoutExpired:
-        logger.error(f"IPMI command timed out: {command}")
+        logger.error(f"IPMI command timed out: {command_key}")
         return {
             'success': False,
             'error': 'Command timed out after 10 seconds',
-            'command': command
+            'command': command_key
         }
     except Exception as e:
         logger.error(f"Error executing IPMI command: {str(e)}")
         return {
             'success': False,
             'error': str(e),
-            'command': command
+            'command': command_key
         }
 
 
@@ -208,6 +233,7 @@ def power_reset():
 @app.errorhandler(404)
 def not_found(error):
     """Handle 404 errors."""
+    logger.warning(f"404 error: {request.path}")
     return jsonify({
         'success': False,
         'error': 'Endpoint not found'
@@ -217,6 +243,7 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors."""
+    logger.error(f"500 error: {str(error)}")
     return jsonify({
         'success': False,
         'error': 'Internal server error'

@@ -90,42 +90,47 @@ git push
 
 Add the following to your Home Assistant `configuration.yaml` or create a new file in the `packages/` directory:
 
+**Note**: For better security, store the API key in Home Assistant's `secrets.yaml` file instead of hardcoding it in `configuration.yaml`. See [Home Assistant Secrets](https://www.home-assistant.io/docs/configuration/secrets/) for more information.
+
 ```yaml
+# In secrets.yaml:
+# ipmi_api_key: "your-secure-random-api-key-here"
+
 rest_command:
   # Power on the server
   server_power_on:
     url: http://localhost:8080/power/on
     method: POST
     headers:
-      X-API-Key: "your-secure-random-api-key-here"
+      X-API-Key: !secret ipmi_api_key
     
   # Graceful power off
   server_power_off:
     url: http://localhost:8080/power/off
     method: POST
     headers:
-      X-API-Key: "your-secure-random-api-key-here"
+      X-API-Key: !secret ipmi_api_key
     
   # Force power off
   server_power_force_off:
     url: http://localhost:8080/power/force-off
     method: POST
     headers:
-      X-API-Key: "your-secure-random-api-key-here"
+      X-API-Key: !secret ipmi_api_key
     
   # Power cycle
   server_power_cycle:
     url: http://localhost:8080/power/cycle
     method: POST
     headers:
-      X-API-Key: "your-secure-random-api-key-here"
+      X-API-Key: !secret ipmi_api_key
     
   # Reset
   server_power_reset:
     url: http://localhost:8080/power/reset
     method: POST
     headers:
-      X-API-Key: "your-secure-random-api-key-here"
+      X-API-Key: !secret ipmi_api_key
 ```
 
 ### RESTful Sensor for Power Status
@@ -133,18 +138,23 @@ rest_command:
 Add a sensor to monitor the power state:
 
 ```yaml
+# In secrets.yaml:
+# ipmi_api_key: "your-secure-random-api-key-here"
+
 sensor:
   - platform: rest
     name: "Server Power Status"
     resource: http://localhost:8080/power/status
     method: GET
     headers:
-      X-API-Key: "your-secure-random-api-key-here"
+      X-API-Key: !secret ipmi_api_key
     value_template: "{{ value_json.power_state }}"
     json_attributes:
       - raw_output
     scan_interval: 30  # Check every 30 seconds
 ```
+
+**Note**: The `localhost` URL works because the IPMI sidecar runs in the same pod as Home Assistant. They share the same network namespace, making the sidecar accessible via `localhost:8080`.
 
 ### Switch Entity
 
