@@ -75,6 +75,22 @@ spec:
               limits:
                 memory: 1Gi
 
+          # Configure the IPMI sidecar for server power management
+          ipmi-sidecar:
+            image:
+              repository: bancey/ipmi-sidecar
+              tag: latest
+              pullPolicy: Always
+            envFrom:
+              - secretRef:
+                  name: ipmi-sidecar-credentials
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64M
+              limits:
+                memory: 128M
+
     service:
       # Configure a service for the main application
       main:
@@ -90,6 +106,13 @@ spec:
         ports:
           http:
             port: 8081
+      # Configure a service for the IPMI sidecar
+      ipmi:
+        type: ClusterIP
+        controller: main
+        ports:
+          http:
+            port: 8080
 
     persistence:
       # Configure the main configuration storage location
