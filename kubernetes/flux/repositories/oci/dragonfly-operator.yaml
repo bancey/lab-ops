@@ -7,4 +7,4 @@ spec:
   interval: 10m
   url: oci://ghcr.io/dragonflydb/dragonfly-operator/helm/dragonfly-operator
   ref:
-    semver: ">1.0.0"
+    semver: "v1.4.0"

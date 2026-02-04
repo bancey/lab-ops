@@ -14,3 +14,7 @@ spec:
   install:
     remediation:
       retries: 3
+  values:
+    manager:
+      image:
+        repository: ghcr.io/dragonflydb/operator

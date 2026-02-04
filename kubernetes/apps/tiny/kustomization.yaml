@@ -18,14 +18,14 @@ resources:
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
   - ../base/monica
-  #- ./grafana-admin-secret.sops.yaml
-  #- ../base/monitoring
-  #- ./monitoring-certificates.yaml
-  #- ./mimir-minio-pvc.yaml
-  #- ./loki-minio-pvc.yaml
-  #- ./grafana-pvc.yaml
-  #- ./unpoller-secret.sops.yaml
-  #- ./unpoller-alloy-config.yaml
+  - ./grafana-admin-secret.sops.yaml
+  - ../base/monitoring
+  - ./monitoring-certificates.yaml
+  - ./mimir-minio-pvc.yaml
+  - ./loki-minio-pvc.yaml
+  - ./grafana-pvc.yaml
+  - ./unpoller-secret.sops.yaml
+  - ./unpoller-alloy-config.yaml
   - ../base/home-assistant
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
@@ -37,10 +37,10 @@ patchesStrategicMerge:
   #- penpot-ingress-route-patch.yaml
   #- penpot-patch.yaml
   - monica-patch.yaml
-  #- loki-patch.yaml
-  #- mimir-patch.yaml
-  #- grafana-patch.yaml
-  #- alloy-patch.yaml
+  - loki-patch.yaml
+  - mimir-patch.yaml
+  - grafana-patch.yaml
+  - alloy-patch.yaml
   - zigbee2mqtt-patch.yaml
   - home-assistant-certificate-patch.yaml
   - home-assistant-ingress-route-patch.yaml
