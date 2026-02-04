@@ -6,6 +6,14 @@ metadata:
   namespace: monitoring
 spec:
   values:
+    controller:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoExecute
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoExecute
     alloy:
       configMap:
         content: |
@@ -237,10 +245,3 @@ spec:
               source = "alloy-wanda",
             }
           }
-    tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoExecute
-      - key: node-role.kubernetes.io/master
-        operator: Exists
-        effect: NoExecute
