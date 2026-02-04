@@ -7,7 +7,7 @@ locals {
         vm_name             = "${cluster_key}-master${i}"
         vm_id               = cluster.master.vm_id_start + i
         vm_description      = "k8s control plane"
-        cpu_cores           = 4
+        cpu_cores           = cluster.master.cpu_cores
         memory              = cluster.master.memory
         disk_size           = cluster.disk_size
         ip_address          = cidrhost(cluster.master.cidr, i)
@@ -28,7 +28,7 @@ locals {
         vm_name             = "${cluster_key}-node${i}"
         vm_id               = cluster.worker.vm_id_start + i
         vm_description      = "k8s worker node"
-        cpu_cores           = 2
+        cpu_cores           = cluster.worker.cpu_cores
         memory              = cluster.worker.memory
         disk_size           = cluster.disk_size
         ip_address          = cidrhost(cluster.worker.cidr, i)
