@@ -8,7 +8,7 @@ spec:
   releaseName: alloy
   chart:
     spec:
-      version: 1.5.2
+      version: 1.5.3
       chart: alloy
       sourceRef:
         kind: HelmRepository
