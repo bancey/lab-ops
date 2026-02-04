@@ -38,12 +38,14 @@ kubernetes_virtual_machines = {
       cidr               = "10.151.15.8/29"
       gateway_ip_address = "10.151.15.1"
       vlan_tag           = "15"
+      memory             = 6144
     }
     worker = {
       count              = 4
       cidr               = "10.151.15.16/29"
       gateway_ip_address = "10.151.15.1"
       vlan_tag           = "15"
+      memory             = 6144
     }
   }
   tiny = {
@@ -62,14 +64,14 @@ kubernetes_virtual_machines = {
       cidr               = "10.151.16.8/29"
       gateway_ip_address = "10.151.16.1"
       vlan_tag           = "16"
-      memory             = 15360
+      memory             = 6144
     }
     worker = {
       count              = 3
       cidr               = "10.151.16.16/29"
       gateway_ip_address = "10.151.16.1"
       vlan_tag           = "16"
-      memory             = 10240
+      memory             = 16384
     }
   }
 }

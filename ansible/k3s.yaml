@@ -16,6 +16,10 @@
     ansible.builtin.set_fact:
       k3s_control_node: true
     when: "'master' in inventory_hostname"
+  - name: Add node-taint to k3s_server conf for master nodes
+    ansible.builtin.set_fact:
+      k3s_server: "{{ k3s_server | combine({ 'node-taint': ['node-role.kubernetes.io/control-plane:NoExecute'] }) }}"
+    when: "'master' in inventory_hostname"
   - name: Add node-ip to k3s_server conf
     ansible.builtin.set_fact:
       k3s_server: "{{ k3s_server | combine({ 'node-ip': ansible_host}) }}"
