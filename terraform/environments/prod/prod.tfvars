@@ -159,14 +159,6 @@ ansible = {
       "keepalived_pass" = "keepalived-pass"
     }
   }
-  "wings-local" = {
-    nodes    = ["hela", "loki", "thor"]
-    trigger  = "21_07_2025_2204"
-    playbook = "wings-node.yaml"
-    secrets = {
-      "cloudflare_api_token" = "Cloudflare-Lab-API-Token"
-    }
-  }
   "matter-server" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "matter-server.yaml"
