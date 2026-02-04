@@ -45,16 +45,16 @@ resources:
   - ../base/capacitor
   - capacitor-ingress-route.yaml
   - capacitor-certs.yaml
-  - ../base/monitoring
+  #- ../base/monitoring
 patchesStrategicMerge:
   - plex-patch.yaml
   - jellyfin-patch.yaml
   - acquisitions-patch.yaml
-  - loki-patch.yaml
-  - mimir-patch.yaml
-  - grafana-patch.yaml
-  - alloy-patch.yaml
-  - unpoller-patch.yaml
+  #- loki-patch.yaml
+  #- mimir-patch.yaml
+  #- grafana-patch.yaml
+  #- alloy-patch.yaml
+  #- unpoller-patch.yaml
 patches:
   - patch: |
       - op: add
