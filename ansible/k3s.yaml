@@ -1,7 +1,7 @@
 - name: Prepare and install K3S
   vars:
     passed_hosts: wanda_k3s_cluster
-    k3s_version: "v1.34.3+k3s1"
+    k3s_version: "v1.35.0+k3s3"
     run_prep: true
     run_install: false
   hosts: "{{ passed_hosts }}"
