@@ -28,7 +28,7 @@ spec:
           scheduler:
             image:
               repository: bunkerity/bunkerweb-scheduler
-              tag: 1.6.5
+              tag: 1.6.8
             envFrom:
               - configMapRef:
                   name: bunkerwebmgmt-config
