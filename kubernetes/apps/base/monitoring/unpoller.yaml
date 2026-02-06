@@ -32,7 +32,7 @@ spec:
           alloy:
             image:
               repository: grafana/alloy
-              tag: v1.12.2
+              tag: v1.13.0
             args:
               - run
               - /etc/alloy/config.alloy
