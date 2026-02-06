@@ -48,7 +48,7 @@ spec:
           ui:
             image:
               repository: bunkerity/bunkerweb-ui
-              tag: 1.6.5
+              tag: 1.6.8
             env:
               DATABASE_URI:
                 valueFrom:
