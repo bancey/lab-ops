@@ -79,7 +79,8 @@
       "matchPackageNames": [
         "index.docker.io/plexinc/pms-docker"
       ],
-      "versioning": "loose"
+      "versioning": "loose",
+      "allowedVersions": "!/.*-armhf$/"
     },
     {
       "description": "Auto-merge non-major updates",
