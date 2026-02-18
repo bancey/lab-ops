@@ -10,10 +10,10 @@ resources:
   - ../base/capacitor
   - ./capacitor-certificates.yaml
   - ./capacitor-ingress-route.yaml
-  #- ../base/bunkerweb-mgmt
-  #- ./bunkerweb-mgmt-configmap.yaml
-  #- ./bunkerweb-mgmt-certificates.yaml
-  #- ./bunkerweb-mgmt-ingress-route.yaml
+  - ../base/bunkerweb-mgmt
+  - ./bunkerweb-mgmt-configmap.yaml
+  - ./bunkerweb-mgmt-certificates.yaml
+  - ./bunkerweb-mgmt-ingress-route.yaml
   - ../base/twingate
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
@@ -32,7 +32,7 @@ patchesStrategicMerge:
   - smokeping-ingress-route-patch.yaml
   - smokeping-patch.yaml
   - pelican-patch.yaml
-  #- bunkerweb-mgmt-mariadb-patch.yaml
+  - bunkerweb-mgmt-mariadb-patch.yaml
   #- penpot-certificate-patch.yaml
   #- penpot-ingress-route-patch.yaml
   #- penpot-patch.yaml
