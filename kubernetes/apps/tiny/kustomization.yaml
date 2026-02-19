@@ -18,7 +18,7 @@ resources:
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
   - ../base/monica
-  - ./grafana-admin-secret.sops.yaml
+  #- ./grafana-admin-secret.sops.yaml
   #- ../base/monitoring
   #- ./monitoring-certificates.yaml
   #- ./mimir-minio-pvc.yaml
