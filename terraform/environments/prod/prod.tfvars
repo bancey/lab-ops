@@ -91,6 +91,21 @@ virtual_machines = {
     disk_size           = 64
     image               = "noble-server-cloudimg-amd64.img"
   }
+  temp = {
+    node                = "wanda"
+    vm_id               = 101
+    vm_description      = "temp"
+    cpu_cores           = 4
+    memory              = 4096
+    ip_address          = "10.151.14.165"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 1
+    storage             = "local-lvm"
+    disk_size           = 32
+    image               = "noble-server-cloudimg-amd64.img"
+  }
 }
 
 containers = {
