@@ -5,6 +5,8 @@ all:
   hosts:
     clawdbot:
       ansible_host: 10.151.14.101
+    temp:
+      ansible_host: 10.151.14.165
     haproxy0:
       ansible_host: 10.151.16.201
       ansible_user: root
