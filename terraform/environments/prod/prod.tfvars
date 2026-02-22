@@ -52,7 +52,6 @@ kubernetes_virtual_machines = {
     ansible_trigger       = "13_05_2025_2225"
     ansible_reboot_hosts  = false
     k3s_etcd_datastore    = true
-    disk_size             = 150
     image                 = "jammy-server-cloudimg-amd64.img"
     cluster_cidr          = "10.44.0.0/16"
     service_cidr          = "10.45.0.0/16"
@@ -63,7 +62,8 @@ kubernetes_virtual_machines = {
       cidr               = "10.151.16.8/29"
       gateway_ip_address = "10.151.16.1"
       vlan_tag           = "16"
-      memory             = 6144
+      memory             = 8192
+      disk_size          = 100
     }
     worker = {
       count              = 3
@@ -71,6 +71,7 @@ kubernetes_virtual_machines = {
       gateway_ip_address = "10.151.16.1"
       vlan_tag           = "16"
       memory             = 16384
+      disk_size          = 200
     }
   }
 }
