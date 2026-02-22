@@ -9,7 +9,7 @@ locals {
         vm_description      = "k8s control plane"
         cpu_cores           = cluster.master.cpu_cores
         memory              = cluster.master.memory
-        disk_size           = try(cluster.master, "disk_size", null) != null ? cluster.master.disk_size : cluster.disk_size
+        disk_size           = cluster.master.disk_size != null ? cluster.master.disk_size : cluster.disk_size
         ip_address          = cidrhost(cluster.master.cidr, i)
         gateway_ip_address  = cluster.master.gateway_ip_address
         network_bridge_name = cluster.master.network_bridge_name
@@ -30,7 +30,7 @@ locals {
         vm_description      = "k8s worker node"
         cpu_cores           = cluster.worker.cpu_cores
         memory              = cluster.worker.memory
-        disk_size           = try(cluster.worker, "disk_size", null) != null ? cluster.master.disk_size : cluster.disk_size
+        disk_size           = cluster.worker.disk_size != null ? cluster.worker.disk_size : cluster.disk_size
         ip_address          = cidrhost(cluster.worker.cidr, i)
         gateway_ip_address  = cluster.worker.gateway_ip_address
         network_bridge_name = cluster.worker.network_bridge_name
