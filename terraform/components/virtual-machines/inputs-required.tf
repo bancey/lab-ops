@@ -37,6 +37,7 @@ variable "kubernetes_virtual_machines" {
       network_bridge_name = optional(string, "vmbr1")
       memory              = optional(number, 8192)
       cpu_cores           = optional(number, 4)
+      disk_size           = optional(number, null)
     })
     worker = object({
       count               = optional(number, 3)
@@ -47,6 +48,7 @@ variable "kubernetes_virtual_machines" {
       network_bridge_name = optional(string, "vmbr1")
       memory              = optional(number, 4096)
       cpu_cores           = optional(number, 4)
+      disk_size           = optional(number, null)
     })
   }))
   description = "Map containing information about Virtual Machines to create in Proxmox for Kubernetes."
