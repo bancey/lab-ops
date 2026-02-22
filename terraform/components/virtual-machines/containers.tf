@@ -50,3 +50,17 @@ module "tiny_containers" {
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
 }
+
+removed {
+  from = module.tiny_containers["haproxy0"]
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = module.tiny_containers["matter-server"]
+  lifecycle {
+    destroy = false
+  }
+}
