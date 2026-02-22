@@ -15,6 +15,7 @@ resources:
   - ./bunkerweb-mgmt-certificates.yaml
   - ./bunkerweb-mgmt-ingress-route.yaml
   - ../base/twingate
+  - ../base/headscale
   - ./monica-db-secret.sops.yaml
   - ./monica-certificates.yaml
   - ../base/monica
