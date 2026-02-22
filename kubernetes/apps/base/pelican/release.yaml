@@ -28,7 +28,7 @@ spec:
           app:
             image:
               repository: ghcr.io/pelican-dev/panel
-              tag: main@sha256:d24340d1da5acbba34c4a1a83b67f04c5896a8a453dffc008b2d9b0bb5268a18
+              tag: main@sha256:5a1e862ad6511d3503aae09c3b249093f939ee1c955741110eaa758a2d6cde9d
             env:
               APP_ENV: testing
               APP_DEBUG: "false"
