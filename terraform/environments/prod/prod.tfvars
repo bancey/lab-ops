@@ -179,6 +179,7 @@ ansible = {
   "matter-server" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "matter-server.yaml"
+    trigger = "23-02-2026-0830"
   }
 }
 
