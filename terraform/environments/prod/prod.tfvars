@@ -70,7 +70,7 @@ kubernetes_virtual_machines = {
       cidr               = "10.151.16.16/29"
       gateway_ip_address = "10.151.16.1"
       vlan_tag           = "16"
-      memory             = 16384
+      memory             = 20480
       disk_size          = 200
     }
   }
