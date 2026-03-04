@@ -119,3 +119,21 @@ spec:
       target:
         kind: Certificate
         name: longhorn-tls
+    - patch: |
+        $patch: delete
+        apiVersion: longhorn.io/v1beta2
+        kind: RecurringJob
+        metadata:
+          name: backup-default-daily
+      target:
+        kind: RecurringJob
+        name: backup-default-daily
+    - patch: |
+        $patch: delete
+        apiVersion: longhorn.io/v1beta2
+        kind: RecurringJob
+        metadata:
+          name: snapshot-default-four-hourly
+      target:
+        kind: RecurringJob
+        name: snapshot-default-four-hourly
