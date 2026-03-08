@@ -51,6 +51,8 @@ This will install Flux and apply the necessary secrets and sources for GitOps.
 ## Directory Structure
 
 - `ansible/` - Ansible playbooks and roles for configuring VMs, containers, and Raspberry Pis (including Twingate connector setup)
+- `docs/` - Documentation for specific features and integrations
+  - `ipmi-sidecar.md` - IPMI sidecar setup and Home Assistant integration guide
 - `kubernetes/` - GitOps-managed Kubernetes manifests, including app dependencies, apps, and infrastructure
 - `terraform/` - Infrastructure as code for Azure, Proxmox, Twingate, DNS, etc.
   - `components/` - Reusable Terraform modules for each major infra component
