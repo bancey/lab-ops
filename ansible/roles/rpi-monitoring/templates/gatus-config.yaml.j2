@@ -4,12 +4,12 @@ storage:
 
 ui:
   header: BanceTech Service Status
-  link: https://gatus.{{ inventory_hostname }}.heimelska.co.uk
+  link: "https://gatus.{{ inventory_hostname }}.heimelska.co.uk"
   default-sort-by: group
   buttons:
 {% for host in groups['rpi'] if host != inventory_hostname %}
     - name: {{ host }}
-      address: https://gatus.{{ host }}.heimelska.co.uk
+      link: "https://gatus.{{ host }}.heimelska.co.uk"
 {% endfor %}
 
 endpoints:
