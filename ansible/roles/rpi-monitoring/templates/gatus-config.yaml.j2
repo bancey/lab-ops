@@ -8,8 +8,8 @@ ui:
   default-sort-by: group
   buttons:
 {% for host in groups['all'] if host != inventory_hostname %}
-    - name: {{ hostvars[host]['ansible_hostname'] }}
-      address: https://gatus.{{ hostvars[host]['ansible_hostname'] }}.heimelska.co.uk
+    - name: {{ host }}
+      address: https://gatus.{{ host }}.heimelska.co.uk
 {% endfor %}
 
 endpoints:
