@@ -2,6 +2,16 @@ storage:
   type: sqlite
   path: /data/data.db
 
+ui:
+  header: BanceTech Service Status
+  link: https://gatus.{{ hostvars[inventory_hostname] }}.heimelska.co.uk
+  default-sort-by: group
+  buttons:
+{% for host in groups['all'] if host != inventory_hostname %}
+    - name: {{ host }}
+      address: https://gatus.{{ host }}.heimelska.co.uk
+{% endfor %}
+
 endpoints:
   - name: thanos
     group: hosts
