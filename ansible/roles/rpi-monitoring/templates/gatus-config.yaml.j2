@@ -61,3 +61,41 @@ endpoints:
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
+  - name: aguard dns external
+    group: services
+    url: "10.151.14.4"
+    dns:
+      query-name: "google.co.uk"
+      query-type: "A"
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+  - name: adguard dns internal
+    group: services
+    url: "10.151.14.4"
+    dns:
+      query-name: "hass.tiny.heimelska.co.uk"
+      query-type: "A"
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 10.151.24.10"
+  - name: home assistant
+    group: services
+    url: "https://hass.tiny.heimelska.co.uk"
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+      - "[BODY] == pat(*<title>Home Assistant</title>*)"
+  - name: home assistant waf
+    group: services
+    url: "https://hass.heimelska.co.uk"
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+      - "[BODY] == pat(*<title>Home Assistant</title>*)"
+  - name: zigbee2mqtt
+    group: services
+    url: "https://zigbee2mqtt.tiny.heimelska.co.uk"
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+      - "[BODY] == pat(*<title>Zigbee2MQTT WindFront</title>*)"
