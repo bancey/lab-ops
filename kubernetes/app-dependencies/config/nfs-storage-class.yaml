@@ -32,7 +32,7 @@ metadata:
 provisioner: nfs.csi.k8s.io
 parameters:
   server: storage.heimelska.co.uk
-  share: /path/from/showmount
+  share: /var/nfs/shared/Tiny_K8S
 mountOptions:
   - nfsvers=4
   - hard
