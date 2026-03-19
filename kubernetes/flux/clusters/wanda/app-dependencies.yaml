@@ -137,3 +137,12 @@ spec:
       target:
         kind: RecurringJob
         name: snapshot-default-four-hourly
+    - patch: |
+        $patch: delete
+        apiVersion: storage.k8s.io/v1
+        kind: StorageClass
+        metadata:
+          name: unas-nfs-csi
+      target:
+        kind: StorageClass
+        name: unas-nfs-csi

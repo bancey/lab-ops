@@ -25,24 +25,6 @@ spec:
       target:
         kind: HelmRelease
         name: traefik
-    - patch: |
-        $patch: delete
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: nfs
-      target:
-        kind: Namespace
-        name: nfs
-    - patch: |
-        $patch: delete
-        apiVersion: helm.toolkit.fluxcd.io/v2beta1
-        kind: HelmRelease
-        metadata:
-          name: csi-driver-nfs
-      target:
-        kind: HelmRelease
-        name: csi-driver-nfs
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
@@ -92,6 +74,15 @@ spec:
       target:
         kind: StorageClass
         name: config-nfs-csi
+    - patch: |
+        $patch: delete
+        apiVersion: storage.k8s.io/v1
+        kind: StorageClass
+        metadata:
+          name: nobody-nfs-csi
+      target:
+        kind: StorageClass
+        name: nobody-nfs-csi
     - patch: |
         - op: add
           path: /spec/routes/0/match

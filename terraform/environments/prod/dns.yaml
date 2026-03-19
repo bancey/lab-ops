@@ -1,6 +1,8 @@
 dns:
   unifi.heimelska.co.uk:
-    record: 10.151.14.4
+    record: 10.151.10.1
+  storage.heimelska.co.uk:
+    record: 10.151.10.10
   bunkerweb-mgmt.heimelska.co.uk:
     record: 10.151.14.4
   bunkerweb-mgmt.tiny.heimelska.co.uk:
