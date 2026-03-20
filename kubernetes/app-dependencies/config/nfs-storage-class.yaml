@@ -33,6 +33,7 @@ provisioner: nfs.csi.k8s.io
 parameters:
   server: storage.heimelska.co.uk
   share: /var/nfs/shared/Tiny_K8S
+  subDir: ${pvc.metadata.namespace}/${pvc.metadata.name}
 mountOptions:
   - nfsvers=4
   - hard
