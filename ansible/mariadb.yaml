@@ -86,8 +86,30 @@
     when: inventory_hostname == 'mariadb0'
 
 - name: Install and configure ProxySQL
-  hosts: proxysql
+  hosts: proxysql0, proxysql1, proxysql2
   gather_facts: true
+  vars:
+    vip: "10.151.16.219/24"
+    keepalived_virtual_router_id: 152
+    keepalive:
+      proxysql0:
+        peers: |-
+          "10.151.16.217"
+          "10.151.16.218"
+        state: "MASTER"
+        priority: 150
+      proxysql1:
+        peers: |-
+          "10.151.16.216"
+          "10.151.16.218"
+        state: "BACKUP"
+        priority: 100
+      proxysql2:
+        peers: |-
+          "10.151.16.216"
+          "10.151.16.217"
+        state: "BACKUP"
+        priority: 100
   roles:
   - role: prep
     install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common"]
@@ -99,6 +121,27 @@
   - set_fact:
       proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
     when: proxysql_monitor_password is undefined
+  - set_fact:
+      keepalived_proxysql_pass: "{{ lookup('ansible.builtin.file', 'ProxySQL-Keepalived-Password') }}"
+    when: keepalived_proxysql_pass is undefined
+  - name: ensures /etc/keepalived dir exists
+    file:
+      path: /etc/keepalived
+      state: directory
+  - name: Copy KeepAlived configuration template
+    template:
+      src: templates/keepalived.conf.j2
+      dest: /etc/keepalived/keepalived.conf
+    vars:
+      keepalived_pass: "{{ keepalived_proxysql_pass }}"
+  - name: Update apt and install keepalived
+    apt:
+      pkg:
+      - keepalived
+      - libipset13
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
   - name: Add ProxySQL apt key
     ansible.builtin.apt_key:
       url: https://repo.proxysql.com/ProxySQL/repo_pub_key

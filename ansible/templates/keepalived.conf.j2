@@ -17,7 +17,7 @@ vrrp_script check_bunkerweb {
 vrrp_instance RPI {
   state {{ keepalive[inventory_hostname].state }}
   interface eth0
-  virtual_router_id 151
+  virtual_router_id {{ keepalived_virtual_router_id | default(151) }}
   priority {{ keepalive[inventory_hostname].priority }}
   advert_int 1
   unicast_src_ip {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
