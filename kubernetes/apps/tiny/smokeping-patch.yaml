@@ -9,7 +9,7 @@ spec:
     ingress:
       enabled: false
     persistence:
-      storageClassName: longhorn
+      storageClassName: unas-nfs-csi
       size: 500Mi
       accessModes:
         - ReadWriteMany
