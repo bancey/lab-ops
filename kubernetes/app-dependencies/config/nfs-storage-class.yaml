@@ -35,7 +35,7 @@ parameters:
   share: /var/nfs/shared/Tiny_K8S
   subDir: ${pvc.metadata.namespace}/${pvc.metadata.name}
 mountOptions:
-  - nfsvers=4
+  - nfsvers=3
   - hard
   - nointr
 reclaimPolicy: Retain
