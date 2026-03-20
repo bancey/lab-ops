@@ -17,6 +17,18 @@ all:
     matter-server:
       ansible_host: 10.151.14.110
       ansible_user: root
+    mariadb0:
+      ansible_host: 10.151.16.210
+      ansible_user: root
+    mariadb1:
+      ansible_host: 10.151.16.211
+      ansible_user: root
+    mariadb2:
+      ansible_host: 10.151.16.212
+      ansible_user: root
+    proxysql:
+      ansible_host: 10.151.16.215
+      ansible_user: root
   children:
     rpi:
       hosts:

@@ -1,0 +1,125 @@
+- name: Install and configure MariaDB Galera Cluster
+  hosts: mariadb0, mariadb1, mariadb2
+  gather_facts: true
+  vars:
+    galera_cluster_name: "galera_cluster"
+    galera_nodes: ["10.151.16.210", "10.151.16.211", "10.151.16.212"]
+    mariadb_version: "11.4"
+    mariadb_bind_address: "0.0.0.0"
+    mariadb_datadir: "/var/lib/mysql"
+  roles:
+  - role: prep
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "python3-setuptools"]
+    disable_multipath: false
+  tasks:
+  - set_fact:
+      mariadb_root_password: "{{ lookup('ansible.builtin.file', 'mariadb_root_password') }}"
+    when: mariadb_root_password is undefined
+  - set_fact:
+      mariadb_galera_password: "{{ lookup('ansible.builtin.file', 'mariadb_galera_password') }}"
+    when: mariadb_galera_password is undefined
+  - name: Add MariaDB apt key
+    ansible.builtin.apt_key:
+      url: https://mariadb.org/mariadb_release_signing_key.pgp
+      state: present
+  - name: Add MariaDB repository
+    ansible.builtin.apt_repository:
+      repo: "deb https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_distribution_release }} main"
+      state: present
+  - name: Install MariaDB and Galera packages
+    apt:
+      pkg:
+      - mariadb-server
+      - galera-4
+      - mariadb-backup
+      - rsync
+      - python3-pymysql
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: ensures /etc/mysql/conf.d dir exists
+    file:
+      path: /etc/mysql/conf.d
+      state: directory
+  - name: Copy Galera configuration template
+    template:
+      src: templates/galera.cnf.j2
+      dest: /etc/mysql/conf.d/galera.cnf
+  - name: Stop MariaDB service before bootstrapping
+    service:
+      name: mariadb
+      state: stopped
+    when: inventory_hostname == 'mariadb0'
+  - name: Bootstrap Galera cluster on primary node (mariadb0)
+    command: galera_new_cluster
+    when: inventory_hostname == 'mariadb0'
+  - name: Start MariaDB on secondary nodes
+    service:
+      name: mariadb
+      state: started
+      enabled: true
+    when: inventory_hostname != 'mariadb0'
+  - name: Set MariaDB root password
+    community.mysql.mysql_user:
+      name: root
+      password: "{{ mariadb_root_password }}"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    when: inventory_hostname == 'mariadb0'
+  - name: Create Galera SST user
+    community.mysql.mysql_user:
+      name: galera_sst
+      password: "{{ mariadb_galera_password }}"
+      priv: "*.*:RELOAD,LOCK TABLES,PROCESS,REPLICATION CLIENT"
+      host: localhost
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    when: inventory_hostname == 'mariadb0'
+  - name: Create ProxySQL monitor user
+    community.mysql.mysql_user:
+      name: proxysql_monitor
+      password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
+      priv: "*.*:USAGE,REPLICATION CLIENT"
+      host: "%"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    when: inventory_hostname == 'mariadb0'
+
+- name: Install and configure ProxySQL
+  hosts: proxysql
+  gather_facts: true
+  roles:
+  - role: prep
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common"]
+    disable_multipath: false
+  tasks:
+  - set_fact:
+      proxysql_admin_password: "{{ lookup('ansible.builtin.file', 'proxysql_admin_password') }}"
+    when: proxysql_admin_password is undefined
+  - set_fact:
+      proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
+    when: proxysql_monitor_password is undefined
+  - name: Add ProxySQL apt key
+    ansible.builtin.apt_key:
+      url: https://repo.proxysql.com/ProxySQL/repo_pub_key
+      state: present
+  - name: Add ProxySQL repository
+    ansible.builtin.apt_repository:
+      repo: "deb https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_distribution_release }}/ ./"
+      state: present
+  - name: Install ProxySQL
+    apt:
+      pkg:
+      - proxysql2
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: Copy ProxySQL configuration template
+    template:
+      src: templates/proxysql.cnf.j2
+      dest: /etc/proxysql.cnf
+  - name: Start and enable ProxySQL
+    service:
+      name: proxysql
+      state: started
+      enabled: true

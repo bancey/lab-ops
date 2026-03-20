@@ -1,0 +1,21 @@
+[mysqld]
+bind-address            = {{ mariadb_bind_address }}
+default_storage_engine  = InnoDB
+binlog_format           = ROW
+innodb_autoinc_lock_mode = 2
+
+# Galera Provider Configuration
+wsrep_on                = ON
+wsrep_provider          = /usr/lib/galera/libgalera_smm.so
+
+# Galera Cluster Configuration
+wsrep_cluster_name      = "{{ galera_cluster_name }}"
+wsrep_cluster_address   = "gcomm://{{ galera_nodes | join(',') }}"
+
+# Galera Synchronization Configuration
+wsrep_sst_method        = mariabackup
+wsrep_sst_auth          = "galera_sst:{{ mariadb_galera_password }}"
+
+# Galera Node Configuration
+wsrep_node_address      = "{{ ansible_default_ipv4.address }}"
+wsrep_node_name         = "{{ inventory_hostname }}"

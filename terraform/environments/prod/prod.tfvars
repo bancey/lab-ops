@@ -151,6 +151,62 @@ containers = {
     storage             = "local-lvm"
     unprivileged        = false
   }
+  mariadb0 = {
+    node                = "hela"
+    ct_id               = 270
+    ct_description      = "MariaDB Galera Cluster Node 0 - Hela"
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.16.210"
+    gateway_ip_address  = "10.151.16.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "16"
+    startup_order       = 1
+    startup_delay       = 5
+    storage             = "local-lvm"
+  }
+  mariadb1 = {
+    node                = "loki"
+    ct_id               = 271
+    ct_description      = "MariaDB Galera Cluster Node 1 - Loki"
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.16.211"
+    gateway_ip_address  = "10.151.16.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "16"
+    startup_order       = 1
+    startup_delay       = 5
+    storage             = "local-lvm"
+  }
+  mariadb2 = {
+    node                = "thor"
+    ct_id               = 272
+    ct_description      = "MariaDB Galera Cluster Node 2 - Thor"
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.16.212"
+    gateway_ip_address  = "10.151.16.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "16"
+    startup_order       = 1
+    startup_delay       = 5
+    storage             = "local-lvm"
+  }
+  proxysql = {
+    node                = "hela"
+    ct_id               = 273
+    ct_description      = "ProxySQL - MariaDB Galera Cluster Load Balancer"
+    cpu_cores           = 1
+    memory              = 512
+    ip_address          = "10.151.16.215"
+    gateway_ip_address  = "10.151.16.1"
+    network_bridge_name = "vmbr1"
+    vlan_tag            = "16"
+    startup_order       = 2
+    startup_delay       = 10
+    storage             = "local-lvm"
+  }
 }
 
 ansible = {
@@ -166,6 +222,17 @@ ansible = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "matter-server.yaml"
     trigger = "23-02-2026-0830"
+  }
+  "mariadb" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "mariadb.yaml"
+    secrets = {
+      "mariadb_root_password"     = "MariaDB-Root-Password"
+      "mariadb_galera_password"   = "MariaDB-Galera-Password"
+      "proxysql_admin_password"   = "ProxySQL-Admin-Password"
+      "proxysql_monitor_password" = "ProxySQL-Monitor-Password"
+    }
+    trigger = "20-03-2026-1200"
   }
 }
 
