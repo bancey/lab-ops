@@ -45,20 +45,16 @@
     template:
       src: templates/galera.cnf.j2
       dest: /etc/mysql/conf.d/galera.cnf
-  - name: Stop MariaDB service before bootstrapping
+      owner: root
+      group: root
+      mode: '0600'
+  - name: Stop MariaDB service on all nodes before bootstrapping
     service:
       name: mariadb
       state: stopped
-    when: inventory_hostname == 'mariadb0'
   - name: Bootstrap Galera cluster on primary node (mariadb0)
     command: galera_new_cluster
     when: inventory_hostname == 'mariadb0'
-  - name: Start MariaDB on secondary nodes
-    service:
-      name: mariadb
-      state: started
-      enabled: true
-    when: inventory_hostname != 'mariadb0'
   - name: Set MariaDB root password
     community.mysql.mysql_user:
       name: root
@@ -84,6 +80,12 @@
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
     when: inventory_hostname == 'mariadb0'
+  - name: Start MariaDB on secondary nodes
+    service:
+      name: mariadb
+      state: started
+      enabled: true
+    when: inventory_hostname != 'mariadb0'
 
 - name: Install and configure ProxySQL
   hosts: proxysql0, proxysql1, proxysql2
@@ -130,10 +132,12 @@
       state: directory
   - name: Copy KeepAlived configuration template
     template:
-      src: templates/keepalived.conf.j2
+      src: templates/keepalived-proxysql.conf.j2
       dest: /etc/keepalived/keepalived.conf
     vars:
       keepalived_pass: "{{ keepalived_proxysql_pass }}"
+    notify:
+    - Restart Keepalived
   - name: Update apt and install keepalived
     apt:
       pkg:
@@ -142,6 +146,11 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
+  - name: Start and enable Keepalived
+    service:
+      name: keepalived
+      state: started
+      enabled: true
   - name: Add ProxySQL apt key
     ansible.builtin.apt_key:
       url: https://repo.proxysql.com/ProxySQL/repo_pub_key
@@ -161,8 +170,22 @@
     template:
       src: templates/proxysql.cnf.j2
       dest: /etc/proxysql.cnf
+      owner: root
+      group: root
+      mode: '0600'
+    notify:
+    - Restart ProxySQL
   - name: Start and enable ProxySQL
     service:
       name: proxysql
       state: started
       enabled: true
+  handlers:
+  - name: Restart Keepalived
+    service:
+      name: keepalived
+      state: restarted
+  - name: Restart ProxySQL
+    service:
+      name: proxysql
+      state: restarted

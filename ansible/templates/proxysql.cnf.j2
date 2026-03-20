@@ -3,7 +3,7 @@ errorlog="/var/lib/proxysql/proxysql.log"
 
 admin_variables=
 {
-    admin_credentials="{{ proxysql_admin_password }}"
+    admin_credentials="admin:{{ proxysql_admin_password }}"
     mysql_ifaces="0.0.0.0:6032"
 }
 
@@ -18,7 +18,6 @@ mysql_variables=
     interfaces="0.0.0.0:3306"
     default_schema="information_schema"
     stacksize=1048576
-    server_version="8.0.27"
     connect_timeout_server=3000
     monitor_username="proxysql_monitor"
     monitor_password="{{ proxysql_monitor_password }}"
@@ -36,12 +35,13 @@ mysql_variables=
 
 mysql_servers=
 (
-    { address="10.151.16.210", port=3306, hostgroup=0, max_connections=100 },
-    { address="10.151.16.211", port=3306, hostgroup=0, max_connections=100 },
-    { address="10.151.16.212", port=3306, hostgroup=0, max_connections=100 },
-    { address="10.151.16.210", port=3306, hostgroup=1, max_connections=100 },
-    { address="10.151.16.211", port=3306, hostgroup=1, max_connections=100 },
-    { address="10.151.16.212", port=3306, hostgroup=1, max_connections=100 }
+{% for node in galera_nodes %}
+    { address="{{ node }}", port=3306, hostgroup=0, max_connections=100 },
+{% endfor %}
+{% for node in galera_nodes %}
+    { address="{{ node }}", port=3306, hostgroup=1, max_connections=100 }{% if not loop.last %},{% endif %}
+
+{% endfor %}
 )
 
 mysql_query_rules=
