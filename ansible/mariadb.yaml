@@ -7,6 +7,7 @@
     mariadb_version: "11.4"
     mariadb_bind_address: "0.0.0.0"
     mariadb_datadir: "/var/lib/mysql"
+    mariadb_databases: []
   roles:
   - role: prep
     install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "python3-setuptools"]
@@ -86,6 +87,27 @@
       state: started
       enabled: true
     when: inventory_hostname != 'mariadb0'
+  - name: Create application databases
+    community.mysql.mysql_db:
+      name: "{{ item.name }}"
+      state: present
+      login_unix_socket: /run/mysqld/mysqld.sock
+    loop: "{{ mariadb_databases }}"
+    when:
+    - inventory_hostname == 'mariadb0'
+    - mariadb_databases | length > 0
+  - name: Create application database users
+    community.mysql.mysql_user:
+      name: "{{ item.user }}"
+      password: "{{ lookup('ansible.builtin.file', item.password_secret) }}"
+      priv: "{{ item.name }}.*:{{ item.privs | default('ALL PRIVILEGES') }}"
+      host: "{{ item.host | default('%') }}"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    loop: "{{ mariadb_databases }}"
+    when:
+    - inventory_hostname == 'mariadb0'
+    - mariadb_databases | length > 0
 
 - name: Install and configure ProxySQL
   hosts: proxysql0, proxysql1, proxysql2
