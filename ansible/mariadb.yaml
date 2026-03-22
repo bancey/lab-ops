@@ -8,6 +8,7 @@
     mariadb_bind_address: "0.0.0.0"
     mariadb_datadir: "/var/lib/mysql"
     mariadb_databases: []
+    bootstrap_galera: false
   roles:
   - role: prep
     install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "python3-setuptools"]
@@ -19,6 +20,9 @@
   - set_fact:
       mariadb_galera_password: "{{ lookup('ansible.builtin.file', 'mariadb_galera_password') }}"
     when: mariadb_galera_password is undefined
+  - set_fact:
+      proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
+    when: proxysql_monitor_password is undefined
   - name: Add MariaDB apt key
     ansible.builtin.apt_key:
       url: https://mariadb.org/mariadb_release_signing_key.pgp
@@ -53,9 +57,10 @@
     service:
       name: mariadb
       state: stopped
+    when: bootstrap_galera | bool
   - name: Bootstrap Galera cluster on primary node (mariadb0)
     command: galera_new_cluster
-    when: inventory_hostname == 'mariadb0'
+    when: inventory_hostname == 'mariadb0' and bootstrap_galera | bool
   - name: Set MariaDB root password
     community.mysql.mysql_user:
       name: root
@@ -68,14 +73,15 @@
       name: galera_sst
       password: "{{ mariadb_galera_password }}"
       priv: "*.*:RELOAD,LOCK TABLES,PROCESS,REPLICATION CLIENT"
-      host: localhost
+      host: "{{ item }}"
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
+    loop: "{{ galera_nodes + ['localhost'] }}"
     when: inventory_hostname == 'mariadb0'
   - name: Create ProxySQL monitor user
     community.mysql.mysql_user:
       name: proxysql_monitor
-      password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
+      password: "{{ proxysql_monitor_password }}"
       priv: "*.*:USAGE,REPLICATION CLIENT"
       host: "%"
       login_unix_socket: /run/mysqld/mysqld.sock
@@ -86,7 +92,13 @@
       name: mariadb
       state: started
       enabled: true
-    when: inventory_hostname != 'mariadb0'
+    when: inventory_hostname != 'mariadb0' and bootstrap_galera | bool
+  - name: Ensure MariaDB is started and enabled
+    service:
+      name: mariadb
+      state: started
+      enabled: true
+    when: not (bootstrap_galera | bool)
   - name: Create application databases
     community.mysql.mysql_db:
       name: "{{ item.name }}"
@@ -99,7 +111,7 @@
   - name: Create application database users
     community.mysql.mysql_user:
       name: "{{ item.user }}"
-      password: "{{ lookup('ansible.builtin.file', item.password_secret) }}"
+      password: "{{ item.password }}"
       priv: "{{ item.name }}.*:{{ item.privs | default('ALL PRIVILEGES') }}"
       host: "{{ item.host | default('%') }}"
       login_unix_socket: /run/mysqld/mysqld.sock
@@ -113,6 +125,8 @@
   hosts: proxysql0, proxysql1, proxysql2
   gather_facts: true
   vars:
+    galera_nodes: ["10.151.16.210", "10.151.16.211", "10.151.16.212"]
+    mariadb_databases: []
     vip: "10.151.16.219/24"
     keepalived_virtual_router_id: 152
     keepalive:

@@ -33,6 +33,14 @@ mysql_variables=
     connect_retries_on_failure=10
 }
 
+mysql_users=
+(
+{% for db in mariadb_databases %}
+    { username="{{ db.user }}", password="{{ db.password }}", default_hostgroup=0, active=1 }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+)
+
 mysql_servers=
 (
 {% for node in galera_nodes %}
