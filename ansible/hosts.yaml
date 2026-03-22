@@ -14,9 +14,6 @@ all:
     haproxy2:
       ansible_host: 10.151.16.203
       ansible_user: root
-    matter-server:
-      ansible_host: 10.151.14.110
-      ansible_user: root
     mariadb0:
       ansible_host: 10.151.14.210
       ansible_user: root
@@ -25,6 +22,9 @@ all:
       ansible_user: root
     mariadb2:
       ansible_host: 10.151.14.212
+      ansible_user: root
+    matter-server:
+      ansible_host: 10.151.14.110
       ansible_user: root
     proxysql0:
       ansible_host: 10.151.14.216
