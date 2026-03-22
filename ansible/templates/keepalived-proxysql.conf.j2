@@ -1,20 +1,12 @@
-vrrp_script check_adguard_dns {
-  script "/usr/bin/nslookup -timeout=2 localhost 127.0.0.1 > /dev/null 2>&1"
+vrrp_script check_proxysql {
+  script "/usr/bin/pgrep proxysql > /dev/null 2>&1"
   interval 5
   weight -20
   fall 2
   rise 2
 }
 
-vrrp_script check_bunkerweb {
-  script "/usr/bin/curl -sf http://127.0.0.1:80 > /dev/null 2>&1"
-  interval 5
-  weight -20
-  fall 2
-  rise 2
-}
-
-vrrp_instance RPI {
+vrrp_instance PROXYSQL {
   state {{ keepalive[inventory_hostname].state }}
   interface eth0
   virtual_router_id {{ keepalived_virtual_router_id | default(151) }}
@@ -35,7 +27,6 @@ vrrp_instance RPI {
   }
 
   track_script {
-    check_adguard_dns
-    check_bunkerweb
+    check_proxysql
   }
 }

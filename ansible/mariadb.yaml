@@ -1,0 +1,226 @@
+- name: Install and configure MariaDB Galera Cluster
+  hosts: mariadb0, mariadb1, mariadb2
+  gather_facts: true
+  vars:
+    galera_cluster_name: "galera_cluster"
+    galera_nodes: ["10.151.14.210", "10.151.14.211", "10.151.14.212"]
+    mariadb_bind_address: "0.0.0.0"
+    mariadb_datadir: "/var/lib/mysql"
+    mariadb_databases: []
+    bootstrap_galera: false
+  roles:
+  - role: prep
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "python3-setuptools"]
+    disable_multipath: false
+  tasks:
+  - set_fact:
+      mariadb_root_password: "{{ lookup('ansible.builtin.file', 'mariadb_root_password') }}"
+    when: mariadb_root_password is undefined
+  - set_fact:
+      mariadb_galera_password: "{{ lookup('ansible.builtin.file', 'mariadb_galera_password') }}"
+    when: mariadb_galera_password is undefined
+  - set_fact:
+      proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
+    when: proxysql_monitor_password is undefined
+  - name: Add MariaDB apt key
+    ansible.builtin.apt_key:
+      url: https://mariadb.org/mariadb_release_signing_key.pgp
+      state: present
+  - name: Add MariaDB repository
+    ansible.builtin.apt_repository:
+      repo: "deb https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_distribution_release }} main"
+      state: present
+  - name: Install MariaDB and Galera packages
+    apt:
+      pkg:
+      - mariadb-server
+      - galera-4
+      - mariadb-backup
+      - rsync
+      - python3-pymysql
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: ensures /etc/mysql/conf.d dir exists
+    file:
+      path: /etc/mysql/conf.d
+      state: directory
+  - name: Copy Galera configuration template
+    template:
+      src: templates/galera.cnf.j2
+      dest: /etc/mysql/conf.d/galera.cnf
+      owner: root
+      group: root
+      mode: '0600'
+  - name: Stop MariaDB service on all nodes before bootstrapping
+    service:
+      name: mariadb
+      state: stopped
+    when: bootstrap_galera | bool
+  - name: Bootstrap Galera cluster on primary node (mariadb0)
+    command: galera_new_cluster
+    when: inventory_hostname == 'mariadb0' and bootstrap_galera | bool
+  - name: Set MariaDB root password
+    community.mysql.mysql_user:
+      name: root
+      password: "{{ mariadb_root_password }}"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    when: inventory_hostname == 'mariadb0'
+  - name: Create Galera SST user
+    community.mysql.mysql_user:
+      name: galera_sst
+      password: "{{ mariadb_galera_password }}"
+      priv: "*.*:RELOAD,LOCK TABLES,PROCESS,REPLICATION CLIENT"
+      host: "{{ item }}"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    loop: "{{ galera_nodes + ['localhost'] }}"
+    when: inventory_hostname == 'mariadb0'
+  - name: Create ProxySQL monitor user
+    community.mysql.mysql_user:
+      name: proxysql_monitor
+      password: "{{ proxysql_monitor_password }}"
+      priv: "*.*:USAGE,REPLICATION CLIENT"
+      host: "%"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    when: inventory_hostname == 'mariadb0'
+  - name: Start MariaDB on secondary nodes
+    service:
+      name: mariadb
+      state: started
+      enabled: true
+    when: inventory_hostname != 'mariadb0' and bootstrap_galera | bool
+  - name: Ensure MariaDB is started and enabled
+    service:
+      name: mariadb
+      state: started
+      enabled: true
+    when: not (bootstrap_galera | bool)
+  - name: Create application databases
+    community.mysql.mysql_db:
+      name: "{{ item.name }}"
+      state: present
+      login_unix_socket: /run/mysqld/mysqld.sock
+    loop: "{{ mariadb_databases }}"
+    when:
+    - inventory_hostname == 'mariadb0'
+    - mariadb_databases | length > 0
+  - name: Create application database users
+    community.mysql.mysql_user:
+      name: "{{ item.user }}"
+      password: "{{ item.password }}"
+      priv: "{{ item.name }}.*:{{ item.privs | default('ALL PRIVILEGES') }}"
+      host: "{{ item.host | default('%') }}"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    loop: "{{ mariadb_databases }}"
+    when:
+    - inventory_hostname == 'mariadb0'
+    - mariadb_databases | length > 0
+
+- name: Install and configure ProxySQL
+  hosts: proxysql0, proxysql1, proxysql2
+  gather_facts: true
+  vars:
+    galera_nodes: ["10.151.14.210", "10.151.14.211", "10.151.14.212"]
+    mariadb_databases: []
+    vip: "10.151.14.219/24"
+    keepalived_virtual_router_id: 152
+    keepalive:
+      proxysql0:
+        peers: |-
+          "10.151.14.217"
+          "10.151.14.218"
+        state: "MASTER"
+        priority: 150
+      proxysql1:
+        peers: |-
+          "10.151.14.216"
+          "10.151.14.218"
+        state: "BACKUP"
+        priority: 100
+      proxysql2:
+        peers: |-
+          "10.151.14.216"
+          "10.151.14.217"
+        state: "BACKUP"
+        priority: 100
+  roles:
+  - role: prep
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common"]
+    disable_multipath: false
+  tasks:
+  - set_fact:
+      proxysql_admin_password: "{{ lookup('ansible.builtin.file', 'proxysql_admin_password') }}"
+    when: proxysql_admin_password is undefined
+  - set_fact:
+      proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
+    when: proxysql_monitor_password is undefined
+  - set_fact:
+      keepalived_proxysql_pass: "{{ lookup('ansible.builtin.file', 'ProxySQL-Keepalived-Password') }}"
+    when: keepalived_proxysql_pass is undefined
+  - name: ensures /etc/keepalived dir exists
+    file:
+      path: /etc/keepalived
+      state: directory
+  - name: Copy KeepAlived configuration template
+    template:
+      src: templates/keepalived-proxysql.conf.j2
+      dest: /etc/keepalived/keepalived.conf
+    vars:
+      keepalived_pass: "{{ keepalived_proxysql_pass }}"
+    notify:
+    - Restart Keepalived
+  - name: Update apt and install keepalived
+    apt:
+      pkg:
+      - keepalived
+      - libipset13
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: Start and enable Keepalived
+    service:
+      name: keepalived
+      state: started
+      enabled: true
+  - name: Add ProxySQL apt key
+    ansible.builtin.apt_key:
+      url: https://repo.proxysql.com/ProxySQL/repo_pub_key
+      state: present
+  - name: Add ProxySQL repository
+    ansible.builtin.apt_repository:
+      repo: "deb https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_distribution_release }}/ ./"
+      state: present
+  - name: Install ProxySQL
+    apt:
+      pkg:
+      - proxysql2
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: Copy ProxySQL configuration template
+    template:
+      src: templates/proxysql.cnf.j2
+      dest: /etc/proxysql.cnf
+      owner: root
+      group: root
+      mode: '0600'
+    notify:
+    - Restart ProxySQL
+  - name: Start and enable ProxySQL
+    service:
+      name: proxysql
+      state: started
+      enabled: true
+  handlers:
+  - name: Restart Keepalived
+    service:
+      name: keepalived
+      state: restarted
+  - name: Restart ProxySQL
+    service:
+      name: proxysql
+      state: restarted
