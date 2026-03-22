@@ -18,22 +18,22 @@ all:
       ansible_host: 10.151.14.110
       ansible_user: root
     mariadb0:
-      ansible_host: 10.151.16.210
+      ansible_host: 10.151.14.210
       ansible_user: root
     mariadb1:
-      ansible_host: 10.151.16.211
+      ansible_host: 10.151.14.211
       ansible_user: root
     mariadb2:
-      ansible_host: 10.151.16.212
+      ansible_host: 10.151.14.212
       ansible_user: root
     proxysql0:
-      ansible_host: 10.151.16.216
+      ansible_host: 10.151.14.216
       ansible_user: root
     proxysql1:
-      ansible_host: 10.151.16.217
+      ansible_host: 10.151.14.217
       ansible_user: root
     proxysql2:
-      ansible_host: 10.151.16.218
+      ansible_host: 10.151.14.218
       ansible_user: root
   children:
     rpi:
