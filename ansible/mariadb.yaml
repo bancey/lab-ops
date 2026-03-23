@@ -26,16 +26,15 @@
   - name: Download MariaDB apt key
     ansible.builtin.get_url:
       url: https://mariadb.org/mariadb_release_signing_key.pgp
-      dest: /tmp/mariadb_signing_key.asc
+      dest: /usr/share/keyrings/mariadb.asc
       mode: '0644'
-  - name: Dearmor MariaDB apt key
-    ansible.builtin.shell: gpg --dearmor < /tmp/mariadb_signing_key.asc > /usr/share/keyrings/mariadb.gpg
-    args:
-      creates: /usr/share/keyrings/mariadb.gpg
-  - name: Add MariaDB repository
-    ansible.builtin.apt_repository:
-      repo: "deb [signed-by=/usr/share/keyrings/mariadb.gpg] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main"
-      state: present
+  - name: Add MariaDB repository sources file
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/mariadb.list
+      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/mariadb.asc] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main\n"
+      owner: root
+      group: root
+      mode: '0644'
   - name: Install MariaDB and Galera packages
     apt:
       pkg:
@@ -197,10 +196,13 @@
       url: https://repo.proxysql.com/ProxySQL/repo_pub_key
       dest: /usr/share/keyrings/proxysql.asc
       mode: '0644'
-  - name: Add ProxySQL repository
-    ansible.builtin.apt_repository:
-      repo: "deb [signed-by=/usr/share/keyrings/proxysql.asc] https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./"
-      state: present
+  - name: Add ProxySQL repository sources file
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/proxysql.list
+      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/proxysql.asc] https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./\n"
+      owner: root
+      group: root
+      mode: '0644'
   - name: Install ProxySQL
     apt:
       pkg:
