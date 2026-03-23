@@ -7,6 +7,7 @@
     mariadb_bind_address: "0.0.0.0"
     mariadb_datadir: "/var/lib/mysql"
     mariadb_databases: []
+    mariadb_version: "11.4"
     bootstrap_galera: false
   roles:
   - role: prep
@@ -28,7 +29,7 @@
       state: present
   - name: Add MariaDB repository
     ansible.builtin.apt_repository:
-      repo: "deb https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_distribution_release }} main"
+      repo: "deb https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main"
       state: present
   - name: Install MariaDB and Galera packages
     apt:
@@ -192,7 +193,7 @@
       state: present
   - name: Add ProxySQL repository
     ansible.builtin.apt_repository:
-      repo: "deb https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_distribution_release }}/ ./"
+      repo: "deb https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./"
       state: present
   - name: Install ProxySQL
     apt:
