@@ -26,11 +26,15 @@
   - name: Download MariaDB apt key
     ansible.builtin.get_url:
       url: https://mariadb.org/mariadb_release_signing_key.pgp
-      dest: /usr/share/keyrings/mariadb.pgp
+      dest: /tmp/mariadb_signing_key.asc
       mode: '0644'
+  - name: Dearmor MariaDB apt key
+    ansible.builtin.shell: gpg --dearmor < /tmp/mariadb_signing_key.asc > /usr/share/keyrings/mariadb.gpg
+    args:
+      creates: /usr/share/keyrings/mariadb.gpg
   - name: Add MariaDB repository
     ansible.builtin.apt_repository:
-      repo: "deb [signed-by=/usr/share/keyrings/mariadb.pgp] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main"
+      repo: "deb [signed-by=/usr/share/keyrings/mariadb.gpg] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main"
       state: present
   - name: Install MariaDB and Galera packages
     apt:
