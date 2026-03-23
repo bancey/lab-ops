@@ -11,7 +11,7 @@
     bootstrap_galera: false
   roles:
   - role: prep
-    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common", "python3-pip", "python3-setuptools"]
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pip", "python3-setuptools"]
     disable_multipath: false
   tasks:
   - set_fact:
@@ -23,15 +23,18 @@
   - set_fact:
       proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
     when: proxysql_monitor_password is undefined
-  - name: Download MariaDB apt key
-    ansible.builtin.get_url:
-      url: https://mariadb.org/mariadb_release_signing_key.pgp
-      dest: /usr/share/keyrings/mariadb.asc
+  - name: Download and dearmor MariaDB apt key
+    ansible.builtin.shell:
+      cmd: curl -fsSL https://mariadb.org/mariadb_release_signing_key.pgp | gpg --dearmor -o /usr/share/keyrings/mariadb.gpg
+      creates: /usr/share/keyrings/mariadb.gpg
+  - name: Set permissions on MariaDB apt key
+    ansible.builtin.file:
+      path: /usr/share/keyrings/mariadb.gpg
       mode: '0644'
   - name: Add MariaDB repository sources file
     ansible.builtin.copy:
       dest: /etc/apt/sources.list.d/mariadb.list
-      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/mariadb.asc] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main\n"
+      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/mariadb.gpg] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main\n"
       owner: root
       group: root
       mode: '0644'
@@ -154,7 +157,7 @@
         priority: 100
   roles:
   - role: prep
-    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "software-properties-common"]
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common"]
     disable_multipath: false
   tasks:
   - set_fact:
@@ -191,15 +194,18 @@
       name: keepalived
       state: started
       enabled: true
-  - name: Download ProxySQL apt key
-    ansible.builtin.get_url:
-      url: https://repo.proxysql.com/ProxySQL/repo_pub_key
-      dest: /usr/share/keyrings/proxysql.asc
+  - name: Download and dearmor ProxySQL apt key
+    ansible.builtin.shell:
+      cmd: curl -fsSL https://repo.proxysql.com/ProxySQL/repo_pub_key | gpg --dearmor -o /usr/share/keyrings/proxysql.gpg
+      creates: /usr/share/keyrings/proxysql.gpg
+  - name: Set permissions on ProxySQL apt key
+    ansible.builtin.file:
+      path: /usr/share/keyrings/proxysql.gpg
       mode: '0644'
   - name: Add ProxySQL repository sources file
     ansible.builtin.copy:
       dest: /etc/apt/sources.list.d/proxysql.list
-      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/proxysql.asc] https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./\n"
+      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/proxysql.gpg] https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./\n"
       owner: root
       group: root
       mode: '0644'
