@@ -23,13 +23,14 @@
   - set_fact:
       proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
     when: proxysql_monitor_password is undefined
-  - name: Add MariaDB apt key
-    ansible.builtin.apt_key:
+  - name: Download MariaDB apt key
+    ansible.builtin.get_url:
       url: https://mariadb.org/mariadb_release_signing_key.pgp
-      state: present
+      dest: /usr/share/keyrings/mariadb.pgp
+      mode: '0644'
   - name: Add MariaDB repository
     ansible.builtin.apt_repository:
-      repo: "deb https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main"
+      repo: "deb [signed-by=/usr/share/keyrings/mariadb.pgp] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main"
       state: present
   - name: Install MariaDB and Galera packages
     apt:
@@ -187,13 +188,14 @@
       name: keepalived
       state: started
       enabled: true
-  - name: Add ProxySQL apt key
-    ansible.builtin.apt_key:
+  - name: Download ProxySQL apt key
+    ansible.builtin.get_url:
       url: https://repo.proxysql.com/ProxySQL/repo_pub_key
-      state: present
+      dest: /usr/share/keyrings/proxysql.asc
+      mode: '0644'
   - name: Add ProxySQL repository
     ansible.builtin.apt_repository:
-      repo: "deb https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./"
+      repo: "deb [signed-by=/usr/share/keyrings/proxysql.asc] https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./"
       state: present
   - name: Install ProxySQL
     apt:
