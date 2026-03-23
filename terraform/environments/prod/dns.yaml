@@ -426,3 +426,111 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  mariadb0.heimelska.co.uk:
+    record: 10.151.14.210
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  mariadb1.heimelska.co.uk:
+    record: 10.151.14.211
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  mariadb2.heimelska.co.uk:
+    record: 10.151.14.212
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  proxysql0.heimelska.co.uk:
+    record: 10.151.14.216
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  proxysql1.heimelska.co.uk:
+    record: 10.151.14.217
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  proxysql2.heimelska.co.uk:
+    record: 10.151.14.218
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
