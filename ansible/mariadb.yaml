@@ -6,9 +6,14 @@
     galera_nodes: ["10.151.14.210", "10.151.14.211", "10.151.14.212"]
     mariadb_bind_address: "0.0.0.0"
     mariadb_datadir: "/var/lib/mysql"
-    mariadb_databases: []
+    mariadb_databases:
+    - name: "bunkerweb"
+      user: "bunkerweb"
+      password: "changeme"
+    - name: "home-assistant"
+      user: "homeassistant"
+      password: "changeme"
     mariadb_version: "11.4"
-    bootstrap_galera: false
   roles:
   - role: prep
     install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pip", "python3-setuptools"]
@@ -23,18 +28,30 @@
   - set_fact:
       proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
     when: proxysql_monitor_password is undefined
-  - name: Download and dearmor MariaDB apt key
+  - name: Check if MariaDB is already installed
     ansible.builtin.shell:
-      cmd: curl -fsSL https://mariadb.org/mariadb_release_signing_key.pgp | gpg --dearmor -o /usr/share/keyrings/mariadb.gpg
-      creates: /usr/share/keyrings/mariadb.gpg
-  - name: Set permissions on MariaDB apt key
-    ansible.builtin.file:
-      path: /usr/share/keyrings/mariadb.gpg
+      cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
+    register: mariadb_pkg_check
+    failed_when: false
+    changed_when: false
+    when: inventory_hostname == 'mariadb0'
+  - name: Determine if Galera needs bootstrapping
+    set_fact:
+      bootstrap_galera: "{{ 'install ok installed' not in (mariadb_pkg_check.stdout | default('')) }}"
+    when: inventory_hostname == 'mariadb0'
+  - name: Propagate bootstrap decision to all nodes
+    set_fact:
+      bootstrap_galera: "{{ hostvars['mariadb0']['bootstrap_galera'] }}"
+    when: inventory_hostname != 'mariadb0'
+  - name: Download MariaDB apt keyring
+    ansible.builtin.get_url:
+      url: https://supplychain.mariadb.com/mariadb-keyring-2025.gpg
+      dest: /usr/share/keyrings/mariadb-keyring-2025.gpg
       mode: '0644'
   - name: Add MariaDB repository sources file
     ansible.builtin.copy:
       dest: /etc/apt/sources.list.d/mariadb.list
-      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/mariadb.gpg] https://downloads.mariadb.com/MariaDB/mariadb-{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main\n"
+      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/mariadb-keyring-2025.gpg] https://dlm.mariadb.com/repo/mariadb-server/{{ mariadb_version }}/repo/ubuntu {{ ansible_facts['distribution_release'] }} main\n"
       owner: root
       group: root
       mode: '0644'
@@ -74,6 +91,17 @@
       password: "{{ mariadb_root_password }}"
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
+    when: inventory_hostname == 'mariadb0'
+  - name: Write root credentials file
+    ansible.builtin.copy:
+      dest: /root/.my.cnf
+      content: |
+        [client]
+        user=root
+        password={{ mariadb_root_password }}
+      owner: root
+      group: root
+      mode: '0600'
     when: inventory_hostname == 'mariadb0'
   - name: Create Galera SST user
     community.mysql.mysql_user:
@@ -133,7 +161,13 @@
   gather_facts: true
   vars:
     galera_nodes: ["10.151.14.210", "10.151.14.211", "10.151.14.212"]
-    mariadb_databases: []
+    mariadb_databases:
+    - name: "bunkerweb"
+      user: "bunkerweb"
+      password: "changeme"
+    - name: "home-assistant"
+      user: "homeassistant"
+      password: "changeme"
     vip: "10.151.14.219/24"
     keepalived_virtual_router_id: 152
     keepalive:
@@ -194,25 +228,22 @@
       name: keepalived
       state: started
       enabled: true
-  - name: Download and dearmor ProxySQL apt key
-    ansible.builtin.shell:
-      cmd: curl -fsSL https://repo.proxysql.com/ProxySQL/repo_pub_key | gpg --dearmor -o /usr/share/keyrings/proxysql.gpg
-      creates: /usr/share/keyrings/proxysql.gpg
-  - name: Set permissions on ProxySQL apt key
-    ansible.builtin.file:
-      path: /usr/share/keyrings/proxysql.gpg
+  - name: Download ProxySQL apt key
+    ansible.builtin.get_url:
+      url: https://repo.proxysql.com/ProxySQL/proxysql-3.0.x/repo_pub_key.gpg
+      dest: /etc/apt/trusted.gpg.d/proxysql-3.0.x-keyring.gpg
       mode: '0644'
   - name: Add ProxySQL repository sources file
     ansible.builtin.copy:
       dest: /etc/apt/sources.list.d/proxysql.list
-      content: "deb [arch=amd64 signed-by=/usr/share/keyrings/proxysql.gpg] https://repo.proxysql.com/ProxySQL/proxysql-2.7.x/{{ ansible_facts['distribution_release'] }}/ ./\n"
+      content: "deb https://repo.proxysql.com/ProxySQL/proxysql-3.0.x/{{ ansible_facts['distribution_release'] }}/ ./\n"
       owner: root
       group: root
       mode: '0644'
   - name: Install ProxySQL
     apt:
       pkg:
-      - proxysql2
+      - proxysql
       state: latest
       update_cache: true
     when: not ansible_check_mode
@@ -220,8 +251,8 @@
     template:
       src: templates/proxysql.cnf.j2
       dest: /etc/proxysql.cnf
-      owner: root
-      group: root
+      owner: proxysql
+      group: proxysql
       mode: '0600'
     notify:
     - Restart ProxySQL
