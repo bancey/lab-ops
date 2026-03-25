@@ -243,11 +243,12 @@ ansible = {
   "matter-server" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "matter-server.yaml"
-    trigger = "23-02-2026-0830"
+    trigger  = "23-02-2026-0830"
   }
   "mariadb" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "mariadb.yaml"
+    trigger  = "25-03-2026-0830"
     secrets = {
       "mariadb_root_password"     = "MariaDB-Root-Password"
       "mariadb_galera_password"   = "MariaDB-Galera-Password"
