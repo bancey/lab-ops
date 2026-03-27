@@ -248,7 +248,6 @@ ansible = {
   "mariadb" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "mariadb.yaml"
-    trigger  = "27-03-2026-2100"
     secrets = {
       "mariadb_root_password"     = "MariaDB-Root-Password"
       "mariadb_galera_password"   = "MariaDB-Galera-Password"
@@ -256,7 +255,7 @@ ansible = {
       "proxysql_monitor_password" = "ProxySQL-Monitor-Password"
       "keepalived_proxysql_pass"  = "ProxySQL-Keepalived-Password"
     }
-    trigger = "20-03-2026-1200"
+    trigger = "27-03-2026-2100"
   }
 }
 
