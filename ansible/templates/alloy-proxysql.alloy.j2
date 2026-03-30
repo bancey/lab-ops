@@ -1,0 +1,68 @@
+// Grafana Alloy configuration for ProxySQL node monitoring
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Prometheus remote write for Mimir
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+  }
+
+  external_labels = {
+    "hostname" = "{{ inventory_hostname }}",
+    "role"     = "proxysql",
+  }
+}
+
+// Loki remote write
+loki.write "loki" {
+  endpoint {
+    url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+  }
+}
+
+// Node exporter for host metrics
+prometheus.exporter.unix "host_metrics" {}
+
+prometheus.scrape "host_metrics" {
+  targets         = prometheus.exporter.unix.host_metrics.targets
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+  scrape_interval = "60s"
+  job_name        = "node-exporter-{{ inventory_hostname }}"
+}
+
+// ProxySQL metrics via the admin stats interface
+prometheus.exporter.mysql "proxysql" {
+  data_source_name = "{{ proxysql_stats_user }}:{{ proxysql_stats_password }}@tcp(127.0.0.1:6032)/"
+}
+
+prometheus.scrape "proxysql_metrics" {
+  targets         = prometheus.exporter.mysql.proxysql.targets
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+  scrape_interval = "60s"
+  job_name        = "proxysql-{{ inventory_hostname }}"
+}
+
+// ProxySQL and system logs
+loki.source.file "proxysql_logs" {
+  targets = [
+    {"__path__" = "/var/log/syslog", "job" = "syslog"},
+    {"__path__" = "/var/lib/proxysql/proxysql.log", "job" = "proxysql"},
+  ]
+
+  forward_to = [loki.process.proxysql_logs.receiver]
+}
+
+loki.process "proxysql_logs" {
+  forward_to = [loki.write.loki.receiver]
+
+  stage.static_labels {
+    values = {
+      hostname = "{{ inventory_hostname }}",
+      role     = "proxysql",
+    }
+  }
+}

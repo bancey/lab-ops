@@ -6,6 +6,7 @@
     galera_nodes: ["10.151.14.210", "10.151.14.211", "10.151.14.212"]
     mariadb_bind_address: "0.0.0.0"
     mariadb_datadir: "/var/lib/mysql"
+    enable_alloy: false
     mariadb_databases:
     - name: "bunkerweb"
       user: "bunkerweb"
@@ -28,6 +29,9 @@
   - set_fact:
       proxysql_monitor_password: "{{ lookup('ansible.builtin.file', 'proxysql_monitor_password') }}"
     when: proxysql_monitor_password is undefined
+  - set_fact:
+      alloy_mysql_password: "{{ lookup('ansible.builtin.file', 'alloy_mysql_password') }}"
+    when: alloy_mysql_password is undefined and enable_alloy | bool
   - name: Check if MariaDB is already installed
     ansible.builtin.shell:
       cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
@@ -156,6 +160,59 @@
     when:
     - inventory_hostname == 'mariadb0'
     - mariadb_databases | length > 0
+  - name: Create Alloy monitoring user
+    community.mysql.mysql_user:
+      name: alloy_monitor
+      password: "{{ alloy_mysql_password }}"
+      priv: "*.*:PROCESS,REPLICATION CLIENT,SLAVE MONITOR,SELECT"
+      host: "localhost"
+      login_unix_socket: /run/mysqld/mysqld.sock
+      state: present
+    when: inventory_hostname == 'mariadb0' and enable_alloy | bool
+  - name: Add Grafana Alloy apt key
+    ansible.builtin.get_url:
+      url: https://apt.grafana.com/gpg.key
+      dest: /etc/apt/keyrings/grafana.gpg
+      mode: '0644'
+    when: enable_alloy | bool
+  - name: Add Grafana apt repository
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/grafana.list
+      content: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main\n"
+      owner: root
+      group: root
+      mode: '0644'
+    when: enable_alloy | bool
+  - name: Install Grafana Alloy
+    apt:
+      pkg:
+      - alloy
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode and enable_alloy | bool
+  - name: Copy Alloy configuration for MariaDB monitoring
+    template:
+      src: templates/alloy-mariadb.alloy.j2
+      dest: /etc/alloy/config.alloy
+      owner: alloy
+      group: alloy
+      mode: '0644'
+    vars:
+      alloy_mysql_user: "alloy_monitor"
+    notify:
+    - Restart Alloy
+    when: enable_alloy | bool
+  - name: Start and enable Alloy
+    service:
+      name: alloy
+      state: started
+      enabled: true
+    when: enable_alloy | bool
+  handlers:
+  - name: Restart Alloy
+    service:
+      name: alloy
+      state: restarted
 
 - name: Install and configure ProxySQL
   hosts: proxysql0, proxysql1, proxysql2
@@ -169,6 +226,7 @@
     - name: "home-assistant"
       user: "homeassistant"
       password: "changeme"
+    enable_alloy: false
     vip: "10.151.14.219/24"
     keepalived_virtual_router_id: 152
     keepalive:
@@ -192,7 +250,7 @@
         priority: 100
   roles:
   - role: prep
-    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common"]
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pymysql"]
     disable_multipath: false
   tasks:
   - set_fact:
@@ -262,6 +320,101 @@
       name: proxysql
       state: started
       enabled: true
+  - name: Manage ProxySQL config via admin interface
+    module_defaults:
+      community.mysql.mysql_query:
+        login_host: 127.0.0.1
+        login_port: 6032
+        login_user: admin
+        login_password: "{{ proxysql_admin_password }}"
+    block:
+    - name: Clear ProxySQL mysql_users
+      community.mysql.mysql_query:
+        query: "DELETE FROM mysql_users"
+    - name: Add mysql_users to ProxySQL
+      community.mysql.mysql_query:
+        query: "INSERT INTO mysql_users (username, password, default_hostgroup, active) VALUES ('{{ item.user }}', '{{ item.password }}', 0, 1)"
+      loop: "{{ mariadb_databases }}"
+      no_log: true
+    - name: Load mysql_users to runtime
+      community.mysql.mysql_query:
+        query: "LOAD MYSQL USERS TO RUNTIME"
+    - name: Save mysql_users to disk
+      community.mysql.mysql_query:
+        query: "SAVE MYSQL USERS TO DISK"
+    - name: Clear ProxySQL mysql_servers
+      community.mysql.mysql_query:
+        query: "DELETE FROM mysql_servers"
+    - name: Add Galera nodes to ProxySQL writer hostgroup
+      community.mysql.mysql_query:
+        query: "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (0, '{{ item }}', 3306, 100)"
+      loop: "{{ galera_nodes }}"
+    - name: Add Galera nodes to ProxySQL reader hostgroup
+      community.mysql.mysql_query:
+        query: "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (1, '{{ item }}', 3306, 100)"
+      loop: "{{ galera_nodes }}"
+    - name: Load mysql_servers to runtime
+      community.mysql.mysql_query:
+        query: "LOAD MYSQL SERVERS TO RUNTIME"
+    - name: Save mysql_servers to disk
+      community.mysql.mysql_query:
+        query: "SAVE MYSQL SERVERS TO DISK"
+    - name: Clear ProxySQL mysql_query_rules
+      community.mysql.mysql_query:
+        query: "DELETE FROM mysql_query_rules"
+    - name: Add ProxySQL query rules
+      community.mysql.mysql_query:
+        query: "INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES ({{ item.rule_id }}, 1, '{{ item.match_digest }}', {{ item.destination_hostgroup }}, 1)"
+      loop:
+      - {rule_id: 1, match_digest: "^SELECT .* FOR UPDATE", destination_hostgroup: 0}
+      - {rule_id: 2, match_digest: "^SELECT", destination_hostgroup: 1}
+      - {rule_id: 3, match_digest: ".*", destination_hostgroup: 0}
+    - name: Load mysql_query_rules to runtime
+      community.mysql.mysql_query:
+        query: "LOAD MYSQL QUERY RULES TO RUNTIME"
+    - name: Save mysql_query_rules to disk
+      community.mysql.mysql_query:
+        query: "SAVE MYSQL QUERY RULES TO DISK"
+  - name: Add Grafana Alloy apt key
+    ansible.builtin.get_url:
+      url: https://apt.grafana.com/gpg.key
+      dest: /etc/apt/keyrings/grafana.gpg
+      mode: '0644'
+    when: enable_alloy | bool
+  - name: Add Grafana apt repository
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/grafana.list
+      content: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main\n"
+      owner: root
+      group: root
+      mode: '0644'
+    when: enable_alloy | bool
+  - name: Install Grafana Alloy
+    apt:
+      pkg:
+      - alloy
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode and enable_alloy | bool
+  - name: Copy Alloy configuration for ProxySQL monitoring
+    template:
+      src: templates/alloy-proxysql.alloy.j2
+      dest: /etc/alloy/config.alloy
+      owner: alloy
+      group: alloy
+      mode: '0644'
+    vars:
+      proxysql_stats_user: "radmin"
+      proxysql_stats_password: "{{ proxysql_admin_password }}"
+    notify:
+    - Restart Alloy
+    when: enable_alloy | bool
+  - name: Start and enable Alloy
+    service:
+      name: alloy
+      state: started
+      enabled: true
+    when: enable_alloy | bool
   handlers:
   - name: Restart Keepalived
     service:
@@ -270,4 +423,8 @@
   - name: Restart ProxySQL
     service:
       name: proxysql
+      state: restarted
+  - name: Restart Alloy
+    service:
+      name: alloy
       state: restarted

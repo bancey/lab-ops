@@ -1,0 +1,68 @@
+// Grafana Alloy configuration for MariaDB Galera node monitoring
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Prometheus remote write for Mimir
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+  }
+
+  external_labels = {
+    "hostname" = "{{ inventory_hostname }}",
+    "role"     = "mariadb",
+  }
+}
+
+// Loki remote write
+loki.write "loki" {
+  endpoint {
+    url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+  }
+}
+
+// Node exporter for host metrics
+prometheus.exporter.unix "host_metrics" {}
+
+prometheus.scrape "host_metrics" {
+  targets         = prometheus.exporter.unix.host_metrics.targets
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+  scrape_interval = "60s"
+  job_name        = "node-exporter-{{ inventory_hostname }}"
+}
+
+// MySQL exporter for MariaDB metrics
+prometheus.exporter.mysql "galera" {
+  data_source_name = "{{ alloy_mysql_user }}:{{ alloy_mysql_password }}@tcp(127.0.0.1:3306)/"
+}
+
+prometheus.scrape "mysql_metrics" {
+  targets         = prometheus.exporter.mysql.galera.targets
+  forward_to      = [prometheus.remote_write.mimir.receiver]
+  scrape_interval = "60s"
+  job_name        = "mysql-{{ inventory_hostname }}"
+}
+
+// MariaDB error log
+loki.source.file "mariadb_logs" {
+  targets = [
+    {"__path__" = "/var/log/syslog", "job" = "syslog"},
+    {"__path__" = "/var/log/mysql/error.log", "job" = "mariadb-error"},
+  ]
+
+  forward_to = [loki.process.mariadb_logs.receiver]
+}
+
+loki.process "mariadb_logs" {
+  forward_to = [loki.write.loki.receiver]
+
+  stage.static_labels {
+    values = {
+      hostname = "{{ inventory_hostname }}",
+      role     = "mariadb",
+    }
+  }
+}
