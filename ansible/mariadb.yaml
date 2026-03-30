@@ -66,17 +66,18 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  - name: ensures /etc/mysql/conf.d dir exists
-    file:
-      path: /etc/mysql/conf.d
-      state: directory
+  - name: Comment out default bind-address in 50-server.cnf
+    ansible.builtin.replace:
+      path: /etc/mysql/mariadb.conf.d/50-server.cnf
+      regexp: '^(bind-address\s*=.*)$'
+      replace: '# \1 # Managed by Ansible - overridden in 60-galera.cnf'
   - name: Copy Galera configuration template
     template:
       src: templates/galera.cnf.j2
       dest: /etc/mysql/mariadb.conf.d/60-galera.cnf
       owner: root
       group: root
-      mode: '0600'
+      mode: '0644'
   - name: Stop MariaDB service on all nodes before bootstrapping
     service:
       name: mariadb
