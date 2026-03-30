@@ -255,7 +255,7 @@ ansible = {
       "proxysql_monitor_password" = "ProxySQL-Monitor-Password"
       "keepalived_proxysql_pass"  = "ProxySQL-Keepalived-Password"
     }
-    trigger = "27-03-2026-2100"
+    trigger = "30-03-2026-1315"
   }
 }
 
