@@ -10,10 +10,16 @@
     mariadb_databases:
     - name: "bunkerweb"
       user: "bunkerweb"
-      password: "changeme"
+      password_var: "mariadb_bunkerweb_password"
     - name: "home-assistant"
       user: "homeassistant"
-      password: "changeme"
+      password_var: "mariadb_homeassistant_password"
+    backup_nfs_server: "storage.heimelska.co.uk"
+    backup_nfs_path: "/var/nfs/shared/Tiny_K8S/mariadb-backups"
+    backup_mount_point: "/mnt/mariadb-backups"
+    backup_retention_days: 14
+    backup_cron_hour: "2"
+    backup_cron_minute: "0"
     mariadb_version: "11.4"
   roles:
   - role: prep
@@ -32,6 +38,11 @@
   - set_fact:
       alloy_mysql_password: "{{ lookup('ansible.builtin.file', 'alloy_mysql_password') }}"
     when: alloy_mysql_password is undefined and enable_alloy | bool
+  - name: Load database passwords from secret files
+    set_fact:
+      mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': lookup('ansible.builtin.file', item.password_var)})] }}"
+    loop: "{{ mariadb_databases }}"
+    no_log: true
   - name: Check if MariaDB is already installed
     ansible.builtin.shell:
       cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
@@ -144,10 +155,10 @@
       name: "{{ item.name }}"
       state: present
       login_unix_socket: /run/mysqld/mysqld.sock
-    loop: "{{ mariadb_databases }}"
+    loop: "{{ mariadb_databases_resolved }}"
     when:
     - inventory_hostname == 'mariadb0'
-    - mariadb_databases | length > 0
+    - mariadb_databases_resolved | length > 0
   - name: Create application database users
     community.mysql.mysql_user:
       name: "{{ item.user }}"
@@ -156,10 +167,11 @@
       host: "{{ item.host | default('%') }}"
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
-    loop: "{{ mariadb_databases }}"
+    loop: "{{ mariadb_databases_resolved }}"
+    no_log: true
     when:
     - inventory_hostname == 'mariadb0'
-    - mariadb_databases | length > 0
+    - mariadb_databases_resolved | length > 0
   - name: Create Alloy monitoring user
     community.mysql.mysql_user:
       name: alloy_monitor
@@ -208,6 +220,46 @@
       state: started
       enabled: true
     when: enable_alloy | bool
+  - name: Mount NFS backup share
+    ansible.posix.mount:
+      path: "{{ backup_mount_point }}"
+      src: "{{ backup_nfs_server }}:{{ backup_nfs_path }}"
+      fstype: nfs
+      opts: "nfsvers=4.1,soft,timeo=50"
+      state: mounted
+    when: inventory_hostname == 'mariadb0'
+  - name: Create backup script
+    ansible.builtin.copy:
+      dest: /usr/local/bin/mariadb-backup.sh
+      mode: '0750'
+      owner: root
+      group: root
+      content: |
+        #!/bin/bash
+        set -euo pipefail
+        BACKUP_DIR="{{ backup_mount_point }}"
+        RETENTION_DAYS={{ backup_retention_days }}
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+        HOSTNAME=$(hostname)
+
+        for DB in {{ mariadb_databases_resolved | map(attribute='name') | join(' ') }}; do
+          DEST="${BACKUP_DIR}/${DB}"
+          mkdir -p "${DEST}"
+          mariadb-dump --single-transaction --routines --triggers \
+            --databases "${DB}" | gzip > "${DEST}/${DB}_${HOSTNAME}_${TIMESTAMP}.sql.gz"
+        done
+
+        # Prune old backups
+        find "${BACKUP_DIR}" -name '*.sql.gz' -mtime +${RETENTION_DAYS} -delete
+    when: inventory_hostname == 'mariadb0'
+  - name: Schedule nightly database backup via cron
+    ansible.builtin.cron:
+      name: "MariaDB nightly backup"
+      hour: "{{ backup_cron_hour }}"
+      minute: "{{ backup_cron_minute }}"
+      job: "/usr/local/bin/mariadb-backup.sh >> /var/log/mariadb-backup.log 2>&1"
+      user: root
+    when: inventory_hostname == 'mariadb0'
   handlers:
   - name: Restart Alloy
     service:
@@ -222,10 +274,10 @@
     mariadb_databases:
     - name: "bunkerweb"
       user: "bunkerweb"
-      password: "changeme"
+      password_var: "mariadb_bunkerweb_password"
     - name: "home-assistant"
       user: "homeassistant"
-      password: "changeme"
+      password_var: "mariadb_homeassistant_password"
     enable_alloy: false
     vip: "10.151.14.219/24"
     keepalived_virtual_router_id: 152
@@ -262,6 +314,11 @@
   - set_fact:
       keepalived_proxysql_pass: "{{ lookup('ansible.builtin.file', 'ProxySQL-Keepalived-Password') }}"
     when: keepalived_proxysql_pass is undefined
+  - name: Load database passwords from secret files
+    set_fact:
+      mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': lookup('ansible.builtin.file', item.password_var)})] }}"
+    loop: "{{ mariadb_databases }}"
+    no_log: true
   - name: ensures /etc/keepalived dir exists
     file:
       path: /etc/keepalived
@@ -334,7 +391,7 @@
     - name: Add mysql_users to ProxySQL
       community.mysql.mysql_query:
         query: "INSERT INTO mysql_users (username, password, default_hostgroup, active) VALUES ('{{ item.user }}', '{{ item.password }}', 0, 1)"
-      loop: "{{ mariadb_databases }}"
+      loop: "{{ mariadb_databases_resolved }}"
       no_log: true
     - name: Load mysql_users to runtime
       community.mysql.mysql_query:
