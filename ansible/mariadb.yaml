@@ -40,7 +40,7 @@
     when: alloy_mysql_password is undefined and enable_alloy | bool
   - name: Load database passwords from secret files
     set_fact:
-      mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': lookup('ansible.builtin.file', item.password_var)})] }}"
+      mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
     loop: "{{ mariadb_databases }}"
     no_log: true
   - name: Check if MariaDB is already installed
@@ -316,7 +316,7 @@
     when: keepalived_proxysql_pass is undefined
   - name: Load database passwords from secret files
     set_fact:
-      mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': lookup('ansible.builtin.file', item.password_var)})] }}"
+      mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
     loop: "{{ mariadb_databases }}"
     no_log: true
   - name: ensures /etc/keepalived dir exists
