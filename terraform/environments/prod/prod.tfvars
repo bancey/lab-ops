@@ -249,11 +249,13 @@ ansible = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "mariadb.yaml"
     secrets = {
-      "mariadb_root_password"     = "MariaDB-Root-Password"
-      "mariadb_galera_password"   = "MariaDB-Galera-Password"
-      "proxysql_admin_password"   = "ProxySQL-Admin-Password"
-      "proxysql_monitor_password" = "ProxySQL-Monitor-Password"
-      "keepalived_proxysql_pass"  = "ProxySQL-Keepalived-Password"
+      "mariadb_root_password"          = "MariaDB-Root-Password"
+      "mariadb_galera_password"        = "MariaDB-Galera-Password"
+      "proxysql_admin_password"        = "ProxySQL-Admin-Password"
+      "proxysql_monitor_password"      = "ProxySQL-Monitor-Password"
+      "keepalived_proxysql_pass"       = "ProxySQL-Keepalived-Password"
+      "mariadb_bunkerweb_password"     = "MariaDB-Bunkerweb-Password"
+      "mariadb_homeassistant_password" = "MariaDB-HomeAssistant-Password"
     }
     trigger = "30-03-2026-1315"
   }
