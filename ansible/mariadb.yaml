@@ -10,10 +10,10 @@
     mariadb_databases:
     - name: "bunkerweb"
       user: "bunkerweb"
-      password_var: "mariadb_bunkerweb_password"
+      password: "{{ mariadb_bunkerweb_password }}"
     - name: "home-assistant"
       user: "homeassistant"
-      password_var: "mariadb_homeassistant_password"
+      password: "{{ mariadb_homeassistant_password }}"
     backup_nfs_server: "storage.heimelska.co.uk"
     backup_nfs_path: "/var/nfs/shared/Tiny_K8S/mariadb-backups"
     backup_mount_point: "/mnt/mariadb-backups"
@@ -274,10 +274,10 @@
     mariadb_databases:
     - name: "bunkerweb"
       user: "bunkerweb"
-      password_var: "mariadb_bunkerweb_password"
+      password: "{{ mariadb_bunkerweb_password }}"
     - name: "home-assistant"
       user: "homeassistant"
-      password_var: "mariadb_homeassistant_password"
+      password: "{{ mariadb_homeassistant_password }}"
     enable_alloy: false
     vip: "10.151.14.219/24"
     keepalived_virtual_router_id: 152
