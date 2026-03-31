@@ -256,8 +256,10 @@ ansible = {
       "keepalived_proxysql_pass"       = "ProxySQL-Keepalived-Password"
       "mariadb_bunkerweb_password"     = "MariaDB-Bunkerweb-Password"
       "mariadb_homeassistant_password" = "MariaDB-HomeAssistant-Password"
+      "backup_sas_token"               = "MariaDB-Backup-SAS-Token"
     }
-    trigger = "30-03-2026-1315"
+    arguments = " -e backup_storage_account_name=banceyprodstor"
+    trigger   = "30-03-2026-1315"
   }
 }
 

@@ -14,9 +14,9 @@
     - name: "home-assistant"
       user: "homeassistant"
       password: "{{ mariadb_homeassistant_password }}"
-    backup_nfs_server: "storage.heimelska.co.uk"
-    backup_nfs_path: "/var/nfs/shared/Tiny_K8S/mariadb-backups"
-    backup_mount_point: "/mnt/mariadb-backups"
+    backup_local_dir: "/var/backups/mariadb"
+    backup_storage_account: "{{ backup_storage_account_name }}"
+    backup_container: "mariadb-backups"
     backup_retention_days: 14
     backup_cron_hour: "2"
     backup_cron_minute: "0"
@@ -38,6 +38,9 @@
   - set_fact:
       alloy_mysql_password: "{{ lookup('ansible.builtin.file', 'alloy_mysql_password') }}"
     when: alloy_mysql_password is undefined and enable_alloy | bool
+  - set_fact:
+      backup_sas_token: "{{ lookup('ansible.builtin.file', 'backup_sas_token') }}"
+    when: backup_sas_token is undefined
   - name: Load database passwords from secret files
     set_fact:
       mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
@@ -76,7 +79,6 @@
       - mariadb-server
       - galera-4
       - mariadb-backup
-      - rsync
       - python3-pymysql
       state: latest
       update_cache: true
@@ -220,13 +222,29 @@
       state: started
       enabled: true
     when: enable_alloy | bool
-  - name: Mount NFS backup share
-    ansible.posix.mount:
-      path: "{{ backup_mount_point }}"
-      src: "{{ backup_nfs_server }}:{{ backup_nfs_path }}"
-      fstype: nfs
-      opts: "nfsvers=4.1,soft,timeo=50"
-      state: mounted
+  - name: Install azcopy
+    block:
+    - name: Download azcopy
+      ansible.builtin.get_url:
+        url: https://aka.ms/downloadazcopy-v10-linux
+        dest: /tmp/azcopy.tar.gz
+        mode: '0644'
+    - name: Extract azcopy
+      ansible.builtin.shell:
+        cmd: tar -xzf /tmp/azcopy.tar.gz --strip-components=1 -C /usr/local/bin/ --wildcards '*/azcopy'
+        creates: /usr/local/bin/azcopy
+    - name: Set azcopy permissions
+      ansible.builtin.file:
+        path: /usr/local/bin/azcopy
+        mode: '0755'
+    when: inventory_hostname == 'mariadb0'
+  - name: Ensure local backup directory exists
+    ansible.builtin.file:
+      path: "{{ backup_local_dir }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0750'
     when: inventory_hostname == 'mariadb0'
   - name: Create backup script
     ansible.builtin.copy:
@@ -237,20 +255,26 @@
       content: |
         #!/bin/bash
         set -euo pipefail
-        BACKUP_DIR="{{ backup_mount_point }}"
+        LOCAL_DIR="{{ backup_local_dir }}"
+        STORAGE_ACCOUNT="{{ backup_storage_account }}"
+        CONTAINER="{{ backup_container }}"
+        SAS_TOKEN="{{ backup_sas_token }}"
         RETENTION_DAYS={{ backup_retention_days }}
         TIMESTAMP=$(date +%Y%m%d_%H%M%S)
         HOSTNAME=$(hostname)
 
         for DB in {{ mariadb_databases_resolved | map(attribute='name') | join(' ') }}; do
-          DEST="${BACKUP_DIR}/${DB}"
+          DEST="${LOCAL_DIR}/${DB}"
           mkdir -p "${DEST}"
           mariadb-dump --single-transaction --routines --triggers \
             --databases "${DB}" | gzip > "${DEST}/${DB}_${HOSTNAME}_${TIMESTAMP}.sql.gz"
         done
 
-        # Prune old backups
-        find "${BACKUP_DIR}" -name '*.sql.gz' -mtime +${RETENTION_DAYS} -delete
+        # Upload to Azure Blob Storage using SAS token
+        azcopy sync "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --delete-destination=true
+
+        # Prune old local backups
+        find "${LOCAL_DIR}" -name '*.sql.gz' -mtime +${RETENTION_DAYS} -delete
     when: inventory_hostname == 'mariadb0'
   - name: Schedule nightly database backup via cron
     ansible.builtin.cron:
