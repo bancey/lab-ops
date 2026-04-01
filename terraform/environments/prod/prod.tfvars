@@ -256,6 +256,7 @@ ansible = {
       "keepalived_proxysql_pass"       = "ProxySQL-Keepalived-Password"
       "mariadb_bunkerweb_password"     = "MariaDB-Bunkerweb-Password"
       "mariadb_homeassistant_password" = "MariaDB-HomeAssistant-Password"
+      "mariadb_pelican_password"       = "MariaDB-Pelican-Password"
       "backup_sas_token"               = "MariaDB-Backup-SAS-Token"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"

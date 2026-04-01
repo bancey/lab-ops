@@ -14,6 +14,9 @@
     - name: "home-assistant"
       user: "homeassistant"
       password: "{{ mariadb_homeassistant_password }}"
+    - name: "pelican"
+      user: "pelican"
+      password: "{{ mariadb_pelican_password }}"
     backup_local_dir: "/var/backups/mariadb"
     backup_storage_account: "{{ backup_storage_account_name }}"
     backup_container: "mariadb-backups"
@@ -302,6 +305,9 @@
     - name: "home-assistant"
       user: "homeassistant"
       password: "{{ mariadb_homeassistant_password }}"
+    - name: "pelican"
+      user: "pelican"
+      password: "{{ mariadb_pelican_password }}"
     enable_alloy: false
     vip: "10.151.14.219/24"
     keepalived_virtual_router_id: 152
