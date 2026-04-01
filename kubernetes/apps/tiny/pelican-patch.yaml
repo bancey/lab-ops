@@ -11,12 +11,3 @@ spec:
           app:
             env:
               APP_URL: https://pelican.heimelska.co.uk
----
-apiVersion: k8s.mariadb.com/v1alpha1
-kind: MariaDB
-metadata:
-  name: pelican-mariadb
-  namespace: pelican
-spec:
-  storage:
-    storageClassName: longhorn
