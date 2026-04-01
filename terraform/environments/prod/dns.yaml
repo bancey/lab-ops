@@ -534,3 +534,6 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  sql.heimelska.co.uk:
+    record: 10.151.14.219
+
