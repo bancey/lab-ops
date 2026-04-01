@@ -26,6 +26,15 @@ all:
     matter-server:
       ansible_host: 10.151.14.110
       ansible_user: root
+    postgresql0:
+      ansible_host: 10.151.14.220
+      ansible_user: root
+    postgresql1:
+      ansible_host: 10.151.14.221
+      ansible_user: root
+    postgresql2:
+      ansible_host: 10.151.14.222
+      ansible_user: root
     proxysql0:
       ansible_host: 10.151.14.216
       ansible_user: root
