@@ -229,6 +229,45 @@ containers = {
     startup_delay       = 10
     storage             = "local-lvm"
   }
+  postgresql0 = {
+    node                = "hela"
+    ct_id               = 280
+    ct_description      = "PostgreSQL Streaming Replication Node 0 - Hela (Primary)"
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.14.220"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 5
+    storage             = "local-lvm"
+  }
+  postgresql1 = {
+    node                = "loki"
+    ct_id               = 281
+    ct_description      = "PostgreSQL Streaming Replication Node 1 - Loki (Standby)"
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.14.221"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 5
+    storage             = "local-lvm"
+  }
+  postgresql2 = {
+    node                = "thor"
+    ct_id               = 282
+    ct_description      = "PostgreSQL Streaming Replication Node 2 - Thor (Standby)"
+    cpu_cores           = 2
+    memory              = 2048
+    ip_address          = "10.151.14.222"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 1
+    startup_delay       = 5
+    storage             = "local-lvm"
+  }
 }
 
 ansible = {
@@ -261,6 +300,18 @@ ansible = {
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
     trigger   = "30-03-2026-1315"
+  }
+  "postgresql" = {
+    nodes    = ["hela", "loki", "thor"]
+    playbook = "postgresql.yaml"
+    secrets = {
+      "postgresql_superuser_password"   = "PostgreSQL-Superuser-Password"
+      "postgresql_replication_password" = "PostgreSQL-Replication-Password"
+      "keepalived_postgresql_pass"      = "PostgreSQL-Keepalived-Password"
+      "backup_sas_token"                = "PostgreSQL-Backup-SAS-Token"
+    }
+    arguments = " -e backup_storage_account_name=banceyprodstor"
+    trigger   = "01-04-2026-0000"
   }
 }
 

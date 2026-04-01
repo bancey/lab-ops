@@ -1,0 +1,429 @@
+- name: Install and configure PostgreSQL with streaming replication
+  hosts: postgresql0, postgresql1, postgresql2
+  gather_facts: true
+  vars:
+    postgresql_version: "17"
+    postgresql_data_dir: "/var/lib/postgresql/17/main"
+    postgresql_conf_dir: "/etc/postgresql/17/main"
+    postgresql_nodes: ["10.151.14.220", "10.151.14.221", "10.151.14.222"]
+    postgresql_primary_host: "10.151.14.220"
+    postgresql_primary_hostname: "postgresql0"
+    postgresql_databases: []
+    backup_local_dir: "/var/backups/postgresql"
+    backup_storage_account: "{{ backup_storage_account_name }}"
+    backup_container: "postgresql-backups"
+    backup_retention_days: 14
+    backup_cron_hour: "3"
+    backup_cron_minute: "0"
+    enable_alloy: false
+    enable_pgbouncer: true
+    vip: "10.151.14.225/24"
+    keepalived_virtual_router_id: 153
+    keepalive:
+      postgresql0:
+        peers: |-
+          "10.151.14.221"
+          "10.151.14.222"
+        state: "MASTER"
+        priority: 150
+      postgresql1:
+        peers: |-
+          "10.151.14.220"
+          "10.151.14.222"
+        state: "BACKUP"
+        priority: 100
+      postgresql2:
+        peers: |-
+          "10.151.14.220"
+          "10.151.14.221"
+        state: "BACKUP"
+        priority: 100
+  roles:
+  - role: prep
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pip", "python3-setuptools", "acl"]
+    disable_multipath: false
+  tasks:
+  - set_fact:
+      postgresql_superuser_password: "{{ lookup('ansible.builtin.file', 'postgresql_superuser_password') }}"
+    when: postgresql_superuser_password is undefined
+  - set_fact:
+      postgresql_replication_password: "{{ lookup('ansible.builtin.file', 'postgresql_replication_password') }}"
+    when: postgresql_replication_password is undefined
+  - set_fact:
+      keepalived_postgresql_pass: "{{ lookup('ansible.builtin.file', 'keepalived_postgresql_pass') }}"
+    when: keepalived_postgresql_pass is undefined
+  - set_fact:
+      backup_sas_token: "{{ lookup('ansible.builtin.file', 'backup_sas_token') }}"
+    when: backup_sas_token is undefined
+  - name: Load database passwords from secret files
+    set_fact:
+      postgresql_databases_resolved: "{{ postgresql_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
+    loop: "{{ postgresql_databases }}"
+    no_log: true
+
+  # Install PostgreSQL
+  - name: Install psycopg2 for Ansible PostgreSQL modules
+    apt:
+      pkg:
+      - python3-psycopg2
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: Add PostgreSQL apt key
+    ansible.builtin.get_url:
+      url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+      dest: /usr/share/keyrings/postgresql-keyring.gpg
+      mode: '0644'
+  - name: Add PostgreSQL repository
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/pgdg.list
+      content: "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] https://apt.postgresql.org/pub/repos/apt {{ ansible_facts['distribution_release'] }}-pgdg main\n"
+      owner: root
+      group: root
+      mode: '0644'
+  - name: Install PostgreSQL packages
+    apt:
+      pkg:
+      - "postgresql-{{ postgresql_version }}"
+      - "postgresql-client-{{ postgresql_version }}"
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+
+  # Check if replication needs bootstrapping
+  - name: Check if PostgreSQL is already running with data
+    ansible.builtin.stat:
+      path: "{{ postgresql_data_dir }}/PG_VERSION"
+    register: pg_data_exists
+  - name: Check if this is a standby node with replication configured
+    ansible.builtin.stat:
+      path: "{{ postgresql_data_dir }}/standby.signal"
+    register: standby_signal_exists
+
+  # Configure primary node
+  - name: Copy PostgreSQL configuration
+    template:
+      src: templates/postgresql.conf.j2
+      dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+      owner: postgres
+      group: postgres
+      mode: '0644'
+    notify:
+    - Restart PostgreSQL
+  - name: Copy pg_hba.conf
+    template:
+      src: templates/pg_hba.conf.j2
+      dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+      owner: postgres
+      group: postgres
+      mode: '0640'
+    notify:
+    - Reload PostgreSQL
+  - name: Ensure PostgreSQL is started on primary
+    service:
+      name: postgresql
+      state: started
+      enabled: true
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Set PostgreSQL superuser password
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_user:
+      name: postgres
+      password: "{{ postgresql_superuser_password }}"
+      state: present
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Create replication user
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_user:
+      name: replicator
+      password: "{{ postgresql_replication_password }}"
+      role_attr_flags: REPLICATION,LOGIN
+      state: present
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Create PgBouncer auth user
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_user:
+      name: pgbouncer
+      password: "{{ postgresql_superuser_password }}"
+      state: present
+    when: inventory_hostname == postgresql_primary_hostname and enable_pgbouncer | bool
+  - name: Grant pg_shadow read access to pgbouncer user
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_query:
+      query: "GRANT pg_read_all_settings TO pgbouncer"
+    when: inventory_hostname == postgresql_primary_hostname and enable_pgbouncer | bool
+  - name: Create pgbouncer auth function
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_query:
+      db: postgres
+      query: |
+        CREATE OR REPLACE FUNCTION public.lookup_pgbouncer_auth(p_usename TEXT)
+        RETURNS TABLE(usename name, passwd text) AS $$
+        BEGIN
+          RETURN QUERY
+          SELECT u.usename, u.passwd::text FROM pg_catalog.pg_shadow u WHERE u.usename = p_usename;
+        END;
+        $$ LANGUAGE plpgsql SECURITY DEFINER;
+        GRANT EXECUTE ON FUNCTION public.lookup_pgbouncer_auth(TEXT) TO pgbouncer;
+    when: inventory_hostname == postgresql_primary_hostname and enable_pgbouncer | bool
+
+  # Bootstrap standby nodes
+  - name: Stop PostgreSQL on standby nodes for bootstrap
+    service:
+      name: postgresql
+      state: stopped
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - not standby_signal_exists.stat.exists
+  - name: Remove existing data directory on standby for bootstrap
+    ansible.builtin.file:
+      path: "{{ postgresql_data_dir }}"
+      state: absent
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - not standby_signal_exists.stat.exists
+  - name: Run pg_basebackup on standby nodes
+    become: true
+    become_user: postgres
+    ansible.builtin.command:
+      cmd: >
+        pg_basebackup -h {{ postgresql_primary_host }} -U replicator -D {{ postgresql_data_dir }}
+        -Fp -Xs -P -R
+    environment:
+      PGPASSWORD: "{{ postgresql_replication_password }}"
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - not standby_signal_exists.stat.exists
+  - name: Ensure standby.signal exists on standby nodes
+    ansible.builtin.file:
+      path: "{{ postgresql_data_dir }}/standby.signal"
+      state: touch
+      owner: postgres
+      group: postgres
+      mode: '0600'
+    when: inventory_hostname != postgresql_primary_hostname
+  - name: Re-apply PostgreSQL configuration on standbys after basebackup
+    template:
+      src: templates/postgresql.conf.j2
+      dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+      owner: postgres
+      group: postgres
+      mode: '0644'
+    when: inventory_hostname != postgresql_primary_hostname
+  - name: Re-apply pg_hba.conf on standbys after basebackup
+    template:
+      src: templates/pg_hba.conf.j2
+      dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+      owner: postgres
+      group: postgres
+      mode: '0640'
+    when: inventory_hostname != postgresql_primary_hostname
+  - name: Start PostgreSQL on standby nodes
+    service:
+      name: postgresql
+      state: started
+      enabled: true
+    when: inventory_hostname != postgresql_primary_hostname
+
+  # Create application databases and users (primary only)
+  - name: Create application databases
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_db:
+      name: "{{ item.name }}"
+      state: present
+    loop: "{{ postgresql_databases_resolved }}"
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - postgresql_databases_resolved | length > 0
+  - name: Create application database users
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_user:
+      name: "{{ item.user }}"
+      password: "{{ item.password }}"
+      state: present
+    loop: "{{ postgresql_databases_resolved }}"
+    no_log: true
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - postgresql_databases_resolved | length > 0
+  - name: Grant privileges on application databases
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_privs:
+      database: "{{ item.name }}"
+      type: database
+      roles: "{{ item.user }}"
+      privs: ALL
+      state: present
+    loop: "{{ postgresql_databases_resolved }}"
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - postgresql_databases_resolved | length > 0
+
+  # Keepalived for VIP
+  - name: Ensure /etc/keepalived dir exists
+    file:
+      path: /etc/keepalived
+      state: directory
+  - name: Copy Keepalived configuration template
+    template:
+      src: templates/keepalived-postgresql.conf.j2
+      dest: /etc/keepalived/keepalived.conf
+    vars:
+      keepalived_pass: "{{ keepalived_postgresql_pass }}"
+    notify:
+    - Restart Keepalived
+  - name: Install keepalived
+    apt:
+      pkg:
+      - keepalived
+      - libipset13
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: Start and enable Keepalived
+    service:
+      name: keepalived
+      state: started
+      enabled: true
+
+  # PgBouncer
+  - name: Install PgBouncer
+    apt:
+      pkg:
+      - pgbouncer
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode and enable_pgbouncer | bool
+  - name: Copy PgBouncer configuration
+    template:
+      src: templates/pgbouncer.ini.j2
+      dest: /etc/pgbouncer/pgbouncer.ini
+      owner: postgres
+      group: postgres
+      mode: '0640'
+    notify:
+    - Restart PgBouncer
+    when: enable_pgbouncer | bool
+  - name: Start and enable PgBouncer
+    service:
+      name: pgbouncer
+      state: started
+      enabled: true
+    when: enable_pgbouncer | bool
+
+  # Alloy monitoring (optional)
+  - name: Add Grafana Alloy apt key
+    ansible.builtin.get_url:
+      url: https://apt.grafana.com/gpg.key
+      dest: /etc/apt/keyrings/grafana.gpg
+      mode: '0644'
+    when: enable_alloy | bool
+  - name: Add Grafana apt repository
+    ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/grafana.list
+      content: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main\n"
+      owner: root
+      group: root
+      mode: '0644'
+    when: enable_alloy | bool
+  - name: Install Grafana Alloy
+    apt:
+      pkg:
+      - alloy
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode and enable_alloy | bool
+  - name: Start and enable Alloy
+    service:
+      name: alloy
+      state: started
+      enabled: true
+    when: enable_alloy | bool
+
+  # Backups (primary only)
+  - name: Install azcopy
+    block:
+    - name: Download azcopy
+      ansible.builtin.get_url:
+        url: https://aka.ms/downloadazcopy-v10-linux
+        dest: /tmp/azcopy.tar.gz
+        mode: '0644'
+    - name: Extract azcopy
+      ansible.builtin.shell:
+        cmd: tar -xzf /tmp/azcopy.tar.gz --strip-components=1 -C /usr/local/bin/ --wildcards '*/azcopy'
+        creates: /usr/local/bin/azcopy
+    - name: Set azcopy permissions
+      ansible.builtin.file:
+        path: /usr/local/bin/azcopy
+        mode: '0755'
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Ensure local backup directory exists
+    ansible.builtin.file:
+      path: "{{ backup_local_dir }}"
+      state: directory
+      owner: root
+      group: root
+      mode: '0750'
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Create backup script
+    ansible.builtin.copy:
+      dest: /usr/local/bin/postgresql-backup.sh
+      mode: '0750'
+      owner: root
+      group: root
+      content: |
+        #!/bin/bash
+        set -euo pipefail
+        LOCAL_DIR="{{ backup_local_dir }}"
+        STORAGE_ACCOUNT="{{ backup_storage_account }}"
+        CONTAINER="{{ backup_container }}"
+        SAS_TOKEN="{{ backup_sas_token }}"
+        RETENTION_DAYS={{ backup_retention_days }}
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+        HOSTNAME=$(hostname)
+
+        for DB in {{ postgresql_databases_resolved | map(attribute='name') | join(' ') }}; do
+          DEST="${LOCAL_DIR}/${DB}"
+          mkdir -p "${DEST}"
+          sudo -u postgres pg_dump --format=custom "${DB}" | gzip > "${DEST}/${DB}_${HOSTNAME}_${TIMESTAMP}.dump.gz"
+        done
+
+        # Upload to Azure Blob Storage using SAS token
+        azcopy sync "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --delete-destination=true
+
+        # Prune old local backups
+        find "${LOCAL_DIR}" -name '*.dump.gz' -mtime +${RETENTION_DAYS} -delete
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Schedule nightly database backup via cron
+    ansible.builtin.cron:
+      name: "PostgreSQL nightly backup"
+      hour: "{{ backup_cron_hour }}"
+      minute: "{{ backup_cron_minute }}"
+      job: "/usr/local/bin/postgresql-backup.sh >> /var/log/postgresql-backup.log 2>&1"
+      user: root
+    when: inventory_hostname == postgresql_primary_hostname
+  handlers:
+  - name: Restart PostgreSQL
+    service:
+      name: postgresql
+      state: restarted
+  - name: Reload PostgreSQL
+    service:
+      name: postgresql
+      state: reloaded
+  - name: Restart Keepalived
+    service:
+      name: keepalived
+      state: restarted
+  - name: Restart PgBouncer
+    service:
+      name: pgbouncer
+      state: restarted

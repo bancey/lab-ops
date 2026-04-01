@@ -1,0 +1,32 @@
+vrrp_script check_postgresql {
+  script "/usr/bin/pg_isready -q"
+  interval 5
+  weight -20
+  fall 2
+  rise 2
+}
+
+vrrp_instance POSTGRESQL {
+  state {{ keepalive[inventory_hostname].state }}
+  interface eth0
+  virtual_router_id {{ keepalived_virtual_router_id | default(153) }}
+  priority {{ keepalive[inventory_hostname].priority }}
+  advert_int 1
+  unicast_src_ip {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+  unicast_peer {
+    {{ keepalive[inventory_hostname].peers }}
+  }
+
+  authentication {
+    auth_type PASS
+    auth_pass {{ keepalived_pass }}
+  }
+
+  virtual_ipaddress {
+    {{ vip }}
+  }
+
+  track_script {
+    check_postgresql
+  }
+}

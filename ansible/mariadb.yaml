@@ -14,7 +14,7 @@
     - name: "home-assistant"
       user: "homeassistant"
       password: "{{ mariadb_homeassistant_password }}"
-    - name: "pelican"
+    - name: "panel"
       user: "pelican"
       password: "{{ mariadb_pelican_password }}"
     backup_local_dir: "/var/backups/mariadb"
@@ -305,7 +305,7 @@
     - name: "home-assistant"
       user: "homeassistant"
       password: "{{ mariadb_homeassistant_password }}"
-    - name: "pelican"
+    - name: "panel"
       user: "pelican"
       password: "{{ mariadb_pelican_password }}"
     enable_alloy: false

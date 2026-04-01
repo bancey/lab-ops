@@ -1,0 +1,49 @@
+# PostgreSQL configuration - Managed by Ansible
+# {{ ansible_managed }}
+
+# Connection settings
+listen_addresses = '{{ postgresql_listen_addresses | default("*") }}'
+port = 5432
+max_connections = {{ postgresql_max_connections | default(200) }}
+
+# Memory settings
+shared_buffers = '{{ postgresql_shared_buffers | default("512MB") }}'
+work_mem = '{{ postgresql_work_mem | default("4MB") }}'
+maintenance_work_mem = '{{ postgresql_maintenance_work_mem | default("128MB") }}'
+effective_cache_size = '{{ postgresql_effective_cache_size | default("1GB") }}'
+
+# WAL and replication settings
+wal_level = replica
+max_wal_senders = 10
+wal_keep_size = '{{ postgresql_wal_keep_size | default("1GB") }}'
+hot_standby = on
+synchronous_commit = on
+
+{% if inventory_hostname != postgresql_primary_hostname %}
+# Standby configuration
+primary_conninfo = 'host={{ postgresql_primary_host }} port=5432 user=replicator password={{ postgresql_replication_password }}'
+{% endif %}
+
+# Logging
+log_destination = 'stderr'
+logging_collector = on
+log_directory = 'log'
+log_filename = 'postgresql-%Y-%m-%d.log'
+log_rotation_age = 1d
+log_rotation_size = 100MB
+log_min_duration_statement = 1000
+log_line_prefix = '%m [%p] %q%u@%d '
+
+# Authentication
+password_encryption = scram-sha-256
+
+# Data directory
+data_directory = '{{ postgresql_data_dir }}'
+hba_file = '{{ postgresql_conf_dir }}/pg_hba.conf'
+ident_file = '{{ postgresql_conf_dir }}/pg_ident.conf'
+
+# Locale
+lc_messages = 'en_US.UTF-8'
+lc_monetary = 'en_US.UTF-8'
+lc_numeric = 'en_US.UTF-8'
+lc_time = 'en_US.UTF-8'

@@ -1,0 +1,35 @@
+; PgBouncer configuration - Managed by Ansible
+; {{ ansible_managed }}
+
+[databases]
+{% for db in postgresql_databases_resolved %}
+{{ db.name }} = host=127.0.0.1 port=5432 dbname={{ db.name }}
+{% endfor %}
+* = host=127.0.0.1 port=5432
+
+[pgbouncer]
+listen_addr = 0.0.0.0
+listen_port = 6432
+auth_type = scram-sha-256
+auth_user = pgbouncer
+auth_query = SELECT usename, passwd FROM pg_shadow WHERE usename=$1
+
+pool_mode = transaction
+max_client_conn = {{ pgbouncer_max_client_conn | default(200) }}
+default_pool_size = {{ pgbouncer_default_pool_size | default(25) }}
+min_pool_size = {{ pgbouncer_min_pool_size | default(5) }}
+reserve_pool_size = {{ pgbouncer_reserve_pool_size | default(5) }}
+
+server_reset_query = DISCARD ALL
+server_check_query = SELECT 1
+server_check_delay = 30
+
+log_connections = 1
+log_disconnections = 1
+log_pooler_errors = 1
+
+admin_users = pgbouncer_admin
+stats_users = pgbouncer_admin
+
+pidfile = /var/run/pgbouncer/pgbouncer.pid
+logfile = /var/log/pgbouncer/pgbouncer.log

@@ -536,4 +536,59 @@ dns:
           - AzureDevOps
   sql.heimelska.co.uk:
     record: 10.151.14.219
-
+  postgresql0.heimelska.co.uk:
+    record: 10.151.14.220
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  postgresql1.heimelska.co.uk:
+    record: 10.151.14.221
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  postgresql2.heimelska.co.uk:
+    record: 10.151.14.222
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - tiny_k8s
+          - all
+        service_accounts:
+          - AzureDevOps
+  pgsql.heimelska.co.uk:
+    record: 10.151.14.225
