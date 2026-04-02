@@ -12,4 +12,3 @@ resources:
   - longhorn-ingress.yaml
   - longhorn-certificates.yaml
   - longhorn-jobs.yaml
-  - mariadb-operator.yaml
