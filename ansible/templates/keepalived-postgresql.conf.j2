@@ -12,7 +12,7 @@ vrrp_instance POSTGRESQL {
   virtual_router_id {{ keepalived_virtual_router_id | default(153) }}
   priority {{ keepalive[inventory_hostname].priority }}
   advert_int 1
-  unicast_src_ip {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+  unicast_src_ip {{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}
   unicast_peer {
     {{ keepalive[inventory_hostname].peers }}
   }

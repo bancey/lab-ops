@@ -43,7 +43,7 @@ hba_file = '{{ postgresql_conf_dir }}/pg_hba.conf'
 ident_file = '{{ postgresql_conf_dir }}/pg_ident.conf'
 
 # Locale
-lc_messages = 'en_US.UTF-8'
-lc_monetary = 'en_US.UTF-8'
-lc_numeric = 'en_US.UTF-8'
-lc_time = 'en_US.UTF-8'
+lc_messages = '{{ postgresql_locale | default("C.UTF-8") }}'
+lc_monetary = '{{ postgresql_locale | default("C.UTF-8") }}'
+lc_numeric = '{{ postgresql_locale | default("C.UTF-8") }}'
+lc_time = '{{ postgresql_locale | default("C.UTF-8") }}'

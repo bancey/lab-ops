@@ -309,9 +309,10 @@ ansible = {
       "postgresql_replication_password" = "PostgreSQL-Replication-Password"
       "keepalived_postgresql_pass"      = "PostgreSQL-Keepalived-Password"
       "backup_sas_token"                = "PostgreSQL-Backup-SAS-Token"
+      "radarr_postgresql_password"      = "PostgreSQL-Radarr-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "01-04-2026-0000"
+    trigger   = "02-04-2026-0830"
   }
 }
 

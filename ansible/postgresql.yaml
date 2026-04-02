@@ -8,7 +8,10 @@
     postgresql_nodes: ["10.151.14.220", "10.151.14.221", "10.151.14.222"]
     postgresql_primary_host: "10.151.14.220"
     postgresql_primary_hostname: "postgresql0"
-    postgresql_databases: []
+    postgresql_databases:
+    - name: radarr
+      user: radarr
+      password_var: radarr_postgresql_password
     backup_local_dir: "/var/backups/postgresql"
     backup_storage_account: "{{ backup_storage_account_name }}"
     backup_container: "postgresql-backups"
@@ -55,11 +58,15 @@
   - set_fact:
       backup_sas_token: "{{ lookup('ansible.builtin.file', 'backup_sas_token') }}"
     when: backup_sas_token is undefined
-  - name: Load database passwords from secret files
+  - name: Load database passwords from variables
     set_fact:
-      postgresql_databases_resolved: "{{ postgresql_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
+      postgresql_databases_resolved: "{{ postgresql_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.vars', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
     loop: "{{ postgresql_databases }}"
     no_log: true
+  - name: Default postgresql_databases_resolved if no databases defined
+    set_fact:
+      postgresql_databases_resolved: []
+    when: postgresql_databases | length == 0
 
   # Install PostgreSQL
   - name: Install psycopg2 for Ansible PostgreSQL modules
@@ -69,11 +76,15 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  - name: Add PostgreSQL apt key
+  - name: Download PostgreSQL apt key
     ansible.builtin.get_url:
       url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
-      dest: /usr/share/keyrings/postgresql-keyring.gpg
+      dest: /tmp/postgresql-keyring.asc
       mode: '0644'
+  - name: Dearmor PostgreSQL apt key
+    ansible.builtin.shell:
+      cmd: gpg --dearmor < /tmp/postgresql-keyring.asc > /usr/share/keyrings/postgresql-keyring.gpg
+      creates: /usr/share/keyrings/postgresql-keyring.gpg
   - name: Add PostgreSQL repository
     ansible.builtin.copy:
       dest: /etc/apt/sources.list.d/pgdg.list
@@ -81,6 +92,11 @@
       owner: root
       group: root
       mode: '0644'
+  - name: Ensure locale is available
+    ansible.builtin.command:
+      cmd: locale-gen C.UTF-8
+    changed_when: false
+    failed_when: false
   - name: Install PostgreSQL packages
     apt:
       pkg:
@@ -119,11 +135,34 @@
       mode: '0640'
     notify:
     - Reload PostgreSQL
+  - name: Flush handlers to apply config changes before proceeding
+    meta: flush_handlers
   - name: Ensure PostgreSQL is started on primary
     service:
       name: postgresql
       state: started
       enabled: true
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Verify PostgreSQL is accepting TCP connections on primary
+    ansible.builtin.wait_for:
+      host: "{{ postgresql_primary_host }}"
+      port: 5432
+      timeout: 5
+    register: pg_tcp_check
+    ignore_errors: true
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Restart PostgreSQL if not accepting TCP connections
+    service:
+      name: postgresql
+      state: restarted
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - pg_tcp_check is failed
+  - name: Wait for PostgreSQL to be ready on primary
+    ansible.builtin.wait_for:
+      host: "{{ postgresql_primary_host }}"
+      port: 5432
+      timeout: 30
     when: inventory_hostname == postgresql_primary_hostname
   - name: Set PostgreSQL superuser password
     become: true
@@ -302,6 +341,28 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode and enable_pgbouncer | bool
+  - name: Ensure PgBouncer directories exist
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: postgres
+      group: postgres
+      mode: '0750'
+    loop:
+    - /etc/pgbouncer
+    - /var/log/pgbouncer
+    - /var/run/pgbouncer
+    when: enable_pgbouncer | bool
+  - name: Create PgBouncer userlist.txt
+    ansible.builtin.copy:
+      dest: /etc/pgbouncer/userlist.txt
+      content: '"pgbouncer" "{{ postgresql_superuser_password }}"'
+      owner: postgres
+      group: postgres
+      mode: '0640'
+    notify:
+    - Restart PgBouncer
+    when: enable_pgbouncer | bool
   - name: Copy PgBouncer configuration
     template:
       src: templates/pgbouncer.ini.j2

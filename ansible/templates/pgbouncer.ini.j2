@@ -11,8 +11,9 @@
 listen_addr = 0.0.0.0
 listen_port = 6432
 auth_type = scram-sha-256
+auth_file = /etc/pgbouncer/userlist.txt
 auth_user = pgbouncer
-auth_query = SELECT usename, passwd FROM pg_shadow WHERE usename=$1
+auth_query = SELECT usename, passwd FROM public.lookup_pgbouncer_auth($1)
 
 pool_mode = transaction
 max_client_conn = {{ pgbouncer_max_client_conn | default(200) }}
