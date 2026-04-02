@@ -16,7 +16,6 @@ resources:
   - ./grafana.yaml
   - ./cilium.yaml
   - ./cloudnative-pg.yaml
-  - ./mariadb-operator.yaml
   - ./twingate.yaml
   - ./monica.yaml
   - ./unpoller.yaml
