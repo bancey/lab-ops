@@ -312,7 +312,7 @@ ansible = {
       "radarr_postgresql_password"      = "PostgreSQL-Radarr-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "02-04-2026-0830"
+    trigger   = "02-04-2026-2210"
   }
 }
 

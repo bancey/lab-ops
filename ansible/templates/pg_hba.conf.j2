@@ -15,8 +15,8 @@ host    all             all             127.0.0.1/32            scram-sha-256
 host    replication     replicator      {{ node_ip }}/32        scram-sha-256
 {% endfor %}
 
-# Application connections from any host (authenticated)
-host    all             all             10.151.14.0/24          scram-sha-256
+# Application connections from trusted subnets (authenticated)
+host    all             all             10.151.0.0/16          scram-sha-256
 
 # PgBouncer connections from localhost
 host    all             all             127.0.0.1/32            scram-sha-256
