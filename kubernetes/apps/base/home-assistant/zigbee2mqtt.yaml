@@ -95,5 +95,6 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         size: 2Gi
+        storageClass: unas-nfs-csi
         globalMounts:
           - path: /data

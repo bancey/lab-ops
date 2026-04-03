@@ -75,6 +75,7 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         size: 1Gi
+        storageClass: unas-nfs-csi
         globalMounts:
           - path: /mosquitto/data
       # Configure log storage
@@ -82,5 +83,6 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteOnce
         size: 1Gi
+        storageClass: unas-nfs-csi
         globalMounts:
           - path: /mosquitto/log
