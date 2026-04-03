@@ -83,8 +83,9 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteMany
         size: 1Gi
+        storageClass: unas-nfs-csi
         advancedMounts:
           scheduler:
-            ui:
+            scheduler:
               - path: /data
-                readOnly: true
+                readOnly: false
