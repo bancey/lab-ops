@@ -12,6 +12,9 @@
     - name: radarr
       user: radarr
       password_var: radarr_postgresql_password
+    - name: monica
+      user: monica
+      password_var: monica_postgresql_password
     backup_local_dir: "/var/backups/postgresql"
     backup_storage_account: "{{ backup_storage_account_name }}"
     backup_container: "postgresql-backups"
