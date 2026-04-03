@@ -67,12 +67,14 @@ spec:
         type: persistentVolumeClaim
         accessMode: ReadWriteMany
         size: 1Gi
+        storageClass: unas-nfs-csi
         globalMounts:
           - path: /pelican-data
       logs:
         type: persistentVolumeClaim
         accessMode: ReadWriteMany
         size: 1Gi
+        storageClass: unas-nfs-csi
         globalMounts:
           - path: /var/www/html/storage/logs
       caddyfile:
