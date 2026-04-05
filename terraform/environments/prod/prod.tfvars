@@ -310,6 +310,7 @@ ansible = {
       "keepalived_postgresql_pass"      = "PostgreSQL-Keepalived-Password"
       "backup_sas_token"                = "PostgreSQL-Backup-SAS-Token"
       "radarr_postgresql_password"      = "PostgreSQL-Radarr-Password"
+      "sonarr_postgresql_password"      = "PostgreSQL-Sonarr-Password"
       "monica_postgresql_password"      = "PostgreSQL-Monica-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"

@@ -12,6 +12,9 @@
     - name: radarr
       user: radarr
       password_var: radarr_postgresql_password
+    - name: sonarr
+      user: sonarr
+      password_var: sonarr_postgresql_password
     - name: monica
       user: monica
       password_var: monica_postgresql_password
