@@ -9,4 +9,4 @@ spec:
     monica:
       host: "crm.heimelska.co.uk"
     persistence:
-      storageClass: longhorn
+      storageClass: unas-nfs-csi

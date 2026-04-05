@@ -46,7 +46,7 @@ spec:
     externalDatabase:
       enabled: true
       type: postgresql
-      host: monica-pg-rw
+      host: pgsql.heimelska.co.uk
       user: monica
       database: monica
       existingSecret:
