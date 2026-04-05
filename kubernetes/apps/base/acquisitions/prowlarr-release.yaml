@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: linuxserver/prowlarr:2.3.0
+    image: linuxserver/prowlarr:2.3.5
     config:
       port: 9696
     # PVC names should be configured in cluster overlays
