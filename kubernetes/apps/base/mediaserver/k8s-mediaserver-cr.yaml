@@ -63,7 +63,7 @@ spec:
     volume:
       {}
       #name: pvc-sonarr-config
-      #storageClassName: longhorn
+      #storageClassName: unas-nfs-csi
       #annotations:
       #  my-annotation/test: my-value
       #labels:
@@ -96,7 +96,7 @@ spec:
     volume:
       {}
       #name: pvc-radarr-config
-      #storageClassName: longhorn
+      #storageClassName: unas-nfs-csi
       #annotations: {}
       #labels: {}
       #accessModes: ReadWriteOnce
@@ -126,7 +126,7 @@ spec:
     resources: {}
     volume: {}
     #  name: pvc-jackett-config
-    #  storageClassName: longhorn
+    #  storageClassName: unas-nfs-csi
     #  annotations: {}
     #  labels: {}
     #  accessModes: ReadWriteOnce
@@ -174,7 +174,7 @@ spec:
     resources: {}
     volume: {}
     #  name: pvc-transmission-config
-    #  storageClassName: longhorn
+    #  storageClassName: unas-nfs-csi
     #  annotations: {}
     #  labels: {}
     #  accessModes: ReadWriteOnce
@@ -214,7 +214,7 @@ spec:
     resources: {}
     volume: {}
     #  name: pvc-plex-config
-    #  storageClassName: longhorn
+    #  storageClassName: unas-nfs-csi
     #  annotations: {}
     #  labels: {}
     #  accessModes: ReadWriteOnce
@@ -244,7 +244,7 @@ spec:
     resources: {}
     volume: {}
     #  name: pvc-prowlarr-config
-    #  storageClassName: longhorn
+    #  storageClassName: unas-nfs-csi
     #  annotations: {}
     #  labels: {}
     #  accessModes: ReadWriteOnce
@@ -281,7 +281,7 @@ spec:
     #    memory: 100Mi
     volume: {}
     #  name: pvc-plex-config
-    #  storageClassName: longhorn
+    #  storageClassName: unas-nfs-csi
     #  annotations: {}
     #  labels: {}
     #  accessModes: ReadWriteOnce
@@ -317,7 +317,7 @@ spec:
     #    memory: 100Mi
     volume: {}
     #  name: pvc-plex-config
-    #  storageClassName: longhorn
+    #  storageClassName: unas-nfs-csi
     #  annotations: {}
     #  labels: {}
     #  accessModes: ReadWriteOnce

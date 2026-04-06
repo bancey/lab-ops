@@ -18,5 +18,5 @@ spec:
             - grafana.tiny.heimelska.co.uk
     persistence:
       enabled: true
-      storageClassName: longhorn
+      storageClassName: unas-nfs-csi
       existingClaim: grafana-storage

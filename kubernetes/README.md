@@ -160,7 +160,7 @@ persistence:
 spec:
   values:
     persistence:
-      storageClassName: longhorn  # or nfs-csi, local-path, etc.
+      storageClassName: unas-nfs-csi  # or nfs-csi, local-path, etc.
 ```
 
 ### Ingress Configuration
