@@ -10,7 +10,6 @@ resources:
   - ./kube-plex.yaml
   - ./podinfo.yaml
   - ./traefik.yaml
-  - ./longhorn.yaml
   - ./plex.yaml
   - ./sebastiangaiser.yaml
   - ./grafana.yaml

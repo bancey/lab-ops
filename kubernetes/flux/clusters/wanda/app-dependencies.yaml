@@ -25,15 +25,6 @@ spec:
       target:
         kind: HelmRelease
         name: traefik
-    - patch: |
-        $patch: delete
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: longhorn-system
-      target:
-        kind: Namespace
-        name: longhorn-system
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
