@@ -40,3 +40,4 @@ mountOptions:
   - nointr
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
+allowVolumeExpansion: true
