@@ -9,8 +9,6 @@ resources:
   - traefik-namespace.yaml
   - traefik.yaml
   - longhorn-namespace.yaml
-  - longhorn.yaml
-  - longhorn-azblob-secret.sops.yaml
   - cloudnative-pg-namespace.yaml
   - cloudnative-pg.yaml
   - dragonfly-namespace.yaml
