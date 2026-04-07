@@ -33,7 +33,7 @@
         peers: |-
           "10.151.14.221"
           "10.151.14.222"
-        state: "MASTER"
+        state: "BACKUP"
         priority: 150
       postgresql1:
         peers: |-
@@ -317,6 +317,20 @@
     file:
       path: /etc/keepalived
       state: directory
+  - name: Copy PostgreSQL Keepalived health check script
+    template:
+      src: templates/check-postgresql.sh.j2
+      dest: /usr/local/bin/check-postgresql.sh
+      owner: root
+      group: root
+      mode: '0755'
+  - name: Copy PostgreSQL Keepalived notify script
+    template:
+      src: templates/postgresql-keepalived-notify.sh.j2
+      dest: /usr/local/bin/keepalived-postgresql-notify.sh
+      owner: root
+      group: root
+      mode: '0755'
   - name: Copy Keepalived configuration template
     template:
       src: templates/keepalived-postgresql.conf.j2
@@ -460,14 +474,14 @@
         for DB in {{ postgresql_databases_resolved | map(attribute='name') | join(' ') }}; do
           DEST="${LOCAL_DIR}/${DB}"
           mkdir -p "${DEST}"
-          sudo -u postgres pg_dump --format=custom "${DB}" | gzip > "${DEST}/${DB}_${HOSTNAME}_${TIMESTAMP}.dump.gz"
+          sudo -u postgres pg_dump --format=custom "${DB}" > "${DEST}/${DB}_${HOSTNAME}_${TIMESTAMP}.dump"
         done
 
         # Upload to Azure Blob Storage using SAS token
-        azcopy sync "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --delete-destination=true
+        azcopy copy "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --recursive
 
         # Prune old local backups
-        find "${LOCAL_DIR}" -name '*.dump.gz' -mtime +${RETENTION_DAYS} -delete
+        find "${LOCAL_DIR}" -name '*.dump' -mtime +${RETENTION_DAYS} -delete
     when: inventory_hostname == postgresql_primary_hostname
   - name: Schedule nightly database backup via cron
     ansible.builtin.cron:

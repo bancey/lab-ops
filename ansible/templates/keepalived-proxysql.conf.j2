@@ -1,5 +1,5 @@
 vrrp_script check_proxysql {
-  script "/usr/bin/pgrep proxysql > /dev/null 2>&1"
+  script "/usr/local/bin/check-proxysql.sh"
   interval 5
   weight -20
   fall 2

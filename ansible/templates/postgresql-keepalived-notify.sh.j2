@@ -1,0 +1,99 @@
+#!/bin/bash
+# Keepalived notify script for PostgreSQL automatic failover
+# Managed by Ansible - {{ ansible_managed }}
+set -euo pipefail
+
+TYPE=$1
+NAME=$2
+STATE=$3
+
+LOGFILE="/var/log/keepalived-postgresql-notify.log"
+PG_DATA="{{ postgresql_data_dir }}"
+PG_CONF="{{ postgresql_conf_dir }}"
+PG_BIN="/usr/lib/postgresql/{{ postgresql_version }}/bin"
+PRIMARY_CONNINFO='host={{ postgresql_primary_host }} port=5432 user=replicator password={{ postgresql_replication_password }}'
+VIP="{{ vip | regex_replace('/.*', '') }}"
+
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') [$STATE] $*" >> "$LOGFILE"
+}
+
+log "Transition: type=$TYPE name=$NAME state=$STATE"
+
+case $STATE in
+  "MASTER")
+    # Check if this node is currently a standby
+    if [ -f "${PG_DATA}/standby.signal" ]; then
+      log "This node is a standby - promoting to primary"
+      su - postgres -c "${PG_BIN}/pg_ctl promote -D ${PG_DATA}" >> "$LOGFILE" 2>&1
+      # Wait for promotion to complete
+      for i in $(seq 1 30); do
+        if su - postgres -c "${PG_BIN}/pg_isready -q" 2>/dev/null; then
+          IS_RECOVERY=$(su - postgres -c "psql -tAc \"SELECT pg_is_in_recovery()\"" 2>/dev/null || echo "unknown")
+          if [ "$IS_RECOVERY" = "f" ]; then
+            log "Promotion successful - node is now primary"
+            break
+          fi
+        fi
+        sleep 1
+      done
+    else
+      log "This node is already a primary - no promotion needed"
+    fi
+    ;;
+  "BACKUP")
+    log "Transitioned to BACKUP state"
+    # Check if PostgreSQL is running as a primary (not a standby)
+    IS_RECOVERY=$(su - postgres -c "psql -tAc \"SELECT pg_is_in_recovery()\"" 2>/dev/null || echo "unknown")
+    if [ "$IS_RECOVERY" = "f" ]; then
+      log "This node is running as a primary but is now BACKUP - converting to standby"
+
+      # Find the current actual primary via the VIP
+      CURRENT_PRIMARY="$VIP"
+      log "Current primary is at $CURRENT_PRIMARY"
+
+      # Stop PostgreSQL
+      log "Stopping PostgreSQL for pg_rewind"
+      systemctl stop postgresql >> "$LOGFILE" 2>&1
+
+      # Attempt pg_rewind to re-sync with the new primary
+      log "Running pg_rewind against $CURRENT_PRIMARY"
+      if su - postgres -c "${PG_BIN}/pg_rewind --target-pgdata=${PG_DATA} --source-server='host=${CURRENT_PRIMARY} port=5432 user=replicator password={{ postgresql_replication_password }} dbname=postgres'" >> "$LOGFILE" 2>&1; then
+        log "pg_rewind succeeded"
+      else
+        log "pg_rewind failed - falling back to pg_basebackup"
+        rm -rf "${PG_DATA}"
+        su - postgres -c "PGPASSWORD='{{ postgresql_replication_password }}' ${PG_BIN}/pg_basebackup -h ${CURRENT_PRIMARY} -U replicator -D ${PG_DATA} -Fp -Xs -P -R" >> "$LOGFILE" 2>&1
+        log "pg_basebackup completed"
+      fi
+
+      # Ensure standby.signal exists
+      touch "${PG_DATA}/standby.signal"
+      chown postgres:postgres "${PG_DATA}/standby.signal"
+
+      # Re-apply config files (pg_rewind may have overwritten them)
+      # The postgresql.conf on disk references the conf_dir, so just ensure pg_hba.conf is correct
+      log "Re-applying configuration from ${PG_CONF}"
+
+      # Write primary_conninfo pointing to VIP so we follow whoever is primary
+      su - postgres -c "cat > ${PG_DATA}/postgresql.auto.conf << 'AUTOEOF'
+primary_conninfo = 'host=${CURRENT_PRIMARY} port=5432 user=replicator password={{ postgresql_replication_password }}'
+AUTOEOF"
+
+      # Start PostgreSQL as standby
+      log "Starting PostgreSQL as standby"
+      systemctl start postgresql >> "$LOGFILE" 2>&1
+      log "Conversion to standby complete"
+    else
+      log "Already running as standby (or PostgreSQL is stopped) - no action needed"
+    fi
+    ;;
+  "FAULT")
+    log "Entered FAULT state - PostgreSQL health check is failing"
+    ;;
+  *)
+    log "Unknown state: $STATE"
+    ;;
+esac
+
+exit 0

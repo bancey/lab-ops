@@ -1,0 +1,21 @@
+#!/bin/bash
+# Keepalived health check for ProxySQL
+# Verifies ProxySQL is running and can serve queries, not just that the process exists.
+# Managed by Ansible
+
+# Check process is running
+if ! /usr/bin/pgrep proxysql > /dev/null 2>&1; then
+  exit 1
+fi
+
+# Check ProxySQL admin interface is responsive
+if ! /usr/bin/mysql -h 127.0.0.1 -P 6032 -uradmin -p'{{ proxysql_admin_password }}' -e "SELECT 1" > /dev/null 2>&1; then
+  exit 1
+fi
+
+# Check ProxySQL is listening on client port 3306
+if ! /usr/bin/bash -c 'echo > /dev/tcp/127.0.0.1/3306' 2>/dev/null; then
+  exit 1
+fi
+
+exit 0

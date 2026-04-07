@@ -17,12 +17,14 @@ wal_level = replica
 max_wal_senders = 10
 wal_keep_size = '{{ postgresql_wal_keep_size | default("1GB") }}'
 hot_standby = on
+wal_log_hints = on
 synchronous_commit = on
+# TODO: For zero data loss, enable synchronous replication by setting:
+# synchronous_standby_names = 'ANY 1 (postgresql1, postgresql2)'
+# Trade-off: writes will block if both standbys are unreachable.
 
-{% if inventory_hostname != postgresql_primary_hostname %}
-# Standby configuration
-primary_conninfo = 'host={{ postgresql_primary_host }} port=5432 user=replicator password={{ postgresql_replication_password }}'
-{% endif %}
+# Standby / replication configuration (uses VIP so standbys always follow the current primary)
+primary_conninfo = 'host={{ vip | regex_replace("/.*", "") }} port=5432 user=replicator password={{ postgresql_replication_password }}'
 
 # Logging
 log_destination = 'stderr'

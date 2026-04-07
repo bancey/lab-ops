@@ -1,5 +1,5 @@
 vrrp_script check_postgresql {
-  script "/usr/bin/pg_isready -q"
+  script "/usr/local/bin/check-postgresql.sh"
   interval 5
   weight -20
   fall 2
@@ -12,6 +12,7 @@ vrrp_instance POSTGRESQL {
   virtual_router_id {{ keepalived_virtual_router_id | default(153) }}
   priority {{ keepalive[inventory_hostname].priority }}
   advert_int 1
+  nopreempt
   unicast_src_ip {{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}
   unicast_peer {
     {{ keepalive[inventory_hostname].peers }}
@@ -29,4 +30,6 @@ vrrp_instance POSTGRESQL {
   track_script {
     check_postgresql
   }
+
+  notify /usr/local/bin/keepalived-postgresql-notify.sh
 }

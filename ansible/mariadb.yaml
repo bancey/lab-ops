@@ -96,8 +96,10 @@
       src: templates/galera.cnf.j2
       dest: /etc/mysql/mariadb.conf.d/60-galera.cnf
       owner: root
-      group: root
-      mode: '0644'
+      group: mysql
+      mode: '0640'
+    notify:
+    - Restart MariaDB
   - name: Stop MariaDB service on all nodes before bootstrapping
     service:
       name: mariadb
@@ -123,7 +125,6 @@
       owner: root
       group: root
       mode: '0600'
-    when: inventory_hostname == 'mariadb0'
   - name: Create Galera SST user
     community.mysql.mysql_user:
       name: galera_sst
@@ -274,7 +275,7 @@
         done
 
         # Upload to Azure Blob Storage using SAS token
-        azcopy sync "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --delete-destination=true
+        azcopy copy "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --recursive
 
         # Prune old local backups
         find "${LOCAL_DIR}" -name '*.sql.gz' -mtime +${RETENTION_DAYS} -delete
@@ -288,6 +289,10 @@
       user: root
     when: inventory_hostname == 'mariadb0'
   handlers:
+  - name: Restart MariaDB
+    service:
+      name: mariadb
+      state: restarted
   - name: Restart Alloy
     service:
       name: alloy
@@ -353,6 +358,13 @@
     file:
       path: /etc/keepalived
       state: directory
+  - name: Copy ProxySQL Keepalived health check script
+    template:
+      src: templates/check-proxysql.sh.j2
+      dest: /usr/local/bin/check-proxysql.sh
+      owner: root
+      group: root
+      mode: '0755'
   - name: Copy KeepAlived configuration template
     template:
       src: templates/keepalived-proxysql.conf.j2
@@ -444,6 +456,23 @@
       community.mysql.mysql_query:
         query: "LOAD MYSQL SERVERS TO RUNTIME"
     - name: Save mysql_servers to disk
+      community.mysql.mysql_query:
+        query: "SAVE MYSQL SERVERS TO DISK"
+    - name: Clear ProxySQL mysql_galera_hostgroups
+      community.mysql.mysql_query:
+        query: "DELETE FROM mysql_galera_hostgroups"
+    - name: Configure Galera hostgroups for single-writer mode
+      community.mysql.mysql_query:
+        query: >-
+          INSERT INTO mysql_galera_hostgroups
+          (writer_hostgroup, backup_writer_hostgroup, reader_hostgroup,
+          offline_hostgroup, active, max_writers, writer_is_also_reader,
+          max_transactions_behind)
+          VALUES (0, 2, 1, 3, 1, 1, 1, 100)
+    - name: Load mysql_servers to runtime after galera hostgroups
+      community.mysql.mysql_query:
+        query: "LOAD MYSQL SERVERS TO RUNTIME"
+    - name: Save mysql_servers to disk after galera hostgroups
       community.mysql.mysql_query:
         query: "SAVE MYSQL SERVERS TO DISK"
     - name: Clear ProxySQL mysql_query_rules

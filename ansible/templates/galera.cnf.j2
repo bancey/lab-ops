@@ -4,6 +4,10 @@ default_storage_engine  = InnoDB
 binlog_format           = ROW
 innodb_autoinc_lock_mode = 2
 
+# With 2GB RAM LXCs, set to ~1GB (50-70% of available RAM).
+# Default is 128MB which is too low for production workloads.
+innodb_buffer_pool_size = 1G
+
 # Galera Provider Configuration
 wsrep_on                = ON
 wsrep_provider          = /usr/lib/galera/libgalera_smm.so

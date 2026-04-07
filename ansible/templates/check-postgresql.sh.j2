@@ -1,0 +1,16 @@
+#!/bin/bash
+# Keepalived health check for PostgreSQL
+# Verifies PostgreSQL is accepting connections, not just that the process exists.
+# Managed by Ansible
+
+# Check pg_isready first (fast check)
+if ! /usr/bin/pg_isready -q 2>/dev/null; then
+  exit 1
+fi
+
+# Verify we can actually run a query
+if ! su - postgres -c "psql -tAc 'SELECT 1'" >/dev/null 2>&1; then
+  exit 1
+fi
+
+exit 0
