@@ -43,9 +43,9 @@ spec:
               scheme: https
               permanent: true
       websecure:
-        http: {}
-        tls:
-          enabled: true
+        http:
+          tls:
+            enabled: true
 
     ingressRoute:
       dashboard:
