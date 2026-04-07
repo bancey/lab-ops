@@ -82,4 +82,4 @@ spec:
           name: nobody-nfs-csi
       target:
         kind: StorageClass
-        name: nobody-nfs-csi        
+        name: nobody-nfs-csi
