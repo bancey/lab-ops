@@ -128,48 +128,46 @@
       path: "{{ postgresql_data_dir }}/standby.signal"
     register: standby_signal_exists
 
-  # Configure primary node
-  - name: Copy PostgreSQL configuration
+  # Configure primary node first
+  - name: Copy PostgreSQL configuration on primary
     template:
       src: templates/postgresql.conf.j2
       dest: "{{ postgresql_conf_dir }}/postgresql.conf"
       owner: postgres
       group: postgres
       mode: '0644'
-    notify:
-    - Restart PostgreSQL
-  - name: Copy pg_hba.conf
+    register: pg_conf_primary
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Copy pg_hba.conf on primary
     template:
       src: templates/pg_hba.conf.j2
       dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
       owner: postgres
       group: postgres
       mode: '0640'
-    notify:
-    - Reload PostgreSQL
-  - name: Flush handlers to apply config changes before proceeding
-    meta: flush_handlers
+    register: pg_hba_primary
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Restart PostgreSQL on primary if config changed
+    service:
+      name: postgresql
+      state: restarted
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - pg_conf_primary is changed
+  - name: Reload PostgreSQL on primary if only pg_hba changed
+    service:
+      name: postgresql
+      state: reloaded
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - pg_hba_primary is changed
+    - pg_conf_primary is not changed
   - name: Ensure PostgreSQL is started on primary
     service:
       name: postgresql
       state: started
       enabled: true
     when: inventory_hostname == postgresql_primary_hostname
-  - name: Verify PostgreSQL is accepting TCP connections on primary
-    ansible.builtin.wait_for:
-      host: "{{ postgresql_primary_host }}"
-      port: 5432
-      timeout: 5
-    register: pg_tcp_check
-    ignore_errors: true
-    when: inventory_hostname == postgresql_primary_hostname
-  - name: Restart PostgreSQL if not accepting TCP connections
-    service:
-      name: postgresql
-      state: restarted
-    when:
-    - inventory_hostname == postgresql_primary_hostname
-    - pg_tcp_check is failed
   - name: Wait for PostgreSQL to be ready on primary
     ansible.builtin.wait_for:
       host: "{{ postgresql_primary_host }}"
@@ -258,22 +256,53 @@
       group: postgres
       mode: '0600'
     when: inventory_hostname != postgresql_primary_hostname
-  - name: Re-apply PostgreSQL configuration on standbys after basebackup
+
+  # Configure standby nodes (after primary is confirmed up)
+  - name: Copy PostgreSQL configuration on standbys
     template:
       src: templates/postgresql.conf.j2
       dest: "{{ postgresql_conf_dir }}/postgresql.conf"
       owner: postgres
       group: postgres
       mode: '0644'
+    register: pg_conf_standby
     when: inventory_hostname != postgresql_primary_hostname
-  - name: Re-apply pg_hba.conf on standbys after basebackup
+  - name: Copy pg_hba.conf on standbys
     template:
       src: templates/pg_hba.conf.j2
       dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
       owner: postgres
       group: postgres
       mode: '0640'
+    register: pg_hba_standby
     when: inventory_hostname != postgresql_primary_hostname
+  - name: Set primary_conninfo on standby nodes via postgresql.auto.conf
+    become: true
+    become_user: postgres
+    ansible.builtin.copy:
+      dest: "{{ postgresql_data_dir }}/postgresql.auto.conf"
+      content: "primary_conninfo = 'host={{ vip | regex_replace(\"/.*\", \"\") }} port=5432 user=replicator password={{ postgresql_replication_password }}'\n"
+      owner: postgres
+      group: postgres
+      mode: '0600'
+    register: pg_auto_conf_standby
+    when: inventory_hostname != postgresql_primary_hostname
+  - name: Restart PostgreSQL on standbys if config changed
+    service:
+      name: postgresql
+      state: restarted
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - pg_conf_standby is changed or pg_auto_conf_standby is changed
+  - name: Reload PostgreSQL on standbys if only pg_hba changed
+    service:
+      name: postgresql
+      state: reloaded
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - pg_hba_standby is changed
+    - pg_conf_standby is not changed
+    - pg_auto_conf_standby is not changed
   - name: Start PostgreSQL on standby nodes
     service:
       name: postgresql
@@ -498,14 +527,6 @@
       user: root
     when: inventory_hostname == postgresql_primary_hostname
   handlers:
-  - name: Restart PostgreSQL
-    service:
-      name: postgresql
-      state: restarted
-  - name: Reload PostgreSQL
-    service:
-      name: postgresql
-      state: reloaded
   - name: Restart Keepalived
     service:
       name: keepalived

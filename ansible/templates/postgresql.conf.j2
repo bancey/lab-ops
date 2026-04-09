@@ -23,8 +23,9 @@ synchronous_commit = on
 # synchronous_standby_names = 'ANY 1 (postgresql1, postgresql2)'
 # Trade-off: writes will block if both standbys are unreachable.
 
-# Standby / replication configuration (uses VIP so standbys always follow the current primary)
-primary_conninfo = 'host={{ vip | regex_replace("/.*", "") }} port=5432 user=replicator password={{ postgresql_replication_password }}'
+# Standby / replication configuration
+# primary_conninfo is managed via postgresql.auto.conf on standby nodes
+# (created by pg_basebackup -R and managed by the keepalived notify script)
 
 # Logging
 log_destination = 'stderr'
