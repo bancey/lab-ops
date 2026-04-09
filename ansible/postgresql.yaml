@@ -9,10 +9,16 @@
     postgresql_primary_host: "10.151.14.220"
     postgresql_primary_hostname: "postgresql0"
     postgresql_databases:
-    - name: radarr
+    - name: radarr-main
       user: radarr
       password_var: radarr_postgresql_password
-    - name: sonarr
+    - name: radarr-log
+      user: radarr
+      password_var: radarr_postgresql_password
+    - name: sonarr-main
+      user: sonarr
+      password_var: sonarr_postgresql_password
+    - name: sonarr-log
       user: sonarr
       password_var: sonarr_postgresql_password
     - name: monica
@@ -293,7 +299,7 @@
       name: "{{ item.user }}"
       password: "{{ item.password }}"
       state: present
-    loop: "{{ postgresql_databases_resolved }}"
+    loop: "{{ postgresql_databases_resolved | unique(attribute='user') | list }}"
     no_log: true
     when:
     - inventory_hostname == postgresql_primary_hostname
