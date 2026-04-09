@@ -15,6 +15,7 @@ spec:
     remediation:
       retries: 3
   values:
+    dragonflyImage: ghcr.io/dragonflydb/dragonfly
     manager:
       image:
         repository: ghcr.io/dragonflydb/operator
