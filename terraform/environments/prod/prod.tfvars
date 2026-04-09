@@ -297,7 +297,7 @@ ansible = {
       "monica_postgresql_password"      = "PostgreSQL-Monica-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "02-04-2026-2210"
+    trigger   = "09-04-2026-2100"
   }
 }
 
