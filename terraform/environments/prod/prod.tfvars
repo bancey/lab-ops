@@ -75,23 +75,7 @@ kubernetes_virtual_machines = {
   }
 }
 
-virtual_machines = {
-  clawdbot = {
-    node                = "loki"
-    vm_id               = 510
-    vm_description      = "Clawdbot Bot"
-    cpu_cores           = 2
-    memory              = 4096
-    ip_address          = "10.151.14.101"
-    gateway_ip_address  = "10.151.14.1"
-    network_bridge_name = "vmbr0"
-    startup_order       = 1
-    startup_delay       = 1
-    storage             = "local-lvm"
-    disk_size           = 64
-    image               = "noble-server-cloudimg-amd64.img"
-  }
-}
+virtual_machines = {}
 
 containers = {
   haproxy0 = {
@@ -298,7 +282,7 @@ ansible = {
       "backup_sas_token"               = "MariaDB-Backup-SAS-Token"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "30-03-2026-1315"
+    trigger   = "09-04-2026-2030"
   }
   "postgresql" = {
     nodes    = ["hela", "loki", "thor"]
