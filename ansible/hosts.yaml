@@ -3,8 +3,6 @@ all:
   vars:
     ansible_user: bancey
   hosts:
-    clawdbot:
-      ansible_host: 10.151.14.101
     haproxy0:
       ansible_host: 10.151.16.201
       ansible_user: root
