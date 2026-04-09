@@ -42,9 +42,6 @@ resources:
   - qbittorrent-config-pv.yaml
   - qbittorrent-config-pvc.yaml
   - ../base/acquisitions
-  - ../base/capacitor
-  - capacitor-ingress-route.yaml
-  - capacitor-certs.yaml
   #- ../base/monitoring
 patchesStrategicMerge:
   - plex-patch.yaml
