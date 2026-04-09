@@ -56,6 +56,7 @@ kubernetes_virtual_machines = {
     cluster_cidr          = "10.44.0.0/16"
     service_cidr          = "10.45.0.0/16"
     bgp_as                = 64602
+    disk_size             = 20
     load_balancer_address = "10.151.16.200"
     master = {
       count              = 3
