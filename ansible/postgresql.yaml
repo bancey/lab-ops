@@ -129,6 +129,28 @@
     register: standby_signal_exists
 
   # Configure primary node first
+  - name: Check if primary data directory exists
+    ansible.builtin.stat:
+      path: "{{ postgresql_data_dir }}/PG_VERSION"
+    register: pg_primary_data_check
+    when: inventory_hostname == postgresql_primary_hostname
+  - name: Recreate PostgreSQL cluster on primary if data directory was lost
+    ansible.builtin.command:
+      cmd: "pg_createcluster {{ postgresql_version }} main"
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - not pg_primary_data_check.stat.exists
+  - name: Ensure postgresql.auto.conf is clean on primary
+    become: true
+    become_user: postgres
+    ansible.builtin.copy:
+      dest: "{{ postgresql_data_dir }}/postgresql.auto.conf"
+      content: "# Managed by Ansible - primary node needs no auto config\n"
+      owner: postgres
+      group: postgres
+      mode: '0600'
+    register: pg_auto_conf_primary
+    when: inventory_hostname == postgresql_primary_hostname
   - name: Copy PostgreSQL configuration on primary
     template:
       src: templates/postgresql.conf.j2
@@ -147,13 +169,27 @@
       mode: '0640'
     register: pg_hba_primary
     when: inventory_hostname == postgresql_primary_hostname
+  - name: Check if Keepalived is active
+    ansible.builtin.command:
+      cmd: systemctl is-active keepalived
+    register: keepalived_status
+    changed_when: false
+    failed_when: false
+  - name: Stop Keepalived before PostgreSQL restart to prevent VIP failover
+    service:
+      name: keepalived
+      state: stopped
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - pg_conf_primary is changed or pg_auto_conf_primary is changed
+    - keepalived_status.rc == 0
   - name: Restart PostgreSQL on primary if config changed
     service:
       name: postgresql
       state: restarted
     when:
     - inventory_hostname == postgresql_primary_hostname
-    - pg_conf_primary is changed
+    - pg_conf_primary is changed or pg_auto_conf_primary is changed
   - name: Reload PostgreSQL on primary if only pg_hba changed
     service:
       name: postgresql
@@ -174,6 +210,13 @@
       port: 5432
       timeout: 30
     when: inventory_hostname == postgresql_primary_hostname
+  - name: Re-start Keepalived after PostgreSQL is confirmed ready
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_status.rc == 0
   - name: Set PostgreSQL superuser password
     become: true
     become_user: postgres

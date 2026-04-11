@@ -52,6 +52,24 @@ case $STATE in
       CURRENT_PRIMARY="$VIP"
       log "Current primary is at $CURRENT_PRIMARY"
 
+      # Verify the new primary is actually reachable before doing anything destructive
+      NEW_PRIMARY_READY=false
+      for i in $(seq 1 10); do
+        if su - postgres -c "${PG_BIN}/pg_isready -h ${CURRENT_PRIMARY} -q" 2>/dev/null; then
+          NEW_PRIMARY_READY=true
+          log "New primary at $CURRENT_PRIMARY is reachable"
+          break
+        fi
+        log "Waiting for new primary at $CURRENT_PRIMARY (attempt $i/10)..."
+        sleep 2
+      done
+
+      if [ "$NEW_PRIMARY_READY" != "true" ]; then
+        log "WARNING: New primary at $CURRENT_PRIMARY is NOT reachable - aborting demotion to avoid data loss"
+        log "This node will remain as a primary without the VIP. Manual intervention required."
+        exit 0
+      fi
+
       # Stop PostgreSQL
       log "Stopping PostgreSQL for pg_rewind"
       systemctl stop postgresql >> "$LOGFILE" 2>&1
@@ -62,9 +80,21 @@ case $STATE in
         log "pg_rewind succeeded"
       else
         log "pg_rewind failed - falling back to pg_basebackup"
-        rm -rf "${PG_DATA}"
-        su - postgres -c "PGPASSWORD='{{ postgresql_replication_password }}' ${PG_BIN}/pg_basebackup -h ${CURRENT_PRIMARY} -U replicator -D ${PG_DATA} -Fp -Xs -P -R" >> "$LOGFILE" 2>&1
-        log "pg_basebackup completed"
+        # Move data dir aside instead of deleting, for recovery if basebackup also fails
+        BACKUP_DIR="${PG_DATA}.failback.$(date +%Y%m%d_%H%M%S)"
+        log "Moving existing data directory to ${BACKUP_DIR}"
+        mv "${PG_DATA}" "${BACKUP_DIR}"
+        if su - postgres -c "PGPASSWORD='{{ postgresql_replication_password }}' ${PG_BIN}/pg_basebackup -h ${CURRENT_PRIMARY} -U replicator -D ${PG_DATA} -Fp -Xs -P -R" >> "$LOGFILE" 2>&1; then
+          log "pg_basebackup completed - removing backup data directory"
+          rm -rf "${BACKUP_DIR}"
+        else
+          log "ERROR: pg_basebackup also failed - restoring original data directory"
+          rm -rf "${PG_DATA}"
+          mv "${BACKUP_DIR}" "${PG_DATA}"
+          log "Original data restored. Starting PostgreSQL as-is. Manual intervention required."
+          systemctl start postgresql >> "$LOGFILE" 2>&1
+          exit 1
+        fi
       fi
 
       # Ensure standby.signal exists
