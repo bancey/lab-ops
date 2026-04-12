@@ -21,7 +21,7 @@ spec:
     image:
       registry: index.docker.io
       repository: plexinc/pms-docker
-      tag: 1.43.1.10576-06378bdcd-arm64
+      tag: 1.43.1.10611-1e34174b1-arm64
     # Ingress configuration should be defined in cluster overlays
     ingress:
       enabled: false
