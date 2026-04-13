@@ -9,6 +9,5 @@ resources:
   - traefik-namespace.yaml
   - traefik.yaml
   - cloudnative-pg-namespace.yaml
-  - cloudnative-pg.yaml
   - dragonfly-namespace.yaml
   - dragonfly.yaml
