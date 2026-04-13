@@ -8,6 +8,5 @@ resources:
   - csi-driver-nfs-release.yaml
   - traefik-namespace.yaml
   - traefik.yaml
-  - cloudnative-pg-namespace.yaml
   - dragonfly-namespace.yaml
   - dragonfly.yaml
