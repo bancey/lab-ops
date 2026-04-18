@@ -28,6 +28,7 @@ variable "containers" {
     ct_description      = string
     storage             = string
     unprivileged        = optional(bool, true)
+    disk_size           = optional(string)
   }))
   description = "Map containing information about LXC Containers to create in Proxmox."
 }
