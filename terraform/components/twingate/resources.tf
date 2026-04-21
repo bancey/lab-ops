@@ -3,7 +3,7 @@ resource "twingate_resource" "this" {
   name               = each.value.alias == null || each.value.alias == "" ? each.key : split(".", each.value.alias)[0]
   remote_network_id  = twingate_remote_network.this[each.value.twingate.network].id
   address            = each.value.record
-  alias              = each.value.alias
+  alias              = each.value.alias == "" ? null : each.value.alias
   security_policy_id = data.twingate_security_policy.default.id
 
   protocols = each.value.twingate.protocols
