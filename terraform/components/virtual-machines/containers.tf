@@ -20,6 +20,7 @@ module "wanda_containers" {
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
   unprivileged        = each.value.unprivileged
+  disk_size           = each.value.disk_size
 
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
@@ -46,6 +47,7 @@ module "tiny_containers" {
   startup_delay       = each.value.startup_delay
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
+  disk_size           = each.value.disk_size
 
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
