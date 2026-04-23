@@ -5,7 +5,7 @@
   ],
   "kubernetes": {
     "managerFilePatterns": [
-      "/^kubernetes/.*\\.yaml$/"
+      "/^kubernetes/.*\.yaml$/"
     ],
     "ignorePaths": [
       "**/flux-system/**"
@@ -13,12 +13,12 @@
   },
   "flux": {
     "managerFilePatterns": [
-      "/^kubernetes/.*\\.yaml$/"
+      "/^kubernetes/.*\.yaml$/"
     ]
   },
   "helm-values": {
     "managerFilePatterns": [
-      "/^kubernetes/.*\\.yaml$/"
+      "/^kubernetes/.*\.yaml$/"
     ],
     "ignorePaths": [
       "**/gotk-components.yaml"
@@ -32,8 +32,8 @@
   },
   "docker-compose": {
     "managerFilePatterns": [
-      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/",
-      "/(^|/).*(?:docker-)?compose[^/]*\\.ya?ml.j2$/"
+      "/(^|/)(?:docker-)?compose[^/]*\.ya?ml$/",
+      "/(^|/).*(?:docker-)?compose[^/]*\.ya?ml.j2$/"
     ]
   },
   "customManagers": [
@@ -80,7 +80,7 @@
         "index.docker.io/plexinc/pms-docker"
       ],
       "versioning": "loose",
-      "allowedVersions": "!/.*-armhf$/"
+      "allowedVersions": "!/.*-(armhf|arm64)$/"
     },
     {
       "description": "Auto-merge non-major updates",
