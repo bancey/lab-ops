@@ -1,0 +1,61 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ipmitool-api
+  namespace: home-assistant
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.6.2
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    timeout: 10m
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: false
+
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: ghcr.io/bancey/ipmitool-api
+              tag: 0.0.2
+            env:
+              TZ: Europe/London
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32M
+              limits:
+                memory: 128Mi
+
+    service:
+      main:
+        controller: main
+        type: ClusterIP
+        ports:
+          http:
+            port: 8080
+
+    persistence:
+      config:
+        type: secret
+        name: ipmitool-api-config
+        globalMounts:
+          - path: /etc/ipmitool-api/config.yaml
+            subPath: config.yaml
+            readOnly: true
