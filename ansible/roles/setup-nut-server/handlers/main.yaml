@@ -4,15 +4,18 @@
     name: nut-driver
     state: restarted
     daemon_reload: true
+  when: not ansible_check_mode
 
 - name: restart nut-server
   ansible.builtin.systemd:
     name: nut-server
     state: restarted
     daemon_reload: true
+  when: not ansible_check_mode
 
 - name: restart nut-monitor
   ansible.builtin.systemd:
     name: nut-monitor
     state: restarted
     daemon_reload: true
+  when: not ansible_check_mode
