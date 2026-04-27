@@ -1,0 +1,37 @@
+---
+- name: Install NUT client package
+  ansible.builtin.apt:
+    pkg:
+      - nut-client
+    state: present
+    update_cache: true
+
+- name: Configure nut.conf
+  ansible.builtin.template:
+    src: nut.conf.j2
+    dest: /etc/nut/nut.conf
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-monitor
+
+- name: Configure upsmon.conf
+  ansible.builtin.template:
+    src: upsmon.conf.j2
+    dest: /etc/nut/upsmon.conf
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-monitor
+
+- name: Flush handlers to apply configuration before enabling service
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start nut-monitor service
+  ansible.builtin.systemd:
+    name: nut-monitor
+    enabled: true
+    state: started
+  when: not ansible_check_mode

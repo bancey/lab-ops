@@ -1,0 +1,18 @@
+---
+- name: restart nut-driver
+  ansible.builtin.systemd:
+    name: nut-driver
+    state: restarted
+    daemon_reload: true
+
+- name: restart nut-server
+  ansible.builtin.systemd:
+    name: nut-server
+    state: restarted
+    daemon_reload: true
+
+- name: restart nut-monitor
+  ansible.builtin.systemd:
+    name: nut-monitor
+    state: restarted
+    daemon_reload: true

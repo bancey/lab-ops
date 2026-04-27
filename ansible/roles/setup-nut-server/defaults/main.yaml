@@ -1,0 +1,33 @@
+---
+# UPS identification
+nut_ups_name: apc
+nut_ups_driver: usbhid-ups # use apcsmart for older serial models
+nut_ups_port: auto
+nut_ups_desc: "APC UPS"
+nut_ups_pollinterval: 2
+
+# upsd listener
+nut_listen_address: "0.0.0.0"
+nut_listen_port: 3493
+nut_maxage: 15
+nut_maxconn: 1024
+
+# upsd users - override passwords in playbook via vault/file lookup
+nut_admin_user: admin
+nut_admin_password: "changeme"
+nut_monitor_user: upsmon
+nut_monitor_password: "changeme"
+
+# upsmon settings
+nut_shutdowncmd: "/sbin/shutdown -h +0"
+nut_pollfreq: 5
+nut_pollfreqalert: 5
+nut_hostsync: 120
+nut_deadtime: 15
+nut_rbwarntime: 43200
+nut_nocommwarntime: 300
+# Allow time for secondary (Proxmox) clients to complete their shutdown before cutting UPS power
+nut_finaldelay: 120
+
+# nut.conf
+nut_mode: netserver
