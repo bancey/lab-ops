@@ -262,7 +262,7 @@ parameters:
           - generate_ansible_inventory
       - deployment: nut_client_ansible_wanda
         environment: prod
-        playbook: nut-client.yaml
+        playbook: nut-client-wanda.yaml
         secrets:
           - NUT-Monitor-Password
         localEnvironments:
