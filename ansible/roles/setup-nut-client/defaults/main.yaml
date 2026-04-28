@@ -1,0 +1,24 @@
+---
+# NUT server connection
+nut_ups_name: apc
+nut_server_host: "10.151.14.5"
+nut_server_port: 3493
+
+# upsd user for monitoring
+nut_monitor_user: upsmon
+nut_monitor_password: "changeme"
+
+# upsmon settings
+# For Proxmox: pvenode shutdown gracefully stops all VMs/CTs before halting the host.
+# Alternatively use /sbin/shutdown -h +0 which relies on pve-guests.service via systemd.
+nut_shutdowncmd: "/usr/bin/pvesh create /nodes/localhost/status -command shutdown"
+nut_pollfreq: 5
+nut_pollfreqalert: 5
+nut_hostsync: 15
+nut_deadtime: 15
+nut_rbwarntime: 43200
+nut_nocommwarntime: 300
+nut_finaldelay: 5
+
+# nut.conf
+nut_mode: netclient

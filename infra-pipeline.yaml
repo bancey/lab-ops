@@ -250,6 +250,38 @@ parameters:
           - gamora
         dependsOn:
           - generate_ansible_inventory
+      - deployment: nut_server_ansible
+        environment: prod
+        playbook: nut-server.yaml
+        secrets:
+          - NUT-Admin-Password
+          - NUT-Monitor-Password
+        localEnvironments:
+          - thanos
+        dependsOn:
+          - generate_ansible_inventory
+      - deployment: nut_client_ansible_wanda
+        environment: prod
+        playbook: nut-client-wanda.yaml
+        secrets:
+          - NUT-Monitor-Password
+        localEnvironments:
+          - wanda
+        dependsOn:
+          - generate_ansible_inventory
+          - nut_server_ansible
+      - deployment: nut_client_ansible_tiny
+        environment: prod
+        playbook: nut-client.yaml
+        secrets:
+          - NUT-Monitor-Password
+        localEnvironments:
+          - hela
+          - loki
+          - thor
+        dependsOn:
+          - generate_ansible_inventory
+          - nut_server_ansible
 
 variables:
   - name: agentImage

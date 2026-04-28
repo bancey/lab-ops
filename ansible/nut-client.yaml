@@ -1,0 +1,9 @@
+- name: Setup NUT clients on Proxmox hosts
+  hosts: proxmox_tiny
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - role: setup-nut-client
+      nut_monitor_password: "{{ lookup('ansible.builtin.file', 'NUT-Monitor-Password') }}"

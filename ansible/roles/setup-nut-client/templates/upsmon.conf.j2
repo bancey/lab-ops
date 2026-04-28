@@ -1,0 +1,18 @@
+MONITOR {{ nut_ups_name }}@{{ nut_server_host }}:{{ nut_server_port }} 1 {{ nut_monitor_user }} {{ nut_monitor_password }} secondary
+
+MINSUPPLIES 1
+SHUTDOWNCMD "{{ nut_shutdowncmd }}"
+POLLFREQ {{ nut_pollfreq }}
+POLLFREQALERT {{ nut_pollfreqalert }}
+HOSTSYNC {{ nut_hostsync }}
+DEADTIME {{ nut_deadtime }}
+POWERDOWNFLAG /etc/killpower
+
+NOTIFYFLAG ONLINE    PRI+EXEC
+NOTIFYFLAG ONBATT    PRI+EXEC
+NOTIFYFLAG LOWBATT   PRI+EXEC
+NOTIFYFLAG SHUTDOWN  PRI+EXEC
+
+RBWARNTIME {{ nut_rbwarntime }}
+NOCOMMWARNTIME {{ nut_nocommwarntime }}
+FINALDELAY {{ nut_finaldelay }}

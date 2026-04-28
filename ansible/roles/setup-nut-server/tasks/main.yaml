@@ -1,0 +1,92 @@
+---
+- name: Install NUT packages
+  ansible.builtin.apt:
+    pkg:
+      - nut
+      - nut-client
+    state: present
+    update_cache: true
+
+- name: Add nut user to plugdev group for USB device access
+  ansible.builtin.user:
+    name: nut
+    groups: plugdev
+    append: true
+
+- name: Configure nut.conf
+  ansible.builtin.template:
+    src: nut.conf.j2
+    dest: /etc/nut/nut.conf
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-driver
+    - restart nut-server
+    - restart nut-monitor
+
+- name: Configure ups.conf
+  ansible.builtin.template:
+    src: ups.conf.j2
+    dest: /etc/nut/ups.conf
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-driver
+    - restart nut-server
+
+- name: Configure upsd.conf
+  ansible.builtin.template:
+    src: upsd.conf.j2
+    dest: /etc/nut/upsd.conf
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-server
+
+- name: Configure upsd.users
+  ansible.builtin.template:
+    src: upsd.users.j2
+    dest: /etc/nut/upsd.users
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-server
+    - restart nut-monitor
+
+- name: Configure upsmon.conf
+  ansible.builtin.template:
+    src: upsmon.conf.j2
+    dest: /etc/nut/upsmon.conf
+    owner: root
+    group: nut
+    mode: '0640'
+  notify:
+    - restart nut-monitor
+
+- name: Flush handlers to apply configuration before enabling services
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start nut-driver service
+  ansible.builtin.systemd:
+    name: nut-driver
+    enabled: true
+    state: started
+  when: not ansible_check_mode
+
+- name: Enable and start nut-server service
+  ansible.builtin.systemd:
+    name: nut-server
+    enabled: true
+    state: started
+  when: not ansible_check_mode
+
+- name: Enable and start nut-monitor service
+  ansible.builtin.systemd:
+    name: nut-monitor
+    enabled: true
+    state: started
+  when: not ansible_check_mode

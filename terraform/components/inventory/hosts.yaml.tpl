@@ -19,6 +19,34 @@ all:
           ansible_host: 10.151.14.5
         gamora:
           ansible_host: 10.151.14.6
+    proxmox_hosts:
+      vars:
+        ansible_user: root
+      hosts:
+        wanda:
+          ansible_host: 10.151.14.11
+        hela:
+          ansible_host: 10.151.14.12
+        thor:
+          ansible_host: 10.151.14.13
+        loki:
+          ansible_host: 10.151.14.14
+    proxmox_wanda:
+      vars:
+        ansible_user: root
+      hosts:
+        wanda:
+          ansible_host: 10.151.14.11
+    proxmox_tiny:
+      vars:
+        ansible_user: root
+      hosts:
+        hela:
+          ansible_host: 10.151.14.12
+        thor:
+          ansible_host: 10.151.14.13
+        loki:
+          ansible_host: 10.151.14.14
 %{ for cluster_key, cluster in k8s ~}
     ${ cluster_key }:
       vars:

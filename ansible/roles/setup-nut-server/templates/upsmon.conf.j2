@@ -1,0 +1,18 @@
+MONITOR {{ nut_ups_name }}@localhost 1 {{ nut_admin_user }} {{ nut_admin_password }} primary
+
+MINSUPPLIES 1
+SHUTDOWNCMD "{{ nut_shutdowncmd }}"
+POLLFREQ {{ nut_pollfreq }}
+POLLFREQALERT {{ nut_pollfreqalert }}
+HOSTSYNC {{ nut_hostsync }}
+DEADTIME {{ nut_deadtime }}
+POWERDOWNFLAG /etc/killpower
+
+NOTIFYFLAG ONLINE    PRI+EXEC
+NOTIFYFLAG ONBATT    PRI+EXEC
+NOTIFYFLAG LOWBATT   PRI+EXEC
+NOTIFYFLAG SHUTDOWN  PRI+EXEC
+
+RBWARNTIME {{ nut_rbwarntime }}
+NOCOMMWARNTIME {{ nut_nocommwarntime }}
+FINALDELAY {{ nut_finaldelay }}
