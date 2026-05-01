@@ -15,7 +15,7 @@ terraform {
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.19.0"
+      version = "5.19.1"
     }
     null = {
       source  = "hashicorp/null"
