@@ -22,6 +22,12 @@ spec:
     minio:
       # Credentials stored in SOPS-encrypted secret
       existingSecret: mimir-minio-credentials
+      # NFS directories are created as root; run as root so MinIO can write
+      securityContext:
+        enabled: true
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
       persistence:
         enabled: true
         existingClaim: mimir-minio
