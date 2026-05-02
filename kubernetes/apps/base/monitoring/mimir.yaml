@@ -39,8 +39,24 @@ spec:
           compaction_interval: 10m
           # Deletion delay for safety
           deletion_delay: 2h
+        # Use filesystem backend - each StatefulSet component writes to its own PVC
+        common:
+          storage:
+            backend: filesystem
+            filesystem:
+              dir: /data
     minio:
-      enabled: true
-      # MinIO persistence will be configured with external PVC in cluster overlays
-      persistence:
-        enabled: false
+      enabled: false
+    # Persistent volumes for stateful components - storageClass set in cluster overlays
+    ingester:
+      persistentVolume:
+        enabled: true
+        size: 10Gi
+    storeGateway:
+      persistentVolume:
+        enabled: true
+        size: 5Gi
+    compactor:
+      persistentVolume:
+        enabled: true
+        size: 10Gi

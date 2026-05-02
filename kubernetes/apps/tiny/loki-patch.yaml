@@ -18,7 +18,8 @@ spec:
           - hosts:
               - loki.tiny.heimelska.co.uk
             secretName: loki-tls
-    minio:
+    singleBinary:
       persistence:
         enabled: true
+        storageClass: unas-nfs-csi
         existingClaim: loki-minio

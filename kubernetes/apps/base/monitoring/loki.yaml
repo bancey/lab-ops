@@ -26,7 +26,7 @@ spec:
         configs:
           - from: "2024-04-01"
             store: tsdb
-            object_store: s3
+            object_store: filesystem
             schema: v13
             index:
               prefix: loki_index_
@@ -47,56 +47,39 @@ spec:
       ruler:
         enable_api: true
       storage:
-        bucketNames:
-          chunks: chunks
-          ruler: ruler
-          admin: admin
-        type: s3
-        s3:
-          s3ForcePathStyle: true
-          insecure: true
+        type: filesystem
+      # Single binary requires replication_factor 1
+      commonConfig:
+        replication_factor: 1
     test:
       enabled: false
     lokiCanary:
       enabled: false
     minio:
-      enabled: true
-      # MinIO persistence will be configured with external PVC in cluster overlays
-      persistence:
-        enabled: false
+      enabled: false
     gateway:
       enabled: true
-    # Distributed deployment mode
-    deploymentMode: Distributed
-    ingester:
-      replicas: 3
-      zoneAwareReplication:
-        enabled: false
-    querier:
-      replicas: 3
-      maxUnavailable: 2
-    queryFrontend:
-      replicas: 2
-      maxUnavailable: 1
-    queryScheduler:
-      replicas: 2
-    distributor:
-      replicas: 3
-      maxUnavailable: 2
-    compactor:
+    deploymentMode: SingleBinary
+    singleBinary:
       replicas: 1
-      # Enable retention enforcement
-      retention_enabled: true
-      # Delay before deleting marked chunks (allows index gateway to update)
-      retention_delete_delay: 2h
-      # Number of workers for chunk deletion
-      retention_delete_worker_count: 150
-      # How often compaction runs
-      compaction_interval: 10m
+      # Persistence will be configured with external PVC in cluster overlays
+      persistence:
+        enabled: false
+    # Zero out all distributed replica counts
+    ingester:
+      replicas: 0
+    querier:
+      replicas: 0
+    queryFrontend:
+      replicas: 0
+    queryScheduler:
+      replicas: 0
+    distributor:
+      replicas: 0
+    compactor:
+      replicas: 0
     indexGateway:
-      replicas: 2
-      maxUnavailable: 1
-    # Zero out replica counts of other deployment modes
+      replicas: 0
     bloomPlanner:
       replicas: 0
     bloomBuilder:
@@ -108,6 +91,4 @@ spec:
     read:
       replicas: 0
     write:
-      replicas: 0
-    singleBinary:
       replicas: 0
