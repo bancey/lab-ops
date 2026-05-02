@@ -17,7 +17,9 @@ resources:
   - ../base/monica
   - ./grafana-admin-secret.sops.yaml
   - ../base/monitoring
+  - ./mimir-minio-secret.sops.yaml
   - ./monitoring-certificates.yaml
+  - ./mimir-minio-pvc.yaml
   - ./loki-minio-pvc.yaml
   - ./grafana-pvc.yaml
   - ./unpoller-secret.sops.yaml

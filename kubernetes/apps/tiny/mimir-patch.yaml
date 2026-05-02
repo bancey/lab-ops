@@ -19,12 +19,9 @@ spec:
           - secretName: mimir-tls
             hosts:
               - "mimir.tiny.heimelska.co.uk"
-    ingester:
-      persistentVolume:
-        storageClass: unas-nfs-csi
-    storeGateway:
-      persistentVolume:
-        storageClass: unas-nfs-csi
-    compactor:
-      persistentVolume:
-        storageClass: unas-nfs-csi
+    minio:
+      # Credentials stored in SOPS-encrypted secret
+      existingSecret: mimir-minio-credentials
+      persistence:
+        enabled: true
+        existingClaim: mimir-minio
