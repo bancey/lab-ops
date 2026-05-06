@@ -21,7 +21,7 @@ spec:
               - "mimir.tiny.heimelska.co.uk"
     minio:
       # Credentials stored in SOPS-encrypted secret
-      existingSecret: mimir-minio-credentials
+      existingSecret: mimir-minio
       # NFS directories are created as root; run as root so MinIO can write
       securityContext:
         enabled: true
