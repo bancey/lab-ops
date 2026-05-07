@@ -29,6 +29,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: unas-nfs-csi
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
 provisioner: nfs.csi.k8s.io
 parameters:
   server: storage.heimelska.co.uk
