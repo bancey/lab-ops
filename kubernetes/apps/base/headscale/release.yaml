@@ -1,0 +1,133 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headscale
+  namespace: headscale
+spec:
+  releaseName: headscale
+  chart:
+    spec:
+      chart: headscale
+      sourceRef:
+        kind: HelmRepository
+        name: gabe565
+        namespace: flux-system
+      version: "0.1.x"
+  interval: 1h0m
+  install:
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/juanfont/headscale
+      pullPolicy: IfNotPresent
+      tag: "0.25.0"
+
+    env:
+      # Server configuration
+      HEADSCALE_SERVER_URL: "http://headscale.headscale.svc.cluster.local:8080"
+      HEADSCALE_LISTEN_ADDR: "0.0.0.0:8080"
+      HEADSCALE_METRICS_LISTEN_ADDR: "0.0.0.0:9090"
+      HEADSCALE_GRPC_LISTEN_ADDR: "0.0.0.0:50443"
+      HEADSCALE_GRPC_ALLOW_INSECURE: "true"
+
+      # DNS configuration
+      HEADSCALE_DNS_BASE_DOMAIN: "lab.local"
+      HEADSCALE_DNS_MAGIC_DNS: "true"
+      HEADSCALE_DNS_NAMESERVERS_GLOBAL: "1.1.1.1,8.8.8.8"
+
+      # IP prefixes for VPN clients
+      HEADSCALE_PREFIXES_V4: "100.64.0.0/10"
+      HEADSCALE_PREFIXES_V6: "fd7a:115c:a1e0::/48"
+      HEADSCALE_PREFIXES_ALLOCATION: "random"
+
+      # DERP configuration (use built-in DERP servers for now)
+      HEADSCALE_DERP_AUTO_UPDATE_ENABLED: "true"
+      HEADSCALE_DERP_UPDATE_FREQUENCY: "24h"
+
+      # Database
+      HEADSCALE_DATABASE_TYPE: "sqlite"
+      HEADSCALE_DATABASE_SQLITE_PATH: "/var/lib/headscale/db.sqlite"
+
+      # Ephemeral nodes
+      HEADSCALE_EPHEMERAL_NODE_INACTIVITY_TIMEOUT: "30m"
+
+      # Log level
+      HEADSCALE_LOG_LEVEL: "info"
+
+      # Unix socket (disabled for now)
+      HEADSCALE_UNIX_SOCKET: ""
+
+    service:
+      main:
+        enabled: true
+        ports:
+          http:
+            port: 8080
+          metrics:
+            port: 9090
+      grpc:
+        enabled: true
+        ports:
+          grpc:
+            port: 50443
+
+    ingress:
+      main:
+        enabled: false
+
+    persistence:
+      data:
+        enabled: true
+        mountPath: /var/lib/headscale
+        accessMode: ReadWriteOnce
+        size: 1Gi
+
+    # ACL configuration
+    configMaps:
+      acl:
+        enabled: true
+        data:
+          acl.json: |
+            {
+              "groups": {
+                "group:admins": ["admin"],
+                "group:lab-users": ["lab-user"],
+                "group:services": ["service-account"]
+              },
+              "hosts": {
+                "lab-network": "10.151.16.0/24",
+                "vpn-clients": "100.64.0.0/10"
+              },
+              "acls": [
+                {
+                  "action": "accept",
+                  "src": ["group:admins"],
+                  "dst": ["*:*"]
+                },
+                {
+                  "action": "accept",
+                  "src": ["group:lab-users"],
+                  "dst": [
+                    "lab-network:*",
+                    "vpn-clients:22,80,443"
+                  ]
+                },
+                {
+                  "action": "accept",
+                  "src": ["group:services"],
+                  "dst": [
+                    "lab-network:*"
+                  ]
+                }
+              ],
+              "ssh": [
+                {
+                  "action": "accept",
+                  "src": ["group:admins"],
+                  "dst": ["*"],
+                  "users": ["autogroup:nonroot", "root"]
+                }
+              ]
+            }

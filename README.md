@@ -62,3 +62,4 @@ This will install Flux and apply the necessary secrets and sources for GitOps.
 ## Notes
 - Twingate connector deployment is now handled by the `ansible/rpi-ha.yaml` playbook. Manual Docker commands are no longer required.
 - All secrets must be present in Key Vault before running the pipeline or Terraform/Ansible locally.
+- **Headscale** is deployed to the tiny Kubernetes cluster for VPN evaluation purposes. See `kubernetes/apps/base/headscale/README.md` for configuration details and usage instructions.
