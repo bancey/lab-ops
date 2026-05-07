@@ -357,7 +357,7 @@ dns:
           - AzureDevOps
   loki.tiny.heimelska.co.uk:
     record: 10.151.24.10
-  mimir.tiny.heimelska.co.uk:
+  victoria-metrics.tiny.heimelska.co.uk:
     record: 10.151.24.10
   grafana.tiny.heimelska.co.uk:
     record: 10.151.24.10

@@ -5,7 +5,7 @@ namespace: monitoring
 resources:
   - namespace.yaml
   - loki.yaml
-  - mimir.yaml
+  - victoria-metrics.yaml
   - grafana.yaml
   - alloy.yaml
   - unpoller.yaml

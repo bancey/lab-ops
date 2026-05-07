@@ -190,10 +190,10 @@ spec:
             }
           }
 
-          // Remote write to Mimir on tiny cluster
+          // Remote write to Victoria Metrics on tiny cluster
           prometheus.remote_write "mimir" {
             endpoint {
-              url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+              url = "https://victoria-metrics.tiny.heimelska.co.uk/api/v1/write"
             }
 
             // Add queue configuration to handle out-of-order samples

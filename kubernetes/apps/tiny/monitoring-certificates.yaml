@@ -30,30 +30,30 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: mimir-staging-tls
+  name: victoria-metrics-staging-tls
   namespace: monitoring
 spec:
-  secretName: mimir-staging-tls
+  secretName: victoria-metrics-staging-tls
   issuerRef:
     name: letsencrypt-staging
     kind: ClusterIssuer
-  commonName: "mimir.tiny.heimelska.co.uk"
+  commonName: "victoria-metrics.tiny.heimelska.co.uk"
   dnsNames:
-    - "mimir.tiny.heimelska.co.uk"
+    - "victoria-metrics.tiny.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: mimir-tls
+  name: victoria-metrics-tls
   namespace: monitoring
 spec:
-  secretName: mimir-tls
+  secretName: victoria-metrics-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "mimir.tiny.heimelska.co.uk"
+  commonName: "victoria-metrics.tiny.heimelska.co.uk"
   dnsNames:
-    - "mimir.tiny.heimelska.co.uk"
+    - "victoria-metrics.tiny.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

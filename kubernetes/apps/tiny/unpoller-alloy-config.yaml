@@ -5,10 +5,10 @@ metadata:
   namespace: monitoring
 data:
   config.alloy: |
-    // Prometheus remote write for Mimir
+    // Prometheus remote write for Victoria Metrics
     prometheus.remote_write "mimir" {
       endpoint {
-        url = "http://mimir-gateway.monitoring.svc.cluster.local/api/v1/push"
+        url = "http://victoria-metrics-server.monitoring.svc.cluster.local:8428/api/v1/write"
       }
     }
 

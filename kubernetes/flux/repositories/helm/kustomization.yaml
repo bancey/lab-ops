@@ -16,3 +16,4 @@ resources:
   - ./twingate.yaml
   - ./monica.yaml
   - ./unpoller.yaml
+  - ./victoria-metrics.yaml

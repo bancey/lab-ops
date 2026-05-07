@@ -21,10 +21,10 @@ discovery.relabel "containers" {
   }
 }
 
-// Prometheus remote write for Mimir
+// Prometheus remote write for Victoria Metrics
 prometheus.remote_write "mimir" {
   endpoint {
-    url = "https://mimir.tiny.heimelska.co.uk/api/v1/push"
+    url = "https://victoria-metrics.tiny.heimelska.co.uk/api/v1/write"
   }
   
   external_labels = {
