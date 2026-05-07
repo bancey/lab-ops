@@ -48,7 +48,7 @@ patchesStrategicMerge:
   - jellyfin-patch.yaml
   - acquisitions-patch.yaml
   #- loki-patch.yaml
-  #- mimir-patch.yaml
+  #- victoria-metrics-patch.yaml
   #- grafana-patch.yaml
   #- alloy-patch.yaml
   #- unpoller-patch.yaml

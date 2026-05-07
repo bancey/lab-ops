@@ -34,9 +34,9 @@ spec:
             url: http://loki-gateway.monitoring.svc.cluster.local
             access: proxy
             isDefault: false
-          - name: Mimir
+          - name: Victoria Metrics
             type: prometheus
-            url: http://mimir-gateway.monitoring.svc.cluster.local/prometheus
+            url: http://victoria-metrics-server.monitoring.svc.cluster.local:8428
             access: proxy
             isDefault: true
     # Ingress should be configured in cluster overlays

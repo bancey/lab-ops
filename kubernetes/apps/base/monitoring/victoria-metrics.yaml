@@ -1,0 +1,33 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: victoria-metrics
+  namespace: monitoring
+spec:
+  releaseName: victoria-metrics
+  chart:
+    spec:
+      version: 0.14.6
+      chart: victoria-metrics-single
+      sourceRef:
+        kind: HelmRepository
+        name: victoria-metrics
+        namespace: flux-system
+  interval: 30m
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+  values:
+    server:
+      retentionPeriod: "90d"
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+      persistentVolume:
+        enabled: true
+        size: 15Gi
+      ingress:
+        enabled: true
