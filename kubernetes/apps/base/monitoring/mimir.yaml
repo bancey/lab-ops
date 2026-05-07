@@ -39,6 +39,9 @@ spec:
           compaction_interval: 10m
           # Deletion delay for safety
           deletion_delay: 2h
+        # Disable Kafka-based ingest storage path
+        ingest_storage:
+          enabled: false
     minio:
       enabled: true
       # MinIO persistence will be configured with external PVC in cluster overlays
@@ -46,6 +49,9 @@ spec:
         enabled: false
     # Disable Kafka-based ingest path - not needed for a home lab
     kafka:
+      enabled: false
+    # Disable rollout operator which drives zone-aware StatefulSet creation
+    rollout_operator:
       enabled: false
     # Single replica for all stateful components - no zone-aware replication
     ingester:
