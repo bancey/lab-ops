@@ -8,7 +8,7 @@ spec:
   values:
     server:
       persistentVolume:
-        storageClass: unas-nfs-csi
+        storageClassName: unas-nfs-csi
       securityContext:
         runAsUser: 0
         runAsNonRoot: false
