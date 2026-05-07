@@ -8,7 +8,7 @@ spec:
   releaseName: victoria-logs
   chart:
     spec:
-      version: 0.14.3
+      version: 0.12.4
       chart: victoria-logs-single
       sourceRef:
         kind: HelmRepository
