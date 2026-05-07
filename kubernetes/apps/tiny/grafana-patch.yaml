@@ -6,6 +6,12 @@ metadata:
   namespace: monitoring
 spec:
   values:
+    initChownData:
+      enabled: false
+    securityContext:
+      runAsUser: 472
+      runAsGroup: 472
+      fsGroup: 472
     deploymentStrategy:
       type: Recreate
     ingress:
