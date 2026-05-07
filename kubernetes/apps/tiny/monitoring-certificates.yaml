@@ -2,30 +2,30 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: loki-staging-tls
+  name: victoria-logs-staging-tls
   namespace: monitoring
 spec:
-  secretName: loki-staging-tls
+  secretName: victoria-logs-staging-tls
   issuerRef:
     name: letsencrypt-staging
     kind: ClusterIssuer
-  commonName: "loki.tiny.heimelska.co.uk"
+  commonName: "victoria-logs.tiny.heimelska.co.uk"
   dnsNames:
-    - "loki.tiny.heimelska.co.uk"
+    - "victoria-logs.tiny.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: loki-tls
+  name: victoria-logs-tls
   namespace: monitoring
 spec:
-  secretName: loki-tls
+  secretName: victoria-logs-tls
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "loki.tiny.heimelska.co.uk"
+  commonName: "victoria-logs.tiny.heimelska.co.uk"
   dnsNames:
-    - "loki.tiny.heimelska.co.uk"
+    - "victoria-logs.tiny.heimelska.co.uk"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

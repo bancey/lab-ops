@@ -25,17 +25,20 @@ spec:
       existingSecret: grafana-admin
       userKey: admin-user
       passwordKey: admin-password
+    plugins:
+      - victoriametrics-logs-datasource
+      - victoriametrics-datasource
     datasources:
       datasources.yaml:
         apiVersion: 1
         datasources:
-          - name: Loki
-            type: loki
-            url: http://loki-gateway.monitoring.svc.cluster.local
+          - name: Victoria Logs
+            type: victoriametrics-logs-datasource
+            url: http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local:9428
             access: proxy
             isDefault: false
           - name: Victoria Metrics
-            type: prometheus
+            type: victoriametrics-datasource
             url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428
             access: proxy
             isDefault: true

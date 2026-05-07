@@ -1,0 +1,25 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: victoria-logs
+  namespace: monitoring
+spec:
+  values:
+    server:
+      persistentVolume:
+        storageClassName: unas-nfs-csi
+        existingClaim: victoria-logs
+      securityContext:
+        runAsUser: 0
+        runAsNonRoot: false
+      ingress:
+        enabled: true
+        hosts:
+          - name: "victoria-logs.tiny.heimelska.co.uk"
+            path: /
+            port: http
+        tls:
+          - secretName: victoria-logs-tls
+            hosts:
+              - "victoria-logs.tiny.heimelska.co.uk"

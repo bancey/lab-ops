@@ -355,7 +355,7 @@ dns:
           - plex
         service_accounts:
           - AzureDevOps
-  loki.tiny.heimelska.co.uk:
+  victoria-logs.tiny.heimelska.co.uk:
     record: 10.151.24.10
   victoria-metrics.tiny.heimelska.co.uk:
     record: 10.151.24.10

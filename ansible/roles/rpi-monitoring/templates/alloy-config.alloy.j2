@@ -32,10 +32,10 @@ prometheus.remote_write "mimir" {
   }
 }
 
-// Loki remote write
-loki.write "loki" {
+// Victoria Logs remote write
+loki.write "vlogs" {
   endpoint {
-    url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+    url = "https://victoria-logs.tiny.heimelska.co.uk/insert/loki/api/v1/push"
   }
 }
 
@@ -114,7 +114,7 @@ loki.source.file "host_logs" {
 
 // Process host logs
 loki.process "host_logs" {
-  forward_to = [loki.write.loki.receiver]
+  forward_to = [loki.write.vlogs.receiver]
   
   stage.static_labels {
     values = {
@@ -144,7 +144,7 @@ loki.source.docker "container_logs" {
 
 // Process container logs
 loki.process "container_logs" {
-  forward_to = [loki.write.loki.receiver]
+  forward_to = [loki.write.vlogs.receiver]
   
   stage.static_labels {
     values = {

@@ -227,18 +227,18 @@ spec:
           // Pod logs collection
           loki.source.kubernetes "pod_logs" {
             targets    = discovery.kubernetes.pods_logs.targets
-            forward_to = [loki.write.local_loki.receiver]
+            forward_to = [loki.write.local_vlogs.receiver]
           }
 
           // Kubernetes events collection
           loki.source.kubernetes_events "cluster_events" {
-            forward_to = [loki.write.local_loki.receiver]
+            forward_to = [loki.write.local_vlogs.receiver]
           }
 
-          // Remote write to local Loki
-          loki.write "local_loki" {
+          // Remote write to local Victoria Logs
+          loki.write "local_vlogs" {
             endpoint {
-              url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+              url = "http://victoria-logs-victoria-logs-single-server.monitoring.svc.cluster.local:9428/insert/loki/api/v1/push"
             }
             external_labels = {
               cluster = "tiny",

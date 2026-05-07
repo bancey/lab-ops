@@ -227,18 +227,18 @@ spec:
           // Pod logs collection
           loki.source.kubernetes "pod_logs" {
             targets    = discovery.kubernetes.pods_logs.targets
-            forward_to = [loki.write.loki.receiver]
+            forward_to = [loki.write.vlogs.receiver]
           }
 
           // Kubernetes events collection
           loki.source.kubernetes_events "cluster_events" {
-            forward_to = [loki.write.loki.receiver]
+            forward_to = [loki.write.vlogs.receiver]
           }
 
-          // Remote write to Loki on tiny cluster
-          loki.write "loki" {
+          // Remote write to Victoria Logs on tiny cluster
+          loki.write "vlogs" {
             endpoint {
-              url = "https://loki.tiny.heimelska.co.uk/loki/api/v1/push"
+              url = "https://victoria-logs.tiny.heimelska.co.uk/insert/loki/api/v1/push"
             }
             external_labels = {
               cluster = "wanda",
