@@ -8,7 +8,7 @@ spec:
   releaseName: victoria-metrics
   chart:
     spec:
-      version: 0.14.6
+      version: 0.37.0
       chart: victoria-metrics-single
       sourceRef:
         kind: HelmRepository
