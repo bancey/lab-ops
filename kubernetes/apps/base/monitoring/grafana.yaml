@@ -36,7 +36,7 @@ spec:
             isDefault: false
           - name: Victoria Metrics
             type: prometheus
-            url: http://victoria-metrics-server.monitoring.svc.cluster.local:8428
+            url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428
             access: proxy
             isDefault: true
     # Ingress should be configured in cluster overlays

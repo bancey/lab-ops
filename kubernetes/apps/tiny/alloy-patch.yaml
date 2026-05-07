@@ -193,7 +193,7 @@ spec:
           // Remote write to local Victoria Metrics
           prometheus.remote_write "local_mimir" {
             endpoint {
-              url = "http://victoria-metrics-server.monitoring.svc.cluster.local:8428/api/v1/write"
+              url = "http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/write"
 
               // Add queue configuration to handle out-of-order samples
               queue_config {
