@@ -27,7 +27,7 @@ spec:
       passwordKey: admin-password
     plugins:
       - victoriametrics-logs-datasource
-      - victoriametrics-datasource
+      - victoriametrics-metrics-datasource
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -38,7 +38,7 @@ spec:
             access: proxy
             isDefault: false
           - name: Victoria Metrics
-            type: victoriametrics-datasource
+            type: victoriametrics-metrics-datasource
             url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428
             access: proxy
             isDefault: true
