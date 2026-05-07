@@ -44,3 +44,31 @@ spec:
       # MinIO persistence will be configured with external PVC in cluster overlays
       persistence:
         enabled: false
+    # Disable Kafka-based ingest path - not needed for a home lab
+    kafka:
+      enabled: false
+    # Single replica for all stateful components - no zone-aware replication
+    ingester:
+      replicas: 1
+      zoneAwareReplication:
+        enabled: false
+      persistentVolume:
+        enabled: true
+        size: 10Gi
+    storeGateway:
+      replicas: 1
+      zoneAwareReplication:
+        enabled: false
+      persistentVolume:
+        enabled: true
+        size: 5Gi
+    compactor:
+      replicas: 1
+      persistentVolume:
+        enabled: true
+        size: 10Gi
+    alertmanager:
+      replicas: 1
+      persistentVolume:
+        enabled: true
+        size: 1Gi

@@ -31,3 +31,15 @@ spec:
       persistence:
         enabled: true
         existingClaim: mimir-minio
+    ingester:
+      persistentVolume:
+        storageClass: unas-nfs-csi
+    storeGateway:
+      persistentVolume:
+        storageClass: unas-nfs-csi
+    compactor:
+      persistentVolume:
+        storageClass: unas-nfs-csi
+    alertmanager:
+      persistentVolume:
+        storageClass: unas-nfs-csi
