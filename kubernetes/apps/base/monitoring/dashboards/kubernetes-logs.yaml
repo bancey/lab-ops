@@ -107,7 +107,7 @@ data:
         "list": [
           {
             "current": {},
-            "datasource": { "type": "prometheus" },
+            "datasource": { "type": "victoriametrics-metrics-datasource" },
             "definition": "label_values(up, cluster)",
             "hide": 0,
             "includeAll": false,
