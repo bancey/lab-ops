@@ -1,0 +1,146 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-cluster-overview
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Infrastructure"
+data:
+  cluster-overview.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "percentunit"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "id": 1,
+          "title": "CPU Usage",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"$instance\"}[5m]))", "legendFormat": "{{ instance }}" }
+          ]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "percentunit"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "id": 2,
+          "title": "Memory Usage",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "1 - (node_memory_MemAvailable_bytes{instance=~\"$instance\"} / node_memory_MemTotal_bytes{instance=~\"$instance\"})", "legendFormat": "{{ instance }}" }
+          ]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "percentunit"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "id": 3,
+          "title": "Disk Usage (/)",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "1 - (node_filesystem_avail_bytes{mountpoint=\"/\", fstype!=\"rootfs\", instance=~\"$instance\"} / node_filesystem_size_bytes{mountpoint=\"/\", fstype!=\"rootfs\", instance=~\"$instance\"})", "legendFormat": "{{ instance }}" }
+          ]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "Bps"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "id": 4,
+          "title": "Network Traffic",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cni.*\", instance=~\"$instance\"}[5m])", "legendFormat": "{{ instance }} {{ device }} rx" },
+            { "expr": "-rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|flannel.*|cali.*|cni.*\", instance=~\"$instance\"}[5m])", "legendFormat": "{{ instance }} {{ device }} tx" }
+          ]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "s"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "id": 5,
+          "title": "System Uptime",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "node_time_seconds{instance=~\"$instance\"} - node_boot_time_seconds{instance=~\"$instance\"}", "legendFormat": "{{ instance }}" }
+          ]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } }
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "id": 6,
+          "title": "System Load (1m / 5m / 15m)",
+          "type": "timeseries",
+          "targets": [
+            { "expr": "node_load1{instance=~\"$instance\"}", "legendFormat": "{{ instance }} 1m" },
+            { "expr": "node_load5{instance=~\"$instance\"}", "legendFormat": "{{ instance }} 5m" },
+            { "expr": "node_load15{instance=~\"$instance\"}", "legendFormat": "{{ instance }} 15m" }
+          ]
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["node-exporter", "infrastructure"],
+      "templating": {
+        "list": [
+          {
+            "current": { "selected": true, "text": "All", "value": "$__all" },
+            "definition": "label_values(node_uname_info, instance)",
+            "hide": 0,
+            "includeAll": true,
+            "multi": true,
+            "name": "instance",
+            "query": "label_values(node_uname_info, instance)",
+            "refresh": 2,
+            "regex": "",
+            "sort": 1,
+            "type": "query"
+          }
+        ]
+      },
+      "time": { "from": "now-6h", "to": "now" },
+      "title": "Infrastructure Overview",
+      "uid": "cluster-overview"
+    }
