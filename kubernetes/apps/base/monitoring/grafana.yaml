@@ -28,6 +28,13 @@ spec:
     plugins:
       - victoriametrics-logs-datasource
       - victoriametrics-metrics-datasource
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        folderAnnotation: grafana_folder
+        searchNamespace: monitoring
     datasources:
       datasources.yaml:
         apiVersion: 1

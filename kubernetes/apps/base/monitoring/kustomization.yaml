@@ -7,5 +7,9 @@ resources:
   - victoria-logs.yaml
   - victoria-metrics.yaml
   - grafana.yaml
+  - dashboards/cluster-overview.yaml
+  - dashboards/unifi-network.yaml
+  - dashboards/adguard-dns.yaml
+  - dashboards/kubernetes-logs.yaml
   - alloy.yaml
   - unpoller.yaml

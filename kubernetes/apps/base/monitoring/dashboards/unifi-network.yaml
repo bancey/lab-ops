@@ -1,0 +1,145 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-unifi-network
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Network"
+data:
+  unifi-network.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+          "id": 1,
+          "title": "Total Clients",
+          "type": "stat",
+          "targets": [{ "expr": "count(unifipoller_client_receive_bytes_total)" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+          "id": 2,
+          "title": "Wireless Clients",
+          "type": "stat",
+          "targets": [{ "expr": "count(unifipoller_client_receive_bytes_total{radio!=\"\"})" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+          "id": 3,
+          "title": "Access Points",
+          "type": "stat",
+          "targets": [{ "expr": "count(unifipoller_device_uptime_seconds{type=\"uap\"})" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+          "id": 4,
+          "title": "Switches",
+          "type": "stat",
+          "targets": [{ "expr": "count(unifipoller_device_uptime_seconds{type=\"usw\"})" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "decbytes"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+          "id": 5,
+          "title": "AP Memory Usage",
+          "type": "timeseries",
+          "targets": [{ "expr": "unifipoller_device_mem_used_bytes{type=\"uap\"}", "legendFormat": "{{ name }}" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "percentunit"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+          "id": 6,
+          "title": "AP CPU Load",
+          "type": "timeseries",
+          "targets": [{ "expr": "unifipoller_device_cpu_percent{type=\"uap\"} / 100", "legendFormat": "{{ name }}" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "Bps"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+          "id": 7,
+          "title": "Client Receive Rate (Top 10)",
+          "type": "timeseries",
+          "targets": [{ "expr": "topk(10, rate(unifipoller_client_receive_bytes_total[5m]))", "legendFormat": "{{ name }}" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "Bps"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+          "id": 8,
+          "title": "Client Transmit Rate (Top 10)",
+          "type": "timeseries",
+          "targets": [{ "expr": "topk(10, rate(unifipoller_client_transmit_bytes_total[5m]))", "legendFormat": "{{ name }}" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-metrics-datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "unit": "s"
+            }
+          },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+          "id": 9,
+          "title": "Device Uptime",
+          "type": "timeseries",
+          "targets": [{ "expr": "unifipoller_device_uptime_seconds", "legendFormat": "{{ name }} ({{ type }})" }]
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["unifi", "network"],
+      "templating": { "list": [] },
+      "time": { "from": "now-6h", "to": "now" },
+      "title": "UniFi Network",
+      "uid": "unifi-network"
+    }

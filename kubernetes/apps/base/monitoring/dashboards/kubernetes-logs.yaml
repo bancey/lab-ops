@@ -1,0 +1,110 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-kubernetes-logs
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Logs"
+data:
+  kubernetes-logs.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource" },
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "id": 1,
+          "title": "Log Volume (last 1h)",
+          "type": "stat",
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } }
+          },
+          "targets": [{ "expr": "count_over_time({cluster=\"tiny\"} [1h])" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource" },
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "id": 2,
+          "title": "Error Logs (last 1h)",
+          "type": "stat",
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } }
+          },
+          "targets": [{ "expr": "count_over_time({cluster=\"tiny\"} AND error [1h])" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource" },
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "id": 3,
+          "title": "Warning Logs (last 1h)",
+          "type": "stat",
+          "fieldConfig": {
+            "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }] } }
+          },
+          "targets": [{ "expr": "count_over_time({cluster=\"tiny\"} AND warn [1h])" }]
+        },
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource" },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 4 },
+          "id": 4,
+          "title": "Pod Logs",
+          "type": "logs",
+          "targets": [{ "expr": "{cluster=\"tiny\"}" }],
+          "options": {
+            "showTime": true,
+            "showLabels": true,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending"
+          }
+        },
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource" },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 16 },
+          "id": 5,
+          "title": "Error Logs",
+          "type": "logs",
+          "targets": [{ "expr": "{cluster=\"tiny\"} AND error" }],
+          "options": {
+            "showTime": true,
+            "showLabels": true,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending"
+          }
+        },
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource" },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 28 },
+          "id": 6,
+          "title": "Kubernetes Events",
+          "type": "logs",
+          "targets": [{ "expr": "{source=\"kubernetes-events\"}" }],
+          "options": {
+            "showTime": true,
+            "showLabels": true,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending"
+          }
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["kubernetes", "logs"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Kubernetes Logs",
+      "uid": "kubernetes-logs"
+    }
