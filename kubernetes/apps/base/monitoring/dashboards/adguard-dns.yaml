@@ -25,7 +25,7 @@ data:
           "id": 1,
           "title": "Total DNS Queries (24h)",
           "type": "stat",
-          "targets": [{ "expr": "sum(increase(adguard_dns_queries_total[24h]))" }]
+          "targets": [{ "expr": "sum(increase(adguard_queries[24h]))" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -36,7 +36,7 @@ data:
           "id": 2,
           "title": "Block Rate",
           "type": "stat",
-          "targets": [{ "expr": "sum(rate(adguard_dns_blocked_total[1h])) / sum(rate(adguard_dns_queries_total[1h]))" }]
+          "targets": [{ "expr": "sum(rate(adguard_queries_blocked[1h])) / sum(rate(adguard_queries[1h]))" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -47,7 +47,7 @@ data:
           "id": 3,
           "title": "Blocked Queries (24h)",
           "type": "stat",
-          "targets": [{ "expr": "sum(increase(adguard_dns_blocked_total[24h]))" }]
+          "targets": [{ "expr": "sum(increase(adguard_queries_blocked[24h]))" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -73,7 +73,7 @@ data:
           "id": 5,
           "title": "DNS Query Rate by Server",
           "type": "timeseries",
-          "targets": [{ "expr": "rate(adguard_dns_queries_total[5m])", "legendFormat": "{{ server }}" }]
+          "targets": [{ "expr": "rate(adguard_queries[5m])", "legendFormat": "{{ server }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -88,7 +88,7 @@ data:
           "id": 6,
           "title": "Blocked Query Rate by Server",
           "type": "timeseries",
-          "targets": [{ "expr": "rate(adguard_dns_blocked_total[5m])", "legendFormat": "{{ server }}" }]
+          "targets": [{ "expr": "rate(adguard_queries_blocked[5m])", "legendFormat": "{{ server }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -103,21 +103,7 @@ data:
           "id": 7,
           "title": "Query Duration by Server",
           "type": "timeseries",
-          "targets": [{ "expr": "adguard_dns_query_duration_seconds", "legendFormat": "{{ server }}" }]
-        },
-        {
-          "datasource": { "type": "victoriametrics-metrics-datasource" },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "palette-classic" },
-              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } }
-            }
-          },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
-          "id": 8,
-          "title": "Blocklist Rules Count",
-          "type": "timeseries",
-          "targets": [{ "expr": "adguard_dns_rules_count", "legendFormat": "{{ server }}" }]
+          "targets": [{ "expr": "adguard_avg_processing_time_seconds", "legendFormat": "{{ server }}" }]
         }
       ],
       "schemaVersion": 39,
