@@ -58,7 +58,7 @@ data:
           "id": 4,
           "title": "Avg Query Duration",
           "type": "stat",
-          "targets": [{ "expr": "avg(adguard_dns_query_duration_seconds) * 1000" }]
+          "targets": [{ "expr": "adguard_avg_processing_time_seconds" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
