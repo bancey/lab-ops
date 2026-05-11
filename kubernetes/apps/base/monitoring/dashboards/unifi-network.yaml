@@ -25,7 +25,7 @@ data:
           "id": 1,
           "title": "Total Clients",
           "type": "stat",
-          "targets": [{ "expr": "count(unifipoller_client_receive_bytes_total)" }]
+          "targets": [{ "expr": "count(unpoller_client_receive_bytes_total)" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -36,7 +36,7 @@ data:
           "id": 2,
           "title": "Wireless Clients",
           "type": "stat",
-          "targets": [{ "expr": "count(unifipoller_client_receive_bytes_total{radio!=\"\"})" }]
+          "targets": [{ "expr": "count(unpoller_client_receive_bytes_total{radio!=\"\"})" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -47,7 +47,7 @@ data:
           "id": 3,
           "title": "Access Points",
           "type": "stat",
-          "targets": [{ "expr": "count(unifipoller_device_uptime_seconds{type=\"uap\"})" }]
+          "targets": [{ "expr": "count(unpoller_device_uptime_seconds{type=\"uap\"})" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -58,7 +58,7 @@ data:
           "id": 4,
           "title": "Switches",
           "type": "stat",
-          "targets": [{ "expr": "count(unifipoller_device_uptime_seconds{type=\"usw\"})" }]
+          "targets": [{ "expr": "count(unpoller_device_uptime_seconds{type=\"usw\"})" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -73,7 +73,7 @@ data:
           "id": 5,
           "title": "AP Memory Usage",
           "type": "timeseries",
-          "targets": [{ "expr": "unifipoller_device_mem_used_bytes{type=\"uap\"}", "legendFormat": "{{ name }}" }]
+          "targets": [{ "expr": "unpoller_device_mem_used_bytes{type=\"uap\"}", "legendFormat": "{{ name }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -88,7 +88,7 @@ data:
           "id": 6,
           "title": "AP CPU Load",
           "type": "timeseries",
-          "targets": [{ "expr": "unifipoller_device_cpu_percent{type=\"uap\"} / 100", "legendFormat": "{{ name }}" }]
+          "targets": [{ "expr": "unpoller_device_cpu_percent{type=\"uap\"} / 100", "legendFormat": "{{ name }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -103,7 +103,7 @@ data:
           "id": 7,
           "title": "Client Receive Rate (Top 10)",
           "type": "timeseries",
-          "targets": [{ "expr": "topk(10, rate(unifipoller_client_receive_bytes_total[5m]))", "legendFormat": "{{ name }}" }]
+          "targets": [{ "expr": "topk(10, rate(unpoller_client_receive_bytes_total[5m]))", "legendFormat": "{{ name }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -118,7 +118,7 @@ data:
           "id": 8,
           "title": "Client Transmit Rate (Top 10)",
           "type": "timeseries",
-          "targets": [{ "expr": "topk(10, rate(unifipoller_client_transmit_bytes_total[5m]))", "legendFormat": "{{ name }}" }]
+          "targets": [{ "expr": "topk(10, rate(unpoller_client_transmit_bytes_total[5m]))", "legendFormat": "{{ name }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -133,7 +133,7 @@ data:
           "id": 9,
           "title": "Device Uptime",
           "type": "timeseries",
-          "targets": [{ "expr": "unifipoller_device_uptime_seconds", "legendFormat": "{{ name }} ({{ type }})" }]
+          "targets": [{ "expr": "unpoller_device_uptime_seconds", "legendFormat": "{{ name }} ({{ type }})" }]
         }
       ],
       "schemaVersion": 39,
