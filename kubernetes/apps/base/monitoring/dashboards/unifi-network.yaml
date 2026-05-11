@@ -36,7 +36,7 @@ data:
           "id": 2,
           "title": "Wireless Clients",
           "type": "stat",
-          "targets": [{ "expr": "count(unpoller_client_receive_bytes_total{radio!=\"\"})" }]
+          "targets": [{ "expr": "count(unpoller_client_receive_bytes_total{ap_name!=\"\"})" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -73,7 +73,7 @@ data:
           "id": 5,
           "title": "AP Memory Usage",
           "type": "timeseries",
-          "targets": [{ "expr": "unpoller_device_mem_used_bytes{type=\"uap\"}", "legendFormat": "{{ name }}" }]
+          "targets": [{ "expr": "unpoller_device_memory_used_bytes{type=\"uap\"}", "legendFormat": "{{ name }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
@@ -88,7 +88,7 @@ data:
           "id": 6,
           "title": "AP CPU Load",
           "type": "timeseries",
-          "targets": [{ "expr": "unpoller_device_cpu_percent{type=\"uap\"} / 100", "legendFormat": "{{ name }}" }]
+          "targets": [{ "expr": "unpoller_device_cpu_utilization_ratio{type=\"uap\"} / 100", "legendFormat": "{{ name }}" }]
         },
         {
           "datasource": { "type": "victoriametrics-metrics-datasource" },
