@@ -109,7 +109,7 @@
     command: galera_new_cluster
     when: inventory_hostname == 'mariadb0' and bootstrap_galera | bool
   - name: Set MariaDB root password
-    ansible.mysql.mysql_user:
+    community.mysql.mysql_user:
       name: root
       password: "{{ mariadb_root_password }}"
       login_unix_socket: /run/mysqld/mysqld.sock
@@ -126,7 +126,7 @@
       group: root
       mode: '0600'
   - name: Create Galera SST user
-    ansible.mysql.mysql_user:
+    community.mysql.mysql_user:
       name: galera_sst
       password: "{{ mariadb_galera_password }}"
       priv: "*.*:RELOAD,LOCK TABLES,PROCESS,REPLICATION CLIENT"
@@ -136,7 +136,7 @@
     loop: "{{ galera_nodes + ['localhost'] }}"
     when: inventory_hostname == 'mariadb0'
   - name: Create ProxySQL monitor user
-    ansible.mysql.mysql_user:
+    community.mysql.mysql_user:
       name: proxysql_monitor
       password: "{{ proxysql_monitor_password }}"
       priv: "*.*:USAGE,REPLICATION CLIENT"
@@ -157,7 +157,7 @@
       enabled: true
     when: not (bootstrap_galera | bool)
   - name: Create application databases
-    ansible.mysql.mysql_db:
+    community.mysql.mysql_db:
       name: "{{ item.name }}"
       state: present
       login_unix_socket: /run/mysqld/mysqld.sock
@@ -166,7 +166,7 @@
     - inventory_hostname == 'mariadb0'
     - mariadb_databases_resolved | length > 0
   - name: Create application database users
-    ansible.mysql.mysql_user:
+    community.mysql.mysql_user:
       name: "{{ item.user }}"
       password: "{{ item.password }}"
       priv: "{{ item.name }}.*:{{ item.privs | default('ALL PRIVILEGES') }}"
@@ -179,7 +179,7 @@
     - inventory_hostname == 'mariadb0'
     - mariadb_databases_resolved | length > 0
   - name: Create Alloy monitoring user
-    ansible.mysql.mysql_user:
+    community.mysql.mysql_user:
       name: alloy_monitor
       password: "{{ alloy_mysql_password }}"
       priv: "*.*:PROCESS,REPLICATION CLIENT,SLAVE MONITOR,SELECT"
@@ -421,48 +421,48 @@
       enabled: true
   - name: Manage ProxySQL config via admin interface
     module_defaults:
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         login_host: 127.0.0.1
         login_port: 6032
         login_user: admin
         login_password: "{{ proxysql_admin_password }}"
     block:
     - name: Clear ProxySQL mysql_users
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "DELETE FROM mysql_users"
     - name: Add mysql_users to ProxySQL
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "INSERT INTO mysql_users (username, password, default_hostgroup, active) VALUES ('{{ item.user }}', '{{ item.password }}', 0, 1)"
       loop: "{{ mariadb_databases_resolved }}"
       no_log: true
     - name: Load mysql_users to runtime
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "LOAD MYSQL USERS TO RUNTIME"
     - name: Save mysql_users to disk
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "SAVE MYSQL USERS TO DISK"
     - name: Clear ProxySQL mysql_servers
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "DELETE FROM mysql_servers"
     - name: Add Galera nodes to ProxySQL writer hostgroup
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (0, '{{ item }}', 3306, 100)"
       loop: "{{ galera_nodes }}"
     - name: Add Galera nodes to ProxySQL reader hostgroup
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (1, '{{ item }}', 3306, 100)"
       loop: "{{ galera_nodes }}"
     - name: Load mysql_servers to runtime
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "LOAD MYSQL SERVERS TO RUNTIME"
     - name: Save mysql_servers to disk
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "SAVE MYSQL SERVERS TO DISK"
     - name: Clear ProxySQL mysql_galera_hostgroups
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "DELETE FROM mysql_galera_hostgroups"
     - name: Configure Galera hostgroups for single-writer mode
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: >-
           INSERT INTO mysql_galera_hostgroups
           (writer_hostgroup, backup_writer_hostgroup, reader_hostgroup,
@@ -470,26 +470,26 @@
           max_transactions_behind)
           VALUES (0, 2, 1, 3, 1, 1, 1, 100)
     - name: Load mysql_servers to runtime after galera hostgroups
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "LOAD MYSQL SERVERS TO RUNTIME"
     - name: Save mysql_servers to disk after galera hostgroups
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "SAVE MYSQL SERVERS TO DISK"
     - name: Clear ProxySQL mysql_query_rules
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "DELETE FROM mysql_query_rules"
     - name: Add ProxySQL query rules
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES ({{ item.rule_id }}, 1, '{{ item.match_digest }}', {{ item.destination_hostgroup }}, 1)"
       loop:
       - {rule_id: 1, match_digest: "^SELECT .* FOR UPDATE", destination_hostgroup: 0}
       - {rule_id: 2, match_digest: "^SELECT", destination_hostgroup: 1}
       - {rule_id: 3, match_digest: ".*", destination_hostgroup: 0}
     - name: Load mysql_query_rules to runtime
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "LOAD MYSQL QUERY RULES TO RUNTIME"
     - name: Save mysql_query_rules to disk
-      ansible.mysql.mysql_query:
+      community.mysql.mysql_query:
         query: "SAVE MYSQL QUERY RULES TO DISK"
   - name: Add Grafana Alloy apt key
     ansible.builtin.get_url:
