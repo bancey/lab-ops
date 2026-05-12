@@ -8,7 +8,7 @@ collections:
     version: 2.1.0
   - name: community.general
     version: 12.6.0
-  - name: community.mysql
+  - name: ansible.mysql
     version: 5.0.0
 roles:
   - name: xanmanning.k3s
