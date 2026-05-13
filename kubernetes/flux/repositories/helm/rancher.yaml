@@ -6,4 +6,5 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
-  url: https://rancher.github.io/local-path-provisioner/
+  type: oci
+  url: oci://ghcr.io/rancher/local-path-provisioner/charts
