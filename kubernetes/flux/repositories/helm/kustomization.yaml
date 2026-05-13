@@ -17,3 +17,4 @@ resources:
   - ./monica.yaml
   - ./unpoller.yaml
   - ./victoria-metrics.yaml
+  - ./prometheus-community.yaml

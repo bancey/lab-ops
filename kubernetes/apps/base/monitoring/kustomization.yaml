@@ -12,4 +12,5 @@ resources:
   - dashboards/adguard-dns.yaml
   - dashboards/kubernetes-logs.yaml
   - alloy.yaml
+  - node-exporter.yaml
   - unpoller.yaml

@@ -42,16 +42,16 @@ resources:
   - qbittorrent-config-pv.yaml
   - qbittorrent-config-pvc.yaml
   - ../base/acquisitions
-  #- ../base/monitoring
+  - ../base/monitoring
 patchesStrategicMerge:
   - plex-patch.yaml
   - jellyfin-patch.yaml
   - acquisitions-patch.yaml
-  #- loki-patch.yaml
-  #- victoria-metrics-patch.yaml
-  #- grafana-patch.yaml
-  #- alloy-patch.yaml
-  #- unpoller-patch.yaml
+  - victoria-logs-patch.yaml
+  - victoria-metrics-patch.yaml
+  - grafana-patch.yaml
+  - alloy-patch.yaml
+  - unpoller-patch.yaml
 patches:
   - patch: |
       - op: add
