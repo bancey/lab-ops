@@ -25,19 +25,44 @@ spec:
       configMap:
         create: true
         content: |
-          // Cluster-wide service discovery for node metrics
-          discovery.kubernetes "nodes" {
-            role = "node"
+          // Discover node-exporter endpoints
+          discovery.kubernetes "node_exporter" {
+            role = "endpoints"
+            namespaces {
+              names = ["monitoring"]
+            }
+            selectors {
+              role = "endpoints"
+              label = "app.kubernetes.io/name=prometheus-node-exporter"
+            }
           }
 
           // Scrape node-exporter metrics
           prometheus.scrape "node_exporter" {
-            targets    = discovery.kubernetes.nodes.targets
+            targets    = discovery.relabel.node_exporter.output
             forward_to = [prometheus.remote_write.local_mimir.receiver]
             scrape_interval = "15s"
             metrics_path = "/metrics"
             scheme = "http"
             job_name = "node-exporter"
+          }
+
+          // Relabeling for node exporter
+          discovery.relabel "node_exporter" {
+            targets = discovery.kubernetes.node_exporter.targets
+
+            // Keep only endpoints that are ready
+            rule {
+              source_labels = ["__meta_kubernetes_endpoint_ready"]
+              action = "keep"
+              regex = "true"
+            }
+
+            // Set instance label to the node name
+            rule {
+              source_labels = ["__meta_kubernetes_endpoint_node_name"]
+              target_label = "instance"
+            }
           }
 
           // Cluster-wide service discovery for pods

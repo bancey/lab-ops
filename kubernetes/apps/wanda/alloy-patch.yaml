@@ -17,9 +17,16 @@ spec:
     alloy:
       configMap:
         content: |
-          // Cluster-wide service discovery for node metrics
-          discovery.kubernetes "nodes" {
-            role = "node"
+          // Discover node-exporter endpoints
+          discovery.kubernetes "node_exporter" {
+            role = "endpoints"
+            namespaces {
+              names = ["monitoring"]
+            }
+            selectors {
+              role = "endpoints"
+              label = "app.kubernetes.io/name=prometheus-node-exporter"
+            }
           }
 
           // Scrape node-exporter metrics
@@ -34,41 +41,34 @@ spec:
             scrape_timeout = "10s"
           }
 
-          // Relabeling for node exporter to ensure consistent labels and prevent conflicts
+          // Relabeling for node exporter
           discovery.relabel "node_exporter" {
-            targets = discovery.kubernetes.nodes.targets
+            targets = discovery.kubernetes.node_exporter.targets
 
-            // Add cluster label consistently
+            // Keep only endpoints that are ready
+            rule {
+              source_labels = ["__meta_kubernetes_endpoint_ready"]
+              action = "keep"
+              regex = "true"
+            }
+
+            // Add cluster label
             rule {
               target_label = "cluster"
               replacement = "wanda"
             }
 
-            // Add unique source identifier to prevent conflicts
+            // Add unique source identifier
             rule {
               target_label = "alloy_instance"
               replacement = "wanda-alloy"
             }
 
-            // Ensure instance label is consistent and unique
+            // Set instance label to the node name
             rule {
-              source_labels = ["__meta_kubernetes_node_name"]
+              source_labels = ["__meta_kubernetes_endpoint_node_name"]
               target_label = "instance"
               replacement = "wanda-${1}"
-            }
-
-            // Add node role label
-            rule {
-              source_labels = ["__meta_kubernetes_node_label_node_kubernetes_io_instance_type"]
-              target_label = "node_type"
-              regex = "(.+)"
-            }
-
-            // Set the address for node-exporter (assuming it runs on port 9100)
-            rule {
-              source_labels = ["__meta_kubernetes_node_address_InternalIP"]
-              target_label = "__address__"
-              replacement = "${1}:9100"
             }
           }
 
