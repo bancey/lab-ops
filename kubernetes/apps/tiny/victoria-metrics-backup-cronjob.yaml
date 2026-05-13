@@ -1,0 +1,42 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: victoria-metrics-backup
+  namespace: monitoring
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsUser: 0
+          containers:
+            - name: backup
+              image: alpine:3.21
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  apk add --no-cache rsync
+                  echo "Starting backup at $(date)"
+                  rsync -a --delete /storage/ /backups/
+                  echo "Backup complete at $(date)"
+              volumeMounts:
+                - name: storage
+                  mountPath: /storage
+                  readOnly: true
+                - name: backups
+                  mountPath: /backups
+          volumes:
+            - name: storage
+              persistentVolumeClaim:
+                claimName: server-volume-victoria-metrics-victoria-metrics-single-server-0
+            - name: backups
+              persistentVolumeClaim:
+                claimName: victoria-metrics-snapshots
