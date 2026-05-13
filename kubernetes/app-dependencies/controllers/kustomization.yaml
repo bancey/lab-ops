@@ -10,3 +10,5 @@ resources:
   - traefik.yaml
   - dragonfly-namespace.yaml
   - dragonfly.yaml
+  - local-path-provisioner-namespace.yaml
+  - local-path-provisioner.yaml

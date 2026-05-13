@@ -18,3 +18,4 @@ resources:
   - ./unpoller.yaml
   - ./victoria-metrics.yaml
   - ./prometheus-community.yaml
+  - ./rancher.yaml
