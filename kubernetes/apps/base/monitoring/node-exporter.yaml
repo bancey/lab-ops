@@ -23,6 +23,8 @@ spec:
     service:
       port: 9100
       targetPort: 9100
+      annotations:
+        prometheus.io/scrape: "false"
     affinity: {}
     tolerations:
       - operator: Exists
