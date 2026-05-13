@@ -7,6 +7,9 @@ metadata:
 spec:
   values:
     server:
+      extraArgs:
+        finalMergeDelay: "1h"
+        storage.maxHourlySeries: "50000"
       persistentVolume:
         storageClassName: unas-nfs-csi
       securityContext:
