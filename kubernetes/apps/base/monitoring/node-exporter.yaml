@@ -23,6 +23,7 @@ spec:
     service:
       port: 9100
       targetPort: 9100
+    affinity: {}
     tolerations:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
