@@ -20,6 +20,7 @@ resources:
   - ./monitoring-certificates.yaml
   - ./victoria-logs-pvc.yaml
   - ./grafana-pvc.yaml
+  - ./victoria-metrics-snapshots-pvc.yaml
   - ./unpoller-secret.sops.yaml
   - ./unpoller-alloy-config.yaml
   - ../base/home-assistant

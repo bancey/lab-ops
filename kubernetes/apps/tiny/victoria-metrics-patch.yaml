@@ -7,11 +7,34 @@ metadata:
 spec:
   values:
     server:
-      extraArgs:
-        finalMergeDelay: "1h"
-        storage.maxHourlySeries: "50000"
       persistentVolume:
-        storageClassName: unas-nfs-csi
+        storageClassName: local-path
+      extraVolumes:
+        - name: vm-backups
+          persistentVolumeClaim:
+            claimName: victoria-metrics-snapshots
+      extraContainers:
+        - name: backup
+          image: alpine:3.21
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apk add --no-cache rsync
+              echo "Starting initial backup at $(date)"
+              rsync -a --delete /storage/ /backups/
+              echo "Initial backup complete at $(date)"
+              while true; do
+                sleep 21600
+                echo "Starting backup at $(date)"
+                rsync -a --delete /storage/ /backups/
+                echo "Backup complete at $(date)"
+              done
+          volumeMounts:
+            - name: server
+              mountPath: /storage
+              readOnly: true
+            - name: vm-backups
+              mountPath: /backups
       securityContext:
         runAsUser: 0
         runAsNonRoot: false
