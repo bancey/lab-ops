@@ -194,28 +194,28 @@ spec:
           prometheus.remote_write "mimir" {
             endpoint {
               url = "https://victoria-metrics.tiny.heimelska.co.uk/api/v1/write"
-            }
 
-            // Add queue configuration to handle out-of-order samples
-            queue_config {
-              capacity = 10000
-              max_samples_per_send = 2000
-              batch_send_deadline = "5s"
-              min_shards = 1
-              max_shards = 10
-              retry_on_http_429 = true
+              // Add queue configuration to handle out-of-order samples
+              queue_config {
+                capacity = 10000
+                max_samples_per_send = 2000
+                batch_send_deadline = "5s"
+                min_shards = 1
+                max_shards = 10
+                retry_on_http_429 = true
+              }
+
+              // Add metadata configuration
+              metadata_config {
+                send = true
+                send_interval = "1m"
+              }
             }
 
             external_labels = {
               cluster = "wanda",
               source = "alloy-wanda",
               alloy_instance = "wanda-cluster",
-            }
-
-            // Add metadata configuration
-            metadata_config {
-              send = true
-              send_interval = "1m"
             }
           }
 
