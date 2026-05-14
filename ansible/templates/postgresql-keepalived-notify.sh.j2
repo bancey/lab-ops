@@ -11,7 +11,6 @@ LOGFILE="/var/log/keepalived-postgresql-notify.log"
 PG_DATA="{{ postgresql_data_dir }}"
 PG_CONF="{{ postgresql_conf_dir }}"
 PG_BIN="/usr/lib/postgresql/{{ postgresql_version }}/bin"
-PRIMARY_CONNINFO='host={{ postgresql_primary_host }} port=5432 user=replicator password={{ postgresql_replication_password }}'
 VIP="{{ vip | regex_replace('/.*', '') }}"
 
 log() {

@@ -6,8 +6,6 @@
     postgresql_data_dir: "/var/lib/postgresql/17/main"
     postgresql_conf_dir: "/etc/postgresql/17/main"
     postgresql_nodes: ["10.151.14.220", "10.151.14.221", "10.151.14.222"]
-    postgresql_primary_host: "10.151.14.220"
-    postgresql_primary_hostname: "postgresql0"
     postgresql_databases:
     - name: radarr-main
       user: radarr
@@ -120,6 +118,43 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
+
+  # Detect which node is the current primary
+  - name: Check if PostgreSQL is running
+    ansible.builtin.command:
+      cmd: pg_isready
+    register: pg_isready_check
+    changed_when: false
+    failed_when: false
+  - name: Query pg_is_in_recovery on running nodes
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_query:
+      query: "SELECT pg_is_in_recovery() AS is_recovery"
+    register: pg_recovery_check
+    when: pg_isready_check.rc == 0
+    failed_when: false
+  - name: Determine if this node is the primary
+    set_fact:
+      is_postgresql_primary: "{{ pg_isready_check.rc == 0 and pg_recovery_check is not skipped and not pg_recovery_check.failed and pg_recovery_check.query_result[0].is_recovery == false }}"
+  - name: Set detected primary hostname
+    set_fact:
+      postgresql_primary_hostname: "{{ item }}"
+      postgresql_primary_host: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    loop: "{{ ansible_play_hosts }}"
+    when: hostvars[item]['is_postgresql_primary'] | bool
+    run_once: true
+  - name: Fail if no primary was detected
+    ansible.builtin.fail:
+      msg: >
+        No PostgreSQL primary node detected. All nodes report as standby or are not running.
+        Manual intervention is required to promote a node.
+    when: postgresql_primary_hostname is not defined
+    run_once: true
+  - name: Display detected primary
+    ansible.builtin.debug:
+      msg: "Detected PostgreSQL primary: {{ postgresql_primary_hostname }} ({{ postgresql_primary_host }})"
+    run_once: true
 
   # Check if replication needs bootstrapping
   - name: Check if PostgreSQL is already running with data
