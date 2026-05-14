@@ -21,16 +21,37 @@ data:
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "palette-classic" },
-              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "mode": "none" } },
+              "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 70, "lineInterpolation": "smooth", "lineWidth": 1, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" } },
               "unit": "percentunit"
-            }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byRegexp", "options": ".*user.*" },
+                "properties": [{ "id": "color", "value": { "fixedColor": "#5794F2", "mode": "fixed" } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": ".*system.*" },
+                "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": ".*iowait.*" },
+                "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": ".*irq.*" },
+                "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }]
+              }
+            ]
           },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "id": 1,
-          "title": "CPU Usage",
+          "title": "CPU Usage by Mode",
           "type": "timeseries",
           "targets": [
-            { "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"$instance\"}[5m]))", "legendFormat": "{{ instance }}" }
+            { "expr": "avg by (instance) (rate(node_cpu_seconds_total{mode=\"user\", instance=~\"$instance\"}[5m]))", "legendFormat": "{{ instance }} user" },
+            { "expr": "avg by (instance) (rate(node_cpu_seconds_total{mode=\"system\", instance=~\"$instance\"}[5m]))", "legendFormat": "{{ instance }} system" },
+            { "expr": "avg by (instance) (rate(node_cpu_seconds_total{mode=\"iowait\", instance=~\"$instance\"}[5m]))", "legendFormat": "{{ instance }} iowait" },
+            { "expr": "avg by (instance) (rate(node_cpu_seconds_total{mode=~\"irq|softirq\", instance=~\"$instance\"}[5m]))", "legendFormat": "{{ instance }} irq" }
           ]
         },
         {
