@@ -19,8 +19,9 @@ resource "terraform_data" "k8s_ansible" {
   # Reboot only when the resource is being replaced AND ansible_reboot_hosts is true
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
-      playbook  = "k3s.yaml"
-      arguments = "-e run_prep=true -e run_install=true -e passed_hosts=${each.key}_k3s_cluster -e reboot_hosts=${each.value.ansible_reboot_hosts} -e reboot_timeout=1200"
+      playbook    = "k3s.yaml"
+      arguments   = "-e run_prep=true -e run_install=true -e passed_hosts=${each.key}_k3s_cluster -e reboot_hosts=${each.value.ansible_reboot_hosts} -e reboot_timeout=1200"
+      secret_keys = []
     })
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
     interpreter = ["/bin/bash", "-c"]
