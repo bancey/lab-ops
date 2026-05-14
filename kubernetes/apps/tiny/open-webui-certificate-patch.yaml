@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: open-webui-staging-tls
+  namespace: ollama
+spec:
+  commonName: "open-webui.tiny.heimelska.co.uk"
+  dnsNames:
+    - "open-webui.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: open-webui-tls
+  namespace: ollama
+spec:
+  commonName: "open-webui.tiny.heimelska.co.uk"
+  dnsNames:
+    - "open-webui.tiny.heimelska.co.uk"

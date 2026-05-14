@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: open-webui
+  namespace: ollama
+spec:
+  routes:
+    - match: Host(`open-webui.tiny.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: open-webui-main
+          port: 8080
+      middlewares:
+        - name: default-headers
+          namespace: traefik

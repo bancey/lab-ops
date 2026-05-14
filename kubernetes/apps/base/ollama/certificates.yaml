@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: open-webui-staging-tls
+  namespace: default
+spec:
+  secretName: open-webui-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "open-webui-fqdn"
+  dnsNames:
+    - "open-webui-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: open-webui-tls
+  namespace: default
+spec:
+  secretName: open-webui-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "open-webui-fqdn"
+  dnsNames:
+    - "open-webui-fqdn"
