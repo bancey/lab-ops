@@ -37,7 +37,7 @@ spec:
           main:
             image:
               repository: ghcr.io/open-webui/open-webui
-              tag: v0.4.8
+              tag: v0.9.5
             env:
               TZ: Europe/London
               OLLAMA_BASE_URL: "http://ollama-main.ollama.svc.cluster.local:11434"
