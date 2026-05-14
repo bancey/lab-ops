@@ -40,7 +40,7 @@ spec:
               tag: v0.9.5
             env:
               TZ: Europe/London
-              OLLAMA_BASE_URL: "http://ollama-main.ollama.svc.cluster.local:11434"
+              OLLAMA_BASE_URL: "http://ollama.ollama.svc.cluster.local:11434"
               # Disable embedded OpenAI integration unless configured
               ENABLE_OPENAI_API: "false"
               # Keep auth on; first user becomes admin
