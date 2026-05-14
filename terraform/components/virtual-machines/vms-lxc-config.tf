@@ -21,9 +21,11 @@ resource "terraform_data" "ansible" {
 
   provisioner "local-exec" {
     command = templatefile("${path.module}/ansible.sh.tpl", {
-      playbook  = each.value.playbook
-      arguments = "${join(" ", flatten([for arg_name, secret_name in each.value.secrets : ["-e '${arg_name}=${data.azurerm_key_vault_secret.ansible_secrets["${each.key}_${arg_name}"].value}'"] if length(each.value.secrets) > 0]))}${each.value.arguments}"
+      playbook    = each.value.playbook
+      arguments   = each.value.arguments
+      secret_keys = keys(each.value.secrets)
     })
+    environment = { for arg_name, secret_name in each.value.secrets : "ANSIBLE_VAR_${upper(arg_name)}" => data.azurerm_key_vault_secret.ansible_secrets["${each.key}_${arg_name}"].value }
     working_dir = replace(path.cwd, "/terraform/components/virtual-machines", "/ansible")
     interpreter = ["/bin/bash", "-c"]
   }
