@@ -385,6 +385,8 @@ dns:
     record: 10.151.24.10
   zigbee2mqtt.tiny.heimelska.co.uk:
     record: 10.151.24.10
+  open-webui.tiny.heimelska.co.uk:
+    record: 10.151.24.10
   mqtt.tiny.heimelska.co.uk:
     record: 10.151.24.12
   matter.heimelska.co.uk:
