@@ -13,7 +13,7 @@ spec:
     - match: Host(`open-webui.local`)
       kind: Rule
       services:
-        - name: open-webui-main
+        - name: open-webui
           port: 8080
       middlewares:
         - name: default-headers
