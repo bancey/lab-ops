@@ -25,6 +25,7 @@ resources:
   - ./unpoller-secret.sops.yaml
   - ./unpoller-alloy-config.yaml
   - ../base/home-assistant
+  - ./open-webui-db-secret.sops.yaml
   - ../base/ollama
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
@@ -42,5 +43,6 @@ patchesStrategicMerge:
   - zigbee2mqtt-patch.yaml
   - home-assistant-certificate-patch.yaml
   - home-assistant-ingress-route-patch.yaml
+  - open-webui-patch.yaml
   - open-webui-certificate-patch.yaml
   - open-webui-ingress-route-patch.yaml
