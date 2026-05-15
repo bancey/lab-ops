@@ -20,7 +20,7 @@ spec:
     remediation:
       retries: 3
   values:
-    image: linuxserver/sabnzbd:5.0.1
+    image: linuxserver/sabnzbd:5.0.3
     env:
       - name: DOCKER_MODS
         value: lscr.io/linuxserver/mods:universal-unrar6
