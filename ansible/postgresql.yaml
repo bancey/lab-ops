@@ -143,7 +143,6 @@
       postgresql_primary_host: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     loop: "{{ ansible_play_hosts }}"
     when: hostvars[item]['is_postgresql_primary'] | bool
-    run_once: true
   - name: Fail if no primary was detected
     ansible.builtin.fail:
       msg: >
@@ -213,14 +212,13 @@
     register: keepalived_status
     changed_when: false
     failed_when: false
-  - name: Stop Keepalived before PostgreSQL restart to prevent VIP failover
+  - name: Stop Keepalived on all nodes before primary PostgreSQL restart to prevent VIP failover
     service:
       name: keepalived
       state: stopped
     when:
-    - inventory_hostname == postgresql_primary_hostname
-    - pg_conf_primary is changed or pg_auto_conf_primary is changed
     - keepalived_status.rc == 0
+    - hostvars[postgresql_primary_hostname]['pg_conf_primary'] is changed or hostvars[postgresql_primary_hostname]['pg_auto_conf_primary'] is changed
   - name: Restart PostgreSQL on primary if config changed
     service:
       name: postgresql
@@ -248,13 +246,13 @@
       port: 5432
       timeout: 30
     when: inventory_hostname == postgresql_primary_hostname
-  - name: Re-start Keepalived after PostgreSQL is confirmed ready
+  - name: Re-start Keepalived on all nodes after PostgreSQL is confirmed ready
     service:
       name: keepalived
       state: started
     when:
-    - inventory_hostname == postgresql_primary_hostname
     - keepalived_status.rc == 0
+    - hostvars[postgresql_primary_hostname]['pg_conf_primary'] is changed or hostvars[postgresql_primary_hostname]['pg_auto_conf_primary'] is changed
   - name: Set PostgreSQL superuser password
     become: true
     become_user: postgres
