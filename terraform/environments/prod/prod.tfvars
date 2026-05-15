@@ -302,7 +302,7 @@ ansible = {
       "openwebui_postgresql_password"   = "PostgreSQL-OpenWebUI-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "15-05-2026-1715"
+    trigger   = "15-05-2026-1720"
   }
 }
 
