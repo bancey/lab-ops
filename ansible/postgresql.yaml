@@ -427,6 +427,20 @@
     when:
     - inventory_hostname == postgresql_primary_hostname
     - postgresql_databases_resolved | length > 0
+  - name: Grant schema privileges on application databases
+    become: true
+    become_user: postgres
+    community.postgresql.postgresql_privs:
+      database: "{{ item.name }}"
+      type: schema
+      objs: public
+      roles: "{{ item.user }}"
+      privs: ALL
+      state: present
+    loop: "{{ postgresql_databases_resolved }}"
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - postgresql_databases_resolved | length > 0
 
   # Keepalived for VIP
   - name: Ensure /etc/keepalived dir exists
