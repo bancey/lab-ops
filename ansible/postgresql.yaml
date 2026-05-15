@@ -283,6 +283,7 @@
     become_user: postgres
     community.postgresql.postgresql_query:
       query: "GRANT pg_read_all_settings TO pgbouncer"
+      autocommit: true
     when: inventory_hostname == postgresql_primary_hostname and enable_pgbouncer | bool
   - name: Create pgbouncer auth function
     become: true
@@ -298,6 +299,7 @@
         END;
         $$ LANGUAGE plpgsql SECURITY DEFINER;
         GRANT EXECUTE ON FUNCTION public.lookup_pgbouncer_auth(TEXT) TO pgbouncer;
+      autocommit: true
     when: inventory_hostname == postgresql_primary_hostname and enable_pgbouncer | bool
 
   # Bootstrap standby nodes

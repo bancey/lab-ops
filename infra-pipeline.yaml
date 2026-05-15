@@ -75,7 +75,7 @@ parameters:
           - thanos
           - gamora
         dependsOn:
-          - prod_twingate
+          - rpi_ansible
       - deployment: test_vpn_gateway
         environment: test
         component: cloud-vpn-gateway
