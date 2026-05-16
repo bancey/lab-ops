@@ -300,6 +300,7 @@ ansible = {
       "sonarr_postgresql_password"      = "PostgreSQL-Sonarr-Password"
       "monica_postgresql_password"      = "PostgreSQL-Monica-Password"
       "openwebui_postgresql_password"   = "PostgreSQL-OpenWebUI-Password"
+      "paperless_postgresql_password"   = "PostgreSQL-Paperless-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
     trigger   = "15-05-2026-1725"
