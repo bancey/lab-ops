@@ -157,6 +157,20 @@ The `.github/workflows/lint.yaml` workflow runs `yamllint .` on all pull request
 2. Encrypt secrets with SOPS: `sops -e secret.yaml > secret.sops.yaml`
 3. Flux automatically deploys changes after merge to main
 
+### Databases for New Applications
+When an application requires a relational database, **do not** deploy database containers or Helm subcharts inside Kubernetes. Instead:
+1. Add the database and user to the existing **Ansible-managed PostgreSQL cluster** in `ansible/postgresql.yaml` under the `postgresql_databases` list. Use a `password_var` that follows the naming convention `<app>_postgresql_password`.
+2. Add a corresponding secret mapping in `terraform/environments/prod/prod.tfvars` under the `postgresql` → `secrets` block, mapping the Ansible variable name to an Azure KeyVault secret name (convention: `PostgreSQL-<App>-Password`). A secret with that name must exist in the `bancey-vault` KeyVault.
+3. The database will be accessible at `pgsql.heimelska.co.uk` (VIP) on port `5432`.
+4. Create a SOPS-encrypted Kubernetes secret with the database credentials (see `kubernetes/apps/tiny/monica-db-secret.sops.yaml` for the pattern).
+5. Reference the external database host and credentials in the application's HelmRelease or deployment manifest.
+
+### Caching / In-Memory Stores for New Applications
+When an application requires Redis or an in-memory cache, **use Dragonfly** via the Dragonfly Operator (already running on the cluster) instead of deploying Redis containers or subcharts:
+1. Create a `Dragonfly` CRD resource in the application's namespace (see `kubernetes/apps/base/pelican/dragonfly.yaml` for the pattern).
+2. Reference the Dragonfly service as `<name>:6379` in the application configuration (e.g., `redis://<name>:6379`).
+3. The Dragonfly Operator is installed in `dragonfly-operator-system` and manages the lifecycle automatically.
+
 ### Managing Secrets
 ```bash
 # Decrypt SOPS file for viewing (requires Age key)

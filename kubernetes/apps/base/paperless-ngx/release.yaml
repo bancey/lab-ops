@@ -1,0 +1,112 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: paperless-ngx
+  namespace: paperless-ngx
+spec:
+  releaseName: paperless-ngx
+  chart:
+    spec:
+      version: 0.24.1
+      chart: paperless-ngx
+      sourceRef:
+        kind: HelmRepository
+        name: gabe565
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  dependsOn:
+    - name: paperless-ngx-tika
+      namespace: paperless-ngx
+    - name: paperless-ngx-gotenberg
+      namespace: paperless-ngx
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/paperless-ngx/paperless-ngx
+      tag: 2.14.7
+      pullPolicy: IfNotPresent
+
+    env:
+      TZ: Europe/London
+      PAPERLESS_URL: "https://paperless.example.com"
+      PAPERLESS_TIKA_ENABLED: "1"
+      PAPERLESS_TIKA_ENDPOINT: "http://paperless-ngx-tika.paperless-ngx.svc.cluster.local:9998"
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://paperless-ngx-gotenberg.paperless-ngx.svc.cluster.local:3000"
+      PAPERLESS_SECRET_KEY:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-secret
+            key: secret-key
+      PAPERLESS_DBENGINE: postgresql
+      PAPERLESS_DBHOST: pgsql.heimelska.co.uk
+      PAPERLESS_DBPORT: "5432"
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-db-secret
+            key: username
+      PAPERLESS_DBPASS:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-db-secret
+            key: password
+      PAPERLESS_REDIS: "redis://paperless-ngx-dragonfly:6379"
+
+    persistence:
+      data:
+        enabled: true
+        retain: true
+        accessMode: ReadWriteOnce
+        size: 2Gi
+      media:
+        enabled: true
+        retain: true
+        accessMode: ReadWriteOnce
+        size: 10Gi
+      export:
+        enabled: true
+        retain: true
+        accessMode: ReadWriteOnce
+        size: 2Gi
+      consume:
+        enabled: true
+        retain: true
+        accessMode: ReadWriteOnce
+        size: 4Gi
+
+    # Disable subcharts — using external PostgreSQL cluster and Dragonfly
+    postgresql:
+      enabled: false
+
+    mariadb:
+      enabled: false
+
+    redis:
+      enabled: false
+
+    service:
+      main:
+        ports:
+          http:
+            port: 8000
+
+    ingress:
+      main:
+        enabled: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 2Gi

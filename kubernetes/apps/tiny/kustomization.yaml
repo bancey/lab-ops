@@ -27,6 +27,9 @@ resources:
   - ../base/home-assistant
   - ./open-webui-db-secret.sops.yaml
   - ../base/ollama
+  - ./paperless-ngx-secret.sops.yaml
+  - ./paperless-ngx-db-secret.sops.yaml
+  - ../base/paperless-ngx
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -46,3 +49,6 @@ patchesStrategicMerge:
   - open-webui-patch.yaml
   - open-webui-certificate-patch.yaml
   - open-webui-ingress-route-patch.yaml
+  - paperless-ngx-patch.yaml
+  - paperless-ngx-certificate-patch.yaml
+  - paperless-ngx-ingress-route-patch.yaml
