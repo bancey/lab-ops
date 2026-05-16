@@ -55,7 +55,7 @@ Ansible Galaxy requires internet connectivity to galaxy.ansible.com which may no
 ansible-galaxy collection install -r ansible/requirements.yaml
 ```
 
-If this fails with network errors, document it but continue — it's a known limitation in sandboxed environments.
+If this fails with network errors, document it but continue—it's a known limitation in sandboxed environments.
 
 ## Repository Structure & Key Projects
 
@@ -117,7 +117,7 @@ task --list
 task bootstrap -- <cluster-name>
 ```
 
-Valid cluster names correspond to directories under `kubernetes/flux/clusters/` (e.g., `minikube`, `tiny`, `wanda`).
+Valid cluster names correspond to directories under `kubernetes/flux/clusters/` (e.g., `minikube`, `tiny`, `wanda`). Note that `kubernetes/apps/base/` contains shared manifests inherited by clusters, not a deployable cluster itself.
 
 ### Azure DevOps Pipeline Operations
 The primary deployment method uses `infra-pipeline.yaml` which orchestrates:
