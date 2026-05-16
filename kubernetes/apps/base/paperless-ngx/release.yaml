@@ -73,7 +73,6 @@ spec:
       enabled: true
       auth:
         database: paperless
-        postgresPassword: changeme
         existingSecret: paperless-ngx-secret
         secretKeys:
           adminPasswordKey: postgres-password
