@@ -50,7 +50,11 @@ spec:
       PAPERLESS_DBHOST: pgsql.heimelska.co.uk
       PAPERLESS_DBPORT: "5432"
       PAPERLESS_DBNAME: paperless
-      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBUSER:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-db-secret
+            key: username
       PAPERLESS_DBPASS:
         valueFrom:
           secretKeyRef:
