@@ -2,8 +2,6 @@
 
 Infrastructure as Code repository for managing a comprehensive lab environment spanning Azure cloud and on-premise Proxmox infrastructure using Terraform, Ansible, and Kubernetes with GitOps.
 
-**ALWAYS reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.**
-
 ## Working Effectively
 
 ### Bootstrap Development Environment
@@ -34,62 +32,67 @@ sudo mv age/age /usr/local/bin/ && sudo mv age/age-keygen /usr/local/bin/
 task --version && terraform --version && flux --version && sops --version && age --version
 ```
 
-Installation takes approximately 2-3 minutes total. **NEVER CANCEL** during tool installation.
-
 ### Validate Repository Configuration
 Always run these validation steps after making changes:
 
 ```bash
-# Lint all YAML files - takes ~6 seconds
+# Lint all YAML files
 yamllint .
 
-# Check Terraform formatting in all components - takes ~10 seconds per component
-find terraform/components -name "*.tf" -exec terraform fmt -check {} \;
+# Check Terraform formatting in all components
+terraform fmt -check -recursive terraform/components/
 
-# Validate Task configuration - takes <1 second
+# Validate Task configuration
 task --list
 ```
 
-**CRITICAL**: All validation commands must pass before committing changes.
+All validation commands must pass before committing changes.
 
 ### Install Ansible Dependencies (Optional)
-**NOTE**: Ansible Galaxy requires internet connectivity to galaxy.ansible.com which may not be available in all environments.
+Ansible Galaxy requires internet connectivity to galaxy.ansible.com which may not be available in all environments.
 
 ```bash
-# Try to install Ansible collections - may fail due to network restrictions
 ansible-galaxy collection install -r ansible/requirements.yaml
 ```
 
-If this fails with network errors, document it but continue - it's a known limitation in sandboxed environments.
+If this fails with network errors, document it but continue—it's a known limitation in sandboxed environments.
 
 ## Repository Structure & Key Projects
 
 ### Core Infrastructure Components
-- **`terraform/`** - Infrastructure as Code for Azure and Proxmox
-  - **`components/`** - Reusable modules (Twingate, DNS, VPN Gateway, Game Server, Virtual Machines)
-  - **`environments/`** - Environment-specific configurations (prod, test)
-  - **`modules/`** - Custom modules for Proxmox VM/CT and AdGuard
-- **`ansible/`** - Configuration management and provisioning
-  - **`k3s.yaml`** - Kubernetes cluster deployment playbook
-  - **`rpi-ha.yaml`** - Raspberry Pi HA and Twingate connector setup
-  - **`requirements.yaml`** - Required Ansible collections and roles
-- **`kubernetes/`** - GitOps-managed Kubernetes manifests
-  - **`flux/`** - Flux GitOps configuration
-  - **`apps/`** - Application deployments
-  - **`infrastructure/`** - Infrastructure services (monitoring, ingress, etc.)
-  - **`bootstrap/`** - Bootstrap secrets and keys (SOPS encrypted)
+- **`terraform/`** — Infrastructure as Code for Azure and Proxmox
+  - **`components/`** — Deployable components: `cloud-vpn-gateway`, `dns`, `game-server`, `inventory`, `twingate`, `virtual-machines`
+  - **`environments/`** — Environment-specific variable files (`prod`, `test`)
+  - **`modules/`** — Reusable Terraform modules: `adguard`, `proxmox-ct`, `proxmox-vm`
+- **`ansible/`** — Configuration management and provisioning
+  - **`k3s.yaml`** — Kubernetes (K3s) cluster deployment
+  - **`rpi-ha.yaml`** — Raspberry Pi HA and Twingate connector setup
+  - **`nut-server.yaml`** / **`nut-client.yaml`** / **`nut-client-wanda.yaml`** — UPS (NUT) monitoring
+  - **`haproxy.yaml`** — HAProxy load balancer
+  - **`wings-node.yaml`** — Pterodactyl Wings game panel node
+  - **`ado-agent.yaml`** — Azure DevOps self-hosted agent
+  - **`mariadb.yaml`** / **`postgresql.yaml`** — Database provisioning
+  - **`matter-server.yaml`** — Matter smart home server
+  - **`requirements.yaml`** — Required Ansible collections and roles
+- **`kubernetes/`** — GitOps-managed Kubernetes manifests
+  - **`flux/`** — Flux GitOps configuration (`clusters/`, `repositories/`)
+  - **`apps/`** — Application deployments per cluster (`base`, `minikube`, `tiny`, `wanda`)
+  - **`app-dependencies/`** — Shared dependencies: controllers (cert-manager, Traefik, CSI NFS driver, Dragonfly, local-path-provisioner) and config (issuers, storage classes, secrets)
+  - **`infrastructure/`** — Cluster networking (Cilium CNI, BGP peering, LoadBalancer IP pools)
+  - **`bootstrap/`** — Bootstrap secrets and keys (SOPS encrypted)
 
 ### Key Files
-- **`Taskfile.yaml`** - Task automation for Kubernetes bootstrap operations
-- **`infra-pipeline.yaml`** - Azure DevOps pipeline for full infrastructure deployment
-- **`.sops.yaml`** - SOPS configuration for secret encryption
-- **`.yamllint.yaml`** - YAML linting configuration
-- **`renovate.json`** - Dependency management configuration
+- **`Taskfile.yaml`** — Task automation for Kubernetes bootstrap operations
+- **`infra-pipeline.yaml`** — Azure DevOps pipeline for full infrastructure deployment
+- **`.sops.yaml`** — SOPS configuration for Age-based secret encryption
+- **`.yamllint.yaml`** — YAML linting rules
+- **`renovate.json`** — Automated dependency management (Terraform, Kubernetes, Helm, Docker, Ansible)
+- **`.mergify.yml`** — Mergify auto-approve rules for Renovate and Copilot PRs
 
 ## Deployment & Operations
 
-### **CRITICAL LIMITATION**: This repository is designed for Azure DevOps pipeline deployment
-**Most infrastructure operations CANNOT be performed locally** due to dependencies on:
+### This repository is designed for Azure DevOps pipeline deployment
+Most infrastructure operations cannot be performed locally due to dependencies on:
 - Azure Key Vault for secrets (requires `bancey-vault` access)
 - Twingate VPN connectivity for on-premise resources
 - Azure service principal authentication
@@ -97,149 +100,111 @@ If this fails with network errors, document it but continue - it's a known limit
 
 ### Local Operations (Safe to perform)
 ```bash
-# Lint YAML files - takes 6 seconds
+# Lint YAML files
 yamllint .
 
-# Format Terraform files - takes 10 seconds per component
-terraform fmt terraform/components/dns/
-terraform fmt terraform/components/twingate/
-terraform fmt terraform/components/virtual-machines/
+# Format Terraform files (all components)
+terraform fmt -recursive terraform/components/
 
-# List available Task automation - takes <1 second
+# List available Task automation
 task --list
-
-# View Terraform configuration (no state access)
-terraform -chdir=terraform/components/dns fmt -check
 ```
 
 ### Kubernetes Bootstrap (Requires cluster access)
 ```bash
-# Bootstrap Flux on an existing cluster - takes 30-60 seconds if cluster is accessible
+# Bootstrap Flux on an existing cluster
 # REQUIRES: kubectl context configured, SOPS keys available, cluster connectivity
 task bootstrap -- <cluster-name>
 ```
 
-**WARNING**: This command will fail without proper Kubernetes cluster access and SOPS keys.
+Valid cluster names correspond to directories under `kubernetes/flux/clusters/` (e.g., `minikube`, `tiny`, `wanda`). Note that `kubernetes/apps/base/` contains shared manifests inherited by clusters, not a deployable cluster itself.
 
 ### Azure DevOps Pipeline Operations
 The primary deployment method uses `infra-pipeline.yaml` which orchestrates:
-1. **Twingate connectivity** - Establishes VPN to lab resources
-2. **Terraform deployments** - Provisions infrastructure across multiple environments  
-3. **Ansible configuration** - Configures VMs, containers, and Raspberry Pi devices
-4. **Kubernetes GitOps** - Deploys applications via Flux
-
-**Pipeline timing expectations**:
-- **Full pipeline**: 45-90 minutes total. **NEVER CANCEL** Azure DevOps pipeline runs.
-- **Terraform components**: 10-30 minutes each depending on complexity
-- **Ansible playbooks**: 15-45 minutes depending on target hosts
-- **Host connectivity checks**: 2-5 minutes per environment
+1. **Host connectivity checks** — Verifies on-premise hosts are online via Twingate
+2. **Terraform deployments** — Provisions infrastructure across prod and test environments
+3. **Ansible configuration** — Configures VMs, containers, UPS monitoring, and Raspberry Pi devices
+4. **Kubernetes GitOps** — Applications deploy automatically via Flux on merge to main
 
 ## Validation & Testing
 
-### Manual Validation Requirements
-After making changes, **ALWAYS**:
+### After making changes, always:
 
-1. **Validate YAML syntax**: `yamllint .` - must complete without errors
-2. **Check Terraform formatting**: `terraform fmt -check terraform/components/*/` - must show no changes needed
-3. **Verify Task configuration**: `task --list` - must show available tasks
+1. **Validate YAML syntax**: `yamllint .`
+2. **Check Terraform formatting**: `terraform fmt -check -recursive terraform/components/`
+3. **Verify Task configuration**: `task --list`
 4. **Review SOPS encrypted files**: Ensure no plaintext secrets are committed
 
-### **CRITICAL**: Security Validation
-**NEVER commit plaintext secrets**. All sensitive data must be encrypted with SOPS:
+### Security Validation
+Never commit plaintext secrets. All sensitive data must be encrypted with SOPS:
 ```bash
-# Check for potential plaintext secrets before committing
 grep -r "password\|secret\|key" --include="*.yaml" --include="*.yml" kubernetes/ ansible/ | grep -v ".sops.yaml"
 ```
 
-### CI/CD Validation  
-The `.github/workflows/lint.yaml` workflow runs on all pull requests:
-```bash
-# This is what CI runs - ensure it passes locally
-yamllint .
-```
+### CI/CD Validation
+The `.github/workflows/lint.yaml` workflow runs `yamllint .` on all pull requests targeting `main`.
 
-**Build timing**: CI lint job takes 30-60 seconds. **NEVER CANCEL** the GitHub Actions workflow.
-
-## Common Tasks & Expected Behavior
+## Common Tasks
 
 ### Adding New Infrastructure
-1. **Terraform changes**: Modify files in `terraform/components/`
-2. **Validate locally**: `terraform fmt terraform/components/<component>/`
-3. **Azure DevOps deployment**: Changes deploy via `infra-pipeline.yaml` on merge to main
+1. Create or modify Terraform files in `terraform/components/<component>/`
+2. Add environment variables in `terraform/environments/<env>/<env>.tfvars`
+3. Validate: `terraform fmt -check terraform/components/<component>/`
+4. Changes deploy via `infra-pipeline.yaml` on merge to main
 
-### Adding New Kubernetes Applications  
-1. **Create manifests**: Add to `kubernetes/apps/<cluster>/`
-2. **Encrypt secrets**: Use SOPS for sensitive data: `sops -e secret.yaml > secret.sops.yaml`
-3. **GitOps deployment**: Flux automatically deploys changes within 5-10 minutes
+### Adding New Kubernetes Applications
+1. Create manifests in `kubernetes/apps/<cluster>/` (or `kubernetes/apps/base/` for shared apps)
+2. Encrypt secrets with SOPS: `sops -e secret.yaml > secret.sops.yaml`
+3. Flux automatically deploys changes after merge to main
 
 ### Managing Secrets
 ```bash
 # Decrypt SOPS file for viewing (requires Age key)
 sops -d kubernetes/bootstrap/sops-age-secret.sops.yaml
 
-# Encrypt new secret (requires Age key)  
+# Encrypt new secret (requires Age key)
 sops -e new-secret.yaml > new-secret.sops.yaml
 ```
 
-**NOTE**: SOPS operations require the Age private key from Azure Key Vault.
+SOPS operations require the Age private key from Azure Key Vault.
 
 ## Troubleshooting & Limitations
 
-### Known Network Dependencies
-- **Ansible Galaxy**: May fail in sandboxed environments - this is expected
-- **Terraform init**: Requires Azure backend configuration - will prompt for input locally
-- **Azure Key Vault**: All secrets stored remotely - local SOPS operations require key access
-- **On-premise connectivity**: Twingate VPN required for Proxmox and Raspberry Pi access
-
 ### Safe Operations
 - ✅ YAML linting and Terraform formatting
-- ✅ Task automation listing  
+- ✅ Task automation listing
 - ✅ Repository exploration and documentation updates
 - ✅ Kubernetes manifest creation (without deployment)
 
 ### Requires Infrastructure Access
-- ❌ Terraform planning/applying
-- ❌ Ansible playbook execution
-- ❌ Kubernetes cluster operations  
-- ❌ SOPS encryption/decryption (without keys)
-- ❌ Pipeline execution (Azure DevOps only)
-
-## Timing Expectations & Timeout Guidelines
-
-**NEVER CANCEL** commands that are still running. Set appropriate timeouts:
-
-- **yamllint**: 10 seconds (use 30s timeout)
-- **terraform fmt**: 15 seconds per component (use 60s timeout)  
-- **task commands**: 30 seconds (use 60s timeout)
-- **Tool installation**: 3 minutes total (use 300s timeout)
-- **Ansible operations**: 15-45 minutes (use 3600s timeout if attempting)
-- **Terraform operations**: 10-30 minutes (use 1800s timeout if attempting)
-- **Pipeline operations**: 45-90 minutes (NEVER CANCEL in Azure DevOps)
-
-**When in doubt, wait longer rather than cancelling operations.**
+- ❌ Terraform planning/applying (requires Azure backend and service principal)
+- ❌ Ansible playbook execution (requires Twingate VPN and SSH keys)
+- ❌ Kubernetes cluster operations (requires kubectl context)
+- ❌ SOPS encryption/decryption (requires Age private key from Key Vault)
 
 ## Quick Reference
 
 ### Repository Root Contents
 ```
 .
-├── README.md                  # Main documentation
-├── Taskfile.yaml             # Task automation 
+├── .github/workflows/        # GitHub Actions (lint.yaml)
+├── .gitignore
+├── .mergify.yml              # Auto-approve rules
+├── .sops.yaml                # SOPS encryption config
+├── .vscode/                  # VS Code workspace settings
+├── .yamllint.yaml            # YAML linting rules
+├── README.md
+├── Taskfile.yaml             # Task automation
+├── ansible/                  # Ansible playbooks and roles
 ├── infra-pipeline.yaml       # Azure DevOps pipeline
-├── .github/workflows/        # GitHub Actions
-├── .sops.yaml               # SOPS configuration
-├── .yamllint.yaml           # Linting rules
-├── ansible/                 # Configuration management
-├── kubernetes/              # GitOps manifests  
-└── terraform/               # Infrastructure as Code
+├── kubernetes/               # GitOps Kubernetes manifests
+├── renovate.json             # Dependency management
+└── terraform/                # Terraform components, environments, modules
 ```
 
 ### Essential Commands
 ```bash
-# Quick validation workflow
 yamllint . && echo "YAML valid"
-terraform fmt -check terraform/components/*/ && echo "Terraform formatted"
+terraform fmt -check -recursive terraform/components/ && echo "Terraform formatted"
 task --list && echo "Task configuration valid"
 ```
-
-**Always validate your changes locally before pushing to ensure CI passes.**
