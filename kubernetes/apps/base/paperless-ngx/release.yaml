@@ -32,7 +32,7 @@ spec:
   values:
     image:
       repository: ghcr.io/paperless-ngx/paperless-ngx
-      tag: 2.14.7
+      tag: 2.20.15
       pullPolicy: IfNotPresent
 
     env:
