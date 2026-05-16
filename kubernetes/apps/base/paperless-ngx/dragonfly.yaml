@@ -1,0 +1,7 @@
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: paperless-ngx-dragonfly
+  namespace: paperless-ngx
+spec:
+  replicas: 1

@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: paperless-ngx
 resources:
   - namespace.yaml
+  - dragonfly.yaml
   - release.yaml
   - tika-release.yaml
   - gotenberg-release.yaml

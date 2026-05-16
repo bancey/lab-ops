@@ -25,6 +25,9 @@
     - name: openwebui
       user: openwebui
       password_var: openwebui_postgresql_password
+    - name: paperless
+      user: paperless
+      password_var: paperless_postgresql_password
     backup_local_dir: "/var/backups/postgresql"
     backup_storage_account: "{{ backup_storage_account_name }}"
     backup_container: "postgresql-backups"

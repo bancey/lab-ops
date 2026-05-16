@@ -46,6 +46,17 @@ spec:
           secretKeyRef:
             name: paperless-ngx-secret
             key: secret-key
+      PAPERLESS_DBENGINE: postgresql
+      PAPERLESS_DBHOST: pgsql.heimelska.co.uk
+      PAPERLESS_DBPORT: "5432"
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-db-secret
+            key: password
+      PAPERLESS_REDIS: "redis://paperless-ngx-dragonfly:6379"
 
     persistence:
       data:
@@ -69,29 +80,15 @@ spec:
         accessMode: ReadWriteOnce
         size: 4Gi
 
+    # Disable subcharts — using external PostgreSQL cluster and Dragonfly
     postgresql:
-      enabled: true
-      auth:
-        database: paperless
-        existingSecret: paperless-ngx-secret
-        secretKeys:
-          adminPasswordKey: postgres-password
-      primary:
-        persistence:
-          enabled: true
-          size: 4Gi
+      enabled: false
+
+    mariadb:
+      enabled: false
 
     redis:
-      enabled: true
-      auth:
-        enabled: true
-        existingSecret: paperless-ngx-secret
-        existingSecretPasswordKey: redis-password
-      master:
-        persistence:
-          enabled: false
-      replica:
-        replicaCount: 0
+      enabled: false
 
     service:
       main:

@@ -28,6 +28,7 @@ resources:
   - ./open-webui-db-secret.sops.yaml
   - ../base/ollama
   - ./paperless-ngx-secret.sops.yaml
+  - ./paperless-ngx-db-secret.sops.yaml
   - ../base/paperless-ngx
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml

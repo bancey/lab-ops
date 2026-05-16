@@ -17,7 +17,3 @@ spec:
         storageClass: unas-nfs-csi
       consume:
         storageClass: unas-nfs-csi
-    postgresql:
-      primary:
-        persistence:
-          storageClass: unas-nfs-csi
