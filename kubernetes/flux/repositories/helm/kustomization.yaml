@@ -19,3 +19,4 @@ resources:
   - ./victoria-metrics.yaml
   - ./prometheus-community.yaml
   - ./rancher.yaml
+  - ./gabe565.yaml
