@@ -400,6 +400,10 @@
     become_user: postgres
     community.postgresql.postgresql_db:
       name: "{{ item.name }}"
+      encoding: UTF-8
+      lc_collate: C.UTF-8
+      lc_ctype: C.UTF-8
+      template: template0
       state: present
     loop: "{{ postgresql_databases_resolved }}"
     when:
