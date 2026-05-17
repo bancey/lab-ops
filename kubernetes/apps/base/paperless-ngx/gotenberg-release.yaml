@@ -35,6 +35,7 @@ spec:
               repository: gotenberg/gotenberg
               tag: "8.32.0"
             args:
+              - gotenberg
               - --chromium-disable-javascript=true
               - --chromium-allow-list=file:///tmp/.*
             resources:
