@@ -155,7 +155,8 @@ The `.github/workflows/lint.yaml` workflow runs `yamllint .` on all pull request
 ### Adding New Kubernetes Applications
 1. Create manifests in `kubernetes/apps/<cluster>/` (or `kubernetes/apps/base/` for shared apps)
 2. Encrypt secrets with SOPS: `sops -e secret.yaml > secret.sops.yaml`
-3. Flux automatically deploys changes after merge to main
+3. Add a private DNS record in `terraform/environments/prod/dns.yaml` for each new endpoint. Use the cluster's LoadBalancer IP as the record value (e.g., `10.151.24.10` for tiny, `10.151.24.160` for wanda). Follow the naming convention `<app>.<cluster>.heimelska.co.uk`.
+4. Flux automatically deploys changes after merge to main
 
 ### Databases for New Applications
 When an application requires a relational database, **do not** deploy database containers or Helm subcharts inside Kubernetes. Instead:
