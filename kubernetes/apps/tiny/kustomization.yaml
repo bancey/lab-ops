@@ -30,6 +30,8 @@ resources:
   - ./paperless-ngx-secret.sops.yaml
   - ./paperless-ngx-db-secret.sops.yaml
   - ../base/paperless-ngx
+  - ./paperless-gpt-secret.sops.yaml
+  - ../base/paperless-gpt
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -52,3 +54,5 @@ patchesStrategicMerge:
   - paperless-ngx-patch.yaml
   - paperless-ngx-certificate-patch.yaml
   - paperless-ngx-ingress-route-patch.yaml
+  - paperless-gpt-certificate-patch.yaml
+  - paperless-gpt-ingress-route-patch.yaml

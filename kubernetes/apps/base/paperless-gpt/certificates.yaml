@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: paperless-gpt-staging-tls
+  namespace: default
+spec:
+  secretName: paperless-gpt-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "paperless-gpt-fqdn"
+  dnsNames:
+    - "paperless-gpt-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: paperless-gpt-tls
+  namespace: default
+spec:
+  secretName: paperless-gpt-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "paperless-gpt-fqdn"
+  dnsNames:
+    - "paperless-gpt-fqdn"

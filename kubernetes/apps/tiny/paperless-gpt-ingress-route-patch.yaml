@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paperless-gpt
+  namespace: paperless-ngx
+spec:
+  routes:
+    - match: Host(`paperless-gpt.tiny.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: paperless-gpt
+          port: 8080
+      middlewares:
+        - name: default-headers
+          namespace: traefik
