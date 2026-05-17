@@ -33,7 +33,7 @@ spec:
           main:
             image:
               repository: gotenberg/gotenberg
-              tag: "8.17.3"
+              tag: "8.32.0"
             args:
               - --chromium-disable-javascript=true
               - --chromium-allow-list=file:///tmp/.*
