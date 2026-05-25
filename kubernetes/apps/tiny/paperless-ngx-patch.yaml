@@ -8,7 +8,6 @@ spec:
   values:
     env:
       PAPERLESS_URL: "https://paperless.tiny.heimelska.co.uk"
-      PAPERLESS_OAUTH_CALLBACK_BASE_URL: "https://paperless.tiny.heimelska.co.uk/api/oauth/callback/"
     persistence:
       data:
         storageClass: unas-nfs-csi
