@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: stirling-pdf-staging-tls
+  namespace: default
+spec:
+  secretName: stirling-pdf-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "stirling-pdf-fqdn"
+  dnsNames:
+    - "stirling-pdf-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: stirling-pdf-tls
+  namespace: default
+spec:
+  secretName: stirling-pdf-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "stirling-pdf-fqdn"
+  dnsNames:
+    - "stirling-pdf-fqdn"
