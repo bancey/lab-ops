@@ -38,6 +38,7 @@ spec:
     env:
       TZ: Europe/London
       PAPERLESS_URL: "https://paperless.example.com"
+      PAPERLESS_OAUTH_CALLBACK_BASE_URL: "https://paperless.example.com/api/oauth/callback/"
       PAPERLESS_TIKA_ENABLED: "1"
       PAPERLESS_TIKA_ENDPOINT: "http://paperless-ngx-tika.paperless-ngx.svc.cluster.local:9998"
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://paperless-ngx-gotenberg.paperless-ngx.svc.cluster.local:3000"
@@ -61,7 +62,16 @@ spec:
             name: paperless-ngx-db-secret
             key: password
       PAPERLESS_REDIS: "redis://paperless-ngx-dragonfly:6379"
-
+      PAPERLESS_OUTLOOK_OAUTH_CLIENT_ID:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-secret
+            key: client-id
+      PAPERLESS_OUTLOOK_OAUTH_CLIENT_SECRET:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-ngx-secret
+            key: client-secret
     persistence:
       data:
         enabled: true
