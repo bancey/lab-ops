@@ -9,7 +9,7 @@ collections:
   - name: community.general
     version: 12.6.1
   - name: community.mysql
-    version: 5.0.1
+    version: 5.0.2
 roles:
   - name: xanmanning.k3s
     version: v3.6.4
