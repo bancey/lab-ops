@@ -1,0 +1,77 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: stirling-pdf
+  namespace: stirling-pdf
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 5.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: false
+
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              repository: docker.stirlingpdf.com/stirlingtools/stirling-pdf
+              tag: 2.11.0
+            env:
+              TZ: Europe/London
+              DOCKER_ENABLE_SECURITY: "false"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v1/info/status
+                    port: 8080
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/v1/info/status
+                    port: 8080
+                  initialDelaySeconds: 15
+                  periodSeconds: 15
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              startup:
+                enabled: false
+
+    service:
+      main:
+        controller: main
+        type: ClusterIP
+        ports:
+          http:
+            port: 8080
