@@ -38,10 +38,10 @@ spec:
               DOCKER_ENABLE_SECURITY: "false"
             resources:
               requests:
-                cpu: 100m
-                memory: 256Mi
-              limits:
+                cpu: 500m
                 memory: 1Gi
+              limits:
+                memory: 4Gi
             probes:
               liveness:
                 enabled: true
