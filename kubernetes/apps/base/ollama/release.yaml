@@ -34,7 +34,7 @@ spec:
           main:
             image:
               repository: ollama/ollama
-              tag: 0.24.0
+              tag: 0.30.0
             env:
               TZ: Europe/London
               OLLAMA_HOST: "0.0.0.0:11434"
