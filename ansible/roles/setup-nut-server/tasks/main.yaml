@@ -72,7 +72,7 @@
 
 - name: Enable and start nut-driver service
   ansible.builtin.systemd:
-    name: nut-driver
+    name: "nut-driver@{{ nut_ups_name }}.service"
     enabled: true
     state: started
   when: not ansible_check_mode
