@@ -22,4 +22,15 @@ resource "adguard_config" "config" {
     bootstrap_dns = var.adguard_config.dns.bootstrap_dns
     rate_limit    = var.adguard_config.dns.rate_limit
   }
+
+  dhcp = {
+    interface = "eth0"
+    enabled   = false
+    ipv4 = {
+      gateway_ip  = "172.18.0.1"
+      range_end   = "172.18.0.200"
+      range_start = "172.18.0.100"
+      subnet_mask = "255.255.255.0"
+    }
+  }
 }
