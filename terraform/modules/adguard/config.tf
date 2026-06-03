@@ -26,7 +26,7 @@ resource "adguard_config" "config" {
   dhcp = {
     interface = "eth0"
     enabled   = false
-    ipv4 = {
+    ipv4_settings = {
       gateway_ip  = "172.18.0.1"
       range_end   = "172.18.0.200"
       range_start = "172.18.0.100"
