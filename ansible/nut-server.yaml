@@ -1,5 +1,5 @@
-- name: Setup NUT server on thanos
-  hosts: thanos
+- name: Setup NUT server on gamora
+  hosts: gamora
   become: true
   become_user: root
   become_method: sudo

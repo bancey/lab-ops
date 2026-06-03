@@ -17,9 +17,12 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     dest: /etc/apt/keyrings/docker.asc
 - name: Add Docker Repository
-  apt_repository:
-    repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ version_codename.stdout }} stable"
-    state: present
+  ansible.builtin.copy:
+    content: "deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ version_codename.stdout }} stable\n"
+    dest: /etc/apt/sources.list.d/docker.list
+    owner: root
+    group: root
+    mode: '0644'
   register: docker_repo
 - name: Update apt and install docker-ce
   apt:

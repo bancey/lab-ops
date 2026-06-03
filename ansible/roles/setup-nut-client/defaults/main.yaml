@@ -1,7 +1,7 @@
 ---
 # NUT server connection
 nut_ups_name: apc
-nut_server_host: "10.151.14.5"
+nut_server_host: "10.151.14.6"
 nut_server_port: 3493
 
 # upsd user for monitoring
