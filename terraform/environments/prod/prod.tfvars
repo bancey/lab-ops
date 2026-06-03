@@ -388,9 +388,6 @@ adguard_filters = {
   "AWAvenue Ads Rule" = {
     url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_53.txt"
   }
-  "1Hosts (mini)" = {
-    url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_38.txt"
-  }
   "1Hosts (Lite)" = {
     url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt"
   }
