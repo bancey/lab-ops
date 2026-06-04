@@ -25,13 +25,13 @@ resources:
   - ./unpoller-secret.sops.yaml
   - ./unpoller-alloy-config.yaml
   - ../base/home-assistant
-  - ./open-webui-db-secret.sops.yaml
-  - ../base/ollama
+  #- ./open-webui-db-secret.sops.yaml
+  #- ../base/ollama
   - ./paperless-ngx-secret.sops.yaml
   - ./paperless-ngx-db-secret.sops.yaml
   - ../base/paperless-ngx
-  - ./paperless-gpt-secret.sops.yaml
-  - ../base/paperless-gpt
+  #- ./paperless-gpt-secret.sops.yaml
+  #- ../base/paperless-gpt
   - ../base/stirling-pdf
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
@@ -49,13 +49,13 @@ patchesStrategicMerge:
   - zigbee2mqtt-patch.yaml
   - home-assistant-certificate-patch.yaml
   - home-assistant-ingress-route-patch.yaml
-  - open-webui-patch.yaml
-  - open-webui-certificate-patch.yaml
-  - open-webui-ingress-route-patch.yaml
+  #- open-webui-patch.yaml
+  #- open-webui-certificate-patch.yaml
+  #- open-webui-ingress-route-patch.yaml
   - paperless-ngx-patch.yaml
   - paperless-ngx-certificate-patch.yaml
   - paperless-ngx-ingress-route-patch.yaml
-  - paperless-gpt-certificate-patch.yaml
-  - paperless-gpt-ingress-route-patch.yaml
+  #- paperless-gpt-certificate-patch.yaml
+  #- paperless-gpt-ingress-route-patch.yaml
   - stirling-pdf-certificate-patch.yaml
   - stirling-pdf-ingress-route-patch.yaml
