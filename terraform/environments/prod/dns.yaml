@@ -367,6 +367,8 @@ dns:
     record: 10.151.24.10
   stirling-pdf.tiny.heimelska.co.uk:
     record: 10.151.24.10
+  vikunja.tiny.heimelska.co.uk:
+    record: 10.151.24.10
   hass.heimelska.co.uk:
     record: 10.151.14.4
     twingate:

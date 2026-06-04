@@ -33,6 +33,8 @@ resources:
   #- ./paperless-gpt-secret.sops.yaml
   #- ../base/paperless-gpt
   - ../base/stirling-pdf
+  - ./vikunja-db-secret.sops.yaml
+  - ../base/vikunja
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -59,3 +61,6 @@ patchesStrategicMerge:
   #- paperless-gpt-ingress-route-patch.yaml
   - stirling-pdf-certificate-patch.yaml
   - stirling-pdf-ingress-route-patch.yaml
+  - vikunja-certificate-patch.yaml
+  - vikunja-ingress-route-patch.yaml
+  - vikunja-patch.yaml

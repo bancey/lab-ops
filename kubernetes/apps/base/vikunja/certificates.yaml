@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vikunja-staging-tls
+  namespace: default
+spec:
+  secretName: vikunja-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "vikunja-fqdn"
+  dnsNames:
+    - "vikunja-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vikunja-tls
+  namespace: default
+spec:
+  secretName: vikunja-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "vikunja-fqdn"
+  dnsNames:
+    - "vikunja-fqdn"
