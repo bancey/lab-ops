@@ -8,7 +8,7 @@ spec:
   releaseName: vikunja
   chart:
     spec:
-      version: 2.0.2
+      version: v2.0.2
       chart: vikunja
       sourceRef:
         kind: HelmRepository
