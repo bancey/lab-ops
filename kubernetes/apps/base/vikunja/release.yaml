@@ -1,0 +1,87 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: vikunja
+  namespace: vikunja
+spec:
+  releaseName: vikunja
+  chart:
+    spec:
+      version: 2.0.2
+      chart: vikunja
+      sourceRef:
+        kind: HelmRepository
+        name: vikunja
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    vikunja:
+      image:
+        repository: vikunja/vikunja
+
+      persistence:
+        data:
+          enabled: true
+          accessMode: ReadWriteOnce
+          size: 5Gi
+          mountPath: /app/vikunja/files
+          # storageClass set in cluster overlay
+
+      ingress:
+        main:
+          enabled: false
+
+      configMaps:
+        config:
+          enabled: true
+          data:
+            config.yml: |
+              service:
+                # publicurl set in cluster overlay
+                publicurl: "https://vikunja.local"
+
+      env:
+        TZ: Europe/London
+        VIKUNJA_DATABASE_TYPE: "postgres"
+        VIKUNJA_DATABASE_HOST: pgsql.heimelska.co.uk
+        VIKUNJA_DATABASE_PORT: "5432"
+        VIKUNJA_DATABASE_DATABASE: vikunja
+        VIKUNJA_DATABASE_USER:
+          valueFrom:
+            secretKeyRef:
+              name: vikunja-db-secret
+              key: username
+        VIKUNJA_DATABASE_PASSWORD:
+          valueFrom:
+            secretKeyRef:
+              name: vikunja-db-secret
+              key: password
+        VIKUNJA_KEYVALUE_TYPE: "redis"
+        VIKUNJA_REDIS_ENABLED: "true"
+        VIKUNJA_REDIS_HOST: "vikunja-dragonfly:6379"
+
+    postgresql:
+      enabled: false
+
+    redis:
+      enabled: false
+
+    typesense:
+      enabled: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
