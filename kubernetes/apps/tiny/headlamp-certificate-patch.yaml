@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: headlamp-staging-tls
+  namespace: headlamp
+spec:
+  commonName: "headlamp.tiny.heimelska.co.uk"
+  dnsNames:
+    - "headlamp.tiny.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: headlamp-tls
+  namespace: headlamp
+spec:
+  commonName: "headlamp.tiny.heimelska.co.uk"
+  dnsNames:
+    - "headlamp.tiny.heimelska.co.uk"

@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: headlamp
+  namespace: headlamp
+spec:
+  routes:
+    - match: Host(`headlamp.wanda.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: headlamp
+          port: 80
+      middlewares:
+        - name: default-headers
+          namespace: traefik

@@ -209,6 +209,8 @@ dns:
           - AzureDevOps
   dl.wanda.heimelska.co.uk:
     record: 10.151.24.160
+  headlamp.wanda.heimelska.co.uk:
+    record: 10.151.24.160
   pelican.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -368,6 +370,8 @@ dns:
   stirling-pdf.tiny.heimelska.co.uk:
     record: 10.151.24.10
   vikunja.tiny.heimelska.co.uk:
+    record: 10.151.24.10
+  headlamp.tiny.heimelska.co.uk:
     record: 10.151.24.10
   hass.heimelska.co.uk:
     record: 10.151.14.4

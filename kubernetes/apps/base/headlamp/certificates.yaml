@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: headlamp-staging-tls
+  namespace: default
+spec:
+  secretName: headlamp-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "headlamp-fqdn"
+  dnsNames:
+    - "headlamp-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: headlamp-tls
+  namespace: default
+spec:
+  secretName: headlamp-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "headlamp-fqdn"
+  dnsNames:
+    - "headlamp-fqdn"
