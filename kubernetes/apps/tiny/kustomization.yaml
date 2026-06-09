@@ -35,6 +35,7 @@ resources:
   - ../base/stirling-pdf
   - ./vikunja-db-secret.sops.yaml
   - ../base/vikunja
+  - ../base/headlamp
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -64,3 +65,5 @@ patchesStrategicMerge:
   - vikunja-certificate-patch.yaml
   - vikunja-ingress-route-patch.yaml
   - vikunja-patch.yaml
+  - headlamp-certificate-patch.yaml
+  - headlamp-ingress-route-patch.yaml

@@ -20,4 +20,5 @@ resources:
   - ./prometheus-community.yaml
   - ./rancher.yaml
   - ./gabe565.yaml
+  - ./headlamp.yaml
   - ./vikunja.yaml

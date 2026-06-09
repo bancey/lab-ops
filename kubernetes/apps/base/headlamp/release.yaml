@@ -1,0 +1,39 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headlamp
+  namespace: headlamp
+spec:
+  releaseName: headlamp
+  chart:
+    spec:
+      version: 0.42.0
+      chart: headlamp
+      sourceRef:
+        kind: HelmRepository
+        name: headlamp
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 30m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    config:
+      inCluster: true
+      inClusterContextName: main
+      oidc:
+        secret:
+          create: false
+    clusterRoleBinding:
+      create: true
+      clusterRoleName: cluster-admin
+    service:
+      type: ClusterIP
+      port: 80

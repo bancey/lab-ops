@@ -43,6 +43,7 @@ resources:
   - qbittorrent-config-pvc.yaml
   - ../base/acquisitions
   - ../base/monitoring
+  - ../base/headlamp
 patchesStrategicMerge:
   - plex-patch.yaml
   - jellyfin-patch.yaml
@@ -52,6 +53,8 @@ patchesStrategicMerge:
   - grafana-patch.yaml
   - alloy-patch.yaml
   - unpoller-patch.yaml
+  - headlamp-certificate-patch.yaml
+  - headlamp-ingress-route-patch.yaml
 patches:
   - patch: |
       - op: add
