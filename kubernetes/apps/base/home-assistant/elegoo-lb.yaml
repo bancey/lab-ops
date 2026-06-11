@@ -21,3 +21,19 @@ spec:
       protocol: TCP
       port: 3030
       targetPort: 3030
+    - name: port-3031
+      protocol: TCP
+      port: 3031
+      targetPort: 3031
+    - name: udp-port-3000
+      protocol: UDP
+      port: 3000
+      targetPort: 3000
+    - name: udp-port-3030
+      protocol: UDP
+      port: 3030
+      targetPort: 3030
+    - name: udp-port-3031
+      protocol: UDP
+      port: 3031
+      targetPort: 3031
