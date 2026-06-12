@@ -15,3 +15,4 @@ resources:
   - sonos-lb-service.yaml
   - ipmitool-api.yaml
   - ipmitool-api-config-secret.sops.yaml
+  - elegoo-lb.yaml
