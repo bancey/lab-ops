@@ -134,6 +134,31 @@ Only continue when the current node reports `Synced`.
 
 ### Full cluster restart / bootstrap (all nodes down)
 
+> **This scenario is now handled automatically by the Ansible playbook.**
+>
+> Running `ansible-playbook -i ansible/hosts.yaml ansible/mariadb.yaml -l mariadb0,mariadb1,mariadb2`
+> detects that MariaDB is installed but the cluster has no primary component and performs the
+> recovery bootstrap automatically.  No manual intervention is required unless the automated
+> recovery itself fails (check task output for errors).
+>
+> **How the playbook detects and recovers:**
+> 1. On `mariadb0` it checks `dpkg-query` (installed?), `systemctl is-active` (running?), and
+>    `SHOW STATUS LIKE 'wsrep_cluster_status'` (Primary?).
+> 2. If MariaDB is installed but the service is not active **or** the cluster is not Primary,
+>    `galera_recover_full_outage` is set to `true`.
+> 3. The playbook stops mariadb on all nodes (idempotent), runs `galera_new_cluster` on
+>    `mariadb0` only, waits for the socket, starts mariadb on `mariadb1` / `mariadb2`, then
+>    polls `wsrep_cluster_size` until it reaches 3 before continuing.
+> 4. apt package tasks run **after** the cluster is healthy, so the dpkg post-install restart
+>    succeeds and partially-configured packages are resolved automatically.
+>
+> **Override variables** (pass with `-e` if needed):
+> - No manual override variables are required; detection is fully automatic.
+> - To force a specific tag, use `--tags galera_recover` is not currently implemented; simply
+>   re-run the full playbook.
+
+For manual recovery steps, or if the automated path fails, use the commands below:
+
 ```bash
 ssh root@10.151.14.210 "systemctl stop mariadb"
 ssh root@10.151.14.211 "systemctl stop mariadb"
