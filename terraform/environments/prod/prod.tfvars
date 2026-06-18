@@ -286,7 +286,7 @@ ansible = {
       "backup_sas_token"               = "MariaDB-Backup-SAS-Token"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "09-04-2026-2030"
+    trigger   = "18-06-2026-1800"
   }
   "postgresql" = {
     nodes    = ["hela", "loki", "thor"]
@@ -304,7 +304,7 @@ ansible = {
       "vikunja_postgresql_password"     = "PostgreSQL-Vikunja-Password"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "05-06-2026-1500"
+    trigger   = "18-06-2026-1800"
   }
 }
 
