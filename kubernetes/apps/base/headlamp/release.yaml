@@ -31,6 +31,9 @@ spec:
       oidc:
         secret:
           create: false
+        externalSecret:
+          enabled: true
+          name: headlamp-oidc
     clusterRoleBinding:
       create: true
       clusterRoleName: cluster-admin

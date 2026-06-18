@@ -44,6 +44,7 @@ resources:
   - ../base/acquisitions
   - ../base/monitoring
   - ../base/headlamp
+  - ./headlamp-oidc-secret.sops.yaml
 patchesStrategicMerge:
   - plex-patch.yaml
   - jellyfin-patch.yaml

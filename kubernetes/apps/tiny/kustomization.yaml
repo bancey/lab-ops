@@ -36,6 +36,7 @@ resources:
   - ./vikunja-db-secret.sops.yaml
   - ../base/vikunja
   - ../base/headlamp
+  - ./headlamp-oidc-secret.sops.yaml
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
