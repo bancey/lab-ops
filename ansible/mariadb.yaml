@@ -56,14 +56,65 @@
     failed_when: false
     changed_when: false
     when: inventory_hostname == 'mariadb0'
-  - name: Determine if Galera needs bootstrapping
-    set_fact:
-      bootstrap_galera: "{{ 'install ok installed' not in (mariadb_pkg_check.stdout | default('')) }}"
+  - name: Check if MariaDB service is currently active
+    ansible.builtin.shell:
+      cmd: systemctl is-active mariadb
+    register: mariadb_service_check
+    failed_when: false
+    changed_when: false
     when: inventory_hostname == 'mariadb0'
-  - name: Propagate bootstrap decision to all nodes
+  - name: Check Galera cluster status via local MySQL socket
+    ansible.builtin.shell:
+      cmd: mysql -NBe "SHOW STATUS LIKE 'wsrep_cluster_status';" 2>/dev/null | awk '{print $2}'
+    register: galera_cluster_status_check
+    failed_when: false
+    changed_when: false
+    when: inventory_hostname == 'mariadb0' and (mariadb_service_check.stdout | default('')) == 'active'
+  - name: Determine Galera bootstrap and recovery requirements
     set_fact:
-      bootstrap_galera: "{{ hostvars['mariadb0']['bootstrap_galera'] }}"
+      galera_bootstrap_required: >-
+        {{ ('install ok installed' not in (mariadb_pkg_check.stdout | default('')))
+           or ((mariadb_service_check.stdout | default('')) != 'active')
+           or ((galera_cluster_status_check.stdout | default('') | lower) != 'primary') }}
+      galera_recover_full_outage: >-
+        {{ ('install ok installed' in (mariadb_pkg_check.stdout | default('')))
+           and (((mariadb_service_check.stdout | default('')) != 'active')
+                or ((galera_cluster_status_check.stdout | default('') | lower) != 'primary')) }}
+    when: inventory_hostname == 'mariadb0'
+  - name: Propagate bootstrap and recovery decisions to all nodes
+    set_fact:
+      galera_bootstrap_required: "{{ hostvars['mariadb0']['galera_bootstrap_required'] }}"
+      galera_recover_full_outage: "{{ hostvars['mariadb0']['galera_recover_full_outage'] }}"
     when: inventory_hostname != 'mariadb0'
+  - name: Ensure MariaDB is stopped on all nodes before full-outage recovery bootstrap
+    ansible.builtin.service:
+      name: mariadb
+      state: stopped
+    failed_when: false
+    when: galera_recover_full_outage | bool
+  - name: Bootstrap Galera cluster on mariadb0 (full-outage recovery)
+    ansible.builtin.command: galera_new_cluster
+    when: inventory_hostname == 'mariadb0' and galera_recover_full_outage | bool
+  - name: Wait for MariaDB socket to be available on mariadb0 after recovery bootstrap
+    ansible.builtin.wait_for:
+      path: /run/mysqld/mysqld.sock
+      timeout: 60
+    when: inventory_hostname == 'mariadb0' and galera_recover_full_outage | bool
+  - name: Start MariaDB on secondary nodes to rejoin the recovered cluster
+    ansible.builtin.service:
+      name: mariadb
+      state: started
+      enabled: true
+    when: inventory_hostname != 'mariadb0' and galera_recover_full_outage | bool
+  - name: Wait for all Galera nodes to join after full-outage recovery
+    ansible.builtin.shell:
+      cmd: mysql -NBe "SHOW STATUS LIKE 'wsrep_cluster_size';" | awk '{print $2}'
+    register: galera_cluster_size_check
+    until: galera_cluster_size_check.stdout | int == 3
+    retries: 20
+    delay: 10
+    changed_when: false
+    when: inventory_hostname == 'mariadb0' and galera_recover_full_outage | bool
   - name: Download MariaDB apt keyring
     ansible.builtin.get_url:
       url: https://supplychain.mariadb.com/mariadb-keyring-2025.gpg
@@ -100,14 +151,19 @@
       mode: '0640'
     notify:
     - Restart MariaDB
-  - name: Stop MariaDB service on all nodes before bootstrapping
-    service:
+  - name: Stop MariaDB on all nodes before fresh-install Galera bootstrap
+    ansible.builtin.service:
       name: mariadb
       state: stopped
-    when: bootstrap_galera | bool
-  - name: Bootstrap Galera cluster on primary node (mariadb0)
-    command: galera_new_cluster
-    when: inventory_hostname == 'mariadb0' and bootstrap_galera | bool
+    when: galera_bootstrap_required | bool and not (galera_recover_full_outage | bool)
+  - name: Bootstrap Galera cluster on mariadb0 (fresh install)
+    ansible.builtin.command: galera_new_cluster
+    when: inventory_hostname == 'mariadb0' and galera_bootstrap_required | bool and not (galera_recover_full_outage | bool)
+  - name: Wait for MariaDB socket to be available on mariadb0 before user and database tasks
+    ansible.builtin.wait_for:
+      path: /run/mysqld/mysqld.sock
+      timeout: 60
+    when: inventory_hostname == 'mariadb0'
   - name: Set MariaDB root password
     community.mysql.mysql_user:
       name: root
@@ -144,18 +200,23 @@
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
     when: inventory_hostname == 'mariadb0'
-  - name: Start MariaDB on secondary nodes
-    service:
+  - name: Start MariaDB on secondary nodes and enable after fresh-install bootstrap
+    ansible.builtin.service:
       name: mariadb
       state: started
       enabled: true
-    when: inventory_hostname != 'mariadb0' and bootstrap_galera | bool
-  - name: Ensure MariaDB is started and enabled
-    service:
+    when: inventory_hostname != 'mariadb0' and galera_bootstrap_required | bool and not (galera_recover_full_outage | bool)
+  - name: Ensure MariaDB is started and enabled on all nodes (healthy cluster path)
+    ansible.builtin.service:
       name: mariadb
       state: started
       enabled: true
-    when: not (bootstrap_galera | bool)
+    when: not (galera_bootstrap_required | bool)
+  - name: Ensure MariaDB is enabled after full-outage recovery (service already started during recovery)
+    ansible.builtin.service:
+      name: mariadb
+      enabled: true
+    when: galera_recover_full_outage | bool
   - name: Create application databases
     community.mysql.mysql_db:
       name: "{{ item.name }}"
