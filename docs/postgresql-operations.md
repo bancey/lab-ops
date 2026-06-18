@@ -193,6 +193,28 @@ Expected result: `f`.
 
 Keepalived should then move VIP `10.151.14.225` to the promoted primary.
 
+### Choose the authoritative primary (least data loss)
+
+When more than one node is down or roles are unclear, confirm which node has the latest valid history before promoting anything.
+
+1. Check all nodes that can start:
+
+```bash
+ssh root@10.151.14.220 "sudo -u postgres psql -tAc \"SELECT pg_is_in_recovery();\""
+ssh root@10.151.14.221 "sudo -u postgres psql -tAc \"SELECT pg_is_in_recovery();\""
+ssh root@10.151.14.222 "sudo -u postgres psql -tAc \"SELECT pg_is_in_recovery();\""
+```
+
+2. If no clear primary is running, compare control data on each node:
+
+```bash
+ssh root@10.151.14.220 "/usr/lib/postgresql/17/bin/pg_controldata /var/lib/postgresql/17/main | egrep 'Database cluster state|Latest checkpoint location|Latest checkpoint.*TimeLineID|Min recovery ending loc|Min recovery ending loc.*timeline'"
+ssh root@10.151.14.221 "/usr/lib/postgresql/17/bin/pg_controldata /var/lib/postgresql/17/main | egrep 'Database cluster state|Latest checkpoint location|Latest checkpoint.*TimeLineID|Min recovery ending loc|Min recovery ending loc.*timeline'"
+ssh root@10.151.14.222 "/usr/lib/postgresql/17/bin/pg_controldata /var/lib/postgresql/17/main | egrep 'Database cluster state|Latest checkpoint location|Latest checkpoint.*TimeLineID|Min recovery ending loc|Min recovery ending loc.*timeline'"
+```
+
+Prefer the node with the most advanced consistent checkpoint/timeline as the authoritative primary candidate. If a node shows timeline divergence, rebuild it from the authoritative primary with `pg_basebackup` instead of promoting blindly.
+
 ### Re-add a stale node as standby
 
 ```bash
@@ -201,6 +223,62 @@ ssh root@10.151.14.220 "rm -rf /var/lib/postgresql/17/main"
 ssh root@10.151.14.220 "sudo -u postgres pg_basebackup -h 10.151.14.225 -U replicator -D /var/lib/postgresql/17/main -Fp -Xs -P -R"
 ssh root@10.151.14.220 "ls /var/lib/postgresql/17/main/standby.signal"
 ssh root@10.151.14.220 "systemctl start postgresql"
+```
+
+### Recover when one primary is confirmed and two replicas are down
+
+Example scenario: `postgresql0` (`10.151.14.220`) is confirmed primary and `postgresql1`/`postgresql2` are down or stale.
+
+1. Stop Keepalived on all nodes before manual recovery:
+
+```bash
+ssh root@10.151.14.220 "systemctl stop keepalived"
+ssh root@10.151.14.221 "systemctl stop keepalived"
+ssh root@10.151.14.222 "systemctl stop keepalived"
+```
+
+2. Keep the confirmed primary running and verify it is healthy:
+
+```bash
+pg_isready -h 10.151.14.220
+ssh root@10.151.14.220 "sudo -u postgres psql -tAc \"SELECT pg_is_in_recovery();\""
+ssh root@10.151.14.220 "sudo -u postgres psql -c \"SELECT now(), count(*) FROM pg_stat_replication;\""
+ssh root@10.151.14.220 "/usr/lib/postgresql/17/bin/pg_controldata /var/lib/postgresql/17/main | egrep 'Database cluster state|Latest checkpoint location|Latest checkpoint.*TimeLineID'"
+```
+
+Expected: `pg_is_in_recovery()` returns `f`.
+
+3. Rebuild each down replica from the confirmed primary (`10.151.14.220`):
+
+```bash
+ssh root@10.151.14.221 "systemctl stop postgresql"
+ssh root@10.151.14.221 "mv /var/lib/postgresql/17/main /var/lib/postgresql/17/main.pre-recovery.$(date +%Y%m%d%H%M%S)"
+ssh root@10.151.14.221 "install -d -o postgres -g postgres -m 700 /var/lib/postgresql/17/main"
+ssh root@10.151.14.221 "sudo -u postgres pg_basebackup -h 10.151.14.220 -U replicator -D /var/lib/postgresql/17/main -Fp -Xs -P -R"
+ssh root@10.151.14.221 "systemctl start postgresql"
+ssh root@10.151.14.222 "systemctl stop postgresql"
+ssh root@10.151.14.222 "mv /var/lib/postgresql/17/main /var/lib/postgresql/17/main.pre-recovery.$(date +%Y%m%d%H%M%S)"
+ssh root@10.151.14.222 "install -d -o postgres -g postgres -m 700 /var/lib/postgresql/17/main"
+ssh root@10.151.14.222 "sudo -u postgres pg_basebackup -h 10.151.14.220 -U replicator -D /var/lib/postgresql/17/main -Fp -Xs -P -R"
+ssh root@10.151.14.222 "systemctl start postgresql"
+```
+
+4. Verify rebuilt replicas are in recovery mode and streaming:
+
+```bash
+ssh root@10.151.14.221 "sudo -u postgres psql -tAc \"SELECT pg_is_in_recovery();\""
+ssh root@10.151.14.222 "sudo -u postgres psql -tAc \"SELECT pg_is_in_recovery();\""
+ssh root@10.151.14.220 "sudo -u postgres psql -c \"SELECT client_addr, state, sync_state, sent_lsn, write_lsn, flush_lsn, replay_lsn FROM pg_stat_replication;\""
+```
+
+Expected: `postgresql1` and `postgresql2` return `t` and both IPs are visible in `pg_stat_replication`.
+
+5. Re-enable Keepalived only after all PostgreSQL nodes are healthy:
+
+```bash
+ssh root@10.151.14.220 "systemctl start keepalived"
+ssh root@10.151.14.221 "systemctl start keepalived"
+ssh root@10.151.14.222 "systemctl start keepalived"
 ```
 
 ## Backup Operations
@@ -234,6 +312,32 @@ ssh root@10.151.14.221 "journalctl -u postgresql -n 100"
 ssh root@10.151.14.221 "psql -h 10.151.14.225 -U replicator -c \"\\conninfo\""
 ssh root@10.151.14.220 "grep -n 'replication' /etc/postgresql/17/main/pg_hba.conf"
 ```
+
+### `pg_basebackup` fails with `password authentication failed for user "replicator"`
+
+1. Confirm the replication role exists on the authoritative primary:
+
+```bash
+ssh root@10.151.14.220 "sudo -u postgres psql -d postgres -c \"SELECT rolname, rolreplication, rolcanlogin FROM pg_roles WHERE rolname='replicator';\""
+```
+
+2. Test authentication/connectivity from the node being rebuilt:
+
+```bash
+ssh root@10.151.14.221 "psql -h 10.151.14.220 -U replicator -d postgres -c '\\conninfo'"
+```
+
+3. Verify the secret source of truth and PostgreSQL role password match:
+- Replication password is managed via `postgresql_replication_password`.
+- In this repo, it maps to Key Vault secret `PostgreSQL-Replication-Password` in `terraform/environments/prod/prod.tfvars`.
+
+4. If needed, reset the role password on the authoritative primary, then update the secret source of truth to the same new value:
+
+```bash
+ssh root@10.151.14.220 "sudo -u postgres psql -d postgres -c \"ALTER ROLE replicator WITH LOGIN REPLICATION PASSWORD '<new-password>';\""
+```
+
+After updating the secret source, re-run automation so rendered `primary_conninfo` and recovery commands stay consistent.
 
 ### Replication lag too high
 
