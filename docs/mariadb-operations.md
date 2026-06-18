@@ -140,22 +140,36 @@ Only continue when the current node reports `Synced`.
 > detects that MariaDB is installed but the cluster has no primary component and performs the
 > recovery bootstrap automatically.  No manual intervention is required unless the automated
 > recovery itself fails (check task output for errors).
->
-> **How the playbook detects and recovers:**
-> 1. On `mariadb0` it checks `dpkg-query` (installed?), `systemctl is-active` (running?), and
->    `SHOW STATUS LIKE 'wsrep_cluster_status'` (Primary?).
-> 2. If MariaDB is installed but the service is not active **or** the cluster is not Primary,
->    `galera_recover_full_outage` is set to `true`.
-> 3. The playbook stops mariadb on all nodes (idempotent), runs `galera_new_cluster` on
->    `mariadb0` only, waits for the socket, starts mariadb on `mariadb1` / `mariadb2`, then
->    polls `wsrep_cluster_size` until it reaches 3 before continuing.
-> 4. apt package tasks run **after** the cluster is healthy, so the dpkg post-install restart
->    succeeds and partially-configured packages are resolved automatically.
->
-> **Override variables** (pass with `-e` if needed):
-> - No manual override variables are required; detection is fully automatic.
-> - To force a specific tag, use `--tags galera_recover` is not currently implemented; simply
->   re-run the full playbook.
+
+#### How the playbook detects and recovers
+
+Three checks are performed on `mariadb0` and propagated to all nodes as two boolean facts:
+
+| Fact | Condition |
+|---|---|
+| `galera_bootstrap_required` | Fresh install **or** service not active **or** `wsrep_cluster_status != Primary` |
+| `galera_recover_full_outage` | MariaDB is installed **and** (service not active **or** `wsrep_cluster_status != Primary`) |
+
+The checks, in order:
+1. `dpkg-query` — is the `mariadb-server` package fully installed?
+2. `systemctl is-active mariadb` — is the service currently running? (`failed_when: false` so a missing unit never aborts the play.)
+3. `SHOW STATUS LIKE 'wsrep_cluster_status'` via the local socket — is the cluster in `Primary` state? (Only attempted when the service is active; `failed_when: false` handles an unavailable socket.)
+
+When `galera_recover_full_outage` is `true`, the playbook runs a recovery sequence **before** the `apt` package tasks.  This is necessary because `apt`'s `mariadb-server` post-install script calls `invoke-rc.d mariadb restart`; when all nodes are down simultaneously Galera cannot form a primary component (`failed to reach primary view`) and the restart fails, leaving packages in `partially configured` state that breaks every subsequent `apt` run.
+
+#### Automated recovery sequence
+
+1. Stop `mariadb` on all nodes (`failed_when: false` — idempotent if already stopped).
+2. Run `galera_new_cluster` on `mariadb0` only — this starts MariaDB with an empty `gcomm://` address, forming a new single-node primary component.
+3. Wait for `/run/mysqld/mysqld.sock` to appear on `mariadb0` (up to 60 s).
+4. Start `mariadb` on `mariadb1` and `mariadb2` so they join the new primary.
+5. Poll `wsrep_cluster_size` on `mariadb0` (up to 20 × 10 s retries) until all three nodes have joined.
+6. `apt` package tasks then run against the live cluster; the post-install restart succeeds.
+
+#### Fresh install vs healthy cluster
+
+- **Fresh install** (`galera_bootstrap_required=true`, `galera_recover_full_outage=false`): the same stop-all / `galera_new_cluster` / start-secondaries sequence runs, but **after** `apt` (normal path, unchanged from pre-existing behaviour).
+- **Healthy cluster** (`galera_bootstrap_required=false`): no bootstrap; services are simply ensured started and enabled.
 
 For manual recovery steps, or if the automated path fails, use the commands below:
 

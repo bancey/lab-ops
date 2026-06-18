@@ -49,7 +49,6 @@
       mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
     loop: "{{ mariadb_databases }}"
     no_log: true
-  # --- Galera state detection ---
   - name: Check if MariaDB is already installed
     ansible.builtin.shell:
       cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
@@ -58,7 +57,6 @@
     changed_when: false
     when: inventory_hostname == 'mariadb0'
   - name: Check if MariaDB service is currently active
-    # failed_when: false so this never aborts the play even if the service unit is missing
     ansible.builtin.shell:
       cmd: systemctl is-active mariadb
     register: mariadb_service_check
@@ -66,7 +64,6 @@
     changed_when: false
     when: inventory_hostname == 'mariadb0'
   - name: Check Galera cluster status via local MySQL socket
-    # Only attempted when the service reports active; failed_when: false handles socket unavailable
     ansible.builtin.shell:
       cmd: mysql -NBe "SHOW STATUS LIKE 'wsrep_cluster_status';" 2>/dev/null | awk '{print $2}'
     register: galera_cluster_status_check
@@ -74,9 +71,6 @@
     changed_when: false
     when: inventory_hostname == 'mariadb0' and (mariadb_service_check.stdout | default('')) == 'active'
   - name: Determine Galera bootstrap and recovery requirements
-    # galera_bootstrap_required: true for fresh install OR when cluster is not healthy.
-    # galera_recover_full_outage: true when MariaDB IS installed but the cluster has no primary
-    #   component (covers: all nodes down simultaneously, or service running but quorum lost).
     set_fact:
       galera_bootstrap_required: >-
         {{ ('install ok installed' not in (mariadb_pkg_check.stdout | default('')))
@@ -92,22 +86,13 @@
       galera_bootstrap_required: "{{ hostvars['mariadb0']['galera_bootstrap_required'] }}"
       galera_recover_full_outage: "{{ hostvars['mariadb0']['galera_recover_full_outage'] }}"
     when: inventory_hostname != 'mariadb0'
-  # --- Full-outage recovery: bootstrap cluster BEFORE apt to prevent dpkg post-install failures ---
-  # When all nodes are down simultaneously, apt's mariadb-server post-install script calls
-  # "invoke-rc.d mariadb restart", which fails because Galera cannot form a primary component
-  # with no reachable peers.  The packages are left in "partially configured" state and every
-  # subsequent apt run reproduces the failure.  We resolve this by bootstrapping the cluster
-  # first so the service is running (and healthy) by the time apt configures the packages.
   - name: Ensure MariaDB is stopped on all nodes before full-outage recovery bootstrap
-    # failed_when: false because the service may already be stopped or the unit may be missing
     ansible.builtin.service:
       name: mariadb
       state: stopped
     failed_when: false
     when: galera_recover_full_outage | bool
   - name: Bootstrap Galera cluster on mariadb0 (full-outage recovery)
-    # galera_new_cluster starts mariadb with wsrep_cluster_address=gcomm:// (empty = new primary
-    # component), forming a single-node primary.  Only mariadb0 ever runs this; other nodes join.
     ansible.builtin.command: galera_new_cluster
     when: inventory_hostname == 'mariadb0' and galera_recover_full_outage | bool
   - name: Wait for MariaDB socket to be available on mariadb0 after recovery bootstrap
@@ -122,7 +107,6 @@
       enabled: true
     when: inventory_hostname != 'mariadb0' and galera_recover_full_outage | bool
   - name: Wait for all Galera nodes to join after full-outage recovery
-    # Poll wsrep_cluster_size until all 3 nodes have joined before proceeding with package tasks.
     ansible.builtin.shell:
       cmd: mysql -NBe "SHOW STATUS LIKE 'wsrep_cluster_size';" | awk '{print $2}'
     register: galera_cluster_size_check
@@ -167,9 +151,6 @@
       mode: '0640'
     notify:
     - Restart MariaDB
-  # --- Fresh-install bootstrap: only when MariaDB was not installed before ---
-  # apt's post-install script will have started the service in standalone mode after a fresh
-  # install; we stop all nodes then bootstrap mariadb0 so the Galera cluster forms correctly.
   - name: Stop MariaDB on all nodes before fresh-install Galera bootstrap
     ansible.builtin.service:
       name: mariadb
@@ -179,7 +160,6 @@
     ansible.builtin.command: galera_new_cluster
     when: inventory_hostname == 'mariadb0' and galera_bootstrap_required | bool and not (galera_recover_full_outage | bool)
   - name: Wait for MariaDB socket to be available on mariadb0 before user and database tasks
-    # Ensures the socket is present regardless of which bootstrap path was taken (or neither).
     ansible.builtin.wait_for:
       path: /run/mysqld/mysqld.sock
       timeout: 60
