@@ -8,7 +8,7 @@ spec:
   releaseName: monica
   chart:
     spec:
-      version: 1.0.14
+      version: 1.0.15
       chart: monica
       sourceRef:
         kind: HelmRepository
