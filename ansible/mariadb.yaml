@@ -24,6 +24,70 @@
     backup_cron_hour: "2"
     backup_cron_minute: "0"
     mariadb_version: "11.4"
+  pre_tasks:
+  - name: Check if mariadb-server is in broken dpkg state before any apt operations
+    ansible.builtin.shell:
+      cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
+    register: pre_mariadb_pkg_check
+    failed_when: false
+    changed_when: false
+  - name: Check if Galera config exists (may cause dpkg post-install failure)
+    ansible.builtin.stat:
+      path: /etc/mysql/mariadb.conf.d/60-galera.cnf
+    register: pre_galera_config_stat
+  - name: Check if Galera dpkg-fix backup exists from a previous failed recovery
+    ansible.builtin.stat:
+      path: /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+    register: pre_galera_dpkg_fix_stat
+  - name: Write wsrep_on override so MariaDB starts standalone during dpkg fix
+    ansible.builtin.copy:
+      dest: /etc/mysql/mariadb.conf.d/99-wsrep-disable.cnf
+      content: "[mysqld]\nwsrep_on = OFF\n"
+      owner: root
+      group: root
+      mode: '0644'
+    when:
+    - "'install ok installed' not in (pre_mariadb_pkg_check.stdout | default(''))"
+    - (pre_galera_config_stat.stat.exists | default(false)) or (pre_galera_dpkg_fix_stat.stat.exists | default(false))
+  - name: Restore Galera config from dpkg-fix backup if rename was left incomplete
+    ansible.builtin.command:
+      cmd: mv /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix /etc/mysql/mariadb.conf.d/60-galera.cnf
+      removes: /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+    when:
+    - "'install ok installed' not in (pre_mariadb_pkg_check.stdout | default(''))"
+    - pre_galera_dpkg_fix_stat.stat.exists | default(false)
+  - name: Complete pending dpkg configuration with wsrep disabled
+    ansible.builtin.command:
+      cmd: dpkg --configure -a
+    failed_when: false
+    changed_when: true
+    when:
+    - "'install ok installed' not in (pre_mariadb_pkg_check.stdout | default(''))"
+    - (pre_galera_config_stat.stat.exists | default(false)) or (pre_galera_dpkg_fix_stat.stat.exists | default(false))
+  - name: Stop MariaDB after dpkg configuration completes
+    ansible.builtin.service:
+      name: mariadb
+      state: stopped
+    failed_when: false
+    when:
+    - "'install ok installed' not in (pre_mariadb_pkg_check.stdout | default(''))"
+    - (pre_galera_config_stat.stat.exists | default(false)) or (pre_galera_dpkg_fix_stat.stat.exists | default(false))
+  - name: Remove wsrep_on override after dpkg fix
+    ansible.builtin.file:
+      path: /etc/mysql/mariadb.conf.d/99-wsrep-disable.cnf
+      state: absent
+    when:
+    - "'install ok installed' not in (pre_mariadb_pkg_check.stdout | default(''))"
+    - (pre_galera_config_stat.stat.exists | default(false)) or (pre_galera_dpkg_fix_stat.stat.exists | default(false))
+  - name: Verify mariadb-server dpkg configuration is now complete
+    ansible.builtin.shell:
+      cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
+    register: pre_mariadb_pkg_verify
+    changed_when: false
+    failed_when: "'install ok installed' not in (pre_mariadb_pkg_verify.stdout | default(''))"
+    when:
+    - "'install ok installed' not in (pre_mariadb_pkg_check.stdout | default(''))"
+    - (pre_galera_config_stat.stat.exists | default(false)) or (pre_galera_dpkg_fix_stat.stat.exists | default(false))
   roles:
   - role: prep
     install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pip", "python3-setuptools"]
