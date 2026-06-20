@@ -91,11 +91,17 @@
       path: /etc/mysql/mariadb.conf.d/60-galera.cnf
     register: galera_config_stat
     when: inventory_hostname == 'mariadb0'
+  - name: Check if Galera config dpkg-fix backup exists from a previous failed recovery
+    ansible.builtin.stat:
+      path: /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+    register: galera_config_dpkg_fix_stat
+    when: inventory_hostname == 'mariadb0'
   - name: Determine if packages are in broken dpkg state with existing Galera config
     set_fact:
       galera_dpkg_broken: >-
         {{ ('install ok installed' not in (mariadb_pkg_check.stdout | default('')))
-           and (galera_config_stat.stat.exists | default(false)) }}
+           and ((galera_config_stat.stat.exists | default(false))
+                or (galera_config_dpkg_fix_stat.stat.exists | default(false))) }}
     when: inventory_hostname == 'mariadb0'
   - name: Propagate dpkg broken state to all nodes
     set_fact:
@@ -150,19 +156,43 @@
   - name: Temporarily rename Galera config to allow dpkg --configure -a to succeed
     ansible.builtin.command:
       cmd: mv /etc/mysql/mariadb.conf.d/60-galera.cnf /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+      creates: /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+    when: galera_dpkg_broken | default(false) | bool and (galera_config_stat.stat.exists | default(false))
+  - name: Write wsrep_on override to guarantee MariaDB starts standalone during dpkg configure
+    ansible.builtin.copy:
+      dest: /etc/mysql/mariadb.conf.d/99-wsrep-disable.cnf
+      content: "[mysqld]\nwsrep_on = OFF\n"
+      owner: root
+      group: root
+      mode: '0644'
     when: galera_dpkg_broken | default(false) | bool
-  - name: Complete pending dpkg package configuration with Galera config absent
+  - name: Complete pending dpkg package configuration with Galera disabled
     ansible.builtin.command:
       cmd: dpkg --configure -a
+    failed_when: false
     when: galera_dpkg_broken | default(false) | bool
   - name: Stop MariaDB after dpkg --configure -a completes
     ansible.builtin.service:
       name: mariadb
       state: stopped
+    failed_when: false
+    when: galera_dpkg_broken | default(false) | bool
+  - name: Remove wsrep_on override after dpkg configuration
+    ansible.builtin.file:
+      path: /etc/mysql/mariadb.conf.d/99-wsrep-disable.cnf
+      state: absent
     when: galera_dpkg_broken | default(false) | bool
   - name: Restore Galera config after dpkg configuration
     ansible.builtin.command:
       cmd: mv /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix /etc/mysql/mariadb.conf.d/60-galera.cnf
+      removes: /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+    when: galera_dpkg_broken | default(false) | bool
+  - name: Verify dpkg configuration completed successfully after recovery
+    ansible.builtin.shell:
+      cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
+    register: mariadb_dpkg_verify
+    changed_when: false
+    failed_when: "'install ok installed' not in (mariadb_dpkg_verify.stdout | default(''))"
     when: galera_dpkg_broken | default(false) | bool
   - name: Stop MariaDB on all nodes before Galera bootstrap
     ansible.builtin.service:
