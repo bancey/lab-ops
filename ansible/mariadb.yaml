@@ -86,6 +86,21 @@
       galera_bootstrap_required: "{{ hostvars['mariadb0']['galera_bootstrap_required'] }}"
       galera_recover_full_outage: "{{ hostvars['mariadb0']['galera_recover_full_outage'] }}"
     when: inventory_hostname != 'mariadb0'
+  - name: Check if Galera configuration already exists to detect broken install state
+    ansible.builtin.stat:
+      path: /etc/mysql/mariadb.conf.d/60-galera.cnf
+    register: galera_config_stat
+    when: inventory_hostname == 'mariadb0'
+  - name: Determine if packages are in broken dpkg state with existing Galera config
+    set_fact:
+      galera_dpkg_broken: >-
+        {{ ('install ok installed' not in (mariadb_pkg_check.stdout | default('')))
+           and (galera_config_stat.stat.exists | default(false)) }}
+    when: inventory_hostname == 'mariadb0'
+  - name: Propagate dpkg broken state to all nodes
+    set_fact:
+      galera_dpkg_broken: "{{ hostvars['mariadb0']['galera_dpkg_broken'] }}"
+    when: inventory_hostname != 'mariadb0'
   - name: Stop MariaDB on all nodes before package installation
     ansible.builtin.service:
       name: mariadb
@@ -97,7 +112,7 @@
       url: https://supplychain.mariadb.com/mariadb-keyring-2025.gpg
       dest: /usr/share/keyrings/mariadb-keyring-2025.gpg
       mode: '0644'
-    when: not (galera_recover_full_outage | bool)
+    when: not (galera_recover_full_outage | bool) and not (galera_dpkg_broken | default(false) | bool)
   - name: Add MariaDB repository sources file
     ansible.builtin.copy:
       dest: /etc/apt/sources.list.d/mariadb.list
@@ -105,7 +120,7 @@
       owner: root
       group: root
       mode: '0644'
-    when: not (galera_recover_full_outage | bool)
+    when: not (galera_recover_full_outage | bool) and not (galera_dpkg_broken | default(false) | bool)
   - name: Install MariaDB and Galera packages
     apt:
       pkg:
@@ -115,13 +130,13 @@
       - python3-pymysql
       state: latest
       update_cache: true
-    when: not ansible_check_mode and not (galera_recover_full_outage | bool)
+    when: not ansible_check_mode and not (galera_recover_full_outage | bool) and not (galera_dpkg_broken | default(false) | bool)
   - name: Comment out default bind-address in 50-server.cnf
     ansible.builtin.replace:
       path: /etc/mysql/mariadb.conf.d/50-server.cnf
       regexp: '^(bind-address\s*=.*)$'
       replace: '# \1 # Managed by Ansible - overridden in 60-galera.cnf'
-    when: not (galera_recover_full_outage | bool)
+    when: not (galera_recover_full_outage | bool) and not (galera_dpkg_broken | default(false) | bool)
   - name: Copy Galera configuration template
     template:
       src: templates/galera.cnf.j2
@@ -131,7 +146,24 @@
       mode: '0640'
     notify:
     - Restart MariaDB
-    when: not (galera_recover_full_outage | bool)
+    when: not (galera_recover_full_outage | bool) and not (galera_dpkg_broken | default(false) | bool)
+  - name: Temporarily rename Galera config to allow dpkg --configure -a to succeed
+    ansible.builtin.command:
+      cmd: mv /etc/mysql/mariadb.conf.d/60-galera.cnf /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
+    when: galera_dpkg_broken | default(false) | bool
+  - name: Complete pending dpkg package configuration with Galera config absent
+    ansible.builtin.command:
+      cmd: dpkg --configure -a
+    when: galera_dpkg_broken | default(false) | bool
+  - name: Stop MariaDB after dpkg --configure -a completes
+    ansible.builtin.service:
+      name: mariadb
+      state: stopped
+    when: galera_dpkg_broken | default(false) | bool
+  - name: Restore Galera config after dpkg configuration
+    ansible.builtin.command:
+      cmd: mv /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix /etc/mysql/mariadb.conf.d/60-galera.cnf
+    when: galera_dpkg_broken | default(false) | bool
   - name: Stop MariaDB on all nodes before Galera bootstrap
     ansible.builtin.service:
       name: mariadb
@@ -148,7 +180,7 @@
         fi
     register: grastate_safe_check
     changed_when: false
-    when: galera_recover_full_outage | bool
+    when: (galera_recover_full_outage | bool) or (galera_dpkg_broken | default(false) | bool)
   - name: Ensure mariadb0 is marked safe_to_bootstrap for full outage recovery
     ansible.builtin.replace:
       path: /var/lib/mysql/grastate.dat
@@ -156,7 +188,7 @@
       replace: 'safe_to_bootstrap: 1'
     when:
     - inventory_hostname == 'mariadb0'
-    - galera_recover_full_outage | bool
+    - (galera_recover_full_outage | bool) or (galera_dpkg_broken | default(false) | bool)
     - (grastate_safe_check.stdout | default('-1')) != '-1'
   - name: Clear safe_to_bootstrap on non-primary nodes for full outage recovery
     ansible.builtin.replace:
@@ -165,7 +197,7 @@
       replace: 'safe_to_bootstrap: 0'
     when:
     - inventory_hostname != 'mariadb0'
-    - galera_recover_full_outage | bool
+    - (galera_recover_full_outage | bool) or (galera_dpkg_broken | default(false) | bool)
     - (grastate_safe_check.stdout | default('0')) == '1'
   - name: Bootstrap Galera cluster on mariadb0
     ansible.builtin.command: galera_new_cluster
