@@ -92,12 +92,10 @@
       state: stopped
     failed_when: false
     when: galera_bootstrap_required | bool
-  - name: Prevent MariaDB from auto-starting during package installation
-    ansible.builtin.copy:
-      dest: /usr/sbin/policy-rc.d
-      content: "#!/bin/sh\nexit 101\n"
-      mode: '0755'
-    when: galera_bootstrap_required | bool
+  - name: Mask MariaDB service to prevent auto-start during package installation
+    ansible.builtin.command: systemctl mask mariadb.service
+    changed_when: true
+    failed_when: false
   - name: Download MariaDB apt keyring
     ansible.builtin.get_url:
       url: https://supplychain.mariadb.com/mariadb-keyring-2025.gpg
@@ -120,11 +118,10 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  - name: Remove policy-rc.d to restore normal service management
-    ansible.builtin.file:
-      path: /usr/sbin/policy-rc.d
-      state: absent
-    when: galera_bootstrap_required | bool
+  - name: Unmask MariaDB service after package installation
+    ansible.builtin.command: systemctl unmask mariadb.service
+    changed_when: true
+    failed_when: false
   - name: Comment out default bind-address in 50-server.cnf
     ansible.builtin.replace:
       path: /etc/mysql/mariadb.conf.d/50-server.cnf
