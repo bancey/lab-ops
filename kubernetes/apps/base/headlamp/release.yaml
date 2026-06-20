@@ -8,7 +8,7 @@ spec:
   releaseName: headlamp
   chart:
     spec:
-      version: 0.42.0
+      version: 0.43.0
       chart: headlamp
       sourceRef:
         kind: HelmRepository
