@@ -67,7 +67,7 @@ If this fails with network errors, document it but continue—it's a known limit
 - **`ansible/`** — Configuration management and provisioning
   - **`k3s.yaml`** — Kubernetes (K3s) cluster deployment
   - **`rpi-ha.yaml`** — Raspberry Pi HA and Twingate connector setup
-  - **`nut-server.yaml`** / **`nut-client.yaml`** / **`nut-client-wanda.yaml`** — UPS (NUT) monitoring
+  - **`nut-server.yaml`** / **`nut-client.yaml`** — UPS (NUT) monitoring
   - **`haproxy.yaml`** — HAProxy load balancer
   - **`wings-node.yaml`** — Pterodactyl Wings game panel node
   - **`ado-agent.yaml`** — Azure DevOps self-hosted agent
