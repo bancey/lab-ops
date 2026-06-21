@@ -85,6 +85,7 @@
   vars:
     adguard_username: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Username') }}"
     adguard_password: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Password') }}"
+    gatus_discord_webhook_url: "{{ lookup('ansible.builtin.file', 'Discord-Gatus-Webhook-URL') | trim }}"
   roles:
   - role: rpi-monitoring
     tags: [ monitoring ]

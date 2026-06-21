@@ -4,3 +4,4 @@
 # Users can override these by setting these variables to custom paths in their playbook
 gatus_config_template: "gatus-config.yaml.j2"
 alloy_config_template: "alloy-config.alloy.j2"
+gatus_discord_webhook_url: ""

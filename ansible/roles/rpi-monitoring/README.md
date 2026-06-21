@@ -36,9 +36,10 @@ The Docker Compose file is deployed to:
 Required variables (passed from playbook):
 - `adguard_username`: Username for AdGuard Home API access
 - `adguard_password`: Password for AdGuard Home API access
+- `gatus_discord_webhook_url`: Discord webhook URL for Gatus alerts
 
 Optional variables (with defaults):
-- `gatus_config_file`: Gatus config file name (default: `gatus-config.yaml` - uses file from role's `files/` directory)
+- `gatus_config_template`: Gatus config template name (default: `gatus-config.yaml.j2` - uses template from role's `templates/` directory)
 - `alloy_config_template`: Alloy config template name (default: `alloy-config.alloy.j2` - uses template from role's `templates/` directory)
 
 To use custom configuration files, override these variables in your playbook:
@@ -46,7 +47,7 @@ To use custom configuration files, override these variables in your playbook:
 - role: rpi-monitoring
   vars:
     # Absolute paths or relative paths (starting with ./ or ../) are supported
-    gatus_config_file: "/path/to/custom/gatus-config.yaml"
+    gatus_config_template: "/path/to/custom/gatus-config.yaml.j2"
     alloy_config_template: "/path/to/custom/alloy-config.alloy.j2"
 ```
 

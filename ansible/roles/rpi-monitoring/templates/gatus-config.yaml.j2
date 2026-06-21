@@ -12,6 +12,14 @@ ui:
       link: "https://gatus.{{ host }}.heimelska.co.uk"
 {% endfor %}
 
+{% set discord_webhook = gatus_discord_webhook_url | default('') | trim %}
+{% set discord_enabled = discord_webhook | length > 0 %}
+{% if discord_enabled %}
+alerting:
+  discord:
+    webhook-url: "{{ discord_webhook }}"
+{% endif %}
+
 endpoints:
   - name: thanos
     group: hosts
@@ -69,6 +77,10 @@ endpoints:
       query-type: "A"
     conditions:
       - "[DNS_RCODE] == NOERROR"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
   - name: adguard dns internal
     group: services
     url: "10.151.14.4"
@@ -78,6 +90,10 @@ endpoints:
     conditions:
       - "[DNS_RCODE] == NOERROR"
       - "[BODY] == 10.151.24.10"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
   - name: home assistant
     group: services
     url: "https://hass.tiny.heimelska.co.uk"
@@ -85,6 +101,10 @@ endpoints:
     conditions:
       - "[STATUS] == 200"
       - "[BODY] == pat(*<title>Home Assistant</title>*)"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
   - name: home assistant waf
     group: services
     url: "https://hass.heimelska.co.uk"
@@ -92,6 +112,10 @@ endpoints:
     conditions:
       - "[STATUS] == 200"
       - "[BODY] == pat(*<title>Home Assistant</title>*)"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
   - name: zigbee2mqtt
     group: services
     url: "https://zigbee2mqtt.tiny.heimelska.co.uk"
@@ -99,3 +123,158 @@ endpoints:
     conditions:
       - "[STATUS] == 200"
       - "[BODY] == pat(*<title>Zigbee2MQTT</title>*)"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+
+  - name: mariadb vip (proxysql)
+    group: databases
+    url: "tcp://sql.heimelska.co.uk:6033"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: proxysql0 mysql frontend
+    group: databases
+    url: "tcp://proxysql0.heimelska.co.uk:6033"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: proxysql1 mysql frontend
+    group: databases
+    url: "tcp://proxysql1.heimelska.co.uk:6033"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: proxysql2 mysql frontend
+    group: databases
+    url: "tcp://proxysql2.heimelska.co.uk:6033"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: mariadb0 direct
+    group: databases
+    url: "tcp://mariadb0.heimelska.co.uk:3306"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: mariadb1 direct
+    group: databases
+    url: "tcp://mariadb1.heimelska.co.uk:3306"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: mariadb2 direct
+    group: databases
+    url: "tcp://mariadb2.heimelska.co.uk:3306"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: postgres vip
+    group: databases
+    url: "tcp://pgsql.heimelska.co.uk:5432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: postgresql0 direct
+    group: databases
+    url: "tcp://postgresql0.heimelska.co.uk:5432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: postgresql1 direct
+    group: databases
+    url: "tcp://postgresql1.heimelska.co.uk:5432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: postgresql2 direct
+    group: databases
+    url: "tcp://postgresql2.heimelska.co.uk:5432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: pgbouncer vip
+    group: databases
+    url: "tcp://pgsql.heimelska.co.uk:6432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: pgbouncer0 direct
+    group: databases
+    url: "tcp://postgresql0.heimelska.co.uk:6432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: pgbouncer1 direct
+    group: databases
+    url: "tcp://postgresql1.heimelska.co.uk:6432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}
+  - name: pgbouncer2 direct
+    group: databases
+    url: "tcp://postgresql2.heimelska.co.uk:6432"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+{% endif %}

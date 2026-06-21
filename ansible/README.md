@@ -262,7 +262,7 @@ The following are noted as candidates for future improvements but remain in thei
 
 ### Variable Management
 - Secrets are loaded via `lookup('ansible.builtin.file', 'filename')` from local files in the runner environment
-- Files required: `keepalived-pass`, `mariadb_root_password`, `mariadb_galera_password`, `postgresql_superuser_password`, `postgresql_replication_password`, `keepalived_postgresql_pass`, `backup_sas_token`, `NUT-Admin-Password`, `NUT-Monitor-Password`
+- Files required: `keepalived-pass`, `mariadb_root_password`, `mariadb_galera_password`, `postgresql_superuser_password`, `postgresql_replication_password`, `keepalived_postgresql_pass`, `backup_sas_token`, `NUT-Admin-Password`, `NUT-Monitor-Password`, `Discord-Gatus-Webhook-URL`
 - These should be in `.gitignore` and managed securely in your runner environment
 
 ### Template Organization
