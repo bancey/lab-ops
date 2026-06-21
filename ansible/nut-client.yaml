@@ -1,5 +1,5 @@
 - name: Setup NUT clients on Proxmox hosts
-  hosts: proxmox_tiny
+  hosts: proxmox_tiny,proxmox_wanda
   become: true
   become_user: root
   become_method: sudo

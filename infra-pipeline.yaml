@@ -260,17 +260,7 @@ parameters:
           - thanos
         dependsOn:
           - generate_ansible_inventory
-      - deployment: nut_client_ansible_wanda
-        environment: prod
-        playbook: nut-client-wanda.yaml
-        secrets:
-          - NUT-Monitor-Password
-        localEnvironments:
-          - wanda
-        dependsOn:
-          - generate_ansible_inventory
-          - nut_server_ansible
-      - deployment: nut_client_ansible_tiny
+      - deployment: nut_client_ansible
         environment: prod
         playbook: nut-client.yaml
         secrets:
@@ -279,6 +269,7 @@ parameters:
           - hela
           - loki
           - thor
+          - wanda
         dependsOn:
           - generate_ansible_inventory
           - nut_server_ansible
