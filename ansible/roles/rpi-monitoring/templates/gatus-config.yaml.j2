@@ -130,7 +130,7 @@ endpoints:
 
   - name: mariadb vip (proxysql)
     group: databases
-    url: "tcp://sql.heimelska.co.uk:6033"
+    url: "tcp://sql.heimelska.co.uk:3306"
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
@@ -140,7 +140,7 @@ endpoints:
 {% endif %}
   - name: proxysql0 mysql frontend
     group: databases
-    url: "tcp://proxysql0.heimelska.co.uk:6033"
+    url: "tcp://proxysql0.heimelska.co.uk:3306"
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
@@ -150,7 +150,7 @@ endpoints:
 {% endif %}
   - name: proxysql1 mysql frontend
     group: databases
-    url: "tcp://proxysql1.heimelska.co.uk:6033"
+    url: "tcp://proxysql1.heimelska.co.uk:3306"
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
@@ -160,7 +160,7 @@ endpoints:
 {% endif %}
   - name: proxysql2 mysql frontend
     group: databases
-    url: "tcp://proxysql2.heimelska.co.uk:6033"
+    url: "tcp://proxysql2.heimelska.co.uk:3306"
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
