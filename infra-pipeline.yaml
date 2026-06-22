@@ -245,6 +245,7 @@ parameters:
           - Cloudflare-Lab-API-Token
           - Adguard-Thanos-Username
           - Adguard-Thanos-Password
+          - Discord-Gatus-Webhook-URL
         localEnvironments:
           - thanos
           - gamora
@@ -257,7 +258,7 @@ parameters:
           - NUT-Admin-Password
           - NUT-Monitor-Password
         localEnvironments:
-          - thanos
+          - gamora
         dependsOn:
           - generate_ansible_inventory
       - deployment: nut_client_ansible
