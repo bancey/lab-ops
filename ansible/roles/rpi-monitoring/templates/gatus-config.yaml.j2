@@ -18,6 +18,8 @@ ui:
 alerting:
   discord:
     webhook-url: "{{ discord_webhook }}"
+    title: ":helmet_with_white_cross: Gatus ({{ inventory_hostname }})"
+    message-content: "Source instance: {{ inventory_hostname }} @bancey"
 {% endif %}
 
 endpoints:
@@ -28,6 +30,11 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
       - "[IP] == 10.151.14.5"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: gamora
     group: hosts
     url: "tcp://gamora.heimelska.co.uk:22"
@@ -35,6 +42,11 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
       - "[IP] == 10.151.14.6"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: thor
     group: hosts
     url: "tcp://thor.heimelska.co.uk:22"
@@ -42,6 +54,11 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
       - "[IP] == 10.151.14.13"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: loki
     group: hosts
     url: "tcp://loki.heimelska.co.uk:22"
@@ -49,6 +66,11 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
       - "[IP] == 10.151.14.14"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: hela
     group: hosts
     url: "tcp://hela.heimelska.co.uk:22"
@@ -56,6 +78,11 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
       - "[IP] == 10.151.14.12"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: wanda
     group: hosts
     url: "tcp://wanda.heimelska.co.uk:22"
@@ -63,12 +90,22 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
       - "[IP] == 10.151.14.11"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: wanda-mgmt
     group: hosts
     url: "tcp://10.151.14.10:443"
     interval: 1m
     conditions:
       - "[CONNECTED] == true"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: aguard dns external
     group: services
     url: "10.151.14.4"
@@ -80,6 +117,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: adguard dns internal
     group: services
@@ -93,6 +131,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: home assistant
     group: services
@@ -104,6 +143,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: home assistant waf
     group: services
@@ -115,6 +155,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: zigbee2mqtt
     group: services
@@ -126,6 +167,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
 
   - name: mariadb vip (proxysql)
@@ -137,6 +179,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: proxysql0 mysql frontend
     group: databases
@@ -147,6 +190,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: proxysql1 mysql frontend
     group: databases
@@ -157,6 +201,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: proxysql2 mysql frontend
     group: databases
@@ -167,6 +212,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: mariadb0 direct
     group: databases
@@ -177,6 +223,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: mariadb1 direct
     group: databases
@@ -187,6 +234,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: mariadb2 direct
     group: databases
@@ -197,6 +245,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: postgres vip
     group: databases
@@ -207,6 +256,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: postgresql0 direct
     group: databases
@@ -217,6 +267,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: postgresql1 direct
     group: databases
@@ -227,6 +278,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: postgresql2 direct
     group: databases
@@ -237,6 +289,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: pgbouncer vip
     group: databases
@@ -247,6 +300,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: pgbouncer0 direct
     group: databases
@@ -257,6 +311,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: pgbouncer1 direct
     group: databases
@@ -267,6 +322,7 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
   - name: pgbouncer2 direct
     group: databases
@@ -277,4 +333,5 @@ endpoints:
 {% if discord_enabled %}
     alerts:
       - type: discord
+        send-on-resolved: true
 {% endif %}
