@@ -24,6 +24,7 @@ resources:
   - ./victoria-metrics-backup-cronjob.yaml
   - ./unpoller-secret.sops.yaml
   - ./unpoller-alloy-config.yaml
+  - ./node-red-secret.sops.yaml
   - ../base/home-assistant
   #- ./open-webui-db-secret.sops.yaml
   #- ../base/ollama
