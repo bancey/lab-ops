@@ -82,3 +82,31 @@ spec:
   commonName: "zigbee2mqtt-fqdn"
   dnsNames:
     - "zigbee2mqtt-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: node-red-staging-tls
+  namespace: default
+spec:
+  secretName: node-red-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "node-red-fqdn"
+  dnsNames:
+    - "node-red-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: node-red-tls
+  namespace: default
+spec:
+  secretName: node-red-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "node-red-fqdn"
+  dnsNames:
+    - "node-red-fqdn"
