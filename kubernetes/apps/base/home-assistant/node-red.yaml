@@ -42,7 +42,7 @@ spec:
           main:
             image:
               repository: nodered/node-red
-              tag: 4.0.9
+              tag: 4.1.11
             env:
               TZ: Europe/London
               NODE_RED_ENABLE_PROJECTS: "false"
