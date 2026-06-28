@@ -11,6 +11,7 @@ resources:
   - mosquitto-mqtt.yaml
   - mosquitto-mqtt-lb-service.yaml
   - zigbee2mqtt-secret.sops.yaml
+  - node-red-secret.sops.yaml
   - zigbee2mqtt.yaml
   - node-red.yaml
   - sonos-lb-service.yaml

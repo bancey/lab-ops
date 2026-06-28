@@ -46,6 +46,10 @@ spec:
             env:
               TZ: Europe/London
               NODE_RED_ENABLE_PROJECTS: "false"
+              HASS_HOST: http://home-assistant.home-assistant.svc.cluster.local:8123
+            envFrom:
+              - secretRef:
+                  name: node-red-secret
             resources:
               requests:
                 cpu: 50m
