@@ -1,0 +1,74 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: node-red
+  namespace: home-assistant
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: 5.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    timeout: 10m
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    # Configure options applied to all pods
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+
+    controllers:
+      # Configure the main controller
+      main:
+        type: statefulset
+        containers:
+          # Configure the main application container
+          main:
+            image:
+              repository: nodered/node-red
+              tag: 4.0.9
+            env:
+              TZ: Europe/London
+              NODE_RED_ENABLE_PROJECTS: "false"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256M
+              limits:
+                memory: 512M
+
+    service:
+      # Configure a service for the web UI
+      main:
+        controller: main
+        type: ClusterIP
+        ports:
+          http:
+            port: 1880
+            protocol: TCP
+
+    persistence:
+      # Configure the data storage location
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 2Gi
+        storageClass: unas-nfs-csi
+        globalMounts:
+          - path: /data
