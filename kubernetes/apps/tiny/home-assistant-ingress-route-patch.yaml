@@ -57,7 +57,7 @@ spec:
     - match: Host(`node-red.tiny.heimelska.co.uk`)
       kind: Rule
       services:
-        - name: node-red-main
+        - name: node-red
           port: 1880
       middlewares:
         - name: default-headers
