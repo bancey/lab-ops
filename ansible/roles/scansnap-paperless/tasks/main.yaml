@@ -1,0 +1,91 @@
+---
+- name: Install scanner stack packages
+  ansible.builtin.apt:
+    pkg:
+      - sane-utils
+      - scanbd
+      - img2pdf
+      - curl
+    state: present
+    update_cache: true
+
+- name: Create scansnap runtime directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ scansnap_spool_dir }}"
+    - "{{ scansnap_output_dir }}"
+    - "{{ scansnap_log_dir }}"
+    - "{{ scanbd_script_dir }}"
+
+- name: Deploy scan-to-paperless script
+  ansible.builtin.template:
+    src: scan-to-paperless.sh.j2
+    dest: "{{ scansnap_script_dir }}/scan-to-paperless.sh"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Symlink scan-to-paperless script into scanbd scripts directory
+  ansible.builtin.file:
+    src: "{{ scansnap_script_dir }}/scan-to-paperless.sh"
+    dest: "{{ scanbd_script_dir }}/scan.sh"
+    state: link
+
+- name: Deploy scanbd configuration
+  ansible.builtin.template:
+    src: scanbd.conf.j2
+    dest: /etc/scanbd/scanbd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart scanbd
+
+- name: Flush handlers before starting scanbd
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start scanbd service
+  ansible.builtin.systemd:
+    name: scanbd
+    enabled: "{{ scansnap_service_enabled | bool }}"
+    state: started
+  when: not ansible_check_mode
+
+- name: Deploy scansnap-retry systemd service unit
+  ansible.builtin.template:
+    src: scansnap-retry.service.j2
+    dest: /etc/systemd/system/scansnap-retry.service
+    owner: root
+    group: root
+    mode: '0644'
+  when: scansnap_retry_timer_enabled | bool
+  notify:
+    - reload systemd daemon
+
+- name: Deploy scansnap-retry systemd timer unit
+  ansible.builtin.template:
+    src: scansnap-retry.timer.j2
+    dest: /etc/systemd/system/scansnap-retry.timer
+    owner: root
+    group: root
+    mode: '0644'
+  when: scansnap_retry_timer_enabled | bool
+  notify:
+    - reload systemd daemon
+
+- name: Flush handlers to reload systemd before enabling timer
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start scansnap-retry timer
+  ansible.builtin.systemd:
+    name: scansnap-retry.timer
+    enabled: true
+    state: started
+  when:
+    - scansnap_retry_timer_enabled | bool
+    - not ansible_check_mode

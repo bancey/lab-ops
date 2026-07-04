@@ -1,0 +1,13 @@
+# scansnap-retry.timer — managed by Ansible (scansnap-paperless role)
+# Periodically triggers the spool retry service to re-upload failed scans.
+[Unit]
+Description=ScanSnap Paperless-ngx spool retry timer
+Requires=scansnap-retry.service
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec={{ scansnap_retry_timer_interval }}
+Unit=scansnap-retry.service
+
+[Install]
+WantedBy=timers.target

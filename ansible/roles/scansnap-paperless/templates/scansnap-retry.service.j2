@@ -1,0 +1,47 @@
+# scansnap-retry.service — managed by Ansible (scansnap-paperless role)
+# Re-uploads PDF files that failed to reach Paperless-ngx and were spooled locally.
+[Unit]
+Description=ScanSnap Paperless-ngx spool retry
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Environment="PAPERLESS_URL={{ paperless_url }}"
+Environment="PAPERLESS_TOKEN={{ paperless_api_token }}"
+Environment="SPOOL_DIR={{ scansnap_spool_dir }}"
+Environment="LOG_FILE={{ scansnap_log_file }}"
+Environment="RETRY_COUNT={{ scansnap_retry_count }}"
+Environment="RETRY_DELAY={{ scansnap_retry_delay }}"
+ExecStart=/bin/bash -c '\
+  for pdf in "${SPOOL_DIR}"/*.pdf; do \
+    [ -f "${pdf}" ] || continue; \
+    title="Retry $(basename "${pdf}" .pdf)"; \
+    attempt=0; \
+    success=0; \
+    while [ "${attempt}" -lt "${RETRY_COUNT}" ]; do \
+      attempt=$(( attempt + 1 )); \
+      http_code=$(curl --silent --output /dev/null --write-out "%%{http_code}" \
+        --max-time 120 \
+        --request POST "${PAPERLESS_URL}/api/documents/post_document/" \
+        --header "Authorization: Token ${PAPERLESS_TOKEN}" \
+        --form "document=@${pdf}" \
+        --form "title=${title}"); \
+      if echo "${http_code}" | grep -qE "^2"; then \
+        logger -t scansnap-retry -p user.info "Uploaded ${pdf} (HTTP ${http_code}), removing from spool"; \
+        echo "$(date +'"'"'%Y-%m-%d %H:%M:%S'"'"') [info] Retry succeeded for ${pdf}" >> "${LOG_FILE}"; \
+        rm -f "${pdf}"; \
+        success=1; \
+        break; \
+      fi; \
+      logger -t scansnap-retry -p user.warning "Upload attempt ${attempt}/${RETRY_COUNT} failed (HTTP ${http_code}) for ${pdf}"; \
+      sleep "${RETRY_DELAY}"; \
+    done; \
+    if [ "${success}" -eq 0 ]; then \
+      echo "$(date +'"'"'%Y-%m-%d %H:%M:%S'"'"') [err] Retry failed for ${pdf} after ${RETRY_COUNT} attempts" >> "${LOG_FILE}"; \
+    fi; \
+  done'
+
+[Install]
+WantedBy=multi-user.target

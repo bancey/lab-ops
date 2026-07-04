@@ -1,0 +1,11 @@
+---
+- name: restart scanbd
+  ansible.builtin.systemd:
+    name: scanbd
+    state: restarted
+    daemon_reload: true
+  when: not ansible_check_mode
+
+- name: reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true

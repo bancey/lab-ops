@@ -139,6 +139,7 @@ To create a new logical stack:
 - **`nut-server.yaml`**: NUT UPS monitoring server setup
 - **`nut-client.yaml`**: NUT UPS monitoring client setup (targets both proxmox_tiny and proxmox_wanda)
 - **`matter-server.yaml`**: Matter smart home server deployment
+- **`scansnap.yaml`**: ScanSnap iX500 one-button scan-to-Paperless-ngx workflow (targets `gamora`)
 
 ## Roles
 
@@ -153,6 +154,7 @@ Reusable Ansible roles are located in the `roles/` directory:
 - **`setup-nut-client`**: NUT UPS client configuration
 - **`setup-nut-server`**: NUT UPS server configuration
 - **`run-ado-agent-container`**: Azure DevOps agent Docker container orchestration
+- **`scansnap-paperless`**: ScanSnap iX500 one-button scan-to-Paperless-ngx (scanbd + scan script + API upload + spool retry)
 
 Each role contains its own README with detailed documentation.
 
@@ -224,6 +226,12 @@ Templates stored within individual roles' `templates/` directories:
 - `cloudflare.ini.j2`: Cloudflare DNS ACME configuration
 - `wings.service`: Systemd service file
 
+#### `scansnap-paperless` Role
+- `scan-to-paperless.sh.j2`: Production scan and API upload script
+- `scanbd.conf.j2`: scanbd button daemon configuration
+- `scansnap-retry.service.j2`: Systemd service for retrying spooled failed uploads
+- `scansnap-retry.timer.j2`: Systemd timer for periodic spool retry
+
 ## Inventory Structure
 
 See `hosts.yaml` for full inventory definition. Key groups:
@@ -262,7 +270,7 @@ The following are noted as candidates for future improvements but remain in thei
 
 ### Variable Management
 - Secrets are loaded via `lookup('ansible.builtin.file', 'filename')` from local files in the runner environment
-- Files required: `keepalived-pass`, `mariadb_root_password`, `mariadb_galera_password`, `postgresql_superuser_password`, `postgresql_replication_password`, `keepalived_postgresql_pass`, `backup_sas_token`, `NUT-Admin-Password`, `NUT-Monitor-Password`, `Discord-Gatus-Webhook-URL`
+- Files required: `keepalived-pass`, `mariadb_root_password`, `mariadb_galera_password`, `postgresql_superuser_password`, `postgresql_replication_password`, `keepalived_postgresql_pass`, `backup_sas_token`, `NUT-Admin-Password`, `NUT-Monitor-Password`, `Discord-Gatus-Webhook-URL`, `Paperless-API-Token`
 - These should be in `.gitignore` and managed securely in your runner environment
 
 ### Template Organization
