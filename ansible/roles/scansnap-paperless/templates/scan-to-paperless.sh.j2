@@ -76,8 +76,8 @@ if ! scanimage "${SCAN_ARGS[@]}" 2>>"${LOG_FILE}"; then
   exit 1
 fi
 
-PAGE_FILES=("${WORK_DIR}"/page-*.png)
-PAGE_COUNT="${#PAGE_FILES[@]}"
+{% raw %}PAGE_FILES=("${WORK_DIR}"/page-*.png)
+PAGE_COUNT="${#PAGE_FILES[@]}"{% endraw %}
 
 if [[ "${PAGE_COUNT}" -eq 0 ]] || [[ ! -f "${PAGE_FILES[0]}" ]]; then
   log "err" "Scan produced no pages — check ADF feed and scanner status"
