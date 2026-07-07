@@ -198,8 +198,15 @@ Set `scansnap_source` accordingly.
 ## Directory layout on the target host
 
 ```
-/usr/local/bin/scan-to-paperless.sh    # Main scan + upload script
-/etc/scanbd/scanbd.conf                # scanbd configuration
+/usr/local/bin/scan-to-paperless.sh           # Main scan + upload script
+/etc/scansnap/paperless-api-token.env         # Paperless API token (root:scanner 0640)
+/etc/scanbd/scanbd.conf                       # scanbd global configuration (managed by role)
+/etc/scanbd/scanner.d/fujitsu.conf            # Fujitsu device config (managed by role)
+/etc/systemd/system/scansnap-retry.service    # Systemd service for retry timer (optional)
+/etc/systemd/system/scansnap-retry.timer      # Systemd timer (optional)
+/var/lib/scansnap/                            # Output spooling and state
+/var/log/scansnap/scan.log                    # Scan operation log
+
 /etc/scanbd/scripts.d/scan.sh          # Symlink → scan-to-paperless.sh
 /var/spool/scansnap/                   # Failed upload spool (PDFs retained here)
 /var/lib/scansnap/output/              # Temporary working directory for scans

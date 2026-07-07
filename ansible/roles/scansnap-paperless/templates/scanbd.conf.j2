@@ -1,5 +1,6 @@
 ## scanbd.conf — managed by Ansible (scansnap-paperless role)
-## scanbd button daemon configuration for ScanSnap iX500
+## scanbd button daemon configuration — global settings only
+## Device-specific configuration is in scanner.d/
 
 global {
   ## Daemon settings
@@ -27,48 +28,4 @@ global {
 
   ## Allow multiple button actions to coexist
   multiple_actions = true
-
-  ## -------------------------------------------------------------------------
-  ## Scan button action — fired when the hardware scan button is pressed.
-  ##
-  ## For ScanSnap iX500 with the fujitsu SANE backend the button options are
-  ## "Scan button" and "Email button".  Other Fujitsu models may use
-  ## "button-0", "button-1", or "scan-button".  Run the following on the
-  ## host to discover the exact option name (stop scanbd first — it holds
-  ## exclusive SANE access and direct scanimage calls return "Invalid
-  ## argument" while it is running):
-  ##   sudo systemctl stop scanbd
-  ##   scanimage -d <device-string> -A 2>&1 | grep -i button
-  ##   sudo systemctl start scanbd
-  ##
-  ## Adjust scanbd_button_filter in the role defaults if the filter below
-  ## does not match your device's button option name.
-  ## -------------------------------------------------------------------------
-  action scan {
-    filter = "{{ scanbd_button_filter }}"
-    numerical-trigger {
-      from-value = {{ scanbd_trigger_from }}
-      to-value   = {{ scanbd_trigger_to }}
-    }
-    desc   = "Scan to Paperless-ngx"
-    script = "scan.sh"
-  }
-}
-
-## Explicit device block — required on systems without HAL so scanbd knows
-## which SANE backend to poll directly rather than waiting for HAL events.
-device fujitsu {
-  ## Match any fujitsu backend device (covers ScanSnap iX500 and similar)
-  filter = "^fujitsu.*"
-  desc   = "Fujitsu ScanSnap scanner"
-
-  action scan {
-    filter = "{{ scanbd_button_filter }}"
-    numerical-trigger {
-      from-value = {{ scanbd_trigger_from }}
-      to-value   = {{ scanbd_trigger_to }}
-    }
-    desc   = "Scan to Paperless-ngx"
-    script = "scan.sh"
-  }
 }

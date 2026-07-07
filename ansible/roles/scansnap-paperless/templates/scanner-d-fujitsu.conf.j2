@@ -1,0 +1,35 @@
+##
+## scanner.d/fujitsu.conf — managed by Ansible (scansnap-paperless role)
+## Device configuration for Fujitsu ScanSnap iX500
+##
+
+device fujitsu {
+  # Match any fujitsu backend device
+  filter = "^fujitsu.*"
+  desc   = "Fujitsu ScanSnap scanner"
+
+  ##
+  ## Scan button action — fired when the hardware scan button is pressed.
+  ##
+  ## For ScanSnap iX500, the button options are typically:
+  ##   - "Scan button" (recommended for scanning to Paperless)
+  ##   - "Email button" (can be used as alternative)
+  ##
+  ## To discover or adjust the option name on your device:
+  ##   1. Stop scanbd: sudo systemctl stop scanbd
+  ##   2. Run:         scanimage -d <device> -A 2>&1 | grep -i button
+  ##   3. Restart:     sudo systemctl start scanbd
+  ##
+  ## Then update scanbd_button_filter in the role defaults if needed.
+  ##
+
+  action scan {
+    filter = "{{ scanbd_button_filter }}"
+    numerical-trigger {
+      from-value = {{ scanbd_trigger_from }}
+      to-value   = {{ scanbd_trigger_to }}
+    }
+    desc   = "Scan to Paperless-ngx"
+    script = "scan.sh"
+  }
+}
