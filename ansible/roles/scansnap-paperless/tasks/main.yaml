@@ -15,6 +15,58 @@
       - paperless_api_token | length > 0
     fail_msg: "paperless_api_token must be provided (e.g., via lookup('ansible.builtin.file', 'Paperless-API-Token'))"
 
+- name: Configure SANE dll.conf to use net backend only (required for scanbd proxy mode)
+  ansible.builtin.copy:
+    dest: /etc/sane.d/dll.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Managed by Ansible (scansnap-paperless role)
+      # scanbd requires SANE clients to go through its net proxy.
+      # The fujitsu backend is configured in /etc/scanbd/ for scanbd's internal use.
+      net
+  notify:
+    - restart scanbd
+
+- name: Configure SANE net.conf for scanbd proxy (localhost + connect_timeout)
+  ansible.builtin.copy:
+    dest: /etc/sane.d/net.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Managed by Ansible (scansnap-paperless role)
+      connect_timeout = 3
+      localhost
+  notify:
+    - restart scanbd
+
+- name: Ensure /etc/scanbd/ has the fujitsu backend for scanbd direct access
+  ansible.builtin.copy:
+    dest: /etc/scanbd/dll.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Managed by Ansible (scansnap-paperless role)
+      # Full backend list used by scanbd internally (SANE_CONFIG_DIR=/etc/scanbd)
+      fujitsu
+  notify:
+    - restart scanbd
+
+- name: Ensure /etc/scanbd/net.conf exists with connect_timeout
+  ansible.builtin.copy:
+    dest: /etc/scanbd/net.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Managed by Ansible (scansnap-paperless role)
+      connect_timeout = 3
+  notify:
+    - restart scanbd
+
 - name: Create scansnap runtime directories
   ansible.builtin.file:
     path: "{{ item.path }}"
@@ -92,7 +144,8 @@
     content: |
       # Environment variables for scanbd
       # Sourced by /etc/init.d/scanbd
-      export SANE_CONFIG_DIR=/etc/sane.d
+      # scanbd uses /etc/scanbd/ for its internal SANE config (direct backend access)
+      export SANE_CONFIG_DIR=/etc/scanbd
   notify:
     - restart scanbd
 

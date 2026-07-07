@@ -76,8 +76,15 @@ SCAN_ARGS=(
 )
 
 if ! scanimage "${SCAN_ARGS[@]}" 2>>"${LOG_FILE}"; then
-  log "err" "scanimage failed — see ${LOG_FILE} for details"
-  exit 1
+  # scanimage exits non-zero when the ADF empties ("Document feeder out of
+  # documents") — this is a normal end-of-batch condition, not a real error.
+  # Only treat it as a failure if no page files were produced.
+  PAGE_FILES_CHECK=("${WORK_DIR}"/page-*.png)
+  if [[ ! -f "${PAGE_FILES_CHECK[0]}" ]]; then
+    log "err" "scanimage failed with no pages produced — check ADF feed and scanner status"
+    exit 1
+  fi
+  log "info" "ADF feeder empty — end of batch"
 fi
 
 {% raw %}PAGE_FILES=("${WORK_DIR}"/page-*.png)
