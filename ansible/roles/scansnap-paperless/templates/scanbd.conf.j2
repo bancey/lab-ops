@@ -13,6 +13,7 @@ global {
 
   ## Path to saned binary (scanbd proxies SANE requests through it)
   saned = /usr/sbin/saned
+  saned_env { SANE_CONFIG_DIR=/etc/scanbd }
 
   ## Directory where action scripts reside
   scriptdir = {{ scanbd_script_dir }}
