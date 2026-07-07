@@ -9,19 +9,36 @@
     state: present
     update_cache: true
 
+- name: Validate Paperless API token is provided
+  ansible.builtin.assert:
+    that:
+      - paperless_api_token | length > 0
+    fail_msg: "paperless_api_token must be provided (e.g., via lookup('ansible.builtin.file', 'Paperless-API-Token'))"
+
 - name: Create scansnap runtime directories
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
-    owner: root
-    group: root
-    mode: '0755'
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
   loop:
-    - "{{ scansnap_spool_dir }}"
-    - "{{ scansnap_output_dir }}"
-    - "{{ scansnap_log_dir }}"
-    - "{{ scanbd_script_dir }}"
-
+    - path: "{{ scansnap_spool_dir }}"
+      owner: "{{ scanbd_user }}"
+      group: "{{ scanbd_group }}"
+      mode: "0775"
+    - path: "{{ scansnap_output_dir }}"
+      owner: "{{ scanbd_user }}"
+      group: "{{ scanbd_group }}"
+      mode: "0775"
+    - path: "{{ scansnap_log_dir }}"
+      owner: "{{ scanbd_user }}"
+      group: "{{ scanbd_group }}"
+      mode: "0775"
+    - path: "{{ scanbd_script_dir }}"
+      owner: "root"
+      group: "root"
+      mode: "0755"
 - name: Deploy scan-to-paperless script
   ansible.builtin.template:
     src: scan-to-paperless.sh.j2
@@ -53,7 +70,7 @@
   ansible.builtin.systemd:
     name: scanbd
     enabled: "{{ scansnap_service_enabled | bool }}"
-    state: started
+    state: "{{ 'started' if (scansnap_service_enabled | bool) else 'stopped' }}"
   when: not ansible_check_mode
 
 - name: Deploy scansnap-retry systemd service unit
