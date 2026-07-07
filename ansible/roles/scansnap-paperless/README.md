@@ -151,7 +151,9 @@ scanimage -d "$(scanimage -L | head -n1 | sed -E "s/device \`([^']+)'.*/\1/")" -
 ```
 
 Update `scanbd_button_filter` in your playbook vars to match the option name found.
-Common values for Fujitsu scanners: `^button-0.*`, `^button-1.*`, `^scan-button.*`.
+Common values for Fujitsu scanners:
+- ScanSnap iX500: `^Scan button$`, `^Email button$`
+- Other Fujitsu models: `^button-0.*`, `^button-1.*`, `^scan-button.*`
 
 Also check trigger direction — some buttons trigger `1→0` rather than `0→1`:
 

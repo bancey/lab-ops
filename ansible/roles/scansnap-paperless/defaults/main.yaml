@@ -45,9 +45,13 @@ scanbd_debug: false
 scanbd_debug_level: 1
 scanbd_timeout: 500
 # Regex filter matching the SANE option name that changes on button press
-# For Fujitsu/ScanSnap: "^button.*" or "^scan-button.*"
-# Run `scanimage -d <device> -A` and look for button/function options
-scanbd_button_filter: "^button.*"
+# NOTE: scanbd holds exclusive SANE access — stop it first or scanimage returns "Invalid argument":
+#   sudo systemctl stop scanbd
+#   scanimage -d <device> -A 2>&1 | grep -i button
+#   sudo systemctl start scanbd
+# ScanSnap iX500 reports: "Email button" and "Scan button"
+# Other Fujitsu models may use: "button-0", "button-1", "scan-button"
+scanbd_button_filter: "^Scan button$"
 # Trigger: from-value and to-value indicate the state change for button press
 scanbd_trigger_from: 0
 scanbd_trigger_to: 1

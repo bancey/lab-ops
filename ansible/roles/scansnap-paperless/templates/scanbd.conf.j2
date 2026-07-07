@@ -33,10 +33,15 @@ global {
   ## -------------------------------------------------------------------------
   ## Scan button action — fired when the hardware scan button is pressed.
   ##
-  ## For ScanSnap iX500 with the fujitsu SANE backend the button option is
-  ## typically "button-0" or "button-1".  Run the following on the host to
-  ## discover the exact option name:
+  ## For ScanSnap iX500 with the fujitsu SANE backend the button options are
+  ## "Scan button" and "Email button".  Other Fujitsu models may use
+  ## "button-0", "button-1", or "scan-button".  Run the following on the
+  ## host to discover the exact option name (stop scanbd first — it holds
+  ## exclusive SANE access and direct scanimage calls return "Invalid
+  ## argument" while it is running):
+  ##   sudo systemctl stop scanbd
   ##   scanimage -d <device-string> -A 2>&1 | grep -i button
+  ##   sudo systemctl start scanbd
   ##
   ## Adjust scanbd_button_filter in the role defaults if the filter below
   ## does not match your device's button option name.
