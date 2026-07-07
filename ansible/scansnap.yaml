@@ -7,3 +7,6 @@
   roles:
     - role: scansnap-paperless
       paperless_api_token: "{{ lookup('ansible.builtin.file', 'Paperless-API-Token') }}"
+      paperless_url: "https://paperless.tiny.heimelska.co.uk/"
+      scansnap_device: "fujitsu:ScanSnap iX500:57849"
+      scansnap_mode: "Color"
