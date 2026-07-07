@@ -261,6 +261,15 @@ parameters:
           - gamora
         dependsOn:
           - generate_ansible_inventory
+      - deployment: scansnap_ansible
+        environment: prod
+        playbook: scansnap.yaml
+        secrets:
+          - Paperless-API-Token
+        localEnvironments:
+          - gamora
+        dependsOn:
+          - generate_ansible_inventory
       - deployment: nut_client_ansible
         environment: prod
         playbook: nut-client.yaml

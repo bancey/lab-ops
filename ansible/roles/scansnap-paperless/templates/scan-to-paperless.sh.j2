@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# scan-to-paperless.sh — managed by Ansible (scansnap-paperless role)
+# Scans from ScanSnap iX500 and uploads directly to Paperless-ngx API.
+# Invoked by scanbd on hardware button press; SCANBD_DEVICE is set by scanbd.
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Configuration (rendered by Ansible)
+# ---------------------------------------------------------------------------
+PAPERLESS_URL="{{ paperless_url }}"
+# PAPERLESS_TOKEN is loaded from the restricted token file below (not embedded here)
+DPI="{{ scansnap_dpi }}"
+SCAN_MODE="{{ scansnap_mode }}"
+SCAN_SOURCE="{{ scansnap_source }}"
+SPOOL_DIR="{{ scansnap_spool_dir }}"
+OUTPUT_DIR="{{ scansnap_output_dir }}"
+LOG_FILE="{{ scansnap_log_file }}"
+RETRY_COUNT="{{ scansnap_retry_count }}"
+RETRY_DELAY="{{ scansnap_retry_delay }}"
+# SCANBD_DEVICE is exported by scanbd; fall back to configured device name
+DEVICE="${SCANBD_DEVICE:-{{ scansnap_device }}}"
+
+# Load Paperless API token from restricted environment file (root:{{ scanbd_group }} 0640)
+# shellcheck source=/dev/null
+. "{{ scansnap_token_file }}"
+
+# ---------------------------------------------------------------------------
+# Logging — writes to log file and system logger simultaneously
+# ---------------------------------------------------------------------------
+log() {
+  local level="$1"; shift
+  local msg="$(date '+%Y-%m-%d %H:%M:%S') [${level}] $*"
+  echo "${msg}" >> "${LOG_FILE}"
+  logger -t scan-to-paperless -p "user.${level,,}" "$*"
+}
+
+# ---------------------------------------------------------------------------
+# Auto-detect scanner device if none provided
+# ---------------------------------------------------------------------------
+if [[ -z "${DEVICE}" ]]; then
+  DEVICE="$(scanimage -L 2>/dev/null | head -n1 | sed -E "s/device \`([^']+)'.*/\1/" || true)"
+  if [[ -z "${DEVICE}" ]]; then
+    log "err" "No scanner device found — check USB connection and sane-utils installation"
+    exit 1
+  fi
+  log "info" "Auto-detected scanner device: ${DEVICE}"
+fi
+
+# ---------------------------------------------------------------------------
+# Create a per-scan temp directory; clean up on exit unless spooling
+# ---------------------------------------------------------------------------
+TS="$(date +%Y%m%d-%H%M%S)"
+WORK_DIR="$(mktemp -d "${OUTPUT_DIR}/scan-${TS}-XXXXXX")"
+SPOOL_ON_EXIT=0
+
+cleanup() {
+  if [[ "${SPOOL_ON_EXIT}" -eq 0 ]]; then
+    rm -rf "${WORK_DIR}"
+  fi
+}
+trap cleanup EXIT
+
+# ---------------------------------------------------------------------------
+# Scan pages to PNG files
+# ---------------------------------------------------------------------------
+log "info" "Starting scan — device: ${DEVICE}, DPI: ${DPI}, mode: ${SCAN_MODE}, source: ${SCAN_SOURCE}"
+
+SCAN_ARGS=(
+  "--device-name=${DEVICE}"
+  "--resolution=${DPI}"
+  "--format=png"
+  "--batch=${WORK_DIR}/page-%04d.png"
+  "--batch-count=100"
+  "--mode=${SCAN_MODE}"
+  "--source=${SCAN_SOURCE}"
+)
+
+if ! scanimage "${SCAN_ARGS[@]}" 2>>"${LOG_FILE}"; then
+  log "err" "scanimage failed — see ${LOG_FILE} for details"
+  exit 1
+fi
+
+{% raw %}PAGE_FILES=("${WORK_DIR}"/page-*.png)
+PAGE_COUNT="${#PAGE_FILES[@]}"{% endraw %}
+
+if [[ "${PAGE_COUNT}" -eq 0 ]] || [[ ! -f "${PAGE_FILES[0]}" ]]; then
+  log "err" "Scan produced no pages — check ADF feed and scanner status"
+  exit 1
+fi
+
+log "info" "Scanned ${PAGE_COUNT} page(s), converting to PDF"
+
+# ---------------------------------------------------------------------------
+# Convert scanned PNG pages to a single PDF with img2pdf (lossless)
+# ---------------------------------------------------------------------------
+PDF_FILE="${WORK_DIR}/scan-${TS}.pdf"
+
+if ! img2pdf "${PAGE_FILES[@]}" -o "${PDF_FILE}" 2>>"${LOG_FILE}"; then
+  log "err" "PDF conversion failed"
+  exit 1
+fi
+
+log "info" "PDF ready: ${PDF_FILE} ($(du -sh "${PDF_FILE}" | cut -f1))"
+
+# ---------------------------------------------------------------------------
+# Upload to Paperless-ngx API with retries and backoff
+# ---------------------------------------------------------------------------
+upload_to_paperless() {
+  local pdf_path="$1"
+  local doc_title="Scan ${TS//-/ }"
+  local attempt=0
+  local http_code
+
+  while [[ "${attempt}" -lt "${RETRY_COUNT}" ]]; do
+    attempt=$(( attempt + 1 ))
+    log "info" "Uploading to Paperless (attempt ${attempt}/${RETRY_COUNT})"
+
+    http_code="$(curl \
+      --silent \
+      --output /dev/null \
+      --write-out "%{http_code}" \
+      --max-time 120 \
+      --request POST "${PAPERLESS_URL}/api/documents/post_document/" \
+      --header "Authorization: Token ${PAPERLESS_TOKEN}" \
+      --form "document=@${pdf_path}" \
+      --form "title=${doc_title}" \
+      2>>"${LOG_FILE}")"
+
+    if [[ "${http_code}" =~ ^2 ]]; then
+      log "info" "Upload succeeded (HTTP ${http_code})"
+      return 0
+    fi
+
+    log "warning" "Upload failed (HTTP ${http_code}), retrying in ${RETRY_DELAY}s"
+    sleep "${RETRY_DELAY}"
+  done
+
+  log "err" "Upload failed after ${RETRY_COUNT} attempts (last HTTP status: ${http_code})"
+  return 1
+}
+
+if upload_to_paperless "${PDF_FILE}"; then
+  log "info" "Scan workflow completed successfully — document ingested by Paperless"
+else
+  SPOOL_FILE="${SPOOL_DIR}/scan-${TS}.pdf"
+  log "warning" "Moving failed PDF to spool: ${SPOOL_FILE}"
+  cp "${PDF_FILE}" "${SPOOL_FILE}"
+  SPOOL_ON_EXIT=1
+  exit 1
+fi

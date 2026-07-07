@@ -1,0 +1,53 @@
+---
+# Paperless-ngx connection settings
+# paperless_api_token must be provided via Ansible Vault - no default intentionally set
+paperless_url: "http://paperless.example.com"
+paperless_api_token: ""
+
+# Scanner settings
+# Leave scansnap_device empty to auto-detect via `scanimage -L`
+# Override with full SANE device string, e.g. "fujitsu:ScanSnap iX500:12345"
+scansnap_device: ""
+scansnap_dpi: 300
+scansnap_duplex: true
+# Scan mode: Gray, Color, or Lineart
+scansnap_mode: "Gray"
+# ADF source name - use "ADF Duplex" for duplex, "ADF Front" for simplex-only
+# Run `scanimage -d <device> --help` to see supported source names
+scansnap_source: "ADF Duplex"
+
+# Directory paths
+scansnap_script_dir: "/usr/local/bin"
+scansnap_spool_dir: "/var/spool/scansnap"
+scansnap_output_dir: "/var/lib/scansnap/output"
+scansnap_log_dir: "/var/log/scansnap"
+scansnap_log_file: "/var/log/scansnap/scan.log"
+# Token environment file — root-owned, group-readable by scanbd_group (0640)
+# Keeps the API token out of world-readable script/unit files
+scansnap_token_file: "/etc/scansnap/paperless-api-token.env"
+
+# Retry settings for failed API uploads
+scansnap_retry_count: 3
+scansnap_retry_delay: 5
+
+# Systemd retry timer for re-processing spooled failed uploads
+scansnap_retry_timer_enabled: true
+scansnap_retry_timer_interval: "15min"
+
+# Service enablement
+scansnap_service_enabled: true
+
+# scanbd daemon settings
+scanbd_user: saned
+scanbd_group: scanner
+scanbd_script_dir: "/etc/scanbd/scripts.d"
+scanbd_debug: false
+scanbd_debug_level: 1
+scanbd_timeout: 500
+# Regex filter matching the SANE option name that changes on button press
+# For Fujitsu/ScanSnap: "^button.*" or "^scan-button.*"
+# Run `scanimage -d <device> -A` and look for button/function options
+scanbd_button_filter: "^button.*"
+# Trigger: from-value and to-value indicate the state change for button press
+scanbd_trigger_from: 0
+scanbd_trigger_to: 1

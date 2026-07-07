@@ -1,0 +1,56 @@
+## scanbd.conf — managed by Ansible (scansnap-paperless role)
+## scanbd button daemon configuration for ScanSnap iX500
+
+global {
+  ## Daemon settings
+  debug = {{ scanbd_debug | lower }}
+  debug-level = {{ scanbd_debug_level }}
+
+  ## Run as this user/group (saned owns SANE device access on Debian)
+  user = {{ scanbd_user }}
+  group = {{ scanbd_group }}
+
+  ## Path to saned binary (scanbd proxies SANE requests through it)
+  saned = /usr/sbin/saned
+  saned_opt {}
+  saned_env { SANE_CONFIG_DIR=/etc/sane.d }
+
+  ## Directory where action scripts reside
+  scriptdir = {{ scanbd_script_dir }}
+
+  ## Polling interval in milliseconds
+  timeout = {{ scanbd_timeout }}
+
+  ## Environment variables exported to action scripts
+  environment {
+    device = "SCANBD_DEVICE"
+    action = "SCANBD_ACTION"
+  }
+
+  ## Allow multiple button actions to coexist
+  multiple_actions = true
+
+  ## -------------------------------------------------------------------------
+  ## Scan button action — fired when the hardware scan button is pressed.
+  ##
+  ## For ScanSnap iX500 with the fujitsu SANE backend the button option is
+  ## typically "button-0" or "button-1".  Run the following on the host to
+  ## discover the exact option name:
+  ##   scanimage -d <device-string> -A 2>&1 | grep -i button
+  ##
+  ## Adjust scanbd_button_filter in the role defaults if the filter below
+  ## does not match your device's button option name.
+  ## -------------------------------------------------------------------------
+  action scan {
+    filter = "{{ scanbd_button_filter }}"
+    numerical-trigger {
+      from-value = {{ scanbd_trigger_from }}
+      to-value   = {{ scanbd_trigger_to }}
+    }
+    desc   = "Scan to Paperless-ngx"
+    script = "scan.sh"
+  }
+}
+
+## Include per-device overrides (if any are placed in scanner.d/)
+include(/etc/scanbd/scanner.d/*.conf)

@@ -1,0 +1,9 @@
+- name: Configure ScanSnap iX500 one-button scan to Paperless-ngx on gamora
+  hosts: gamora
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - role: scansnap-paperless
+      paperless_api_token: "{{ lookup('ansible.builtin.file', 'Paperless-API-Token') }}"
