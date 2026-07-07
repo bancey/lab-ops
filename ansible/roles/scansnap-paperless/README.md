@@ -150,9 +150,18 @@ Discover the correct SANE option name for your device:
 scanimage -d "$(scanimage -L | head -n1 | sed -E "s/device \`([^']+)'.*/\1/")" -A 2>&1 | grep -i "button\|function\|scan"
 ```
 
-Update `scanbd_button_filter` in your playbook vars to match the option name found.
+Update `scanbd_button_filter` in your playbook vars to match the SANE option name found.
+**Important**: `scanimage -A` shows display labels like "Scan button", but the actual SANE
+option name may be different (e.g., `scan`, `email`, `button-0`). Check scanbd debug output
+to find the true option name:
+```bash
+sudo systemctl stop scanbd
+sudo scanbd -f -d 7 2>&1 | grep "found active option"
+# Look for button-related options and their names
+sudo systemctl start scanbd
+```
 Common values for Fujitsu scanners:
-- ScanSnap iX500: `^Scan button$`, `^Email button$`
+- ScanSnap iX500: `^scan$` (Scan button), `^email$` (Email button)
 - Other Fujitsu models: `^button-0.*`, `^button-1.*`, `^scan-button.*`
 
 Also check trigger direction — some buttons trigger `1→0` rather than `0→1`:

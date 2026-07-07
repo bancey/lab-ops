@@ -75,16 +75,6 @@
   notify:
     - restart scanbd
 
-- name: Deploy scanbd fujitsu device configuration
-  ansible.builtin.template:
-    src: scanner-d-fujitsu.conf.j2
-    dest: /etc/scanbd/scanner.d/fujitsu.conf
-    owner: root
-    group: root
-    mode: '0644'
-  notify:
-    - restart scanbd
-
 - name: Deploy scanbd default environment variables
   ansible.builtin.copy:
     dest: /etc/default/scanbd

@@ -49,9 +49,11 @@ scanbd_timeout: 500
 #   sudo systemctl stop scanbd
 #   scanimage -d <device> -A 2>&1 | grep -i button
 #   sudo systemctl start scanbd
-# ScanSnap iX500 reports: "Email button" and "Scan button"
+# ScanSnap iX500 SANE option names: "scan" (Scan button) and "email" (Email button)
+# The scanimage -A output shows display labels like "Scan button", but the actual
+# SANE option names are lowercase and without spaces (e.g., "scan", "email").
 # Other Fujitsu models may use: "button-0", "button-1", "scan-button"
-scanbd_button_filter: "^Scan button$"
+scanbd_button_filter: "^scan$"
 # Trigger: from-value and to-value indicate the state change for button press
 scanbd_trigger_from: 0
 scanbd_trigger_to: 1

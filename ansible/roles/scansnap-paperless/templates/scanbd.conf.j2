@@ -1,6 +1,5 @@
 ## scanbd.conf — managed by Ansible (scansnap-paperless role)
-## scanbd button daemon configuration — global settings only
-## Device-specific configuration is in scanner.d/
+## scanbd button daemon configuration — global settings and device config
 
 global {
   ## Daemon settings
@@ -28,4 +27,46 @@ global {
 
   ## Allow multiple button actions to coexist
   multiple_actions = true
+}
+
+##
+## Device configuration for Fujitsu ScanSnap iX500
+##
+## scanbd does NOT auto-load scanner.d/ files — all device blocks must be
+## in the main config file. This device block is populated from the
+## scanner-d-fujitsu.conf.j2 template at role runtime.
+##
+device fujitsu {
+  # Match any fujitsu backend device
+  filter = "^fujitsu.*"
+  desc   = "Fujitsu ScanSnap scanner"
+
+  ##
+  ## Scan button action — fired when the hardware scan button is pressed.
+  ##
+  ## For ScanSnap iX500, the SANE option names are:
+  ##   - "scan" — the actual SANE option (labeled "Scan button" in scanimage -A output)
+  ##   - "email" — the email button (labeled "Email button" in scanimage -A output)
+  ##
+  ## Note: scanimage -A shows display labels, but the filter must match the actual
+  ## SANE option names (typically lowercase, no spaces).
+  ##
+  ## To discover the option name on your device:
+  ##   1. Stop scanbd: sudo systemctl stop scanbd
+  ##   2. Run: scanimage -d <device> -A 2>&1 (look for button-related options and their names)
+  ##   3. Check scanbd debug output: sudo scanbd -f -d 7 (look for "found active option")
+  ##   4. Restart: sudo systemctl start scanbd
+  ##
+  ## Then update scanbd_button_filter in the role defaults if needed.
+  ##
+
+  action scan {
+    filter = "{{ scanbd_button_filter }}"
+    numerical-trigger {
+      from-value = {{ scanbd_trigger_from }}
+      to-value   = {{ scanbd_trigger_to }}
+    }
+    desc   = "Scan to Paperless-ngx"
+    script = "scan.sh"
+  }
 }
