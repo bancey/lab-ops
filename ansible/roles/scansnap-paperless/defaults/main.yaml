@@ -26,6 +26,11 @@ scansnap_log_file: "/var/log/scansnap/scan.log"
 # Keeps the API token out of world-readable script/unit files
 scansnap_token_file: "/etc/scansnap/paperless-api-token.env"
 
+# Tags to apply to uploaded documents (looked up by name; created if missing)
+# Set to empty list to upload without tags
+scansnap_paperless_tags:
+  - "paperless-gpt-auto"
+
 # Retry settings for failed API uploads
 scansnap_retry_count: 3
 scansnap_retry_delay: 5

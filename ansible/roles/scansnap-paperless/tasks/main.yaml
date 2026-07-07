@@ -6,6 +6,7 @@
       - scanbd
       - img2pdf
       - curl
+      - jq
     state: present
     update_cache: true
 
