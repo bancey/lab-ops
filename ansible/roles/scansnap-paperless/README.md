@@ -32,7 +32,8 @@ All variables have defaults in `defaults/main.yaml`.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `paperless_url` | `http://paperless.example.com` | Base URL of the Paperless-ngx instance |
-| `paperless_api_token` | `""` | **Required — use Ansible Vault.** Paperless-ngx API token |
+| `paperless_api_token` | `""` | **Required — use Ansible Vault.** Paperless-ngx API token. The token's user must have **View** permission on any tags listed in `scansnap_paperless_tags`, and **Add** permission if you want the role to auto-create missing tags |
+| `scansnap_paperless_tags` | `["paperless-gpt-auto"]` | Tags applied to every uploaded document (looked up by name; created if missing and user has Add permission) |
 | `scansnap_device` | `""` | SANE device string; empty = auto-detect via `scanimage -L` |
 | `scansnap_dpi` | `300` | Scan resolution in DPI |
 | `scansnap_duplex` | `true` | Enable duplex (double-sided) scanning |
