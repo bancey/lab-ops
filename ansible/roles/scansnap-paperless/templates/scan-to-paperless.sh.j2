@@ -8,7 +8,7 @@ set -euo pipefail
 # Configuration (rendered by Ansible)
 # ---------------------------------------------------------------------------
 PAPERLESS_URL="{{ paperless_url }}"
-PAPERLESS_TOKEN="{{ paperless_api_token }}"
+# PAPERLESS_TOKEN is loaded from the restricted token file below (not embedded here)
 DPI="{{ scansnap_dpi }}"
 SCAN_MODE="{{ scansnap_mode }}"
 SCAN_SOURCE="{{ scansnap_source }}"
@@ -19,6 +19,10 @@ RETRY_COUNT="{{ scansnap_retry_count }}"
 RETRY_DELAY="{{ scansnap_retry_delay }}"
 # SCANBD_DEVICE is exported by scanbd; fall back to configured device name
 DEVICE="${SCANBD_DEVICE:-{{ scansnap_device }}}"
+
+# Load Paperless API token from restricted environment file (root:{{ scanbd_group }} 0640)
+# shellcheck source=/dev/null
+. "{{ scansnap_token_file }}"
 
 # ---------------------------------------------------------------------------
 # Logging — writes to log file and system logger simultaneously

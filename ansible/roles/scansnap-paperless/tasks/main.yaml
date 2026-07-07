@@ -39,6 +39,18 @@
       owner: "root"
       group: "root"
       mode: "0755"
+    - path: "{{ scansnap_token_file | dirname }}"
+      owner: "root"
+      group: "{{ scanbd_group }}"
+      mode: "0750"
+
+- name: Deploy Paperless API token environment file
+  ansible.builtin.template:
+    src: paperless-api-token.env.j2
+    dest: "{{ scansnap_token_file }}"
+    owner: root
+    group: "{{ scanbd_group }}"
+    mode: '0640'
 - name: Deploy scan-to-paperless script
   ansible.builtin.template:
     src: scan-to-paperless.sh.j2

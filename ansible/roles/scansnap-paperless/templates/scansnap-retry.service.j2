@@ -8,8 +8,8 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=root
+EnvironmentFile={{ scansnap_token_file }}
 Environment="PAPERLESS_URL={{ paperless_url }}"
-Environment="PAPERLESS_TOKEN={{ paperless_api_token }}"
 Environment="SPOOL_DIR={{ scansnap_spool_dir }}"
 Environment="LOG_FILE={{ scansnap_log_file }}"
 Environment="RETRY_COUNT={{ scansnap_retry_count }}"
