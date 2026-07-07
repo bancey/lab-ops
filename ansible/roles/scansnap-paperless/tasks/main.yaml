@@ -85,6 +85,19 @@
   notify:
     - restart scanbd
 
+- name: Deploy scanbd default environment variables
+  ansible.builtin.copy:
+    dest: /etc/default/scanbd
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Environment variables for scanbd
+      # Sourced by /etc/init.d/scanbd
+      export SANE_CONFIG_DIR=/etc/sane.d
+  notify:
+    - restart scanbd
+
 - name: Flush handlers before starting scanbd
   ansible.builtin.meta: flush_handlers
 
