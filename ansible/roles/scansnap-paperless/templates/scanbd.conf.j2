@@ -12,8 +12,6 @@ global {
 
   ## Path to saned binary (scanbd proxies SANE requests through it)
   saned = /usr/sbin/saned
-  saned_opt = {}
-  saned_env = { SANE_CONFIG_DIR=/etc/sane.d }
 
   ## Directory where action scripts reside
   scriptdir = {{ scanbd_script_dir }}
@@ -57,5 +55,20 @@ global {
   }
 }
 
-## Include per-device overrides (if any are placed in scanner.d/)
-include(/etc/scanbd/scanner.d/*.conf)
+## Explicit device block — required on systems without HAL so scanbd knows
+## which SANE backend to poll directly rather than waiting for HAL events.
+device fujitsu {
+  ## Match any fujitsu backend device (covers ScanSnap iX500 and similar)
+  filter = "^fujitsu.*"
+  desc   = "Fujitsu ScanSnap scanner"
+
+  action scan {
+    filter = "{{ scanbd_button_filter }}"
+    numerical-trigger {
+      from-value = {{ scanbd_trigger_from }}
+      to-value   = {{ scanbd_trigger_to }}
+    }
+    desc   = "Scan to Paperless-ngx"
+    script = "scan.sh"
+  }
+}
