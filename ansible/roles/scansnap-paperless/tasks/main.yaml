@@ -44,6 +44,14 @@
       group: "{{ scanbd_group }}"
       mode: "0750"
 
+- name: Pre-create log file with correct permissions
+  ansible.builtin.file:
+    path: "{{ scansnap_log_file }}"
+    state: touch
+    owner: "{{ scanbd_user }}"
+    group: "{{ scanbd_group }}"
+    mode: '0664'
+
 - name: Deploy Paperless API token environment file
   ansible.builtin.template:
     src: paperless-api-token.env.j2
