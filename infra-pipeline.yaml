@@ -79,20 +79,20 @@ parameters:
       - deployment: test_vpn_gateway
         environment: test
         component: cloud-vpn-gateway
-        destroy: false
+        destroy: true
         deploy: true
         dependsOn: []
       - deployment: prod_vpn_gateway
         environment: prod
         component: cloud-vpn-gateway
-        destroy: false
+        destroy: true
         deploy: true
         dependsOn:
           - test_vpn_gateway
       - deployment: test_gameserver
         environment: test
         component: game-server
-        destroy: false
+        destroy: true
         deploy: true
         preSteps:
           task: AzureCLI@2
@@ -134,7 +134,7 @@ parameters:
       - deployment: prod_gameserver
         environment: prod
         component: game-server
-        destroy: false
+        destroy: true
         deploy: true
         preSteps:
           task: AzureCLI@2
