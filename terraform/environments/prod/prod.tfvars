@@ -1,18 +1,4 @@
-env                            = "prod"
-game_server_vnet_address_space = ["10.151.201.0/24"]
-game_server_vnet_peerings = {
-  #prod-vpn = {
-  #  vnet_name                = "lab-vpn-vpn-prod"
-  #  vnet_resource_group_name = "lab-vpn-prod-rg"
-  #}
-}
-game_servers = {
-  wings = {
-    type                = "pelican"
-    size                = "Standard_F2ams_v6"
-    publicly_accessible = true
-  }
-}
+env = "prod"
 
 cloudflare_records = {
   "hass.heimelska.co.uk" = {
