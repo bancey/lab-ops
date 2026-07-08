@@ -14,12 +14,7 @@ graph TB
         BS1["Blob Storage\nbanceystatestor\n(Terraform state)"]
         BS2["Blob Storage\nbanceyprodstor\n(DB backups)"]
         VPNG["VPN Gateway\ncloud-vpn-gateway"]
-        subgraph GameServer["Game Server (uksouth)"]
-            RG["Resource Group\ngames-prod-rg"]
-            VM["Azure VM\nStandard_F2ams_v6\nPelican/Pterodactyl"]
-            VNET["VNet + Subnets\n+ NSG + Public IP"]
-        end
-        AAD["Azure AD / Entra ID\nManaged Identity"]
+        AAD["Azure AD / Entra ID\nService Principal"]
     end
 
     subgraph OnPrem["On-Premise (Proxmox)"]
@@ -53,8 +48,6 @@ graph TB
     ADO -->|"Terraform state"| BS1
     ADO -->|"Terraform plan/apply"| PROXMOX
     ADO -->|"Ansible playbooks"| OnPrem
-    VM -->|"Managed Identity"| KV
-    VM -->|"azcopy"| BS2
     PGSQL -->|"azcopy backup"| BS2
     MARIADB -->|"azcopy backup"| BS2
     ADOAGENT -->|"pipeline jobs"| ADO
@@ -65,7 +58,6 @@ graph TB
     GITHUB -->|"Flux GitOps"| K8S_TINY
     GITHUB -->|"Flux GitOps"| K8S_WANDA
     CF -->|"DNS"| OnPrem
-    CF -->|"DNS"| VM
 ```
 
 ### Key characteristics of current architecture
@@ -73,7 +65,7 @@ graph TB
 - **Azure is the control plane**: All secrets, CI/CD, and state flow through Azure.
 - **Proxmox is the compute plane**: VMs, Kubernetes clusters, and databases run on-prem.
 - **Cloudflare and Twingate are already vendor-neutral**: These stay.
-- **Game server is the only Azure compute workload**: All other compute is on Proxmox.
+- **Game server has been decommissioned**: Azure compute workloads are now fully eliminated.
 - **SOPS + Age already encrypts Kubernetes secrets**: The tooling for secrets independence already exists.
 
 ---
@@ -89,15 +81,8 @@ graph TB
         FLUX["Flux GitOps\nSource"]
     end
 
-    subgraph Hetzner["Hetzner Cloud"]
-        subgraph HGame["Game Server"]
-            HVM["Hetzner VM\nCX32 / CCX23\nPelican/Pterodactyl"]
-            HNET["Hetzner Network\n+ Firewall"]
-        end
-    end
-
     subgraph StateStore["State Storage"]
-        R2["Cloudflare R2\nTerraform State\n(S3-compatible)"]
+        R2["Azure Blob / Cloudflare R2\nTerraform State\n(see replacement-matrix §2)"]
     end
 
     subgraph BackupStore["Backup Storage"]
@@ -134,7 +119,6 @@ graph TB
     GHACTIONS -->|"Twingate connect"| TWINGATE
     GHACTIONS -->|"Terraform apply\n(via Twingate)"| PROXMOX
     GHACTIONS -->|"Ansible\n(via Twingate)"| OnPrem
-    GHACTIONS -->|"Terraform apply"| HVM
     ARC -->|"self-hosted\nrunner"| GHACTIONS
     PGSQL -->|"rclone backup"| R2B
     MARIADB -->|"rclone backup"| R2B
@@ -142,17 +126,15 @@ graph TB
     FLUX -->|"GitOps sync"| K8S_TINY
     FLUX -->|"GitOps sync"| K8S_WANDA
     CF -->|"DNS"| OnPrem
-    CF -->|"DNS"| HVM
-    HVM -->|"Twingate"| TWINGATE
 ```
 
 ### Key characteristics of target architecture
 
 - **GitHub is the new control plane**: Secrets, CI/CD, and state management all move to GitHub.
-- **Azure is fully eliminated**: No Azure resources, no service connections, no MSDN credits needed.
+- **Azure is fully eliminated**: No Azure resources, no service connections, no MSDN credits needed. The only exception is optionally retaining a minimal Azure Blob Storage account for Terraform state locking (< $1/month) — see `replacement-matrix.md` §2.
 - **On-premise Proxmox is unchanged**: All on-prem compute remains as-is.
-- **Hetzner Cloud for game server**: Azure VMs replaced with Hetzner at a fraction of the cost.
-- **Cloudflare R2 for state and backups**: S3-compatible, minimal cost, no egress fees.
+- **No cloud compute**: Game server is already decommissioned; all remaining compute is on-prem Proxmox.
+- **Cloudflare R2 for database backups**: S3-compatible, minimal cost, no egress fees.
 - **rclone replaces azcopy**: Provider-agnostic tool for object storage operations.
 - **ARC replaces ADO agents**: Self-hosted GitHub Actions runners on existing Kubernetes cluster.
 
@@ -230,27 +212,13 @@ graph TB
 
 ---
 
-### Stream 4: Game Server (Azure VMs → Hetzner)
+### Stream 4: Game Server — Already Decommissioned
 
-**Goal:** Move Pelican/Pterodactyl game server from Azure VMs to Hetzner Cloud.
+The game servers have been decommissioned. This stream requires no active migration work.
 
-**Steps:**
-1. Create new Terraform component `terraform/components/game-server-hetzner/` using `hcloud` provider.
-2. Provision Hetzner VM with equivalent spec to `Standard_F2ams_v6`.
-3. Install Pelican via existing provisioner (adapt `setup-twingate.sh` for Hetzner, using `cloud-init` or `remote-exec`).
-4. Configure Twingate connector on Hetzner VM.
-5. Update Cloudflare DNS to point game server hostname to Hetzner IP (via Terraform).
-6. Test game server functionality on Hetzner.
-7. Decommission Azure game server (`terraform destroy` on `game-server` component).
-8. Remove Azure networking resources.
-
-**Files to change:**
-- New: `terraform/components/game-server-hetzner/`
-- Remove: `terraform/components/game-server/` (after migration)
-- Update: `terraform/environments/prod/prod.tfvars`
-- Update: `infra-pipeline.yaml` / GitHub Actions workflow
-
-**Rollback:** Keep Azure game server running until Hetzner is validated. DNS switch is instant to revert via Cloudflare.
+**Remaining clean-up (incorporated into Stream 6 / Phase 6):**
+- Verify Azure resource groups `games-prod-rg` and `games-test-rg` are deleted.
+- Remove `terraform/components/game-server/` from the repository in the final clean-up PR.
 
 ---
 
@@ -299,10 +267,9 @@ graph TB
 
 **Goal:** Remove all Azure AD / Entra ID dependencies.
 
-This stream is completed automatically when:
-- Azure VMs (game server) are migrated to Hetzner (eliminates managed identity).
-- Azure Key Vault is replaced (eliminates role assignments on KV).
-- Azure DevOps service connection is retired.
+The managed identity and AAD group dependencies tied to the game server VMs have already been eliminated with the game server decommission. The remaining AAD dependency is:
+
+- The `MSDN New` service principal used by Azure DevOps — eliminated automatically when Stream 5 (CI/CD migration) is complete.
 
 No explicit action required beyond ensuring all VM SSH access uses key-based authentication (already the pattern for Proxmox VMs).
 
@@ -314,12 +281,13 @@ No explicit action required beyond ensuring all VM SSH access uses key-based aut
 Week 1–2:   Stream 1 (Secrets) + Stream 2 (Terraform State)
 Week 3:     Stream 3 (DB Backups)
 Week 4–5:   Stream 5 (CI/CD — GitHub Actions)
-Week 6:     Stream 4 (Game Server — Hetzner)
-Week 7:     Stream 6 (VPN Gateway decommission)
-Week 8:     Stream 7 (AAD cleanup) + Final validation + Cost review
+Week 6:     Stream 6 (VPN Gateway decommission)
+Week 7:     Stream 7 (AAD cleanup) + Final validation + Cost review
 ```
 
-Streams 1 and 2 are prerequisites for Streams 4 and 5 (CI/CD needs new secrets mechanism before Azure is removed).
+> Note: Stream 4 (Game Server) has been skipped — game servers are already decommissioned.
+
+Streams 1 and 2 are prerequisites for Stream 5 (CI/CD needs new secrets mechanism before Azure is removed).
 
 ---
 
@@ -341,9 +309,9 @@ Streams 1 and 2 are prerequisites for Streams 4 and 5 (CI/CD needs new secrets m
 - [ ] All migrations documented with runbooks.
 - [ ] Infra reproducible from IaC (`terraform apply` from scratch works).
 - [ ] Cost baseline produced (before vs after — see `replacement-matrix.md`).
-- [ ] `banceystatestor` storage account deleted.
+- [ ] `banceystatestor` storage account deleted (or replaced by new dedicated storage account for state).
 - [ ] `banceyprodstor` storage account deleted.
 - [ ] `bancey-vault` Key Vault deleted.
-- [ ] `games-prod-rg` and `games-test-rg` resource groups deleted.
+- [x] `games-prod-rg` and `games-test-rg` resource groups deleted — **already done (game servers decommissioned)**.
 - [ ] Azure DevOps pipeline disabled and ADO agent deployments removed.
 - [ ] Azure subscription can be safely closed.

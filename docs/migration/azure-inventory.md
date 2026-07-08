@@ -13,12 +13,12 @@ This document provides a complete inventory of every Azure service and dependenc
 | Secrets/Config | Azure Key Vault (`bancey-vault`) | Primary secret store for all Terraform components | Multiple `*.tf` files |
 | Storage | Azure Blob Storage (`banceystatestor`) | Terraform remote state backend | All `init.tf` files |
 | Storage | Azure Blob Storage (`banceyprodstor`) | PostgreSQL and MariaDB database backups | `ansible/postgresql.yaml`, `ansible/mariadb.yaml` |
-| Compute | Azure Virtual Machines | Game server nodes (Pelican/Pterodactyl) | `terraform/components/game-server/` |
-| Networking | Azure Virtual Network + Subnets | Game server network isolation | `terraform/components/game-server/networking.tf` |
-| Networking | Azure Public IP | Game server public endpoints | `terraform/components/game-server/networking.tf` |
-| Networking | Azure Network Security Group | Game server firewall rules | `terraform/components/game-server/networking.tf` |
+| Compute | Azure Virtual Machines | **Decommissioned** — game server nodes no longer running | `terraform/components/game-server/` |
+| Networking | Azure Virtual Network + Subnets | **Decommissioned** with game server | `terraform/components/game-server/networking.tf` |
+| Networking | Azure Public IP | **Decommissioned** with game server | `terraform/components/game-server/networking.tf` |
+| Networking | Azure Network Security Group | **Decommissioned** with game server | `terraform/components/game-server/networking.tf` |
 | Networking | Azure VPN Gateway | Cloud VPN for hybrid connectivity (test + prod) | `terraform/components/cloud-vpn-gateway/` |
-| Identity | Azure Active Directory / Entra ID | VM identity for Key Vault access, AAD login on game server VMs | `terraform/components/game-server/game-server-node.tf` |
+| Identity | Azure Active Directory / Entra ID | Service principal for pipeline; VM managed identity **already eliminated** | `terraform/components/game-server/game-server-node.tf` |
 | CI/CD | Azure DevOps Pipelines | Primary CI/CD orchestration | `infra-pipeline.yaml` |
 | CI/CD | Azure DevOps Self-Hosted Agents | Pipeline execution on Kubernetes + on-prem VMs | `kubernetes/apps/base/azdevops/`, `ansible/ado-agent.yaml` |
 
@@ -152,11 +152,13 @@ Same pattern as PostgreSQL — installs `azcopy` and uploads to Azure Blob Stora
 
 ---
 
-## 4. Compute: Azure Virtual Machines — Game Server
+## 4. Compute: Azure Virtual Machines — Game Server (Decommissioned)
 
-**Resource group:** `games-prod-rg`, `games-test-rg`  
-**Location:** `uksouth`  
-**VM size:** `Standard_F2ams_v6`
+> **Status: Decommissioned.** The game servers have been shut down. The Azure resources described below no longer exist. This section is retained for historical reference.
+
+**Resource group:** `games-prod-rg`, `games-test-rg` (deleted)
+**Location:** `uksouth`
+**VM size:** `Standard_F2ams_v6` (no longer running)
 
 ### Azure resources provisioned
 
@@ -289,16 +291,14 @@ Azure DevOps (CI/CD)
       ├─ Cloudflare secrets → DNS / Networking
       ├─ Proxmox secrets → Virtual Machines (on-prem)
       ├─ Twingate secrets → VPN connectivity
-      ├─ Game server secrets → Azure VMs
+      ├─ Game server secrets → [DECOMMISSIONED — Azure VMs gone]
       └─ DB passwords → Ansible PostgreSQL/MariaDB
 
 Azure Blob Storage (banceyprodstor)
   └─ Database backups (PostgreSQL + MariaDB via azcopy)
 
-Azure Virtual Machines (game-server)
-  └─ Azure VNet + Subnets + NSG + Public IPs
-  └─ Azure VPN Gateway (peering)
-  └─ Azure AD / Entra ID (managed identity)
+Azure Virtual Machines (game-server) — DECOMMISSIONED
+  └─ [No longer exists]
 
 Azure DevOps Agents
   ├─ Kubernetes (tiny cluster)

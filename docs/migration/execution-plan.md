@@ -15,10 +15,9 @@ This document provides a phased, executable migration plan. Each phase has expli
 
 - [ ] **Export all Azure Key Vault secrets** — document current secret names and values (store in local encrypted file, not in repo).
 - [ ] **Capture Terraform state** — run `terraform show -json` for each component and save outputs locally.
-- [ ] **Export current Terraform state files** — `terraform state pull > backup-{component}.tfstate` for all 9 state files.
+- [ ] **Export current Terraform state files** — `terraform state pull > backup-{component}.tfstate` for all state files (excluding `game-server` which is already destroyed).
 - [ ] **Test PostgreSQL backup restore** — trigger a manual backup and restore it to a test PostgreSQL instance.
 - [ ] **Test MariaDB backup restore** — trigger a manual backup and restore to test instance.
-- [ ] **Document current game server configuration** — capture installed software versions, open ports, Pelican node config.
 - [ ] **Document Azure DevOps pipeline service connections** — record all service connection details.
 - [ ] **Screenshot/export Azure DevOps pipeline run history** — optional audit trail.
 - [ ] **Define rollback criteria** — document conditions under which each phase should be rolled back.
@@ -26,7 +25,7 @@ This document provides a phased, executable migration plan. Each phase has expli
 ### Acceptance criteria
 
 - [ ] All Azure Key Vault secrets exported and securely stored locally.
-- [ ] Terraform state backed up for all 9 components.
+- [ ] Terraform state backed up for all active components (game-server already gone).
 - [ ] PostgreSQL backup restore dry-run successful.
 - [ ] MariaDB backup restore dry-run successful.
 - [ ] Rollback runbook written and reviewed.
@@ -114,8 +113,8 @@ If secrets migration fails: revert Terraform variable changes and restore `data 
   - [ ] `dns`
   - [ ] `cloud-vpn-gateway` (test)
   - [ ] `cloud-vpn-gateway` (prod)
-  - [ ] `game-server` (test)
-  - [ ] `game-server` (prod)
+  - ~~`game-server` (test)~~ — already decommissioned, state already destroyed
+  - ~~`game-server` (prod)~~ — already decommissioned, state already destroyed
   - [ ] `virtual-machines` (wanda)
   - [ ] `virtual-machines` (tiny)
 - [ ] Update `infra-pipeline.yaml` / GitHub Actions workflow to pass R2 backend config instead of `backendStorageAccount`.
@@ -176,58 +175,19 @@ Revert Ansible playbook changes. Azure Blob backups continue uninterrupted (old 
 
 ---
 
-## Phase 4 — Game Server Migration (Azure VMs → Hetzner Cloud)
+## Phase 4 — Game Server ~~(Azure VMs → Hetzner Cloud)~~ — Already Decommissioned
 
-**Goal:** Move Pelican/Pterodactyl game server from Azure VMs to Hetzner Cloud.
+The game servers have been decommissioned. Phase 4 is complete by default.
 
-**Prerequisite:** Phase 1 (secrets in GitHub), Phase 2 (state in R2).
+### Remaining clean-up tasks (incorporate into Phase 6)
 
-### Tasks
-
-#### 4.1 New Hetzner infrastructure
-
-- [ ] Create `terraform/components/game-server-hetzner/init.tf` with `hcloud` provider.
-- [ ] Create Hetzner network, firewall, and server resources equivalent to current Azure setup.
-  - Server: `CX32` or `CCX23` depending on game server load requirements.
-  - Firewall: equivalent to current NSG rules (game ports from Key Vault → variable).
-  - Floating IP (optional, for stable DNS).
-- [ ] Add Hetzner component to GitHub Actions workflow.
-- [ ] Add state key for Hetzner component in R2.
-- [ ] Test Terraform plan/apply for Hetzner component.
-
-#### 4.2 Game server provisioning on Hetzner
-
-- [ ] Adapt `provision/setup-twingate.sh` — use `cloud-init` or Terraform `remote-exec` provisioner for Hetzner (no VM extensions).
-- [ ] Deploy Pelican/Pterodactyl on Hetzner VM.
-- [ ] Configure Twingate connector on Hetzner VM.
-- [ ] Install and configure game panel.
-- [ ] Test game server connectivity via Twingate and via public IP.
-
-#### 4.3 DNS cutover
-
-- [ ] Update Cloudflare DNS records to point to Hetzner IP.
-  - Game server domain (e.g., `wings-prod.bancey.xyz` or similar).
-- [ ] Verify Cloudflare DNS propagation.
-- [ ] Test game server access via public domain.
-
-#### 4.4 Decommission Azure game server
-
-- [ ] Confirm no active game sessions/data on Azure VM.
-- [ ] Migrate any game server data (world saves, config) from Azure VM to Hetzner VM.
-- [ ] Run `terraform destroy` on `terraform/components/game-server` (test first, then prod).
-- [ ] Verify Azure resource group `games-prod-rg` is empty.
+- [ ] Confirm `terraform/components/game-server/` Terraform state has been destroyed (run `terraform state list` against the old state if accessible, or verify resource group is gone in Azure portal).
+- [ ] Verify `games-prod-rg` and `games-test-rg` resource groups no longer exist in Azure.
+- [ ] Remove the `game-server` (test + prod) state entries from Phase 2 migration list (no need to migrate state that is already destroyed).
 
 ### Acceptance criteria
 
-- [ ] Game server accessible on Hetzner VM via public domain.
-- [ ] Twingate connector active on Hetzner VM.
-- [ ] All game data migrated and functional.
-- [ ] Azure resource group deleted.
-- [ ] `terraform plan` on Hetzner component shows no changes.
-
-### Rollback (Phase 4)
-
-Azure VMs remain running until DNS is cutover. Revert Cloudflare DNS record to Azure IP to roll back instantly. Azure resources retained until Phase 6 cleanup.
+- [ ] Azure resource groups `games-prod-rg` and `games-test-rg` confirmed deleted.
 
 ---
 
@@ -311,7 +271,8 @@ Azure DevOps pipeline remains intact until GitHub Actions pipeline is fully vali
 #### 6.2 Azure resource cleanup (safe order)
 
 - [ ] Delete Azure DevOps self-hosted agent resources (if any remain).
-- [ ] Run `terraform destroy` on `game-server` (prod) — **already done in Phase 4**.
+- [x] Run `terraform destroy` on `game-server` — **already decommissioned**.
+- [ ] Verify `games-prod-rg` and `games-test-rg` resource groups are gone (should already be deleted).
 - [ ] Run `terraform destroy` on `cloud-vpn-gateway` (prod and test).
 - [ ] Verify all Azure resource groups are empty.
 - [ ] Delete `banceystatestor` storage account (Terraform state — old files).
@@ -324,10 +285,10 @@ Azure DevOps pipeline remains intact until GitHub Actions pipeline is fully vali
 #### 6.3 Repository cleanup
 
 - [ ] Remove or archive `infra-pipeline.yaml`.
-- [ ] Remove `terraform/components/game-server/` (replaced by `game-server-hetzner`).
+- [ ] Remove `terraform/components/game-server/` (game server already decommissioned; remove the Terraform component).
 - [ ] Remove `terraform/components/cloud-vpn-gateway/` (decommissioned).
 - [ ] Update `README.md` — remove Azure prerequisites, document new setup.
-- [ ] Update Renovate config (`renovate.json`) — add `hcloud` provider, remove `azurerm`.
+- [ ] Update Renovate config (`renovate.json`) — remove `azurerm` provider references.
 
 #### 6.4 Post-migration review
 
@@ -357,11 +318,12 @@ Following the issue requirement for small, reviewable PRs:
 |---|---|---|
 | PR 1 | This inventory + architecture docs (`docs/migration/`) | None (this PR) |
 | PR 2 | Secrets decoupling — remove KV data sources; add Terraform variables | PR 1 |
-| PR 3 | Terraform state migration to R2 (`init.tf` backend changes) | PR 2 |
+| PR 3 | Terraform state migration to R2 or Azure Blob (`init.tf` backend changes) | PR 2 |
 | PR 4 | DB backup migration — rclone replaces azcopy in Ansible playbooks | PR 3 |
-| PR 5 | Hetzner game server — new Terraform component | PR 2, PR 3 |
-| PR 6 | GitHub Actions CI/CD + ARC runners (replaces infra-pipeline.yaml) | PR 2–5 |
-| PR 7 | Azure decommission — cleanup, README update, remove old components | PR 6 + 7-day soak |
+| PR 5 | GitHub Actions CI/CD + ARC runners (replaces infra-pipeline.yaml) | PR 2–4 |
+| PR 6 | Azure decommission — cleanup, README update, remove old components | PR 5 + 7-day soak |
+
+> Note: PR 5 (Hetzner game server) has been removed from the sequence as game servers are already decommissioned.
 
 Each PR must include:
 - Change summary
@@ -375,10 +337,10 @@ Each PR must include:
 
 | Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Game server data loss during migration | Low | High | Full backup before migration; test restore |
 | Terraform state corruption during migration | Low | High | State file backup before each migration |
 | GitHub Actions runner not available for on-prem jobs | Medium | High | Keep ADO pipeline active in parallel until ARC is stable |
 | Twingate outage during pipeline run | Low | Medium | Add retry logic; Twingate SLA-backed |
+| State backend locking not available (if R2 chosen) | Low | Medium | Use Azure Blob (new sub) or HCP Terraform for native locking — see `replacement-matrix.md` §2 |
 | R2 credentials expiry | Low | Medium | Use long-lived tokens; add rotation reminder |
 | PostgreSQL backup gap during azcopy→rclone transition | Low | Medium | Run both in parallel for one backup cycle |
 | Azure Key Vault soft-delete prevents secret access after planned deletion | Low | Low | Phase 0 exports all secrets before deletion |

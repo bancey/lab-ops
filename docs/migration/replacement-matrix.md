@@ -11,9 +11,9 @@ This document recommends replacements for each Azure service currently in use, w
 | Azure Service | Recommended Replacement | Complexity | Cost Impact |
 |---|---|---|---|
 | Azure Key Vault (secrets) | SOPS + Age (already in use) + GitHub Encrypted Secrets | Low | None (free) |
-| Azure Blob Storage (Terraform state) | Cloudflare R2 or self-hosted MinIO on Proxmox | Low | Low |
+| Azure Blob Storage (Terraform state) | Azure Blob Storage (new sub) **or** Cloudflare R2 — see §2 | Low | Negligible |
 | Azure Blob Storage (DB backups) | Cloudflare R2 or Backblaze B2 | Low | Low |
-| Azure Virtual Machines (game server) | Hetzner Cloud VMs | Low–Medium | Lower |
+| Azure Virtual Machines (game server) | **Already decommissioned** — no action required | — | — |
 | Azure VPN Gateway | Remove (replaced by Twingate, already in use) | Low | None |
 | Azure Active Directory | Remove (Twingate handles access; OIDC for GitHub Actions) | Medium | None |
 | Azure DevOps Pipelines | GitHub Actions | Medium | None (free tier) |
@@ -73,16 +73,68 @@ Most secrets simply need to be added to GitHub Actions secrets. Terraform variab
 
 ---
 
-## 2. Azure Blob Storage (Terraform State) → Cloudflare R2
+## 2. Azure Blob Storage (Terraform State) → Decision Required
 
 ### Current usage
 All six Terraform components use `backend "azurerm"` pointing to `banceystatestor` storage account.
 
-### Primary recommendation: Cloudflare R2
+### The locking question
 
-Cloudflare R2 is S3-compatible, has no egress fees, and offers a generous free tier (10 GB storage, 1 million Class A operations/month). Terraform's `s3` backend supports R2 via custom endpoint.
+**State locking is important.** Without it, two concurrent `terraform apply` runs can corrupt state. The `backend "azurerm"` achieves locking natively via Azure Blob Storage leases — no extra infrastructure required.
 
-**Backend config:**
+### Option A: Azure Blob Storage on a new Azure subscription (Recommended if locking is required)
+
+Azure Blob Storage with `backend "azurerm"` provides **native, lease-based state locking** with no additional setup. Using a dedicated (non-MSDN-credit) Azure subscription keeps costs minimal and independent of expiring credits.
+
+**Cost breakdown for Terraform state only:**
+
+| Item | Price | Estimated monthly cost |
+|---|---|---|
+| LRS blob storage (state files are <1 MB each, ~9 files) | $0.018/GB/month | < $0.01 |
+| Write operations (plan/apply ~100×/month) | $0.0525/10,000 ops | < $0.01 |
+| Read operations | $0.004/10,000 ops | < $0.01 |
+| **Total** | | **< $1/month** |
+
+A Pay-As-You-Go Azure subscription has no standing monthly fee; you pay only for what you use. For state storage alone this is effectively free.
+
+**Backend config (unchanged):**
+
+```hcl
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "tfstate-rg"
+    storage_account_name = "labopstfstate"
+    container_name       = "tfstate"
+    key                  = "component.tfstate"
+  }
+}
+```
+
+**Pros:**
+- Native locking — no extra infrastructure or workarounds.
+- Dead-simple migration: change storage account name, re-run `terraform init -migrate-state`.
+- Well-tested, mature backend.
+
+**Cons:**
+- Retains a minimal Azure dependency (storage account only, no credits required).
+
+---
+
+### Option B: Cloudflare R2 (if minimising Azure footprint is the priority)
+
+Cloudflare R2 is S3-compatible with no egress fees and a generous free tier. Terraform's `s3` backend supports R2 via a custom endpoint.
+
+**⚠️ Locking limitation:** R2 does not implement the DynamoDB API. The `s3` backend's `dynamodb_table` parameter requires an actual DynamoDB-compatible endpoint. Running without `dynamodb_table` means **no state locking**.
+
+For a single-operator repo with infrequent concurrent applies this risk is low, but it is a real risk for CI pipelines that might trigger parallel runs.
+
+**Mitigations if choosing R2:**
+
+1. **Terraform Cloud free tier** — Store state (and locking) in HCP Terraform (free up to 500 managed resources, unlimited workspaces). Use the `cloud` backend or `remote` backend. Introduces a new vendor dependency (HashiCorp) but is fully free.
+2. **Accept no locking** — For a small solo/two-person team with serialised CI runs, this is low risk. Add `terraform force-unlock` to pipeline runbooks for the rare stuck-lock scenario.
+3. **Self-hosted MinIO** — MinIO exposes a DynamoDB-compatible API for locking when combined with `terraform-backend-s3` and a compatible DynamoDB emulator. Complex to set up.
+
+**Backend config with R2 (no locking):**
 
 ```hcl
 terraform {
@@ -101,33 +153,36 @@ terraform {
 }
 ```
 
-### Alternative: Self-hosted MinIO on Proxmox
+---
 
-MinIO is an S3-compatible object store that can run as a lightweight LXC or VM on Proxmox.
+### Option C: Terraform Cloud / HCP Terraform (if locking + zero cloud storage cost is required)
 
-- **Cost:** Free (MinIO Community Edition).
-- **Pros:** Fully self-hosted, no internet dependency for state operations.
-- **Cons:** Requires disk on Proxmox; HA needs replication setup; state data is on-prem (risk if Proxmox is unavailable).
+HCP Terraform free tier provides state storage and locking without any storage account. The `cloud` backend is natively supported since Terraform 1.1.
 
-### Alternative: Backblaze B2
+- **Cost:** Free (up to 500 managed resources per workspace).
+- **Pros:** Locking included, run history, remote execution optional.
+- **Cons:** Introduces HCP/HashiCorp vendor dependency; requires Terraform Cloud account.
 
-B2 is S3-compatible and cheap ($0.006/GB/month, free up to 10 GB).
+---
 
-### Cost estimate
-- **Cloudflare R2:** Likely free (state files are tiny).
-- **MinIO:** Free software; uses existing Proxmox storage.
-- **Backblaze B2:** Effectively free for state files.
+### Comparison summary
+
+| Option | Native locking | Monthly cost | Azure dependency | Notes |
+|---|---|---|---|---|
+| **Azure Blob (new sub)** | ✅ Yes (native) | < $1 | Minimal (storage only) | Simplest path; recommended if locking is required |
+| **Cloudflare R2** | ❌ No (DynamoDB required) | Free | None | Acceptable for solo use; risky with parallel CI |
+| **Cloudflare R2 + HCP Terraform** | ✅ Yes (via HCP) | Free | None | Adds HCP dependency; most vendor-neutral option |
+| **Self-hosted MinIO** | ⚠️ Complex | Free | None | High operational overhead |
+
+### Recommendation
+
+If state locking is a requirement: use **Azure Blob Storage on a new Pay-As-You-Go subscription** (Option A). The cost is negligible (< $1/month) and locking works out of the box with no code changes beyond swapping the storage account name.
+
+If eliminating all Azure footprint is the priority: use **Cloudflare R2 + HCP Terraform free tier** (Option C variant), accepting the HCP dependency in exchange for native locking.
 
 ### Migration complexity: Low
 
-Terraform supports migrating state between backends with `terraform state push` / `terraform init -migrate-state`. No code changes beyond updating `init.tf` backend blocks.
-
-### Risks and mitigations
-
-| Risk | Mitigation |
-|---|---|
-| State lock not supported by R2 (no native DynamoDB equivalent) | Use Terraform Cloud free tier for state locking, or accept risk for small team |
-| MinIO node failure makes state unavailable | Keep MinIO on HA storage or replicate to R2 as backup |
+Terraform supports migrating state between backends with `terraform state pull` / `terraform init -migrate-state`. No code changes beyond updating `init.tf` backend blocks.
 
 ---
 
@@ -178,70 +233,15 @@ Drop-in replacement: swap `azcopy` for `rclone`, update credentials. No schema o
 
 ---
 
-## 4. Azure Virtual Machines (Game Server) → Hetzner Cloud
+## 4. Azure Virtual Machines (Game Server) — Already Decommissioned
 
-### Current usage
-Game server nodes run Pelican/Pterodactyl on Azure VMs (`Standard_F2ams_v6`) in `uksouth` with public IPs, VNet, NSG, and Twingate for VPN access.
+The game servers have been decommissioned. No migration action is required for this service.
 
-### Primary recommendation: Hetzner Cloud
-
-Hetzner provides affordable, high-performance VMs with a straightforward API and Terraform provider. The `CCX23` (4 vCPU, 16 GB RAM, 160 GB NVMe) or `CX32` (4 vCPU, 8 GB RAM) are cost-effective equivalents.
-
-**Terraform provider:** `hetznercloud/hcloud` (mature, well-documented).
-
-**Network equivalent:** Hetzner Cloud Networks (private networking) + Firewall rules (equivalent to NSG).
-
-**Twingate:** Continue using Twingate — deploy Twingate connector on Hetzner VM as before.
-
-**Estimated Hetzner costs:**
-- `CX32` (4 vCPU, 8 GB): ~€7.5/month
-- `CCX23` (4 vCPU, 16 GB): ~€25/month
-- IPv4: ~€0.5/month per IP
-- Outbound traffic: first 20 TB free
-
-**Azure equivalent cost:**
-- `Standard_F2ams_v6` (2 vCPU, 4 GB): ~$140/month (pay-as-you-go, uksouth)
-
-**Savings: significant** — Hetzner is typically 5–10× cheaper.
-
-### Alternative: Hetzner Dedicated / Bare Metal
-
-For game servers with consistent load, bare metal provides better performance per pound.
-
-### Alternative: Fly.io
-
-Fly.io supports Docker-based deployments with persistent volumes and global anycast. Pterodactyl/Pelican may require workarounds for Docker-in-Docker.
-
-- **Cost:** ~$5–20/month depending on size.
-- **Limitation:** No custom kernel; may not support all game server requirements.
-
-### Alternative: Self-hosted on Proxmox (on-prem)
-
-If on-prem capacity allows, move game server VMs to Proxmox like the rest of the infrastructure. No cloud cost.
-
-- **Limitation:** Requires public IP/port forwarding or Twingate relay; hardware availability.
-
-### Cost estimate
-- **Hetzner Cloud:** Low (~€10–25/month per server).
-- **Fly.io:** Low-Medium (~$10–30/month).
-- **Proxmox on-prem:** No additional cloud cost; uses existing hardware.
-
-### Migration complexity: Medium
-
-Requires:
-1. New Terraform module (`hcloud` provider instead of `azurerm`).
-2. Reprovisioning VMs and reinstalling Pelican/Pterodactyl (via existing Ansible/Terraform provisioner).
-3. DNS cutover (Cloudflare already manages this).
-4. Twingate connector reinstallation on new VMs.
-
-### Risks and mitigations
-
-| Risk | Mitigation |
-|---|---|
-| Game servers require persistent storage | Use Hetzner Volumes (block storage, ~€0.052/GB/month) |
-| Public IP changes affect DNS | Use Cloudflare DNS proxy; update A records as part of migration |
-| Twingate setup on new platform | Use existing `setup-twingate.sh` provisioner script; adapt for Hetzner |
-| Azure-specific VM extension for Twingate setup | Convert to `cloud-init` or `remote-exec` provisioner |
+**Remaining clean-up tasks:**
+- Confirm `terraform/components/game-server/` component is removed or its state is already destroyed.
+- Verify resource groups `games-prod-rg` and `games-test-rg` are deleted in the Azure portal.
+- Remove `game-server` state file entries from `banceystatestor` (will be handled in Phase 6 storage account deletion).
+- Remove `Game-Server-Ports`, `Cloudflare-Main-API-Token`, and `Cloudflare-Main-Zone-*` Key Vault secrets that were used exclusively by the game server component (check `azure-inventory.md` for cross-usage before deleting).
 
 ---
 
@@ -282,26 +282,25 @@ Verify Twingate covers all current VPN use cases, then run `terraform destroy` o
 ## 6. Azure Active Directory / Entra ID → Remove (OIDC for GitHub Actions)
 
 ### Current usage
-- Game server VMs use system-assigned managed identity for Key Vault access.
-- AAD login enabled on game server VMs (`enable_aad_login = true`).
-- Azure AD group manages KV reader role.
+- Game server VMs used system-assigned managed identity for Key Vault access — **already eliminated** with game server decommission.
+- Azure AD group managed KV reader role — **no longer in use**.
 - Service principal (`MSDN New`) used for all Azure operations from the pipeline.
 
 ### Recommendation: Remove with Azure services
 
-When Azure VMs and Key Vault are replaced, AAD/Entra ID dependencies are automatically eliminated.
+The managed identity and AAD group dependencies were automatically eliminated when the game servers were decommissioned. The remaining AAD dependency is the `MSDN New` service principal used by Azure DevOps, which is eliminated in Stream 5 (CI/CD migration).
 
 For GitHub Actions authentication to non-Azure providers:
-- Use **OIDC federation** with Hetzner/Cloudflare as needed (Hetzner has a Terraform provider with API key auth; no OIDC required).
+- Use **OIDC federation** with Cloudflare/Hetzner as needed (these providers use API key auth; no OIDC required).
 - Use **GitHub Actions encrypted secrets** for API tokens.
 
-For VM SSH access on Hetzner:
+For VM SSH access on new infrastructure:
 - Use **SSH key pairs** managed via Terraform (already the pattern for on-prem VMs).
 - No cloud identity provider required.
 
 ### Cost estimate: None (cost elimination)
 
-### Migration complexity: Low (happens automatically with VM/KV migration)
+### Migration complexity: Low (partially already done by game server decommission)
 
 ### Risks and mitigations
 
@@ -402,11 +401,11 @@ Swap the ADO agent deployment for ARC. No infrastructure changes required.
 | Service | Current (Azure) | Replacement | Estimated Saving |
 |---|---|---|---|
 | Key Vault | ~$5/month | GitHub Secrets (free) | ~$5/month |
-| Blob Storage (state) | ~$2/month | Cloudflare R2 (free tier) | ~$2/month |
+| Blob Storage (state) | ~$2/month | Azure Blob new sub / R2 — see §2 | ~$1–2/month |
 | Blob Storage (backups) | ~$5–20/month | R2 / B2 (free–low) | ~$5–20/month |
-| Azure VMs (game server) | ~$140/month/VM | Hetzner (~€10–25/month) | ~$115–130/month/VM |
+| Azure VMs (game server) | **Already decommissioned** | — | Already saved |
 | VPN Gateway | ~$27–138/month | Twingate (already paid) / WireGuard (free) | ~$27–138/month |
 | Azure DevOps | Free (MSDN credits) | GitHub Actions (free) | $0 (both free) |
-| **Total (estimated)** | **~$180–300/month** | **~€15–30/month** | **~$150–270/month** |
+| **Total (estimated)** | **~$40–165/month** (post game-server) | **~$0–1/month** | **~$38–164/month** |
 
-> Note: Actual Azure costs depend on usage patterns, reserved instances, and MSDN credit consumption. Hetzner prices are in EUR and may vary.
+> Note: Actual Azure costs depend on usage patterns and MSDN credit consumption. Game server savings are already realised.
