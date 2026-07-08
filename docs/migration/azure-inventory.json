@@ -1,0 +1,241 @@
+{
+  "generated": "2026-07-08",
+  "repository": "bancey/lab-ops",
+  "azure_dependencies": {
+    "secrets_config": {
+      "service": "Azure Key Vault",
+      "resource_name": "bancey-vault",
+      "resource_group": "common",
+      "subscription": "MSDN New",
+      "criticality": "critical",
+      "description": "Primary secret store for all Terraform components, CI/CD pipeline, and Ansible playbooks",
+      "files": [
+        "terraform/components/dns/interpolated-defaults.tf",
+        "terraform/components/twingate/interpolated-defaults.tf",
+        "terraform/components/twingate/connector.tf",
+        "terraform/components/twingate/service_account.tf",
+        "terraform/components/game-server/interpolated-defaults.tf",
+        "terraform/components/virtual-machines/interpolated-defaults.tf",
+        "terraform/components/virtual-machines/vms-lxc-config.tf",
+        "terraform/components/inventory/interpolated-defaults.tf",
+        "infra-pipeline.yaml"
+      ],
+      "secrets": [
+        {"name": "Cloudflare-Lab-API-Token", "used_by": ["dns", "virtual-machines"]},
+        {"name": "Cloudflare-Main-API-Token", "used_by": ["dns", "game-server"]},
+        {"name": "Cloudflare-Lab-Zone-ID", "used_by": ["dns", "virtual-machines"]},
+        {"name": "Cloudflare-Main-Zone-ID", "used_by": ["dns", "game-server"]},
+        {"name": "Cloudflare-Lab-Zone-Name", "used_by": ["dns", "virtual-machines"]},
+        {"name": "Cloudflare-Main-Zone-Name", "used_by": ["dns", "game-server"]},
+        {"name": "Adguard-Thanos-Host", "used_by": ["dns"]},
+        {"name": "Adguard-Thanos-Username", "used_by": ["dns"]},
+        {"name": "Adguard-Thanos-Password", "used_by": ["dns"]},
+        {"name": "Adguard-Gamora-Host", "used_by": ["dns"]},
+        {"name": "Adguard-Gamora-Username", "used_by": ["dns"]},
+        {"name": "Adguard-Gamora-Password", "used_by": ["dns"]},
+        {"name": "Twingate-URL", "used_by": ["twingate"]},
+        {"name": "Twingate-API-Token", "used_by": ["twingate"]},
+        {"name": "Twingate-AzureDevOps-SA-Key", "used_by": ["infra-pipeline"]},
+        {"name": "Twingate-banceylab-connector-Refresh-Token", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "Twingate-banceylab-connector-Access-Token", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "Twingate-banceylab-connector-2-Refresh-Token", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "Twingate-banceylab-connector-2-Access-Token", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "Wanda-Proxmox-URL", "used_by": ["virtual-machines"]},
+        {"name": "Wanda-Proxmox-Username", "used_by": ["virtual-machines"]},
+        {"name": "Wanda-Proxmox-Password", "used_by": ["virtual-machines"]},
+        {"name": "Tiny-Proxmox-URL", "used_by": ["virtual-machines"]},
+        {"name": "Tiny-Proxmox-Username", "used_by": ["virtual-machines"]},
+        {"name": "Tiny-Proxmox-Password", "used_by": ["virtual-machines"]},
+        {"name": "Hela-Proxmox-URL", "used_by": ["virtual-machines"]},
+        {"name": "Loki-Proxmox-URL", "used_by": ["virtual-machines"]},
+        {"name": "Thor-Proxmox-URL", "used_by": ["virtual-machines"]},
+        {"name": "Lab-VM-Username", "used_by": ["virtual-machines"]},
+        {"name": "Lab-VM-Password", "used_by": ["virtual-machines"]},
+        {"name": "Game-Server-Ports", "used_by": ["game-server"]},
+        {"name": "Public-IP", "used_by": ["dns", "game-server"]},
+        {"name": "GitHub-Bot-Private-Key", "used_by": ["inventory", "infra-pipeline"]},
+        {"name": "GitHub-Bot-ID", "used_by": ["inventory"]},
+        {"name": "GitHub-Bot-Installation-ID", "used_by": ["inventory"]},
+        {"name": "Flux-Age-Key", "used_by": ["infra-pipeline (virtual-machines step)"]},
+        {"name": "Packer-Private-Key", "used_by": ["infra-pipeline (ansible steps)"]},
+        {"name": "PostgreSQL-Superuser-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Replication-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Keepalived-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Backup-SAS-Token", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Radarr-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Sonarr-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Monica-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-OpenWebUI-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Paperless-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "PostgreSQL-Vikunja-Password", "used_by": ["ansible/postgresql.yaml"]},
+        {"name": "keepalived-pass", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "BunkerWeb-DB-Password", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "BunkerWeb-TOTP-Secrets", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "BunkerWeb-MGMT-Admin-Username", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "BunkerWeb-MGMT-Admin-Password", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "Cloudflare-Lab-API-Token", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "Discord-Gatus-Webhook-URL", "used_by": ["ansible/rpi-ha.yaml"]},
+        {"name": "NUT-Admin-Password", "used_by": ["ansible/nut-server.yaml"]},
+        {"name": "NUT-Monitor-Password", "used_by": ["ansible/nut-server.yaml", "ansible/nut-client.yaml"]},
+        {"name": "Paperless-API-Token", "used_by": ["ansible/scansnap.yaml"]}
+      ]
+    },
+    "storage_terraform_state": {
+      "service": "Azure Blob Storage",
+      "resource_name": "banceystatestor",
+      "criticality": "critical",
+      "description": "Terraform remote state backend for all components",
+      "files": [
+        "terraform/components/cloud-vpn-gateway/init.tf",
+        "terraform/components/dns/init.tf",
+        "terraform/components/game-server/init.tf",
+        "terraform/components/inventory/init.tf",
+        "terraform/components/twingate/init.tf",
+        "terraform/components/virtual-machines/init.tf",
+        "infra-pipeline.yaml"
+      ],
+      "state_keys": [
+        "tfstate/generate_ansible_inventory.tfstate",
+        "tfstate/prod_twingate.tfstate",
+        "tfstate/prod_dns.tfstate",
+        "tfstate/test_vpn_gateway.tfstate",
+        "tfstate/prod_vpn_gateway.tfstate",
+        "tfstate/test_gameserver.tfstate",
+        "tfstate/prod_gameserver.tfstate",
+        "tfstate/wanda_virtual_machines.tfstate",
+        "tfstate/tiny_virtual_machines.tfstate"
+      ]
+    },
+    "storage_database_backups": {
+      "service": "Azure Blob Storage",
+      "resource_name": "banceyprodstor",
+      "criticality": "high",
+      "description": "PostgreSQL and MariaDB database backup destination using azcopy",
+      "tool": "azcopy",
+      "files": [
+        "ansible/postgresql.yaml",
+        "ansible/mariadb.yaml"
+      ],
+      "backup_types": ["PostgreSQL full backups", "MariaDB full backups"]
+    },
+    "compute_game_server": {
+      "service": "Azure Virtual Machines",
+      "resource_group_pattern": "games-{env}-rg",
+      "location": "uksouth",
+      "criticality": "medium",
+      "description": "Game server nodes running Pelican/Pterodactyl game panel",
+      "vm_sizes": ["Standard_F2ams_v6"],
+      "files": [
+        "terraform/components/game-server/game-server-node.tf",
+        "terraform/components/game-server/networking.tf",
+        "terraform/components/game-server/resource-group.tf",
+        "terraform/components/game-server/interpolated-defaults.tf"
+      ],
+      "azure_resources": [
+        "azurerm_resource_group",
+        "azurerm_public_ip",
+        "azurerm_virtual_network",
+        "azurerm_subnet",
+        "azurerm_network_security_group",
+        "azurerm_network_security_rule",
+        "azurerm_subnet_network_security_group_association",
+        "azurerm_virtual_network_peering",
+        "azurerm_virtual_machine_extension",
+        "azurerm_role_assignment"
+      ],
+      "external_module": "github.com/bancey/terraform-azurerm-game-server"
+    },
+    "networking_vpn_gateway": {
+      "service": "Azure VPN Gateway",
+      "component": "cloud-vpn-gateway",
+      "criticality": "medium",
+      "description": "Cloud VPN for hybrid cloud-to-on-premise connectivity",
+      "environments": ["test", "prod"],
+      "files": [
+        "terraform/components/cloud-vpn-gateway/init.tf"
+      ]
+    },
+    "identity_aad": {
+      "service": "Azure Active Directory / Entra ID",
+      "criticality": "medium",
+      "description": "VM managed identity for Key Vault access and AAD login on game server VMs",
+      "features": [
+        "System-assigned managed identity on game server VMs",
+        "AAD-based VM login (enable_aad_login=true)",
+        "Azure AD group membership for KV reader role",
+        "Service principal via 'MSDN New' service connection"
+      ],
+      "files": [
+        "terraform/components/game-server/game-server-node.tf",
+        "infra-pipeline.yaml"
+      ],
+      "group_object_id": "9edd55d1-288c-482b-84a3-508efac9e683"
+    },
+    "cicd_azure_devops": {
+      "service": "Azure DevOps",
+      "criticality": "critical",
+      "description": "Primary CI/CD orchestration platform",
+      "organisation_url": "stored in AZP_URL secret",
+      "service_connection": "MSDN New",
+      "external_library": "bancey/azuredevops-lib",
+      "files": [
+        "infra-pipeline.yaml",
+        "ansible/ado-agent.yaml",
+        "kubernetes/apps/base/azdevops/deployment.yaml",
+        "kubernetes/apps/base/azdevops/kustomization.yaml",
+        "kubernetes/apps/base/azdevops/namespace.yaml",
+        "kubernetes/apps/tiny/azdevops-secret.sops.yaml"
+      ],
+      "pipeline_stages": [
+        "check_hosts_online",
+        "generate_ansible_inventory",
+        "prod_twingate",
+        "prod_dns",
+        "test_vpn_gateway",
+        "prod_vpn_gateway",
+        "test_gameserver",
+        "prod_gameserver",
+        "wanda_virtual_machines",
+        "tiny_virtual_machines",
+        "rpi_ansible",
+        "nut_server_ansible",
+        "scansnap_ansible",
+        "nut_client_ansible"
+      ],
+      "self_hosted_agents": {
+        "kubernetes": {
+          "cluster": "tiny",
+          "replicas": 2,
+          "image": "bancey/ado-agent:latest"
+        },
+        "on_premise": {
+          "ansible_playbook": "ansible/ado-agent.yaml",
+          "image": "bancey/ado-agent"
+        }
+      }
+    }
+  },
+  "pipeline_variables": {
+    "agentImage": "ubuntu-latest",
+    "stateStorageAccount": "banceystatestor",
+    "serviceConnection": "MSDN New"
+  },
+  "terraform_providers": {
+    "azurerm": {
+      "version": "4.80.0",
+      "source": "hashicorp/azurerm",
+      "used_in": [
+        "cloud-vpn-gateway",
+        "dns",
+        "game-server",
+        "inventory",
+        "twingate",
+        "virtual-machines"
+      ]
+    },
+    "azuread": {
+      "used_in": ["game-server"],
+      "note": "Used via external module github.com/bancey/terraform-azurerm-game-server"
+    }
+  }
+}
