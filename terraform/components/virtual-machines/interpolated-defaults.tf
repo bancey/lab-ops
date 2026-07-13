@@ -65,7 +65,7 @@ data "azurerm_client_config" "current" {}
 
 data "azurerm_key_vault" "vault" {
   name                = "bancey-vault"
-  resource_group_name = "common"
+  resource_group_name = "btcs-common-prod"
 }
 
 data "azurerm_key_vault_secret" "wanda_proxmox_url" {

@@ -20,7 +20,7 @@ locals {
 
 data "azurerm_key_vault" "vault" {
   name                = "bancey-vault"
-  resource_group_name = "common"
+  resource_group_name = "btcs-common-prod"
 }
 
 data "azurerm_key_vault_secret" "github_app_id" {
