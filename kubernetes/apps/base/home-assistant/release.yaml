@@ -42,7 +42,7 @@ spec:
           main:
             image:
               repository: ghcr.io/home-operations/home-assistant
-              tag: 2026.7.1
+              tag: 2026.7.2
             env:
               TZ: Europe/London
             resources:
@@ -57,7 +57,7 @@ spec:
             dependsOn: main
             image:
               repository: ghcr.io/coder/code-server
-              tag: 4.127.0
+              tag: 4.128.0
             args:
               - --auth
               - "none"
