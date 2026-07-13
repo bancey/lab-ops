@@ -55,7 +55,7 @@ parameters:
             displayName: Download GitHub Private Key
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
             inputs:
-              azureSubscription: "MSDN New"
+              azureSubscription: "BTCS-PRODUCTION"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
@@ -93,7 +93,7 @@ parameters:
           - task: AzureCLI@2
             displayName: Get Age Key
             inputs:
-              azureSubscription: "MSDN New"
+              azureSubscription: "BTCS-PRODUCTION"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
@@ -120,7 +120,7 @@ parameters:
           - task: AzureCLI@2
             displayName: Get Age Key
             inputs:
-              azureSubscription: "MSDN New"
+              azureSubscription: "BTCS-PRODUCTION"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
@@ -192,7 +192,7 @@ variables:
   - name: stateStorageAccount
     value: banceystatestor
   - name: serviceConnection
-    value: "MSDN New"
+    value: "BTCS-PRODUCTION"
 
 stages:
   - template: stages/check-hosts-online.yaml@azuredevops-lib
