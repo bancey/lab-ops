@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  adguard:
+    image: adguard/adguardhome:v0.107.77
+    volumes:
+      - /opt/adguard/work:/opt/adguardhome/work
+      - /opt/adguard/config:/opt/adguardhome/conf
+    ports:
+      - target: 53
+        published: 53
+        protocol: tcp
+        mode: host
+      - target: 53
+        published: 53
+        protocol: udp
+        mode: host
+      - target: 80
+        published: 8000
+        protocol: tcp
+        mode: host
+    deploy:
+      replicas: {{ rpi_network_adguard_replicas | default(1) }}
+      update_config:
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5
+      placement:
+        constraints:
+          - node.role == manager
+
+{% for connector_name, connector in twingate.items() %}
+{% if connector_name != 'network' %}
+  twingate_{{ connector_name }}:
+    image: twingate/connector:1.89.0
+    sysctls:
+      net.ipv4.ping_group_range: "0 2147483647"
+    environment:
+      TWINGATE_REFRESH_TOKEN: "{{ connector.refresh_token | trim }}"
+      TWINGATE_ACCESS_TOKEN: "{{ connector.access_token | trim }}"
+      TWINGATE_NETWORK: "{{ twingate.network }}"
+      TWINGATE_DNS: "10.151.14.1"
+      TWINGATE_LABEL_MACHINE_NAME: "{{ connector_name }}"
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5
+      placement:
+        constraints:
+          - node.hostname == {{ connector_name }}
+
+{% endif %}
+{% endfor %}
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.12
+    ports:
+      - target: 8080
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 8443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 8443
+        published: 443
+        protocol: udp
+        mode: host
+      - target: 5000
+        published: 5000
+        protocol: tcp
+        mode: host
+    environment:
+      API_WHITELIST_IP: "127.0.0.0/8 10.151.14.0/24 10.151.16.0/24"
+    deploy:
+      replicas: {{ rpi_network_bunkerweb_replicas | default(1) }}
+      update_config:
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  default:
+    name: rpi_network_overlay
+    driver: overlay

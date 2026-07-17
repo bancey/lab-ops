@@ -1,0 +1,27 @@
+---
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ansible/rpi-ha.yaml
+      - ansible/roles/rpi-network/**
+      - ansible/roles/rpi-monitoring/**
+      - stacks/**
+      - scripts/deploy-rpi-swarm.sh
+      - scripts/validate-swarm-stack-templates.sh
+      - ansible/group_vars/rpi_swarm.yaml.example
+
+jobs:
+  swarm-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Ansible and yamllint
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-core yamllint
+
+      - name: Validate swarm stack templates
+        run: ./scripts/validate-swarm-stack-templates.sh

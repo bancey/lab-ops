@@ -1,0 +1,17 @@
+# Primary manager used for bootstrap and stack deployment delegation.
+rpi_swarm_primary_manager: thanos
+
+rpi_swarm_node_roles:
+  thanos: manager
+  nebula: manager
+  gamora: manager
+
+# Default stack names for docker stack deploy.
+rpi_network_stack_name: rpi_network
+rpi_monitoring_stack_name: rpi_monitoring
+
+# Optional tuning knobs.
+rpi_network_adguard_replicas: 1
+rpi_network_bunkerweb_replicas: 1
+rpi_monitoring_adguard_exporter_replicas: 1
+rpi_monitoring_gatus_replicas: 1

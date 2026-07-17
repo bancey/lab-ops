@@ -1,4 +1,4 @@
-- name: Update system, install docker and setup keepalived
+- name: Update system, install docker and bootstrap swarm with keepalived
   hosts: rpi
   become: true
   become_user: root
@@ -17,6 +17,10 @@
           "10.151.14.5"
         state: "BACKUP"
         priority: 100
+    rpi_swarm_default_primary_manager: "{{ (groups['rpi_swarm_managers'] | default(groups['rpi']))[0] }}"
+    rpi_swarm_primary_manager_resolved: "{{ rpi_swarm_primary_manager | default(rpi_swarm_default_primary_manager) }}"
+    rpi_swarm_desired_role: "{{ (rpi_swarm_node_roles | default({})).get(inventory_hostname, 'worker') }}"
+    rpi_swarm_manager_addr: "{{ hostvars[rpi_swarm_primary_manager_resolved].ansible_host | default(rpi_swarm_primary_manager_resolved) }}"
   roles:
   - role: prep
     install_pkgs: [ "apt-transport-https", "ca-certificates", "curl", "python3-pip", "virtualenv", "python3-setuptools", "python3-docker" ]
@@ -41,13 +45,6 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
-  - name: Create base compose directory
-    file:
-      path: /opt/compose
-      state: directory
-      owner: root
-      group: root
-      mode: '0755'
   - name: Create portainer directory
     file:
       path: /opt/portainer
@@ -55,6 +52,50 @@
       owner: root
       group: root
       mode: '0755'
+  - name: Create swarm stack directory
+    file:
+      path: /opt/stacks
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+  - name: Check current swarm local node state
+    command: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
+    register: rpi_swarm_local_node_state
+    changed_when: false
+  - name: Initialize swarm on primary manager
+    command: docker swarm init --advertise-addr {{ ansible_host }} --listen-addr 0.0.0.0:2377
+    register: rpi_swarm_init_output
+    changed_when: true
+    when: inventory_hostname == rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout != 'active'
+  - name: Fetch join token for desired node role
+    command: docker swarm join-token -q {{ rpi_swarm_desired_role }}
+    register: rpi_swarm_join_token
+    changed_when: false
+    delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
+    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout != 'active' and rpi_swarm_desired_role in ['manager', 'worker']
+  - name: Join node to swarm
+    command: docker swarm join --token {{ rpi_swarm_join_token.stdout }} {{ rpi_swarm_manager_addr }}:2377
+    register: rpi_swarm_join_output
+    changed_when: true
+    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout != 'active'
+  - name: Check swarm control availability on node
+    command: docker info --format '{{ "{{ .Swarm.ControlAvailable }}" }}'
+    register: rpi_swarm_control_available
+    changed_when: false
+    when: rpi_swarm_local_node_state.stdout == 'active'
+  - name: Promote node to manager when configured
+    command: docker node promote {{ inventory_hostname }}
+    delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
+    register: rpi_swarm_promote_output
+    changed_when: true
+    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_desired_role == 'manager' and rpi_swarm_control_available.stdout == 'false'
+  - name: Demote node to worker when configured
+    command: docker node demote {{ inventory_hostname }}
+    delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
+    register: rpi_swarm_demote_output
+    changed_when: true
+    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_desired_role == 'worker' and rpi_swarm_control_available.stdout == 'true'
 
 - name: Deploy network stack
   hosts: rpi
@@ -64,6 +105,8 @@
   become_method: sudo
   gather_facts: false
   vars:
+    rpi_swarm_default_primary_manager: "{{ (groups['rpi_swarm_managers'] | default(groups['rpi']))[0] }}"
+    rpi_swarm_primary_manager_resolved: "{{ rpi_swarm_primary_manager | default(rpi_swarm_default_primary_manager) }}"
     twingate:
       network: "bancetech"
       thanos:
@@ -83,6 +126,8 @@
   become_method: sudo
   gather_facts: false
   vars:
+    rpi_swarm_default_primary_manager: "{{ (groups['rpi_swarm_managers'] | default(groups['rpi']))[0] }}"
+    rpi_swarm_primary_manager_resolved: "{{ rpi_swarm_primary_manager | default(rpi_swarm_default_primary_manager) }}"
     adguard_username: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Username') }}"
     adguard_password: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Password') }}"
     gatus_discord_webhook_url: "{{ lookup('ansible.builtin.file', 'Discord-Gatus-Webhook-URL') | trim }}"

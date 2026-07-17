@@ -7,7 +7,7 @@
     group: root
     mode: '0755'
   loop:
-    - /opt/compose/monitoring
+    - /opt/stacks
     - /opt/gatus/config
     - /opt/gatus/data
     - /opt/alloy
@@ -29,19 +29,25 @@
     group: root
     mode: '0644'
 
-- name: Copy monitoring stack docker-compose config
+- name: Copy monitoring swarm stack template
   template:
-    src: monitoring-compose.yaml.j2
-    dest: /opt/compose/monitoring/docker-compose.yaml
+    src: "{{ rpi_monitoring_stack_template | default(playbook_dir + '/../stacks/monitoring.stack.yml.j2') }}"
+    dest: /opt/stacks/monitoring.stack.yml
     owner: root
     group: root
     mode: '0644'
+  run_once: true
+  delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
 
-- name: Deploy monitoring stack
-  community.docker.docker_compose_v2:
-    project_src: /opt/compose/monitoring
-    project_name: monitoring
-    files:
-      - docker-compose.yaml
+- name: Validate monitoring swarm stack config
+  command: docker stack config -c /opt/stacks/monitoring.stack.yml
+  changed_when: false
+  run_once: true
+  delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
+
+- name: Deploy monitoring swarm stack
+  command: docker stack deploy -c /opt/stacks/monitoring.stack.yml {{ rpi_monitoring_stack_name | default('rpi_monitoring') }}
   register: monitoring_output
+  run_once: true
+  delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
   when: not ansible_check_mode
