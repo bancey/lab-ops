@@ -23,5 +23,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible-core yamllint
 
+      - name: Install Ansible collections and roles
+        run: |
+          ansible-galaxy collection install -r ansible/requirements.yaml
+          ansible-galaxy role install -r ansible/requirements.yaml
+
       - name: Validate swarm stack templates
         run: ./scripts/validate-swarm-stack-templates.sh

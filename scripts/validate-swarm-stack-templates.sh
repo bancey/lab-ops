@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "Validating rendered stack templates with ansible syntax and YAML parsing"
-ansible-playbook --syntax-check ansible/rpi-ha.yaml
+ansible-playbook -i ansible/hosts.yaml --syntax-check ansible/rpi-ha.yaml
 
 python3 <<'PY'
 from pathlib import Path
