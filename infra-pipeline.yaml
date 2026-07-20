@@ -278,6 +278,11 @@ stages:
                       keyVaultName: bancey-vault
                       serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                       serviceConnection: $(serviceConnection)
+                  - script: |
+                      git fetch origin main
+                      git checkout FETCH_HEAD -- ansible/hosts.yaml
+                    displayName: Refresh generated Ansible inventory
+                    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
                   - template: steps/ansible.yaml@azuredevops-lib
                     parameters:
                       serviceConnection: $(serviceConnection)
