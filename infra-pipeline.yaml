@@ -36,6 +36,8 @@ parameters:
         address: "thanos.heimelska.co.uk"
       - name: gamora
         address: "gamora.heimelska.co.uk"
+      - name: nebula
+        address: "nebula.heimelska.co.uk"
       - name: hela
         address: "hela.heimelska.co.uk"
       - name: loki
@@ -151,6 +153,7 @@ parameters:
         localEnvironments:
           - thanos
           - gamora
+          - nebula
         dependsOn:
           - generate_ansible_inventory
       - deployment: nut_server_ansible
