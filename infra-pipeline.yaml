@@ -76,8 +76,7 @@ parameters:
         localEnvironments:
           - thanos
           - gamora
-        dependsOn:
-          - rpi_ansible
+        dependsOn: []
       - deployment: wanda_virtual_machines
         environment: prod
         component: virtual-machines
@@ -133,29 +132,29 @@ parameters:
   - name: ansible_deployments
     type: object
     default:
-      - deployment: rpi_ansible
-        environment: prod
-        playbook: rpi-ha.yaml
-        secrets:
-          - keepalived-pass
-          - Twingate-banceylab-connector-Refresh-Token
-          - Twingate-banceylab-connector-Access-Token
-          - Twingate-banceylab-connector-2-Refresh-Token
-          - Twingate-banceylab-connector-2-Access-Token
-          - BunkerWeb-DB-Password
-          - BunkerWeb-TOTP-Secrets
-          - BunkerWeb-MGMT-Admin-Username
-          - BunkerWeb-MGMT-Admin-Password
-          - Cloudflare-Lab-API-Token
-          - Adguard-Thanos-Username
-          - Adguard-Thanos-Password
-          - Discord-Gatus-Webhook-URL
-        localEnvironments:
-          - thanos
-          - gamora
-          - nebula
-        dependsOn:
-          - generate_ansible_inventory
+      #- deployment: rpi_ansible
+      #  environment: prod
+      #  playbook: rpi-ha.yaml
+      #  secrets:
+      #    - keepalived-pass
+      #    - Twingate-banceylab-connector-Refresh-Token
+      #    - Twingate-banceylab-connector-Access-Token
+      #    - Twingate-banceylab-connector-2-Refresh-Token
+      #    - Twingate-banceylab-connector-2-Access-Token
+      #    - BunkerWeb-DB-Password
+      #    - BunkerWeb-TOTP-Secrets
+      #    - BunkerWeb-MGMT-Admin-Username
+      #    - BunkerWeb-MGMT-Admin-Password
+      #    - Cloudflare-Lab-API-Token
+      #    - Adguard-Thanos-Username
+      #    - Adguard-Thanos-Password
+      #    - Discord-Gatus-Webhook-URL
+      #  localEnvironments:
+      #    - thanos
+      #    - gamora
+      #    - nebula
+      #  dependsOn:
+      #    - generate_ansible_inventory
       - deployment: nut_server_ansible
         environment: prod
         playbook: nut-server.yaml
