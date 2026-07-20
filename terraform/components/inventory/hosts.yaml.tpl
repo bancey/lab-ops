@@ -19,6 +19,8 @@ all:
           ansible_host: 10.151.14.5
         gamora:
           ansible_host: 10.151.14.6
+        nebula:
+          ansible_host: 10.151.14.7
     proxmox_hosts:
       vars:
         ansible_user: root

@@ -1,6 +1,6 @@
 # RPi Monitoring Role
 
-This Ansible role manages the monitoring and observability Docker Compose stack for Raspberry Pi hosts.
+This Ansible role manages the monitoring and observability Docker Swarm stack for Raspberry Pi hosts.
 
 ## Services
 
@@ -26,9 +26,9 @@ This stack includes the following services:
 
 ## Stack Location
 
-The Docker Compose file is deployed to:
+The rendered Docker Swarm stack file is deployed to:
 ```
-/opt/compose/monitoring/docker-compose.yaml
+/opt/stacks/monitoring.stack.yml
 ```
 
 ## Variables
@@ -63,42 +63,38 @@ ansible-playbook rpi-ha.yaml --tags monitoring
 ### Manage the stack manually on the host
 ```bash
 # Check status
-docker compose -f /opt/compose/monitoring/docker-compose.yaml ps
+docker service ls | grep rpi_monitoring
 
-# Restart services
-docker compose -f /opt/compose/monitoring/docker-compose.yaml restart
+# Reconcile stack
+docker stack deploy -c /opt/stacks/monitoring.stack.yml rpi_monitoring
 
 # View logs
-docker compose -f /opt/compose/monitoring/docker-compose.yaml logs -f
+docker service logs -f rpi_monitoring_alloy
 
 # Restart specific service
-docker compose -f /opt/compose/monitoring/docker-compose.yaml restart alloy
+docker service update --force rpi_monitoring_alloy
 
-# Stop stack
-docker compose -f /opt/compose/monitoring/docker-compose.yaml down
-
-# Start stack
-docker compose -f /opt/compose/monitoring/docker-compose.yaml up -d
+# Remove stack
+docker stack rm rpi_monitoring
 ```
 
 ## Dependencies
 
-- Docker and Docker Compose plugin installed
-- `community.docker` Ansible collection
+- Docker Engine with Swarm enabled
 - Gatus configuration file
 - Alloy configuration file
 
 ## Directory Structure
 
 ```
-/opt/compose/monitoring/       # Stack compose file location
-/opt/gatus/config/             # Gatus configuration
-/opt/gatus/data/               # Gatus data directory
-/opt/alloy/config/             # Alloy configuration
+/opt/stacks/monitoring.stack.yml # Rendered stack manifest on manager
+/opt/gatus/config/               # Gatus configuration
+/opt/gatus/data/                 # Gatus data directory
+/opt/alloy/config/               # Alloy configuration
 ```
 
 ## Notes
 
 - AdGuard Exporter connects to the AdGuard Home service via the VIP (10.151.14.4:8000)
-- Both Alloy and cAdvisor require privileged mode to collect system and container metrics
-- Services in this stack are independent of the network stack and can be restarted separately
+- Both Alloy and cAdvisor keep privileged host access settings from pre-swarm deployment.
+- Services in this stack are independent of the network stack and can be updated separately.

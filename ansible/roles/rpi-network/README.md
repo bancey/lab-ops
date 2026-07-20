@@ -1,6 +1,6 @@
 # RPi Network Role
 
-This Ansible role manages the networking services Docker Compose stack for Raspberry Pi hosts.
+This Ansible role manages the networking services Docker Swarm stack for Raspberry Pi hosts.
 
 ## Services
 
@@ -20,9 +20,9 @@ This stack includes the following services:
 
 ## Stack Location
 
-The Docker Compose file is deployed to:
+The rendered Docker Swarm stack file is deployed to:
 ```
-/opt/compose/network/docker-compose.yaml
+/opt/stacks/network.stack.yml
 ```
 
 ## Variables
@@ -43,30 +43,26 @@ ansible-playbook rpi-ha.yaml --tags network
 ### Manage the stack manually on the host
 ```bash
 # Check status
-docker compose -f /opt/compose/network/docker-compose.yaml ps
+docker service ls | grep rpi_network
 
-# Restart services
-docker compose -f /opt/compose/network/docker-compose.yaml restart
+# Reconcile stack
+docker stack deploy -c /opt/stacks/network.stack.yml rpi_network
 
 # View logs
-docker compose -f /opt/compose/network/docker-compose.yaml logs -f
+docker service logs -f rpi_network_adguard
 
-# Stop stack
-docker compose -f /opt/compose/network/docker-compose.yaml down
-
-# Start stack
-docker compose -f /opt/compose/network/docker-compose.yaml up -d
+# Remove stack
+docker stack rm rpi_network
 ```
 
 ## Dependencies
 
-- Docker and Docker Compose plugin installed
-- `community.docker` Ansible collection
+- Docker Engine with Swarm enabled
 
 ## Directory Structure
 
 ```
-/opt/compose/network/          # Stack compose file location
+/opt/stacks/network.stack.yml  # Rendered stack manifest on manager
 /opt/adguard/config/           # AdGuard configuration
 /opt/adguard/work/             # AdGuard working directory
 ```

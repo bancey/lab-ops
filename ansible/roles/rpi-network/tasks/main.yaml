@@ -7,24 +7,30 @@
     group: root
     mode: '0755'
   loop:
-    - /opt/compose/network
+    - /opt/stacks
     - /opt/adguard
     - /opt/adguard/config
     - /opt/adguard/work
 
-- name: Copy network stack docker-compose config
+- name: Copy network swarm stack template
   template:
-    src: network-compose.yaml.j2
-    dest: /opt/compose/network/docker-compose.yaml
+    src: "{{ rpi_network_stack_template | default(playbook_dir + '/../stacks/network.stack.yml.j2') }}"
+    dest: /opt/stacks/network.stack.yml
     owner: root
     group: root
     mode: '0644'
+  run_once: true
+  delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
 
-- name: Deploy network stack
-  community.docker.docker_compose_v2:
-    project_src: /opt/compose/network
-    project_name: network
-    files:
-      - docker-compose.yaml
+- name: Validate network swarm stack config
+  command: docker stack config -c /opt/stacks/network.stack.yml
+  changed_when: false
+  run_once: true
+  delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
+
+- name: Deploy network swarm stack
+  command: docker stack deploy -c /opt/stacks/network.stack.yml {{ rpi_network_stack_name | default('rpi_network') }}
   register: network_output
+  run_once: true
+  delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
   when: not ansible_check_mode

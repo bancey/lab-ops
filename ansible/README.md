@@ -2,9 +2,9 @@
 
 This directory contains Ansible playbooks and roles for managing the lab infrastructure.
 
-## Raspberry Pi Docker Compose Deployment
+## Raspberry Pi Docker Swarm Deployment
 
-The Raspberry Pi hosts use a modular Docker Compose deployment strategy managed by Ansible. Services are organized into logical stacks that can be deployed, managed, and updated independently.
+The Raspberry Pi hosts use a modular Docker Swarm deployment strategy managed by Ansible. Services are organized into logical stacks that can be deployed, managed, and updated independently.
 
 **⚠️ Migrating from the old monolithic stack?** See [MIGRATION.md](MIGRATION.md) for step-by-step migration instructions to avoid service conflicts.
 
@@ -18,7 +18,7 @@ Manages core networking services:
 - **Twingate Connector**: Zero-trust VPN connectivity
 - **BunkerWeb**: Security-focused reverse proxy
 
-Deployed to: `/opt/compose/network/docker-compose.yaml`
+Rendered stack file: `/opt/stacks/network.stack.yml`
 
 #### Monitoring Stack (`rpi-monitoring` role)
 Manages observability and monitoring services:
@@ -27,15 +27,15 @@ Manages observability and monitoring services:
 - **cAdvisor**: Container metrics exporter
 - **AdGuard Exporter**: Prometheus exporter for AdGuard metrics
 
-Deployed to: `/opt/compose/monitoring/docker-compose.yaml`
+Rendered stack file: `/opt/stacks/monitoring.stack.yml`
 
 ### Playbook Structure
 
 The `rpi-ha.yaml` playbook is organized into three plays:
 
-1. **System setup**: Installs Docker, configures keepalived for HA
-2. **Network stack deployment**: Deploys networking services
-3. **Monitoring stack deployment**: Deploys monitoring services
+1. **System setup**: Installs Docker, configures keepalived for HA, bootstraps/joins Swarm
+2. **Network stack deployment**: Renders and deploys `rpi_network` using `docker stack deploy`
+3. **Monitoring stack deployment**: Renders and deploys `rpi_monitoring` using `docker stack deploy`
 
 ### Usage
 
@@ -43,6 +43,11 @@ The `rpi-ha.yaml` playbook is organized into three plays:
 ```bash
 ansible-playbook ansible/rpi-ha.yaml
 ```
+
+Before first swarm bootstrap on a 3-node Raspberry Pi cluster:
+1. Copy `ansible/group_vars/rpi_swarm.yaml.example` to `ansible/group_vars/rpi_swarm.yaml`.
+2. Set manager/worker roles and primary manager in group vars.
+3. Ensure inventory includes all Raspberry Pi hosts (example: `ansible/hosts.swarm.example.yaml`).
 
 #### Deploy only the network stack
 ```bash
@@ -61,31 +66,31 @@ Once deployed, each stack can be managed independently on the Raspberry Pi hosts
 #### Network Stack
 ```bash
 # Check status
-docker compose -f /opt/compose/network/docker-compose.yaml ps
+docker service ls | grep rpi_network
 
 # View logs
-docker compose -f /opt/compose/network/docker-compose.yaml logs -f
+docker service logs -f rpi_network_adguard
 
 # Restart a specific service
-docker compose -f /opt/compose/network/docker-compose.yaml restart adguard
+docker service update --force rpi_network_adguard
 
-# Restart entire stack
-docker compose -f /opt/compose/network/docker-compose.yaml restart
+# Reconcile entire stack from rendered manifest
+docker stack deploy -c /opt/stacks/network.stack.yml rpi_network
 ```
 
 #### Monitoring Stack
 ```bash
 # Check status
-docker compose -f /opt/compose/monitoring/docker-compose.yaml ps
+docker service ls | grep rpi_monitoring
 
 # View logs for specific service
-docker compose -f /opt/compose/monitoring/docker-compose.yaml logs -f alloy
+docker service logs -f rpi_monitoring_alloy
 
 # Restart a specific service
-docker compose -f /opt/compose/monitoring/docker-compose.yaml restart gatus
+docker service update --force rpi_monitoring_gatus
 
-# Restart entire stack
-docker compose -f /opt/compose/monitoring/docker-compose.yaml restart
+# Reconcile entire stack from rendered manifest
+docker stack deploy -c /opt/stacks/monitoring.stack.yml rpi_monitoring
 ```
 
 ### Adding New Services
@@ -93,7 +98,7 @@ docker compose -f /opt/compose/monitoring/docker-compose.yaml restart
 To add a new service:
 
 1. **Determine the appropriate stack** (network, monitoring, or create a new one)
-2. **Update the compose template** in `ansible/roles/rpi-<stack>/templates/<stack>-compose.yaml.j2`
+2. **Update the stack template** in `stacks/<stack>.stack.yml.j2`
 3. **Add any required directories** to the role's tasks in `ansible/roles/rpi-<stack>/tasks/main.yaml`
 4. **Add variables** to the playbook if needed
 5. **Update documentation** in the role's README.md
@@ -107,8 +112,8 @@ To create a new logical stack:
    mkdir -p ansible/roles/rpi-<name>/{tasks,templates,defaults}
    ```
 
-2. **Create the compose template**:
-   `ansible/roles/rpi-<name>/templates/<name>-compose.yaml.j2`
+2. **Create the swarm stack template**:
+   `stacks/<name>.stack.yml.j2`
 
 3. **Create role tasks**:
    `ansible/roles/rpi-<name>/tasks/main.yaml`
@@ -215,11 +220,7 @@ Templates stored within individual roles' `templates/` directories:
 - `upsd.users.j2`: NUT user definitions
 - `upsmon.conf.j2`: NUT monitoring configuration
 
-#### `rpi-network` Role
-- `network-compose.yaml.j2`: Docker Compose for networking services
-
 #### `rpi-monitoring` Role
-- `monitoring-compose.yaml.j2`: Docker Compose for monitoring services
 - `gatus-config.yaml.j2`: Gatus health check configuration
 
 #### `setup-wings` Role
@@ -304,6 +305,14 @@ done
 List all hosts and groups:
 ```bash
 ansible-inventory --list
+```
+
+### Swarm Validation
+Run on the primary manager after deployment:
+```bash
+docker node ls
+docker service ls
+docker stack ls
 ```
 
 ## Files

@@ -59,6 +59,24 @@ This will install Flux and apply the necessary secrets and sources for GitOps.
 - `Taskfile.yaml` - Task automation for common workflows (e.g., bootstrapping Flux)
 - `infra-pipeline.yaml` - Azure DevOps pipeline definition for full infra automation
 
+## Raspberry Pi Swarm Deployment
+
+Raspberry Pi service orchestration is managed with Docker Swarm stacks deployed via Ansible.
+
+- Bootstrap + deploy playbook: `ansible/rpi-ha.yaml`
+- Stack templates: `stacks/network.stack.yml.j2`, `stacks/monitoring.stack.yml.j2`
+- Swarm variable example: `ansible/group_vars/rpi_swarm.yaml.example`
+- Inventory example for 3 Pi swarm: `ansible/hosts.swarm.example.yaml`
+- Git-driven deploy helper: `scripts/deploy-rpi-swarm.sh`
+- Ops checklist: `docs/swarm-ops-checklist.md`
+- Migration plan: `docs/swarm-migration-plan.md`
+
+Quick run:
+```bash
+./scripts/validate-swarm-stack-templates.sh
+./scripts/deploy-rpi-swarm.sh --manager thanos
+```
+
 ## Notes
 - Twingate connector deployment is now handled by the `ansible/rpi-ha.yaml` playbook. Manual Docker commands are no longer required.
 - All secrets must be present in Key Vault before running the pipeline or Terraform/Ansible locally.

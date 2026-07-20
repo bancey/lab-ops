@@ -53,6 +53,29 @@ dns:
           - all
         service_accounts:
           - AzureDevOps
+  nebula.heimelska.co.uk:
+    record: 10.151.14.7
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+            - 80
+            - 443
+            - 8000
+        udp:
+          policy: RESTRICTED
+          ports:
+            - 53
+      access:
+        groups:
+          - pve
+          - all
+        service_accounts:
+          - AzureDevOps
   wanda.heimelska.co.uk:
     record: 10.151.14.11
     twingate:
