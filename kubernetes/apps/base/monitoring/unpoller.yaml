@@ -28,7 +28,7 @@ spec:
           unpoller:
             image:
               repository: ghcr.io/unpoller/unpoller
-              tag: v3.3.1
+              tag: v3.3.3
           alloy:
             image:
               repository: grafana/alloy
