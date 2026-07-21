@@ -37,7 +37,7 @@ spec:
           main:
             image:
               repository: icereed/paperless-gpt
-              tag: v0.26.1
+              tag: v0.27.0
             env:
               TZ: Europe/London
               PAPERLESS_BASE_URL: "http://paperless-ngx.paperless-ngx.svc.cluster.local:8000"
