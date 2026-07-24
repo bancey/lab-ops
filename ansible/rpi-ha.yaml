@@ -33,6 +33,9 @@
     disable_multipath: false
   - role: install-docker
   tasks:
+  - name: Get installed packages
+    ansible.builtin.package_facts:
+      manager: auto
   - set_fact:
       keepalived_pass: "{{ lookup('ansible.builtin.file', 'keepalived-pass') }}"
   - name: ensures /etc/keelalived dir exists
@@ -70,28 +73,29 @@
     register: rpi_swarm_local_node_state
     changed_when: false
     check_mode: false
+    when: "'docker-ce' in ansible_facts.packages"
   - name: Initialize swarm on primary manager
     command: docker swarm init --advertise-addr {{ ansible_host }} --listen-addr 0.0.0.0:2377
     register: rpi_swarm_init_output
     changed_when: true
-    when: inventory_hostname == rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout != 'active'
+    when: inventory_hostname == rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout | default('') != 'active'
   - name: Fetch join token for desired node role
     command: docker swarm join-token -q {{ rpi_swarm_desired_role }}
     register: rpi_swarm_join_token
     changed_when: false
     delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
-    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout != 'active' and rpi_swarm_desired_role in ['manager', 'worker']
+    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout | default('') != 'active' and rpi_swarm_desired_role in ['manager', 'worker']
   - name: Join node to swarm
     command: docker swarm join --token {{ rpi_swarm_join_token.stdout }} {{ rpi_swarm_manager_addr }}:2377
     register: rpi_swarm_join_output
     changed_when: true
-    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout != 'active'
+    when: inventory_hostname != rpi_swarm_primary_manager_resolved and rpi_swarm_local_node_state.stdout | default('') != 'active'
   - name: Check swarm control availability on node
     command: docker info --format '{{ "{{ .Swarm.ControlAvailable }}" }}'
     register: rpi_swarm_control_available
     changed_when: false
     check_mode: false
-    when: rpi_swarm_local_node_state.stdout == 'active'
+    when: "'docker-ce' in ansible_facts.packages and rpi_swarm_local_node_state.stdout | default('') == 'active'"
   - name: Promote node to manager when configured
     command: docker node promote {{ inventory_hostname }}
     delegate_to: "{{ rpi_swarm_primary_manager_resolved }}"
