@@ -1,6 +1,10 @@
 # Primary manager used for bootstrap and stack deployment delegation.
 rpi_swarm_primary_manager: thanos
 
+# Resolved across all rpi-ha.yaml plays, which each target hosts: rpi independently.
+rpi_swarm_default_primary_manager: "{{ (groups['rpi_swarm_managers'] | default(groups['rpi']))[0] }}"
+rpi_swarm_primary_manager_resolved: "{{ rpi_swarm_primary_manager | default(rpi_swarm_default_primary_manager) }}"
+
 rpi_swarm_node_roles:
   thanos: manager
   nebula: manager
