@@ -273,6 +273,33 @@ The following are noted as candidates for future improvements but remain in thei
 - Secrets are loaded via `lookup('ansible.builtin.file', 'filename')` from local files in the runner environment
 - Files required: `keepalived-pass`, `mariadb_root_password`, `mariadb_galera_password`, `postgresql_superuser_password`, `postgresql_replication_password`, `keepalived_postgresql_pass`, `backup_sas_token`, `NUT-Admin-Password`, `NUT-Monitor-Password`, `Discord-Gatus-Webhook-URL`, `Paperless-API-Token`
 - These should be in `.gitignore` and managed securely in your runner environment
+- In the Azure DevOps pipeline (`infra-pipeline.yaml`) these files are downloaded from the `bancey-vault` Key Vault per playbook (see the `ansible_deployments` parameter)
+
+### Running Playbooks Locally
+`scripts/run-ansible-playbook.sh` reproduces what `infra-pipeline.yaml` does: it looks up the
+Key Vault secrets configured for a playbook in `ansible_deployments`, downloads them into
+`ansible/` under the filenames the playbooks expect, fetches the `Packer-Private-Key` SSH key
+into `ansible/id_rsa` and loads it into `ssh-agent`, then runs `ansible-playbook`. Everything
+it downloads is deleted again when the run finishes (or fails).
+
+```bash
+az login
+scripts/run-ansible-playbook.sh nut-server.yaml
+scripts/run-ansible-playbook.sh scansnap.yaml --check
+```
+
+For playbooks not wired into `ansible_deployments` (e.g. `mariadb.yaml`, `postgresql.yaml`,
+`haproxy.yaml`), pass the required secrets explicitly:
+
+```bash
+scripts/run-ansible-playbook.sh mariadb.yaml \
+  --secret mariadb-root-password:mariadb_root_password \
+  --secret mariadb-galera-password:mariadb_galera_password
+```
+
+Run `scripts/run-ansible-playbook.sh --help` for the full option list. You still need
+network access to the target hosts yourself (Twingate/VPN) - the script doesn't establish
+that connection, it only handles Key Vault and SSH key setup.
 
 ### Template Organization
 - Shared templates in `/ansible/templates/` organized by service/purpose

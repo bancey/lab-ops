@@ -27,7 +27,8 @@ services:
         constraints:
           - node.role == manager
 
-  gatus:
+{% for gatus_host in rpi_monitoring_gatus_hosts %}
+  gatus_{{ gatus_host }}:
     image: twinproduction/gatus:v5.36.0
     volumes:
       - /opt/gatus/config:/config
@@ -38,7 +39,7 @@ services:
         protocol: tcp
         mode: host
     deploy:
-      replicas: {{ rpi_monitoring_gatus_replicas | default(1) }}
+      replicas: 1
       update_config:
         order: start-first
         failure_action: rollback
@@ -50,7 +51,9 @@ services:
         max_attempts: 5
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == {{ gatus_host }}
+
+{% endfor %}
 
   alloy:
     image: grafana/alloy:v1.17.1

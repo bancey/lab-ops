@@ -10,9 +10,10 @@ This stack includes the following services:
   - Port: 9618
   - Connects to: AdGuard Home at 10.151.14.4:8000 (VIP)
 
-- **Gatus** (`gatus`): Health check and status monitoring
+- **Gatus** (`gatus_<host>`, one service per host in `rpi_monitoring_gatus_hosts`): Health check and status monitoring
   - Port: 8080
   - Volumes: `/opt/gatus/config`, `/opt/gatus/data`
+  - Pinned per-host (`node.hostname` constraint), not floating — local sqlite history in `/opt/gatus/data` isn't replicated between nodes
 
 - **Grafana Alloy** (`alloy`): Observability data collector
   - Port: 12345

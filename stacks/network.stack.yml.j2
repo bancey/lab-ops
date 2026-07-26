@@ -20,7 +20,7 @@ services:
         protocol: tcp
         mode: host
     deploy:
-      replicas: {{ rpi_network_adguard_replicas | default(1) }}
+      mode: global
       update_config:
         order: start-first
         failure_action: rollback
@@ -85,7 +85,7 @@ services:
     environment:
       API_WHITELIST_IP: "127.0.0.0/8 10.151.14.0/24 10.151.16.0/24"
     deploy:
-      replicas: {{ rpi_network_bunkerweb_replicas | default(1) }}
+      mode: global
       update_config:
         order: start-first
         failure_action: rollback
