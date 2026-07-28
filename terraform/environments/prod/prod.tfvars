@@ -17,8 +17,8 @@ kubernetes_virtual_machines = {
     cluster_cidr    = "10.42.0.0/16"
     service_cidr    = "10.43.0.0/16"
     bgp_as          = 64601
-    disk_size       = 20
-    image           = "jammy-server-cloudimg-amd64.img"
+    disk_size       = 40
+    image           = "resolute-server-cloudimg-amd64.img"
     master = {
       count              = 1
       cidr               = "10.151.15.8/29"
@@ -295,8 +295,9 @@ ansible = {
 }
 
 images = {
-  "jammy-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
-  "noble-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img" }
+  "jammy-server-cloudimg-amd64.img"    = { url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img" }
+  "noble-server-cloudimg-amd64.img"    = { url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img" }
+  "resolute-server-cloudimg-amd64.img" = { url = "https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img" }
 }
 
 twingate_groups = ["all", "birds", "plex", "pelican", "pterodactyl", "pve", "tiny_k8s", "wanda_k8s"]
