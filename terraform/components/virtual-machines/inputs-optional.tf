@@ -29,6 +29,13 @@ variable "containers" {
     storage             = string
     unprivileged        = optional(bool, true)
     disk_size           = optional(string, 8)
+    device_passthrough = optional(list(object({
+      path       = string
+      mode       = optional(string)
+      uid        = optional(number)
+      gid        = optional(number)
+      deny_write = optional(bool)
+    })), [])
   }))
   description = "Map containing information about LXC Containers to create in Proxmox."
 }
