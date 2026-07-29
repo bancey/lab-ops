@@ -76,3 +76,15 @@ variable "unprivileged" {
   default     = true
 
 }
+
+variable "device_passthrough" {
+  type = list(object({
+    path       = string
+    mode       = optional(string)
+    uid        = optional(number)
+    gid        = optional(number)
+    deny_write = optional(bool)
+  }))
+  description = "Host devices to pass through to the container (e.g. /dev/net/tun for a container that needs to create a tun/tap interface, such as an OpenThread Border Router)."
+  default     = []
+}

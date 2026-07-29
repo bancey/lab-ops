@@ -61,4 +61,15 @@ resource "proxmox_virtual_environment_container" "this" {
   features {
     nesting = true
   }
+
+  dynamic "device_passthrough" {
+    for_each = var.device_passthrough
+    content {
+      path       = device_passthrough.value.path
+      mode       = device_passthrough.value.mode
+      uid        = device_passthrough.value.uid
+      gid        = device_passthrough.value.gid
+      deny_write = device_passthrough.value.deny_write
+    }
+  }
 }

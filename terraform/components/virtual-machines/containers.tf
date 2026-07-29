@@ -21,6 +21,7 @@ module "wanda_containers" {
   memory              = each.value.memory
   unprivileged        = each.value.unprivileged
   disk_size           = each.value.disk_size
+  device_passthrough  = each.value.device_passthrough
 
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
@@ -48,6 +49,7 @@ module "tiny_containers" {
   cpu_cores           = each.value.cpu_cores
   memory              = each.value.memory
   disk_size           = each.value.disk_size
+  device_passthrough  = each.value.device_passthrough
 
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"

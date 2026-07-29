@@ -120,6 +120,11 @@ containers = {
     startup_delay       = 10
     storage             = "local-lvm"
     unprivileged        = false
+    device_passthrough = [
+      {
+        path = "/dev/net/tun" # required by OTBR to create its Thread (wpan0) tun interface
+      }
+    ]
   }
   mariadb0 = {
     node                = "hela"
