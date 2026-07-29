@@ -1,5 +1,5 @@
 ---
-- name: Deploy Matter Server on LXC Container
+- name: Deploy Matter Server and Thread Border Router on LXC Container
   hosts: matter-server
   become: true
   gather_facts: true
@@ -54,6 +54,12 @@
         state: directory
         mode: '0755'
 
+    - name: Create OTBR (Thread Border Router) data directory
+      ansible.builtin.file:
+        path: /opt/matter-server/otbr-data
+        state: directory
+        mode: '0755'
+
     - name: Create Matter Server Docker Compose file
       ansible.builtin.copy:
         dest: /opt/matter-server/docker-compose.yaml
@@ -75,7 +81,32 @@
               environment:
                 - TZ=Europe/London
 
-    - name: Start Matter Server container
+            # Thread Border Router for the SLZB-MR1U's second (Thread) radio.
+            # Runs alongside matter-server on the same host so mDNS discovery
+            # of the Thread border agent works without cross-subnet reflection
+            # (the SLZB-MR1U's Zigbee/Thread radios live on 10.151.13.0/24,
+            # this LXC is on 10.151.14.0/24).
+            otbr:
+              image: bnutzer/otbr-tcp:latest
+              container_name: otbr
+              restart: unless-stopped
+              privileged: true
+              network_mode: host
+              devices:
+                - /dev/net/tun
+              volumes:
+                - /opt/matter-server/otbr-data:/var/lib/thread
+              environment:
+                - TZ=Europe/London
+                # SLZB-MR1U's Thread radio (RCP), exposed over the network
+                # separately from its Zigbee radio (10.151.13.6:6638, used
+                # by zigbee2mqtt).
+                - RCP_HOST=10.151.13.6
+                - RCP_PORT=7638
+                - RCP_BAUDRATE=460800
+                - OTBR_WEB_ENABLE=1
+
+    - name: Start Matter Server and OTBR containers
       ansible.builtin.command:
         cmd: docker compose up -d
         chdir: /opt/matter-server
@@ -88,7 +119,13 @@
         delay: 5
         timeout: 60
 
-    - name: Display Matter Server status
+    - name: Wait for OTBR web interface to be ready
+      ansible.builtin.wait_for:
+        port: 8080
+        delay: 5
+        timeout: 60
+
+    - name: Display container status
       ansible.builtin.command:
         cmd: docker compose ps
         chdir: /opt/matter-server

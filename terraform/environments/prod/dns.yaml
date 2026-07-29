@@ -437,6 +437,8 @@ dns:
           ports:
             - 5580
             - 22
+            - 8080 # OTBR web UI
+            - 8081 # OTBR REST API
         udp:
           policy: DENY_ALL
       access:

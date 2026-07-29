@@ -143,7 +143,7 @@ To create a new logical stack:
 - **`wings-node.yaml`**: Pterodactyl Wings game server node setup
 - **`nut-server.yaml`**: NUT UPS monitoring server setup
 - **`nut-client.yaml`**: NUT UPS monitoring client setup (targets both proxmox_tiny and proxmox_wanda)
-- **`matter-server.yaml`**: Matter smart home server deployment
+- **`matter-server.yaml`**: Matter smart home server deployment, plus an OpenThread Border Router (OTBR) connecting to the SLZB-MR1U's Thread radio over TCP for Matter-over-Thread
 - **`scansnap.yaml`**: ScanSnap iX500 one-button scan-to-Paperless-ngx workflow (targets `gamora`)
 
 ## Roles
