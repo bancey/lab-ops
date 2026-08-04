@@ -54,6 +54,7 @@ patchesStrategicMerge:
   - zigbee2mqtt-patch.yaml
   - home-assistant-certificate-patch.yaml
   - home-assistant-ingress-route-patch.yaml
+  - home-assistant-multus-patch.yaml
   #- open-webui-patch.yaml
   #- open-webui-certificate-patch.yaml
   #- open-webui-ingress-route-patch.yaml

@@ -1,0 +1,30 @@
+# Gives the Home Assistant pod (kubernetes/apps/base/home-assistant) a secondary
+# macvlan interface on VLAN 16 so it can receive multicast mDNS (_meshcop._udp)
+# from the physical LAN, which Cilium's pod overlay does not forward.
+#
+# Lives in kube-system (alongside the Multus DaemonSet) rather than the
+# home-assistant namespace so this Kustomization doesn't have to depend on
+# cluster-apps having created that namespace first. Referenced from the pod via
+# the cross-namespace annotation form: k8s.v1.cni.cncf.io/networks: kube-system/mdns-macvlan
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: mdns-macvlan
+  namespace: kube-system
+spec:
+  config: |
+    {
+      "cniVersion": "0.3.1",
+      "type": "macvlan",
+      "master": "eth0",
+      "mode": "bridge",
+      "ipam": {
+        "type": "static",
+        "addresses": [
+          {
+            "address": "10.151.16.30/24",
+            "gateway": "10.151.16.1"
+          }
+        ]
+      }
+    }
