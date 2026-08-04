@@ -20,6 +20,13 @@ spec:
     remediation:
       retries: 3
   values:
+    # Multus (tiny cluster only, kubernetes/infrastructure-tiny) needs to chain
+    # in front of Cilium. Cilium's default CNI-exclusive mode silently renames
+    # any other CNI config in /etc/cni/net.d to *.cilium_bak to guarantee it's
+    # the only CNI in control, which blocks that chaining. Harmless to disable
+    # here for wanda too, since nothing else writes a competing CNI config there.
+    cni:
+      exclusive: false
     bgpControlPlane:
       enabled: true
     hubble:
