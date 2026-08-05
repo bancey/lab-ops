@@ -60,6 +60,25 @@
         state: directory
         mode: '0755'
 
+    # OTBR (network_mode: host) enables IPv6 forwarding on its infra interface
+    # (eth0) as part of its border-routing role. Linux silently stops
+    # processing incoming Router Advertisements on any interface once
+    # forwarding is enabled for it, unless accept_ra is explicitly set to 2
+    # to override that — without this, OTBR never sees UniFi's RAs on the
+    # Services VLAN and its border-routing manager can't function correctly.
+    - name: Enable IPv6 forwarding and RA processing for OTBR's border-routing role
+      ansible.posix.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        sysctl_set: true
+        reload: true
+      loop:
+        - { name: 'net.ipv6.conf.all.forwarding', value: '1' }
+        - { name: 'net.ipv4.conf.all.forwarding', value: '1' }
+        - { name: 'net.ipv6.conf.all.accept_ra', value: '2' }
+        - { name: 'net.ipv6.conf.all.accept_ra_rt_info_max_plen', value: '64' }
+
     - name: Create Matter Server Docker Compose file
       ansible.builtin.copy:
         dest: /opt/matter-server/docker-compose.yaml

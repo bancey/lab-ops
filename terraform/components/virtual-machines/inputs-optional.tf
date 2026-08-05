@@ -29,6 +29,7 @@ variable "containers" {
     storage             = string
     unprivileged        = optional(bool, true)
     disk_size           = optional(string, 8)
+    enable_ipv6         = optional(bool, false)
     device_passthrough = optional(list(object({
       path       = string
       mode       = optional(string)

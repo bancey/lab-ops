@@ -70,6 +70,12 @@ variable "disk_size" {
   default     = 8
 }
 
+variable "enable_ipv6" {
+  type        = bool
+  description = "Whether to enable SLAAC-based IPv6 addressing (ip6=auto) on the container's network interface. Defaults to off, matching Proxmox's own default behaviour."
+  default     = false
+}
+
 variable "unprivileged" {
   type        = bool
   description = "Should the container be unprivileged?"

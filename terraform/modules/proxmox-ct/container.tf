@@ -14,6 +14,13 @@ resource "proxmox_virtual_environment_container" "this" {
         address = "${var.ip_address}/24"
         gateway = var.gateway_ip_address
       }
+
+      dynamic "ipv6" {
+        for_each = var.enable_ipv6 ? [1] : []
+        content {
+          address = "auto"
+        }
+      }
     }
 
 

@@ -22,6 +22,7 @@ module "wanda_containers" {
   unprivileged        = each.value.unprivileged
   disk_size           = each.value.disk_size
   device_passthrough  = each.value.device_passthrough
+  enable_ipv6         = each.value.enable_ipv6
 
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"
@@ -50,6 +51,7 @@ module "tiny_containers" {
   memory              = each.value.memory
   disk_size           = each.value.disk_size
   device_passthrough  = each.value.device_passthrough
+  enable_ipv6         = each.value.enable_ipv6
 
   image_id   = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
   image_type = "ubuntu"

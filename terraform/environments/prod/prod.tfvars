@@ -120,6 +120,7 @@ containers = {
     startup_delay       = 10
     storage             = "local-lvm"
     unprivileged        = false
+    enable_ipv6         = true # OTBR needs SLAAC/RA on its infra interface to border-route between the LAN and the Thread mesh
     device_passthrough = [
       {
         path = "/dev/net/tun" # required by OTBR to create its Thread (wpan0) tun interface
