@@ -215,6 +215,20 @@ spec:
             - name: cnibin
               mountPath: /host/opt/cni/bin
               mountPropagation: Bidirectional
+        # k3s (flannel disabled in favour of Cilium) doesn't bundle the standard
+        # CNI reference plugins (macvlan, bridge, host-local, static, etc.) that
+        # Multus delegates to for secondary networks. This installs them from
+        # Rancher's hardened build of https://github.com/containernetworking/plugins
+        # — the same image RKE2's own rke2-multus chart uses for this exact gap.
+        - name: install-cni-plugins
+          image: rancher/hardened-cni-plugins:v1.9.1-build20260717
+          securityContext:
+            privileged: true
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - name: cnibin
+              mountPath: /host/opt/cni/bin
+              mountPropagation: Bidirectional
       terminationGracePeriodSeconds: 10
       volumes:
         - name: cni
