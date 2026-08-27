@@ -1,6 +1,4 @@
 # Vendored from https://github.com/k8snetworkplumbingwg/multus-cni/blob/v4.3.0/deployments/multus-daemonset-thick.yml
-# Pinned to v4.3.0-thick (upstream's quickstart manifest references the floating
-# `snapshot-thick` tag, which this repo avoids in favour of Renovate-tracked pins).
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -244,8 +242,8 @@ spec:
           configMap:
             name: multus-daemon-config
             items:
-            - key: daemon-config.json
-              path: daemon-config.json
+              - key: daemon-config.json
+                path: daemon-config.json
         - name: host-run
           hostPath:
             path: /run
