@@ -8,7 +8,7 @@ spec:
   releaseName: qbittorrent-gluetun
   chart:
     spec:
-      version: 5.0.1
+      version: 5.1.0
       chart: app-template
       sourceRef:
         kind: HelmRepository
