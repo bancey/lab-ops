@@ -17,6 +17,7 @@ pr:
     exclude:
       - ansible/hosts.yaml
       - ansible/templates/frr.conf
+      - kubernetes/*
 
 resources:
   repositories:
