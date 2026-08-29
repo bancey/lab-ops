@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: glance-staging-tls
+  namespace: glance
+spec:
+  secretName: glance-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "glance-fqdn"
+  dnsNames:
+    - "glance-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: glance-tls
+  namespace: glance
+spec:
+  secretName: glance-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "glance-fqdn"
+  dnsNames:
+    - "glance-fqdn"
