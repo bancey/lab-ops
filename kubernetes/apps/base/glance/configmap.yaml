@@ -1,0 +1,643 @@
+---
+# Glance dashboard configuration. Mounted as a directory at /app/config so that
+# Glance's own file watcher can hot-reload it; `$include` paths are resolved
+# relative to glance.yml, which is why every page lives in this same ConfigMap.
+#
+# Validate changes before pushing:
+#   docker run --rm -v ./config:/app/config:ro glanceapp/glance:v0.8.5 config:validate
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: glance-config
+  namespace: glance
+data:
+  glance.yml: |
+    ---
+    server:
+      port: 8080
+      proxied: true
+
+    branding:
+      app-name: "Heimelska"
+      logo-text: "H"
+      custom-footer: |
+        <p>Managed by <a href="https://github.com/bancey/lab-ops">lab-ops</a> &middot; Flux GitOps</p>
+
+    theme:
+      background-color: 225 14 12
+      primary-color: 190 70 65
+      positive-color: 145 55 55
+      negative-color: 5 75 62
+      presets:
+        catppuccin-mocha:
+          background-color: 240 21 12
+          primary-color: 217 92 83
+          positive-color: 115 54 76
+          negative-color: 347 70 65
+        light:
+          light: true
+          background-color: 220 23 95
+          primary-color: 220 91 40
+          positive-color: 145 63 32
+          negative-color: 347 87 44
+
+    pages:
+      - $include: home.yml
+      - $include: infrastructure.yml
+      - $include: media.yml
+  home.yml: |
+    - name: Home
+      columns:
+        - size: small
+          widgets:
+            - type: clock
+              hour-format: 24h
+              timezones:
+                - timezone: UTC
+                  label: UTC
+
+            - type: calendar
+              first-day-of-week: monday
+
+            - type: weather
+              location: London, United Kingdom
+              units: metric
+              hour-format: 24h
+
+        - size: full
+          widgets:
+            - type: search
+              search-engine: duckduckgo
+              autofocus: true
+              bangs:
+                - title: GitHub
+                  shortcut: "!gh"
+                  url: https://github.com/search?q={QUERY}&type=repositories
+                - title: lab-ops
+                  shortcut: "!lab"
+                  url: https://github.com/bancey/lab-ops/search?q={QUERY}
+                - title: Artifact Hub
+                  shortcut: "!ah"
+                  url: https://artifacthub.io/packages/search?ts_query_web={QUERY}
+
+            # Rolls up every Gatus check across the lab. Renders a green "all clear"
+            # when nothing is failing, otherwise lists only the broken endpoints.
+            - type: custom-api
+              title: Lab status
+              title-url: https://gatus.thanos.heimelska.co.uk
+              cache: 1m
+              url: http://thanos.heimelska.co.uk:8080/api/v1/endpoints/statuses
+              parameters:
+                page: "1"
+                pageSize: "1"
+              template: |
+                {{ $checks := .JSON.Array "" }}
+                {{ $total := len $checks | toFloat }}
+                {{ $down := 0.0 }}
+                {{ range $checks }}{{ if not (.Bool "results.0.success") }}{{ $down = add $down 1.0 }}{{ end }}{{ end }}
+                <div class="flex justify-between text-center margin-bottom-15">
+                  <div>
+                    <div class="color-highlight size-h3">{{ len $checks }}</div>
+                    <div class="size-h6">CHECKS</div>
+                  </div>
+                  <div>
+                    <div class="size-h3 {{ if eq $down 0.0 }}color-positive{{ else }}color-negative{{ end }}">{{ printf "%.0f" $down }}</div>
+                    <div class="size-h6">FAILING</div>
+                  </div>
+                  <div>
+                    <div class="color-highlight size-h3">{{ if gt $total 0.0 }}{{ printf "%.0f%%" (mul (div (sub $total $down) $total) 100.0) }}{{ else }}n/a{{ end }}</div>
+                    <div class="size-h6">HEALTHY</div>
+                  </div>
+                </div>
+                {{ if eq $down 0.0 }}
+                  <p class="size-h5 color-positive">All systems operational.</p>
+                {{ else }}
+                  <ul class="list list-gap-10">
+                    {{ range $checks }}
+                      {{ if not (.Bool "results.0.success") }}
+                        {{ $reason := .String "results.0.errors.0" }}
+                        {{ range .Array "results.0.conditionResults" }}{{ if and (eq $reason "") (not (.Bool "success")) }}{{ $reason = .String "condition" }}{{ end }}{{ end }}
+                        <li>
+                          <span class="size-h4 color-negative">{{ .String "name" }}</span>
+                          <ul class="list-horizontal-text">
+                            <li>{{ .String "group" }}</li>
+                            <li>{{ with $reason }}{{ . }}{{ else }}check failed{{ end }}</li>
+                          </ul>
+                        </li>
+                      {{ end }}
+                    {{ end }}
+                  </ul>
+                {{ end }}
+
+            # The dynamic bit: shortcuts to the Wanda cluster only render while Gatus
+            # reports the Wanda host as reachable. Offline, they collapse to a notice.
+            - type: custom-api
+              title: Wanda
+              title-url: https://headlamp.wanda.heimelska.co.uk
+              cache: 1m
+              url: http://thanos.heimelska.co.uk:8080/api/v1/endpoints/hosts_wanda/statuses
+              parameters:
+                page: "1"
+                pageSize: "1"
+              template: |
+                {{ if not (.JSON.Exists "results.0") }}
+                  <p class="size-h5 color-subdue">Waiting on status data from Gatus.</p>
+                {{ else if .JSON.Bool "results.0.success" }}
+                  <ul class="list list-horizontal-text margin-bottom-10">
+                    <li class="color-positive">ONLINE</li>
+                    <li>{{ printf "%.0fms" (div (.JSON.Int "results.0.duration" | toFloat) 1000000.0) }}</li>
+                  </ul>
+                  <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://plex.bancey.xyz" target="_blank" rel="noreferrer">Plex</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://jellyfin.wanda.bancey.xyz" target="_blank" rel="noreferrer">Jellyfin</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://sonarr.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Sonarr</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://radarr.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Radarr</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://prowlarr.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Prowlarr</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://dl.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">SABnzbd</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://qb.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">qBittorrent</a></li>
+                    <li><a class="size-h4 color-primary-if-not-visited" href="https://headlamp.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Headlamp</a></li>
+                  </ul>
+                {{ else }}
+                  <p class="size-h4 color-negative">Wanda is offline</p>
+                  <p class="size-h6 color-subdue margin-top-10">
+                    Media shortcuts are hidden until the host is reachable again.
+                    Last checked <span {{ .JSON.String "results.0.timestamp" | parseTime "RFC3339" | toRelativeTime }}></span> ago.
+                  </p>
+                {{ end }}
+
+            - type: monitor
+              title: Tiny cluster
+              cache: 2m
+              sites:
+                - title: Home Assistant
+                  url: https://hass.tiny.heimelska.co.uk
+                  icon: sh:home-assistant
+                  timeout: 5s
+                - title: Zigbee2MQTT
+                  url: https://zigbee2mqtt.tiny.heimelska.co.uk
+                  icon: sh:zigbee2mqtt
+                  timeout: 5s
+                - title: Node-RED
+                  url: https://node-red.tiny.heimelska.co.uk
+                  icon: sh:node-red
+                  timeout: 5s
+                - title: Paperless-ngx
+                  url: https://paperless.tiny.heimelska.co.uk
+                  icon: sh:paperless-ngx
+                  timeout: 5s
+                - title: Vikunja
+                  url: https://vikunja.tiny.heimelska.co.uk
+                  icon: sh:vikunja
+                  timeout: 5s
+                - title: Stirling PDF
+                  url: https://stirling-pdf.tiny.heimelska.co.uk
+                  check-url: https://stirling-pdf.tiny.heimelska.co.uk/api/v1/info/status
+                  icon: sh:stirling-pdf
+                  timeout: 5s
+                - title: Pelican Panel
+                  url: https://pelican.tiny.heimelska.co.uk
+                  icon: sh:pelican-panel
+                  timeout: 5s
+                - title: Grafana
+                  url: https://grafana.tiny.heimelska.co.uk
+                  check-url: https://grafana.tiny.heimelska.co.uk/api/health
+                  icon: sh:grafana
+                  timeout: 5s
+
+        - size: small
+          widgets:
+            # AdGuard totals come from the metrics already scraped into VictoriaMetrics
+            # by the RPi Alloy agents, so no AdGuard credentials are needed here.
+            # max() rather than sum(): both RPi Alloy agents scrape the same exporter,
+            # so the series are duplicates of one another rather than separate totals.
+            - type: custom-api
+              title: AdGuard (24h)
+              title-url: https://adguard.thanos.heimelska.co.uk
+              cache: 5m
+              url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+              parameters:
+                query: max(adguard_queries)
+              subrequests:
+                blocked:
+                  url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+                  parameters:
+                    query: max(adguard_queries_blocked)
+                latency:
+                  url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+                  parameters:
+                    query: avg(adguard_avg_processing_time_seconds)
+              template: |
+                {{ $queries := .JSON.Float "data.result.0.value.1" }}
+                {{ $blocked := (.Subrequest "blocked").JSON.Float "data.result.0.value.1" }}
+                {{ $latency := (.Subrequest "latency").JSON.Float "data.result.0.value.1" }}
+                <div class="flex justify-between text-center">
+                  <div>
+                    <div class="color-highlight size-h3">{{ $queries | toInt | formatApproxNumber }}</div>
+                    <div class="size-h6">QUERIES</div>
+                  </div>
+                  <div>
+                    <div class="color-highlight size-h3">{{ if gt $queries 0.0 }}{{ printf "%.0f%%" (mul (div $blocked $queries) 100.0) }}{{ else }}n/a{{ end }}</div>
+                    <div class="size-h6">BLOCKED</div>
+                  </div>
+                  <div>
+                    <div class="color-highlight size-h3">{{ printf "%.0fms" (mul $latency 1000.0) }}</div>
+                    <div class="size-h6">LATENCY</div>
+                  </div>
+                </div>
+
+            - type: custom-api
+              title: Node CPU
+              title-url: https://grafana.tiny.heimelska.co.uk
+              cache: 2m
+              url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+              parameters:
+                query: 'sort_desc(clamp_max(clamp_min(100 - (avg by (instance, hostname) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100), 0), 100))'
+              template: |
+                {{ $nodes := .JSON.Array "data.result" }}
+                {{ if eq (len $nodes) 0 }}
+                  <p class="size-h5 color-subdue">No node metrics available.</p>
+                {{ else }}
+                  <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                    {{ range $nodes }}
+                      {{ $used := .Float "value.1" }}
+                    {{ $name := .String "metric.hostname" }}{{ if eq $name "" }}{{ $name = .String "metric.instance" }}{{ end }}
+                      <li class="flex justify-between gap-10">
+                        <span class="size-h5 text-truncate">{{ $name }}</span>
+                        <span class="size-h5 shrink-0 {{ if ge $used 85.0 }}color-negative{{ else if ge $used 60.0 }}color-highlight{{ else }}color-positive{{ end }}">{{ printf "%.0f%%" $used }}</span>
+                      </li>
+                    {{ end }}
+                  </ul>
+                {{ end }}
+
+            - type: releases
+              title: Lab releases
+              cache: 6h
+              show-source-icon: true
+              limit: 10
+              collapse-after: 5
+              repositories:
+                - glanceapp/glance
+                - k3s-io/k3s
+                - fluxcd/flux2
+                - home-assistant/core
+                - TwiN/gatus
+                - AdguardTeam/AdGuardHome
+                - VictoriaMetrics/VictoriaMetrics
+  infrastructure.yml: |
+    - name: Infrastructure
+      columns:
+        - size: full
+          widgets:
+            # The full Gatus board, sorted by group so hosts/services/databases stay
+            # together. Response times come back in nanoseconds.
+            - type: custom-api
+              title: Gatus checks
+              title-url: https://gatus.thanos.heimelska.co.uk
+              cache: 1m
+              url: http://thanos.heimelska.co.uk:8080/api/v1/endpoints/statuses
+              parameters:
+                page: "1"
+                pageSize: "1"
+              template: |
+                {{ $checks := sortByString "group" "asc" (.JSON.Array "") }}
+                {{ if eq (len $checks) 0 }}
+                  <p class="size-h5 color-subdue">No checks reported.</p>
+                {{ else }}
+                  <ul class="list list-gap-10 collapsible-container" data-collapse-after="12">
+                    {{ range $checks }}
+                      {{ $ok := .Bool "results.0.success" }}
+                      <li class="flex justify-between gap-10">
+                        <span class="size-h5 text-truncate {{ if $ok }}color-paragraph{{ else }}color-negative{{ end }}">{{ .String "name" }}</span>
+                        <span class="size-h6 color-subdue shrink-0">
+                          {{ .String "group" }}
+                          <span class="value-separator"></span>
+                          {{ if $ok }}{{ printf "%.0fms" (div (.Int "results.0.duration" | toFloat) 1000000.0) }}{{ else }}FAILING{{ end }}
+                        </span>
+                      </li>
+                    {{ end }}
+                  </ul>
+                {{ end }}
+
+            - type: monitor
+              title: Hosts & management
+              cache: 5m
+              sites:
+                - title: UniFi
+                  url: https://unifi.heimelska.co.uk
+                  icon: sh:unifi
+                  timeout: 5s
+                  allow-insecure: true
+                - title: UNAS storage
+                  url: https://storage.heimelska.co.uk
+                  icon: mdi:nas
+                  timeout: 5s
+                  allow-insecure: true
+                - title: Proxmox (tiny)
+                  url: https://tiny-pve.heimelska.co.uk
+                  icon: sh:proxmox
+                  timeout: 5s
+                - title: Proxmox (wanda)
+                  url: https://wanda-pve.heimelska.co.uk
+                  icon: sh:proxmox
+                  timeout: 5s
+                - title: Wanda BMC
+                  url: https://wanda-mgmt.heimelska.co.uk
+                  icon: mdi:server
+                  timeout: 5s
+                - title: AdGuard (thanos)
+                  url: https://adguard.thanos.heimelska.co.uk
+                  icon: sh:adguard-home
+                  timeout: 5s
+                - title: AdGuard (gamora)
+                  url: https://adguard.gamora.heimelska.co.uk
+                  icon: sh:adguard-home
+                  timeout: 5s
+                - title: Gatus (thanos)
+                  url: https://gatus.thanos.heimelska.co.uk
+                  icon: sh:gatus
+                  timeout: 5s
+                - title: Gatus (gamora)
+                  url: https://gatus.gamora.heimelska.co.uk
+                  icon: sh:gatus
+                  timeout: 5s
+
+            - type: monitor
+              title: Platform & observability
+              cache: 5m
+              sites:
+                - title: Grafana
+                  url: https://grafana.tiny.heimelska.co.uk
+                  check-url: https://grafana.tiny.heimelska.co.uk/api/health
+                  icon: sh:grafana
+                  timeout: 5s
+                - title: VictoriaMetrics
+                  url: https://victoria-metrics.tiny.heimelska.co.uk
+                  check-url: https://victoria-metrics.tiny.heimelska.co.uk/health
+                  icon: sh:victoriametrics
+                  timeout: 5s
+                - title: VictoriaLogs
+                  url: https://victoria-logs.tiny.heimelska.co.uk
+                  icon: sh:victorialogs
+                  timeout: 5s
+                - title: Smokeping
+                  url: https://smokeping.tiny.heimelska.co.uk
+                  icon: sh:smokeping
+                  timeout: 5s
+                - title: Headlamp (tiny)
+                  url: https://headlamp.tiny.heimelska.co.uk
+                  icon: sh:headlamp
+                  timeout: 5s
+                - title: Headlamp (wanda)
+                  url: https://headlamp.wanda.heimelska.co.uk
+                  icon: sh:headlamp
+                  timeout: 5s
+                - title: BunkerWeb
+                  url: https://bunkerweb-mgmt.tiny.heimelska.co.uk
+                  icon: sh:bunkerweb
+                  timeout: 5s
+
+        - size: small
+          widgets:
+            - type: custom-api
+              title: Node memory
+              title-url: https://grafana.tiny.heimelska.co.uk
+              cache: 2m
+              url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+              parameters:
+                query: sort_desc(100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))
+              template: |
+                {{ $nodes := .JSON.Array "data.result" }}
+                {{ if eq (len $nodes) 0 }}
+                  <p class="size-h5 color-subdue">No node metrics available.</p>
+                {{ else }}
+                  <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                    {{ range $nodes }}
+                      {{ $used := .Float "value.1" }}
+                    {{ $name := .String "metric.hostname" }}{{ if eq $name "" }}{{ $name = .String "metric.instance" }}{{ end }}
+                      <li class="flex justify-between gap-10">
+                        <span class="size-h5 text-truncate">{{ $name }}</span>
+                        <span class="size-h5 shrink-0 {{ if ge $used 90.0 }}color-negative{{ else if ge $used 75.0 }}color-highlight{{ else }}color-positive{{ end }}">{{ printf "%.0f%%" $used }}</span>
+                      </li>
+                    {{ end }}
+                  </ul>
+                {{ end }}
+
+            - type: custom-api
+              title: Root filesystem
+              title-url: https://grafana.tiny.heimelska.co.uk
+              cache: 15m
+              url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+              parameters:
+                query: 'sort_desc(100 * (1 - node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}))'
+              template: |
+                {{ $nodes := .JSON.Array "data.result" }}
+                {{ if eq (len $nodes) 0 }}
+                  <p class="size-h5 color-subdue">No filesystem metrics available.</p>
+                {{ else }}
+                  <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                    {{ range $nodes }}
+                      {{ $used := .Float "value.1" }}
+                    {{ $name := .String "metric.hostname" }}{{ if eq $name "" }}{{ $name = .String "metric.instance" }}{{ end }}
+                      <li class="flex justify-between gap-10">
+                        <span class="size-h5 text-truncate">{{ $name }}</span>
+                        <span class="size-h5 shrink-0 {{ if ge $used 90.0 }}color-negative{{ else if ge $used 75.0 }}color-highlight{{ else }}color-positive{{ end }}">{{ printf "%.0f%%" $used }}</span>
+                      </li>
+                    {{ end }}
+                  </ul>
+                {{ end }}
+
+            - type: custom-api
+              title: Database VIPs
+              cache: 1m
+              url: http://thanos.heimelska.co.uk:8080/api/v1/endpoints/statuses
+              parameters:
+                page: "1"
+                pageSize: "1"
+              template: |
+                <ul class="list list-gap-10">
+                  {{ range .JSON.Array "" }}
+                    {{ if eq (.String "group") "databases" }}
+                      {{ $ok := .Bool "results.0.success" }}
+                      <li class="flex justify-between gap-10">
+                        <span class="size-h5 text-truncate">{{ .String "name" }}</span>
+                        <span class="size-h6 shrink-0 {{ if $ok }}color-positive{{ else }}color-negative{{ end }}">{{ if $ok }}UP{{ else }}DOWN{{ end }}</span>
+                      </li>
+                    {{ end }}
+                  {{ end }}
+                </ul>
+
+            - type: bookmarks
+              groups:
+                - title: Lab
+                  links:
+                    - title: lab-ops
+                      url: https://github.com/bancey/lab-ops
+                      icon: si:github
+                    - title: Twingate
+                      url: https://banceylab.twingate.com
+                      icon: si:twingate
+                    - title: Cloudflare
+                      url: https://dash.cloudflare.com
+                      icon: si:cloudflare
+                    - title: Azure Portal
+                      url: https://portal.azure.com
+                      icon: si:microsoftazure
+                - title: Docs
+                  links:
+                    - title: Flux
+                      url: https://fluxcd.io/flux/
+                    - title: k3s
+                      url: https://docs.k3s.io
+                    - title: Glance config
+                      url: https://github.com/glanceapp/glance/blob/main/docs/configuration.md
+  media.yml: |
+    - name: Media
+      columns:
+        - size: full
+          widgets:
+            # Same Gatus gate as the Home page, but with the full annotated service
+            # list. Everything below the gate disappears while Wanda is unreachable.
+            - type: custom-api
+              title: Wanda services
+              title-url: https://headlamp.wanda.heimelska.co.uk
+              cache: 1m
+              url: http://thanos.heimelska.co.uk:8080/api/v1/endpoints/hosts_wanda/statuses
+              parameters:
+                page: "1"
+                pageSize: "1"
+              template: |
+                {{ if not (.JSON.Exists "results.0") }}
+                  <p class="size-h5 color-subdue">Waiting on status data from Gatus.</p>
+                {{ else if .JSON.Bool "results.0.success" }}
+                  <ul class="list list-horizontal-text margin-bottom-15">
+                    <li class="color-positive">ONLINE</li>
+                    <li>{{ printf "%.0fms" (div (.JSON.Int "results.0.duration" | toFloat) 1000000.0) }}</li>
+                    <li>checked <span {{ .JSON.String "results.0.timestamp" | parseTime "RFC3339" | toRelativeTime }}></span> ago</li>
+                  </ul>
+                  <ul class="list list-gap-14">
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://plex.bancey.xyz" target="_blank" rel="noreferrer">Plex</a>
+                      <div class="size-h6 color-subdue">Media library and streaming</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://jellyfin.wanda.bancey.xyz" target="_blank" rel="noreferrer">Jellyfin</a>
+                      <div class="size-h6 color-subdue">Alternative media server</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://sonarr.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Sonarr</a>
+                      <div class="size-h6 color-subdue">TV series management</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://radarr.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Radarr</a>
+                      <div class="size-h6 color-subdue">Film management</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://prowlarr.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Prowlarr</a>
+                      <div class="size-h6 color-subdue">Indexer management</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://dl.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">SABnzbd</a>
+                      <div class="size-h6 color-subdue">Usenet downloader</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://qb.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">qBittorrent</a>
+                      <div class="size-h6 color-subdue">Torrent client behind Gluetun</div>
+                    </li>
+                    <li>
+                      <a class="size-h4 color-primary-if-not-visited block" href="https://headlamp.wanda.heimelska.co.uk" target="_blank" rel="noreferrer">Headlamp</a>
+                      <div class="size-h6 color-subdue">Kubernetes dashboard for the Wanda cluster</div>
+                    </li>
+                  </ul>
+                {{ else }}
+                  {{ $reason := .JSON.String "results.0.errors.0" }}
+                  {{ range .JSON.Array "results.0.conditionResults" }}{{ if and (eq $reason "") (not (.Bool "success")) }}{{ $reason = .String "condition" }}{{ end }}{{ end }}
+                  <p class="size-h4 color-negative">Wanda is offline</p>
+                  <p class="size-h6 color-subdue margin-top-10">
+                    Gatus last reached the host <span {{ .JSON.String "results.0.timestamp" | parseTime "RFC3339" | toRelativeTime }}></span> ago.
+                    {{ with $reason }}Failing check: {{ . }}{{ end }}
+                  </p>
+                  <p class="size-h6 color-subdue margin-top-10">
+                    Service shortcuts are hidden while the host is unreachable.
+                  </p>
+                {{ end }}
+
+            # Deliberately always on: this page is the place to see which individual
+            # Wanda service is broken, rather than just whether the host answers.
+            - type: monitor
+              title: Reachability
+              cache: 2m
+              sites:
+                - title: Plex
+                  url: https://plex.bancey.xyz
+                  check-url: https://plex.bancey.xyz/identity
+                  icon: sh:plex
+                  timeout: 5s
+                - title: Jellyfin
+                  url: https://jellyfin.wanda.bancey.xyz
+                  check-url: https://jellyfin.wanda.bancey.xyz/health
+                  icon: sh:jellyfin
+                  timeout: 5s
+                - title: Sonarr
+                  url: https://sonarr.wanda.heimelska.co.uk
+                  check-url: https://sonarr.wanda.heimelska.co.uk/ping
+                  icon: sh:sonarr
+                  timeout: 5s
+                - title: Radarr
+                  url: https://radarr.wanda.heimelska.co.uk
+                  check-url: https://radarr.wanda.heimelska.co.uk/ping
+                  icon: sh:radarr
+                  timeout: 5s
+                - title: Prowlarr
+                  url: https://prowlarr.wanda.heimelska.co.uk
+                  check-url: https://prowlarr.wanda.heimelska.co.uk/ping
+                  icon: sh:prowlarr
+                  timeout: 5s
+                - title: SABnzbd
+                  url: https://dl.wanda.heimelska.co.uk
+                  icon: sh:sabnzbd
+                  timeout: 5s
+                - title: qBittorrent
+                  url: https://qb.wanda.heimelska.co.uk
+                  icon: sh:qbittorrent
+                  timeout: 5s
+
+        - size: small
+          widgets:
+            - type: custom-api
+              title: Wanda node
+              title-url: https://grafana.tiny.heimelska.co.uk
+              cache: 2m
+              url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+              parameters:
+                query: 'avg by (instance) (100 - (rate(node_cpu_seconds_total{mode="idle", cluster="wanda"}[5m]) * 100))'
+              subrequests:
+                memory:
+                  url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+                  parameters:
+                    query: 'avg(100 * (1 - node_memory_MemAvailable_bytes{cluster="wanda"} / node_memory_MemTotal_bytes{cluster="wanda"}))'
+                uptime:
+                  url: http://victoria-metrics-victoria-metrics-single-server.monitoring.svc.cluster.local:8428/api/v1/query
+                  parameters:
+                    query: 'max(node_time_seconds{cluster="wanda"} - node_boot_time_seconds{cluster="wanda"})'
+              template: |
+                {{ if eq (len (.JSON.Array "data.result")) 0 }}
+                  <p class="size-h5 color-subdue">No metrics for the Wanda cluster.</p>
+                {{ else }}
+                  {{ $cpu := .JSON.Float "data.result.0.value.1" }}
+                  {{ $mem := (.Subrequest "memory").JSON.Float "data.result.0.value.1" }}
+                  {{ $uptime := (.Subrequest "uptime").JSON.Float "data.result.0.value.1" }}
+                  <div class="flex justify-between text-center">
+                    <div>
+                      <div class="color-highlight size-h3">{{ printf "%.0f%%" $cpu }}</div>
+                      <div class="size-h6">CPU</div>
+                    </div>
+                    <div>
+                      <div class="color-highlight size-h3">{{ printf "%.0f%%" $mem }}</div>
+                      <div class="size-h6">MEMORY</div>
+                    </div>
+                    <div>
+                      <div class="color-highlight size-h3">{{ printf "%.0fd" (div $uptime 86400.0) }}</div>
+                      <div class="size-h6">UPTIME</div>
+                    </div>
+                  </div>
+                {{ end }}

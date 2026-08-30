@@ -234,6 +234,8 @@ dns:
     record: 10.151.24.160
   headlamp.wanda.heimelska.co.uk:
     record: 10.151.24.160
+  qb.wanda.heimelska.co.uk:
+    record: 10.151.24.160
   pelican.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -380,6 +382,8 @@ dns:
           - plex
         service_accounts:
           - AzureDevOps
+  jellyfin.wanda.bancey.xyz:
+    record: 10.151.24.160
   victoria-logs.tiny.heimelska.co.uk:
     record: 10.151.24.10
   victoria-metrics.tiny.heimelska.co.uk:
@@ -395,6 +399,8 @@ dns:
   vikunja.tiny.heimelska.co.uk:
     record: 10.151.24.10
   headlamp.tiny.heimelska.co.uk:
+    record: 10.151.24.10
+  glance.tiny.heimelska.co.uk:
     record: 10.151.24.10
   hass.heimelska.co.uk:
     record: 10.151.14.4

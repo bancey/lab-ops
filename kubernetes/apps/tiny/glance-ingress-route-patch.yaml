@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: glance
+  namespace: glance
+spec:
+  routes:
+    - match: Host(`glance.tiny.heimelska.co.uk`)
+      kind: Rule
+      services:
+        - name: glance
+          port: 8080
+      middlewares:
+        - name: default-headers
+          namespace: traefik

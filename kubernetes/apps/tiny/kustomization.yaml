@@ -38,6 +38,7 @@ resources:
   - ../base/vikunja
   - ../base/headlamp
   - ./headlamp-oidc-secret.sops.yaml
+  - ../base/glance
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -70,3 +71,5 @@ patchesStrategicMerge:
   - vikunja-patch.yaml
   - headlamp-certificate-patch.yaml
   - headlamp-ingress-route-patch.yaml
+  - glance-certificate-patch.yaml
+  - glance-ingress-route-patch.yaml
