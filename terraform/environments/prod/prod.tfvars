@@ -278,7 +278,7 @@ ansible = {
       "backup_sas_token"               = "MariaDB-Backup-SAS-Token"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "18-06-2026-1800"
+    trigger   = "14-09-2026-0431"
   }
   "postgresql" = {
     nodes    = ["hela", "loki", "thor"]
