@@ -544,7 +544,7 @@
         priority: 100
   roles:
   - role: prep
-    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pymysql"]
+    install_pkgs: ["apt-transport-https", "ca-certificates", "curl", "gnupg", "software-properties-common", "python3-pymysql", "mariadb-client"]
     disable_multipath: false
   tasks:
   - set_fact:
@@ -627,77 +627,102 @@
       state: started
       enabled: true
   - name: Manage ProxySQL config via admin interface
-    module_defaults:
-      community.mysql.mysql_query:
-        login_host: 127.0.0.1
-        login_port: 6032
-        login_user: admin
-        login_password: "{{ proxysql_admin_password }}"
+    # community.mysql.mysql_query fails with "Module failed: 'version'" against ProxySQL's
+    # admin interface because it doesn't speak the full MySQL protocol the module expects;
+    # use the mysql CLI instead.
+    environment:
+      MYSQL_PWD: "{{ proxysql_admin_password }}"
     block:
     - name: Clear ProxySQL mysql_users
-      community.mysql.mysql_query:
-        query: "DELETE FROM mysql_users"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "DELETE FROM mysql_users"]
+      changed_when: true
     - name: Add mysql_users to ProxySQL
-      community.mysql.mysql_query:
-        query: "INSERT INTO mysql_users (username, password, default_hostgroup, active) VALUES ('{{ item.user }}', '{{ item.password }}', 0, 1)"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "INSERT INTO mysql_users (username, password, default_hostgroup, active) VALUES ('{{ item.user }}', '{{ item.password }}', 0, 1)"]
       loop: "{{ mariadb_databases_resolved }}"
       no_log: true
+      changed_when: true
     - name: Load mysql_users to runtime
-      community.mysql.mysql_query:
-        query: "LOAD MYSQL USERS TO RUNTIME"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "LOAD MYSQL USERS TO RUNTIME"]
+      changed_when: true
     - name: Save mysql_users to disk
-      community.mysql.mysql_query:
-        query: "SAVE MYSQL USERS TO DISK"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "SAVE MYSQL USERS TO DISK"]
+      changed_when: true
     - name: Clear ProxySQL mysql_servers
-      community.mysql.mysql_query:
-        query: "DELETE FROM mysql_servers"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "DELETE FROM mysql_servers"]
+      changed_when: true
     - name: Add Galera nodes to ProxySQL writer hostgroup
-      community.mysql.mysql_query:
-        query: "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (0, '{{ item }}', 3306, 100)"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (0, '{{ item }}', 3306, 100)"]
       loop: "{{ galera_nodes }}"
+      changed_when: true
     - name: Add Galera nodes to ProxySQL reader hostgroup
-      community.mysql.mysql_query:
-        query: "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (1, '{{ item }}', 3306, 100)"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_connections) VALUES (1, '{{ item }}', 3306, 100)"]
       loop: "{{ galera_nodes }}"
+      changed_when: true
     - name: Load mysql_servers to runtime
-      community.mysql.mysql_query:
-        query: "LOAD MYSQL SERVERS TO RUNTIME"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "LOAD MYSQL SERVERS TO RUNTIME"]
+      changed_when: true
     - name: Save mysql_servers to disk
-      community.mysql.mysql_query:
-        query: "SAVE MYSQL SERVERS TO DISK"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "SAVE MYSQL SERVERS TO DISK"]
+      changed_when: true
     - name: Clear ProxySQL mysql_galera_hostgroups
-      community.mysql.mysql_query:
-        query: "DELETE FROM mysql_galera_hostgroups"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "DELETE FROM mysql_galera_hostgroups"]
+      changed_when: true
     - name: Configure Galera hostgroups for single-writer mode
-      community.mysql.mysql_query:
-        query: >-
+      ansible.builtin.command:
+        argv:
+        - mysql
+        - --protocol=tcp
+        - -h127.0.0.1
+        - -P6032
+        - -uadmin
+        - -N
+        - -B
+        - -e
+        - >-
           INSERT INTO mysql_galera_hostgroups
           (writer_hostgroup, backup_writer_hostgroup, reader_hostgroup,
           offline_hostgroup, active, max_writers, writer_is_also_reader,
           max_transactions_behind)
           VALUES (0, 2, 1, 3, 1, 1, 1, 100)
+      changed_when: true
     - name: Load mysql_servers to runtime after galera hostgroups
-      community.mysql.mysql_query:
-        query: "LOAD MYSQL SERVERS TO RUNTIME"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "LOAD MYSQL SERVERS TO RUNTIME"]
+      changed_when: true
     - name: Save mysql_servers to disk after galera hostgroups
-      community.mysql.mysql_query:
-        query: "SAVE MYSQL SERVERS TO DISK"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "SAVE MYSQL SERVERS TO DISK"]
+      changed_when: true
     - name: Clear ProxySQL mysql_query_rules
-      community.mysql.mysql_query:
-        query: "DELETE FROM mysql_query_rules"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "DELETE FROM mysql_query_rules"]
+      changed_when: true
     - name: Add ProxySQL query rules
-      community.mysql.mysql_query:
-        query: "INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES ({{ item.rule_id }}, 1, '{{ item.match_digest }}', {{ item.destination_hostgroup }}, 1)"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES ({{ item.rule_id }}, 1, '{{ item.match_digest }}', {{ item.destination_hostgroup }}, 1)"]
       loop:
       - {rule_id: 1, match_digest: "^SELECT .* FOR UPDATE", destination_hostgroup: 0}
       - {rule_id: 2, match_digest: "^SELECT", destination_hostgroup: 1}
       - {rule_id: 3, match_digest: ".*", destination_hostgroup: 0}
+      changed_when: true
     - name: Load mysql_query_rules to runtime
-      community.mysql.mysql_query:
-        query: "LOAD MYSQL QUERY RULES TO RUNTIME"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "LOAD MYSQL QUERY RULES TO RUNTIME"]
+      changed_when: true
     - name: Save mysql_query_rules to disk
-      community.mysql.mysql_query:
-        query: "SAVE MYSQL QUERY RULES TO DISK"
+      ansible.builtin.command:
+        argv: [mysql, --protocol=tcp, -h127.0.0.1, -P6032, -uadmin, -N, -B, -e, "SAVE MYSQL QUERY RULES TO DISK"]
+      changed_when: true
   - name: Add Grafana Alloy apt key
     ansible.builtin.get_url:
       url: https://apt.grafana.com/gpg.key
