@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: sabnzbd-staging-tls
-  namespace: flux-system
+  namespace: acquisition
 spec:
   secretName: sabnzbd-staging-tls
   issuerRef:
@@ -17,7 +17,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: sabnzbd-tls
-  namespace: flux-system
+  namespace: acquisition
 spec:
   secretName: sabnzbd-tls
   issuerRef:

@@ -5,10 +5,19 @@ usage() {
   cat <<'EOF'
 Usage: scripts/run-ansible-playbook.sh <playbook> [options] [-- <extra ansible-playbook args>]
 
-Runs an Ansible playbook locally the same way the "infra-pipeline.yaml" Azure DevOps
-pipeline does: secrets are pulled from Azure Key Vault into files that the playbooks
-read via lookup('ansible.builtin.file', ...), an SSH private key is fetched and loaded
-into ssh-agent, and everything is cleaned up again once the run finishes.
+Runs an Ansible playbook locally the same way CI does. Two secret delivery styles are
+supported, matching the two ways playbooks are invoked in this repo:
+
+  1. Playbooks listed in "infra-pipeline.yaml" (ansible_deployments): secrets are
+     downloaded from Key Vault into files under ansible/ that the playbooks read via
+     lookup('ansible.builtin.file', ...).
+  2. Playbooks driven by Terraform (the "ansible" map in
+     terraform/environments/<env>/<env>.tfvars, applied by the virtual-machines
+     component): secrets are passed as --extra-vars, along with the entry's
+     "arguments" string.
+
+In both cases an SSH private key is fetched and loaded into ssh-agent, and everything
+is cleaned up again once the run finishes.
 
 <playbook>  Playbook file, e.g. nut-server.yaml (the .yaml extension is optional)
 
@@ -17,14 +26,20 @@ Options:
   --subscription <name|id>     az subscription to select before running
   --private-key-secret <name>  Key Vault secret holding the SSH private key
                                 (default: Packer-Private-Key)
+  --environment <env>          Terraform environment whose tfvars to search for the
+                                playbook's ansible entry (default: prod)
+  --tfvars <path>              Explicit tfvars file to search instead of
+                                terraform/environments/<env>/<env>.tfvars
+  --no-tf-arguments            Don't append the "arguments" string from the tfvars
+                                ansible entry
   --secret <kv-name>[:<local-name>]
-                                Extra secret to download. Repeatable. Use this for
-                                playbooks that aren't wired into infra-pipeline.yaml's
-                                ansible_deployments list (e.g. mariadb.yaml,
-                                postgresql.yaml). If <local-name> is omitted it
-                                defaults to <kv-name>.
-  --no-auto-secrets            Don't look up secrets from infra-pipeline.yaml, only
-                                use --secret entries
+                                Extra secret to download to a file. Repeatable.
+                                If <local-name> is omitted it defaults to <kv-name>.
+  --extra-var-secret <var-name>:<kv-name>
+                                Extra secret to pass as an --extra-vars value.
+                                Repeatable.
+  --no-auto-secrets            Don't look up secrets from infra-pipeline.yaml or the
+                                Terraform tfvars, only use --secret/--extra-var-secret
   --requirements <path>        Galaxy requirements file (default: ansible/requirements.yaml
                                 if it exists)
   --skip-galaxy                Don't run ansible-galaxy install
@@ -37,9 +52,9 @@ Options:
 Examples:
   scripts/run-ansible-playbook.sh nut-server.yaml
   scripts/run-ansible-playbook.sh scansnap.yaml --check
-  scripts/run-ansible-playbook.sh mariadb.yaml \
-    --secret mariadb-root-password:mariadb_root_password \
-    --secret mariadb-galera-password:mariadb_galera_password
+  # mariadb.yaml is Terraform-driven; its secrets and arguments are resolved
+  # automatically from terraform/environments/prod/prod.tfvars
+  scripts/run-ansible-playbook.sh mariadb.yaml
 
 Prerequisites:
   - Logged in with `az login` and able to reach Key Vault "bancey-vault"
@@ -62,7 +77,11 @@ check_mode="false"
 tags=""
 limit=""
 keep_secrets="false"
+environment="prod"
+tfvars_file=""
+use_tf_arguments="true"
 declare -a manual_secrets=()
+declare -a manual_extra_var_secrets=()
 extra_ansible_args=()
 
 playbook_arg=""
@@ -76,6 +95,14 @@ while [[ $# -gt 0 ]]; do
       private_key_secret="$2"; shift 2 ;;
     --secret)
       manual_secrets+=("$2"); shift 2 ;;
+    --extra-var-secret)
+      manual_extra_var_secrets+=("$2"); shift 2 ;;
+    --environment)
+      environment="$2"; shift 2 ;;
+    --tfvars)
+      tfvars_file="$2"; shift 2 ;;
+    --no-tf-arguments)
+      use_tf_arguments="false"; shift ;;
     --no-auto-secrets)
       auto_secrets="false"; shift ;;
     --requirements)
@@ -173,13 +200,7 @@ PY
     pipeline_requirements="${pipeline_lookup[0]}"
     kv_secrets=("${pipeline_lookup[@]:1}")
     echo "Found ${#kv_secrets[@]} secret(s) for $playbook in infra-pipeline.yaml"
-  else
-    echo "Note: $playbook is not wired into infra-pipeline.yaml's ansible_deployments list."
-    expected="$(grep -oP "lookup\('ansible\.builtin\.file',\s*'\K[^']+" "$ansible_dir/$playbook" | sort -u)"
-    if [[ -n "$expected" ]]; then
-      echo "It expects these local secret files (pass via --secret if not already using --secret/manual files):"
-      echo "$expected" | sed 's/^/  - /'
-    fi
+    found_in_pipeline="true"
   fi
 
   if [[ -z "$requirements_file" && -n "$pipeline_requirements" ]]; then
@@ -187,7 +208,98 @@ PY
   fi
 fi
 
+# Playbooks not in the pipeline list are run by the virtual-machines Terraform
+# component, which passes Key Vault secrets as --extra-vars rather than as files.
+declare -a extra_var_secrets=()
+tf_arguments=""
+if [[ "$auto_secrets" == "true" && "${found_in_pipeline:-false}" != "true" ]]; then
+  if [[ -z "$tfvars_file" ]]; then
+    tfvars_file="$repo_root/terraform/environments/$environment/$environment.tfvars"
+  elif [[ "$tfvars_file" != /* ]]; then
+    tfvars_file="$repo_root/$tfvars_file"
+  fi
+
+  if [[ ! -f "$tfvars_file" ]]; then
+    echo "Error: tfvars file $tfvars_file not found" >&2
+    exit 1
+  fi
+
+  while IFS=$'\t' read -r kind field1 field2; do
+    case "$kind" in
+      SECRET) extra_var_secrets+=("$field1:$field2") ;;
+      ARGUMENTS) tf_arguments="$field1" ;;
+    esac
+  done < <(python3 - "$tfvars_file" "$playbook" <<'PY'
+import re
+import sys
+
+path, target = sys.argv[1], sys.argv[2]
+text = open(path).read()
+
+
+def block_at(source, start):
+    """Return the body of the brace block whose opening brace is at `start`."""
+    depth = 0
+    for i in range(start, len(source)):
+        if source[i] == '{':
+            depth += 1
+        elif source[i] == '}':
+            depth -= 1
+            if depth == 0:
+                return source[start + 1:i], i
+    sys.exit("unbalanced braces in " + path)
+
+
+match = re.search(r'^ansible\s*=\s*\{', text, re.MULTILINE)
+if not match:
+    sys.exit(0)
+
+ansible_block, _ = block_at(text, match.end() - 1)
+
+entry_re = re.compile(r'"?[\w.-]+"?\s*=\s*\{')
+pos = 0
+while True:
+    entry = entry_re.search(ansible_block, pos)
+    if not entry:
+        break
+    body, end = block_at(ansible_block, entry.end() - 1)
+    pos = end + 1
+
+    playbook = re.search(r'playbook\s*=\s*"([^"]+)"', body)
+    if not playbook or playbook.group(1) != target:
+        continue
+
+    arguments = re.search(r'arguments\s*=\s*"([^"]*)"', body)
+    print("ARGUMENTS\t" + (arguments.group(1) if arguments else ""))
+
+    secrets = re.search(r'secrets\s*=\s*\{', body)
+    if secrets:
+        secrets_body, _ = block_at(body, secrets.end() - 1)
+        for var_name, kv_name in re.findall(r'"([^"]+)"\s*=\s*"([^"]+)"', secrets_body):
+            print("SECRET\t%s\t%s" % (var_name, kv_name))
+    break
+PY
+  )
+
+  if [[ "${#extra_var_secrets[@]}" -gt 0 || -n "$tf_arguments" ]]; then
+    echo "Found ${#extra_var_secrets[@]} extra-var secret(s) for $playbook in ${tfvars_file#"$repo_root"/}"
+  else
+    echo "Note: $playbook is not wired into infra-pipeline.yaml or ${tfvars_file#"$repo_root"/}."
+    expected="$(grep -oP "lookup\('ansible\.builtin\.file',\s*'\K[^']+" "$ansible_dir/$playbook" | sort -u)"
+    if [[ -n "$expected" ]]; then
+      echo "It expects these local secret files (pass via --secret):"
+      echo "$expected" | sed 's/^/  - /'
+    fi
+  fi
+fi
+
+for entry in "${manual_extra_var_secrets[@]:-}"; do
+  [[ -z "$entry" ]] && continue
+  extra_var_secrets+=("$entry")
+done
+
 declare -a downloaded_files=("id_rsa")
+secrets_dir=""
 cleanup() {
   if [[ "$keep_secrets" == "true" ]]; then
     return
@@ -195,6 +307,7 @@ cleanup() {
   for f in "${downloaded_files[@]}"; do
     rm -f "$ansible_dir/$f"
   done
+  [[ -n "$secrets_dir" ]] && rm -rf "$secrets_dir"
   if [[ -n "${SSH_AGENT_PID:-}" ]]; then
     ssh-agent -k >/dev/null 2>&1 || true
   fi
@@ -225,6 +338,33 @@ for entry in "${manual_secrets[@]:-}"; do
   download_secret "$kv_name" "$local_name"
 done
 
+extra_vars_file=""
+if [[ "${#extra_var_secrets[@]}" -gt 0 ]]; then
+  secrets_dir="$(mktemp -d)"
+  chmod 700 "$secrets_dir"
+  mkdir "$secrets_dir/values"
+  for entry in "${extra_var_secrets[@]}"; do
+    var_name="${entry%%:*}"
+    kv_name="${entry#*:}"
+    echo "Downloading secret '$kv_name' -> extra-var '$var_name'"
+    az keyvault secret download \
+      --name "$kv_name" \
+      --vault-name "$vault_name" \
+      --file "$secrets_dir/values/$var_name" \
+      --only-show-errors
+  done
+  extra_vars_file="$secrets_dir/extra-vars.json"
+  python3 - "$secrets_dir/values" > "$extra_vars_file" <<'PY'
+import json
+import os
+import sys
+
+d = sys.argv[1]
+print(json.dumps({n: open(os.path.join(d, n)).read() for n in os.listdir(d)}))
+PY
+  chmod 600 "$extra_vars_file"
+fi
+
 echo "Downloading SSH private key '$private_key_secret' -> ansible/id_rsa"
 az keyvault secret download \
   --name "$private_key_secret" \
@@ -245,6 +385,11 @@ args=(-i hosts.yaml "$playbook")
 [[ "$check_mode" == "true" ]] && args+=(--check)
 [[ -n "$tags" ]] && args+=(--tags "$tags")
 [[ -n "$limit" ]] && args+=(--limit "$limit")
+if [[ "$use_tf_arguments" == "true" && -n "$tf_arguments" ]]; then
+  read -r -a tf_args <<< "$tf_arguments"
+  args+=("${tf_args[@]}")
+fi
+[[ -n "$extra_vars_file" ]] && args+=(--extra-vars "@$extra_vars_file")
 args+=("${extra_ansible_args[@]}")
 
 echo "Running: ansible-playbook ${args[*]}"

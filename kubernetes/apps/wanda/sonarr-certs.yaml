@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: sonarr-staging-tls
-  namespace: flux-system
+  namespace: acquisition
 spec:
   secretName: sonarr-staging-tls
   issuerRef:
@@ -17,7 +17,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: sonarr-tls
-  namespace: flux-system
+  namespace: acquisition
 spec:
   secretName: sonarr-tls
   issuerRef:

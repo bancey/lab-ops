@@ -3,7 +3,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: radarr-staging-tls
-  namespace: flux-system
+  namespace: acquisition
 spec:
   secretName: radarr-staging-tls
   issuerRef:
@@ -17,7 +17,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: radarr-tls
-  namespace: flux-system
+  namespace: acquisition
 spec:
   secretName: radarr-tls
   issuerRef:

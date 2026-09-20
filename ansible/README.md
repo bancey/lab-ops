@@ -276,26 +276,35 @@ The following are noted as candidates for future improvements but remain in thei
 - In the Azure DevOps pipeline (`infra-pipeline.yaml`) these files are downloaded from the `bancey-vault` Key Vault per playbook (see the `ansible_deployments` parameter)
 
 ### Running Playbooks Locally
-`scripts/run-ansible-playbook.sh` reproduces what `infra-pipeline.yaml` does: it looks up the
-Key Vault secrets configured for a playbook in `ansible_deployments`, downloads them into
-`ansible/` under the filenames the playbooks expect, fetches the `Packer-Private-Key` SSH key
-into `ansible/id_rsa` and loads it into `ssh-agent`, then runs `ansible-playbook`. Everything
-it downloads is deleted again when the run finishes (or fails).
+`scripts/run-ansible-playbook.sh` reproduces what CI does, for both ways a playbook can be
+invoked:
+
+- **Pipeline-driven** (`ansible_deployments` in `infra-pipeline.yaml`): the configured Key
+  Vault secrets are downloaded into `ansible/` under the filenames the playbooks expect via
+  `lookup('ansible.builtin.file', ...)`.
+- **Terraform-driven** (the `ansible` map in `terraform/environments/<env>/<env>.tfvars`,
+  applied by the `virtual-machines` component): the entry's `secrets` map is resolved from
+  Key Vault and passed as `--extra-vars`, and its `arguments` string is appended to the
+  command - matching `terraform/components/virtual-machines/ansible.sh.tpl`.
+
+In both cases it fetches the `Packer-Private-Key` SSH key into `ansible/id_rsa` and loads it
+into `ssh-agent`, then runs `ansible-playbook`. Everything it downloads is deleted again when
+the run finishes (or fails).
 
 ```bash
 az login
 scripts/run-ansible-playbook.sh nut-server.yaml
 scripts/run-ansible-playbook.sh scansnap.yaml --check
+
+# Terraform-driven playbooks need no extra flags; secrets and arguments come from
+# terraform/environments/prod/prod.tfvars (override with --environment / --tfvars)
+scripts/run-ansible-playbook.sh mariadb.yaml
+scripts/run-ansible-playbook.sh postgresql.yaml --check
 ```
 
-For playbooks not wired into `ansible_deployments` (e.g. `mariadb.yaml`, `postgresql.yaml`,
-`haproxy.yaml`), pass the required secrets explicitly:
-
-```bash
-scripts/run-ansible-playbook.sh mariadb.yaml \
-  --secret mariadb-root-password:mariadb_root_password \
-  --secret mariadb-galera-password:mariadb_galera_password
-```
+Anything not covered by either source can still be passed explicitly with
+`--secret <kv-name>[:<local-name>]` (file-based) or
+`--extra-var-secret <var-name>:<kv-name>` (extra-vars based).
 
 Run `scripts/run-ansible-playbook.sh --help` for the full option list. You still need
 network access to the target hosts yourself (Twingate/VPN) - the script doesn't establish
