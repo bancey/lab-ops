@@ -64,7 +64,7 @@ kubernetes_virtual_machines = {
 
 virtual_machines = {
   openziti = {
-    node                = "wanda"
+    node                = "loki"
     vm_id               = 290
     vm_description      = "OpenZiti phase 1 controller + edge router"
     cpu_cores           = 2
@@ -280,7 +280,7 @@ ansible = {
     trigger  = "23-02-2026-0830"
   }
   "openziti" = {
-    nodes    = ["wanda"]
+    nodes    = ["hela", "loki", "thor"]
     playbook = "openziti.yaml"
     secrets = {
       "openziti_admin_username" = "OpenZiti-Admin-Username"

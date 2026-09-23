@@ -5,7 +5,7 @@ This phase deploys a dedicated VM for OpenZiti controller + edge router and keep
 ## What is provisioned in this phase
 
 - Terraform component: existing `/home/runner/work/lab-ops/lab-ops/terraform/components/virtual-machines` (driven by `terraform/environments/prod/prod.tfvars`)
-- Dedicated VM: `openziti` on Proxmox node `wanda`
+- Dedicated VM: `openziti` on Proxmox node `loki`
 - DNS record: `ziti.heimelska.co.uk` -> `10.151.14.230`
 - Ansible install playbook: `/home/runner/work/lab-ops/lab-ops/ansible/openziti.yaml`
 
@@ -68,7 +68,7 @@ Phase 1 is intentionally disposable. Tear down with Terraform:
 
 ```bash
 cd /home/runner/work/lab-ops/lab-ops/terraform/components/virtual-machines
-terraform destroy -var-file=../../environments/prod/prod.tfvars -var "target_nodes=[\"wanda\"]" -target='module.wanda_virtual_machines["openziti"]' -target='terraform_data.ansible["openziti"]'
+terraform destroy -var-file=../../environments/prod/prod.tfvars -var "target_nodes=[\"hela\",\"loki\",\"thor\"]" -target='module.tiny_virtual_machines["openziti"]' -target='terraform_data.ansible["openziti"]'
 ```
 
 Optionally remove the phase-1 DNS entry (`ziti.heimelska.co.uk`) from `terraform/environments/prod/dns.yaml` when decommissioning.
