@@ -69,14 +69,6 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
-      - deployment: prod_openziti
-        environment: prod
-        component: openziti
-        destroy: false
-        deploy: true
-        localEnvironments:
-          - wanda
-        dependsOn: []
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -243,7 +235,7 @@ stages:
                       keyVaultName: bancey-vault
                       serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                       serviceConnection: $(serviceConnection)
-              - ${{ if or(eq(deployment.component, 'virtual-machines'), eq(deployment.component, 'openziti')) }}:
+              - ${{ if eq(deployment.component, 'virtual-machines') }}:
                   - template: steps/ansible.yaml@azuredevops-lib
                     parameters:
                       serviceConnection: $(serviceConnection)

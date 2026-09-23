@@ -62,7 +62,23 @@ kubernetes_virtual_machines = {
   }
 }
 
-virtual_machines = {}
+virtual_machines = {
+  openziti = {
+    node                = "wanda"
+    vm_id               = 290
+    vm_description      = "OpenZiti phase 1 controller + edge router"
+    cpu_cores           = 2
+    memory              = 4096
+    ip_address          = "10.151.14.230"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 3
+    startup_delay       = 10
+    storage             = "local-lvm"
+    disk_size           = 30
+    image               = "noble-server-cloudimg-amd64.img"
+  }
+}
 
 containers = {
   haproxy0 = {
@@ -263,6 +279,16 @@ ansible = {
     playbook = "matter-server.yaml"
     trigger  = "23-02-2026-0830"
   }
+  "openziti" = {
+    nodes    = ["wanda"]
+    playbook = "openziti.yaml"
+    secrets = {
+      "openziti_admin_username" = "OpenZiti-Admin-Username"
+      "openziti_admin_password" = "OpenZiti-Admin-Password"
+    }
+    arguments = " -e openziti_controller_address=ziti.heimelska.co.uk -e openziti_test_identity_name=phase1-test-user -e openziti_test_service_name=wanda-pve -e openziti_test_service_host=10.151.14.11 -e openziti_test_service_port=8006"
+    trigger   = "23-09-2026-1458"
+  }
   "mariadb" = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "mariadb.yaml"
@@ -428,25 +454,3 @@ adguard_user_rules = [
   "@@||api.loganalytics.io^$important",
   "@@||dynatrace.com^$important",
 ]
-
-openziti = {
-  node                = "wanda"
-  vm_id               = 290
-  cpu_cores           = 2
-  memory              = 4096
-  ip_address          = "10.151.14.230"
-  gateway_ip_address  = "10.151.14.1"
-  network_bridge_name = "vmbr0"
-  startup_order       = 3
-  startup_delay       = 10
-  vm_description      = "OpenZiti phase 1 controller + edge router"
-  storage             = "local-lvm"
-  disk_size           = 30
-  image               = "noble-server-cloudimg-amd64.img"
-  ansible_trigger     = "23-09-2026-1458"
-  controller_address  = "ziti.heimelska.co.uk"
-  test_identity_name  = "phase1-test-user"
-  test_service_name   = "wanda-pve"
-  test_service_host   = "10.151.14.11"
-  test_service_port   = 8006
-}
