@@ -22,8 +22,8 @@ applications:
     description: "Traefik forwardAuth gateway for apps without native OIDC support"
     key_vault_prefix: OAuth2-Proxy
     redirect_uris:
-      - https://auth.tiny.heimelska.co.uk/oauth2/callback/
-      - https://auth.wanda.heimelska.co.uk/oauth2/callback/
+      - https://auth.tiny.heimelska.co.uk/oauth2/callback
+      - https://auth.wanda.heimelska.co.uk/oauth2/callback
     secret:
       enabled: true
 
@@ -31,7 +31,7 @@ applications:
     display_name: "Lab Grafana"
     key_vault_prefix: Grafana
     redirect_uris:
-      - https://grafana.tiny.heimelska.co.uk/login/generic_oauth/
+      - https://grafana.tiny.heimelska.co.uk/login/generic_oauth
     secret:
       enabled: true
 
@@ -53,7 +53,7 @@ applications:
     display_name: "Lab Vikunja"
     key_vault_prefix: Vikunja
     redirect_uris:
-      - https://vikunja.tiny.heimelska.co.uk/auth/openid/entra/
+      - https://vikunja.tiny.heimelska.co.uk/auth/openid/entra
     secret:
       enabled: true
 
@@ -69,8 +69,8 @@ applications:
     display_name: "Lab Gatus"
     key_vault_prefix: Gatus
     redirect_uris:
-      - https://gatus.thanos.heimelska.co.uk/authorization-code/callback/
-      - https://gatus.gamora.heimelska.co.uk/authorization-code/callback/
+      - https://gatus.thanos.heimelska.co.uk/authorization-code/callback
+      - https://gatus.gamora.heimelska.co.uk/authorization-code/callback
     secret:
       enabled: true
 
@@ -79,8 +79,8 @@ applications:
     description: "K3s API server OIDC and Headlamp"
     key_vault_prefix: Kubernetes
     redirect_uris:
-      - https://headlamp.tiny.heimelska.co.uk/oidc-callback/
-      - https://headlamp.wanda.heimelska.co.uk/oidc-callback/
+      - https://headlamp.tiny.heimelska.co.uk/oidc-callback
+      - https://headlamp.wanda.heimelska.co.uk/oidc-callback
     public_client_redirect_uris:
       - http://localhost:8000  # kubelogin / kubectl oidc-login
     secret:
