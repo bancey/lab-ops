@@ -51,7 +51,7 @@ locals {
   # Secret lifetime, in days, per application. A 30 day grace period is added on top of the
   # rotation interval so a pipeline run that lands slightly late still finds a valid secret.
   secret_rotation_days = {
-    for name, app in local.app_secrets : name => try(app.secret.rotation_days, 730)
+    for name, app in local.app_secrets : name => try(app.secret.rotation_days, 365)
   }
 
   # Key Vault secrets for an application are always the pair Entra-<prefix>-Client-ID and
