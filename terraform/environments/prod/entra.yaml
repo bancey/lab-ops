@@ -81,8 +81,8 @@ applications:
     redirect_uris:
       - https://headlamp.tiny.heimelska.co.uk/oidc-callback
       - https://headlamp.wanda.heimelska.co.uk/oidc-callback
-      - http://localhost:8000
-      - http://localhost:18000
+      - http://localhost:8000/
+      - http://localhost:18000/
     graph_scopes:
       - openid
       - profile
