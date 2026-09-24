@@ -5,5 +5,5 @@ import {
 
 import {
     to = azuread_service_principal.this["lab-kubernetes"]
-    id = "666ef8d0-700a-417b-967b-ec81e2742c75"
+    id = "/servicePrincipals/666ef8d0-700a-417b-967b-ec81e2742c75"
 }
