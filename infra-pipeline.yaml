@@ -69,6 +69,12 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: prod_entra
+        environment: prod
+        component: entra
+        destroy: false
+        deploy: true
+        dependsOn: []
       - deployment: prod_dns
         environment: prod
         component: dns
