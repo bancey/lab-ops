@@ -1,13 +1,13 @@
 terraform {
-  required_version = "1.16.1"
+  required_version = "1.16.3"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "5.3.0"
+      version = "5.6.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.24.0"
+      version = "5.25.0"
     }
     adguard = {
       source  = "gmichels/adguard"

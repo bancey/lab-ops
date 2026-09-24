@@ -14,7 +14,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 5.1.0
+      version: 5.2.1
       sourceRef:
         kind: HelmRepository
         name: bjw-s
@@ -37,7 +37,7 @@ spec:
           main:
             image:
               repository: icereed/paperless-gpt
-              tag: v0.27.0
+              tag: v0.28.0
             env:
               TZ: Europe/London
               PAPERLESS_BASE_URL: "http://paperless-ngx.paperless-ngx.svc.cluster.local:8000"
