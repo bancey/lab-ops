@@ -1,5 +1,7 @@
 env = "prod"
 
+tenant_id = "efc9b6c0-5193-43b1-a5a7-2ef3f29cd613"
+
 cloudflare_records = {
   "hass.heimelska.co.uk" = {
     type    = "CNAME"
