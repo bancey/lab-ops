@@ -81,7 +81,13 @@ applications:
     redirect_uris:
       - https://headlamp.tiny.heimelska.co.uk/oidc-callback
       - https://headlamp.wanda.heimelska.co.uk/oidc-callback
-    public_client_redirect_uris:
-      - http://localhost:8000  # kubelogin / kubectl oidc-login
+      - http://localhost:8000
+      - http://localhost:18000
+    graph_scopes:
+      - openid
+      - profile
+      - email
+      - offline_access
+      - User.Read
     secret:
       enabled: true
