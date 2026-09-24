@@ -7,7 +7,10 @@ data "azuread_service_principal" "msgraph" {
 }
 
 resource "azuread_service_principal_delegated_permission_grant" "this" {
-  for_each                             = var.grant_admin_consent ? local.applications : {}
+  for_each = {
+    for name, app in local.applications : name => app
+    if var.grant_admin_consent
+  }
   service_principal_object_id          = azuread_service_principal.this[each.key].object_id
   resource_service_principal_object_id = data.azuread_service_principal.msgraph[0].object_id
   claim_values                         = lookup(each.value, "graph_scopes", local.default_graph_scopes)
