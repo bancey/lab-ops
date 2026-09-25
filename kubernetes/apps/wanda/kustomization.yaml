@@ -45,6 +45,8 @@ resources:
   - ../base/monitoring
   - ../base/headlamp
   - ./headlamp-oidc-secret.sops.yaml
+  - ./oauth2-proxy-secret.sops.yaml
+  - ../base/oauth2-proxy
 patchesStrategicMerge:
   - plex-patch.yaml
   - jellyfin-patch.yaml
@@ -56,7 +58,16 @@ patchesStrategicMerge:
   - unpoller-patch.yaml
   - headlamp-certificate-patch.yaml
   - headlamp-ingress-route-patch.yaml
+  - oauth2-proxy-certificate-patch.yaml
+  - oauth2-proxy-ingress-route-patch.yaml
 patches:
+  - patch: |
+      - op: add
+        path: /spec/values/extraArgs/-
+        value: --redirect-url=https://auth.wanda.heimelska.co.uk/oauth2/callback
+    target:
+      kind: HelmRelease
+      name: oauth2-proxy
   - patch: |
       - op: add
         path: /spec/routes/0/match

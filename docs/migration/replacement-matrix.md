@@ -15,7 +15,7 @@ This document recommends replacements for each Azure service currently in use, w
 | Azure Blob Storage (DB backups) | Cloudflare R2 or Backblaze B2 | Low | Low |
 | Azure Virtual Machines (game server) | **Already decommissioned** — no action required | — | — |
 | Azure VPN Gateway | Remove (replaced by Twingate, already in use) | Low | None |
-| Azure Active Directory | Remove (Twingate handles access; OIDC for GitHub Actions) | Medium | None |
+| Azure Active Directory | Retain Entra ID as identity provider; remove only the subscription-scoped dependencies | Medium | None (free tier) |
 | Azure DevOps Pipelines | GitHub Actions | Medium | None (free tier) |
 | Azure DevOps Self-Hosted Agents | GitHub Actions self-hosted runners (already on Kubernetes) | Low | None |
 
@@ -279,7 +279,17 @@ Verify Twingate covers all current VPN use cases, then run `terraform destroy` o
 
 ---
 
-## 6. Azure Active Directory / Entra ID → Remove (OIDC for GitHub Actions)
+## 6. Azure Active Directory / Entra ID → Retain as IdP, remove subscription dependencies
+
+> **Updated:** Entra ID is now the lab's single sign-on identity provider for every web UI
+> (see `docs/sso-operations.md`), so it is **not** being removed. What this section covers is
+> the *subscription-scoped* usage — managed identities, the KV reader group, and the `MSDN New`
+> service principal. Entra ID Free is included with Microsoft 365 Business Basic and costs
+> nothing, so retaining it does not hold up the Azure exit.
+>
+> One coupling to be aware of: the SSO client secrets are stored in Key Vault, which this plan
+> replaces with SOPS + Age. `terraform/components/entra` is the bridge — it writes to Key Vault
+> and renders the SOPS files — and is the piece that would need reworking if Key Vault goes away.
 
 ### Current usage
 - Game server VMs used system-assigned managed identity for Key Vault access — **already eliminated** with game server decommission.

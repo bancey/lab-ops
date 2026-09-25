@@ -39,6 +39,8 @@ resources:
   - ../base/headlamp
   - ./headlamp-oidc-secret.sops.yaml
   - ../base/glance
+  - ./oauth2-proxy-secret.sops.yaml
+  - ../base/oauth2-proxy
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
   - smokeping-ingress-route-patch.yaml
@@ -73,3 +75,13 @@ patchesStrategicMerge:
   - headlamp-ingress-route-patch.yaml
   - glance-certificate-patch.yaml
   - glance-ingress-route-patch.yaml
+  - oauth2-proxy-certificate-patch.yaml
+  - oauth2-proxy-ingress-route-patch.yaml
+patches:
+  - patch: |
+      - op: add
+        path: /spec/values/extraArgs/-
+        value: --redirect-url=https://auth.tiny.heimelska.co.uk/oauth2/callback
+    target:
+      kind: HelmRelease
+      name: oauth2-proxy
