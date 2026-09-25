@@ -79,6 +79,14 @@ parameters:
           - template: steps/install-sops-age.yaml@azuredevops-lib
             parameters:
               sopsVersion: "v3.10.2"
+          - task: AzureCLI@2
+            displayName: Download GitHub Private Key
+            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+            inputs:
+              azureSubscription: "BTCS-PRODUCTION"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
       - deployment: prod_dns
         environment: prod
         component: dns
