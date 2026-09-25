@@ -18,5 +18,7 @@ spec:
       middlewares:
         - name: default-headers
           namespace: traefik
+        - name: chain-users
+          namespace: traefik
   tls:
     secretName: monica-tls
