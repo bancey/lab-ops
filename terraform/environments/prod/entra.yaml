@@ -6,15 +6,18 @@ groups:
 
   lab-users:
     description: "Household users - general purpose application access"
-    members: []
+    members:
+      - abance@bancey.xyz
 
   lab-media:
     description: "Media stack - Sonarr, Radarr, Prowlarr, SABnzbd"
-    members: []
+    members:
+      - abance@bancey.xyz
 
   lab-infra:
     description: "Infrastructure and monitoring UIs"
-    members: []
+    members:
+      - abance@bancey.xyz
 
 applications:
   lab-oauth2-proxy:
