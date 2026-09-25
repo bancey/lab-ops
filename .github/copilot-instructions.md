@@ -61,7 +61,7 @@ If this fails with network errors, document it but continue—it's a known limit
 
 ### Core Infrastructure Components
 - **`terraform/`** — Infrastructure as Code for Azure and Proxmox
-  - **`components/`** — Deployable components: `cloud-vpn-gateway`, `dns`, `game-server`, `inventory`, `twingate`, `virtual-machines`
+  - **`components/`** — Deployable components: `cloud-vpn-gateway`, `dns`, `entra`, `game-server`, `inventory`, `twingate`, `virtual-machines`
   - **`environments/`** — Environment-specific variable files (`prod`, `test`)
   - **`modules/`** — Reusable Terraform modules: `adguard`, `proxmox-ct`, `proxmox-vm`
 - **`ansible/`** — Configuration management and provisioning

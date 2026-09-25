@@ -1,0 +1,24 @@
+---
+# No forwardAuth here: this host serves the sign-in redirect and the OAuth callback, so
+# protecting it would be a redirect loop.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: oauth2-proxy
+  namespace: oauth2-proxy
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`auth.local`)
+      kind: Rule
+      services:
+        - name: oauth2-proxy
+          port: 80
+      middlewares:
+        - name: default-headers
+          namespace: traefik
+  tls:
+    secretName: oauth2-proxy-tls

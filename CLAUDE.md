@@ -55,9 +55,11 @@ Conventions when adding a new app (see `.github/copilot-instructions.md` for the
 - New relational DB needs → add to the **Ansible-managed PostgreSQL cluster** (`ansible/postgresql.yaml`, `postgresql_databases` list) rather than deploying a DB in-cluster; wire the KeyVault secret via `terraform/environments/prod/prod.tfvars`. DB is reachable at `pgsql.heimelska.co.uk:5432`.
 - New Redis/cache needs → use the existing **Dragonfly Operator** (create a `Dragonfly` CRD, e.g. `kubernetes/apps/base/pelican/dragonfly.yaml`), not a Redis container.
 - New endpoints get a private DNS record in `terraform/environments/prod/dns.yaml` pointing at the cluster's LoadBalancer IP, named `<app>.<cluster>.heimelska.co.uk`.
+- **New app needs auth** → add a `chain-{admins,users,media,infra}` middleware to its IngressRoute after `default-headers`; these are defined in `kubernetes/app-dependencies/config/traefik-forward-auth.yaml` and backed by oauth2-proxy federated to Entra ID. No Entra change is needed. Do **not** put forwardAuth in front of an app with non-browser clients (mobile apps, TV clients, daemons calling its API) — see `docs/sso-operations.md` for the exclusion list and the native-OIDC alternative.
 
 ### Terraform (`terraform/`)
-- `components/{dns,inventory,twingate,virtual-machines}` — deployable root modules, each a distinct unit the pipeline plans/applies independently.
+- `components/{dns,entra,inventory,twingate,virtual-machines}` — deployable root modules, each a distinct unit the pipeline plans/applies independently.
+- `components/entra` — Entra ID security groups and app registrations for SSO, driven by `environments/prod/entra.yaml`. It also renders the SOPS-encrypted Kubernetes secrets for those registrations (via `scripts/render-sops-secret.sh`) and commits them as the GitHub App, so a client secret rotation reaches the cluster without manual steps.
 - `environments/{prod,test}` — tfvars per environment; `prod/dns.yaml` and `prod/prod.tfvars` are the ones most often touched when adding apps/hosts.
 - `modules/{adguard,proxmox-ct,proxmox-vm}` — reusable modules consumed by `components/`.
 
@@ -71,6 +73,9 @@ Full architecture and conventions are documented in `ansible/README.md` — read
 
 ### Pipeline (`infra-pipeline.yaml`)
 Azure DevOps pipeline: checks on-prem host connectivity via Twingate → Terraform per component/environment → Ansible configuration → Kubernetes apps roll out automatically via Flux once manifests land on `main`. This is the source of truth for deployment order/dependencies between components.
+
+### SSO
+Entra ID is the identity provider for every web UI. Two mechanisms: native OIDC where the app supports it (Grafana, Vikunja, Paperless, Proxmox, Gatus, Headlamp), and Traefik `forwardAuth` via oauth2-proxy for everything else. Authorization comes from the Entra `groups` claim, which carries **object IDs, not names**. Client secret rotation is automated: the `entra` component rotates the password, re-renders and commits the SOPS file in the same apply → Flux applies → Reloader restarts the consuming pods. Workloads that read a rotating secret must carry `secret.reloader.stakater.com/reload: <secret-name>`, or they keep the dead credential. Full runbook in `docs/sso-operations.md`.
 
 ### Secrets
 All secrets originate in Azure Key Vault `bancey-vault` and flow into: Terraform (as data sources), Ansible (as lookup'd local files during the pipeline run), and Kubernetes (as SOPS-encrypted `*.sops.yaml` manifests, decrypted in-cluster via Flux + the Age key from `kubernetes/bootstrap`). Never write plaintext secrets into any of these three layers — always the SOPS/`.sops.yaml` form for Kubernetes.

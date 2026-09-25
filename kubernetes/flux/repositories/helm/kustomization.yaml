@@ -22,3 +22,5 @@ resources:
   - ./gabe565.yaml
   - ./headlamp.yaml
   - ./vikunja.yaml
+  - ./oauth2-proxy.yaml
+  - ./stakater.yaml

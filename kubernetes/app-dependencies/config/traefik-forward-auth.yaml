@@ -1,0 +1,130 @@
+---
+# Entra ID SSO for app IngressRoutes: attach one of the chain-* middlewares below.
+#
+# oauth2-errors must come first in each chain - it is what turns oauth2-proxy's 401 into a 302 to
+# Entra, and {url} expands to the full absolute URL so deep links survive the round trip. 403
+# (signed in, wrong group) is deliberately not in its status list, so a user in the wrong group
+# sees Forbidden instead of a redirect loop.
+#
+# allowed_groups takes Entra group object IDs, not names:
+#   terraform -chdir=terraform/components/entra output group_ids
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: oauth2-errors
+  namespace: traefik
+spec:
+  errors:
+    status:
+      - "401"
+    statusRewrites:
+      "401": 302
+    query: "/oauth2/start?rd={url}"
+    service:
+      name: oauth2-proxy
+      namespace: oauth2-proxy
+      port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-admins
+  namespace: traefik
+spec:
+  forwardAuth:
+    address: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth?allowed_groups=c01110e9-c46f-40b7-bc58-4832a4b4e11b"
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Auth-Request-User
+      - X-Auth-Request-Email
+      - X-Auth-Request-Preferred-Username
+      - X-Auth-Request-Groups
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-users
+  namespace: traefik
+spec:
+  forwardAuth:
+    address: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth?allowed_groups=c892030c-ad06-4c0f-98c2-91c64c93aa2c"
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Auth-Request-User
+      - X-Auth-Request-Email
+      - X-Auth-Request-Preferred-Username
+      - X-Auth-Request-Groups
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-media
+  namespace: traefik
+spec:
+  forwardAuth:
+    address: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth?allowed_groups=4081879f-a483-48d2-b5df-0173eb742c11"
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Auth-Request-User
+      - X-Auth-Request-Email
+      - X-Auth-Request-Preferred-Username
+      - X-Auth-Request-Groups
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-infra
+  namespace: traefik
+spec:
+  forwardAuth:
+    address: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth?allowed_groups=9f02f086-29dd-4e8c-be4a-c34bed1ee9ee"
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Auth-Request-User
+      - X-Auth-Request-Email
+      - X-Auth-Request-Preferred-Username
+      - X-Auth-Request-Groups
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-admins
+  namespace: traefik
+spec:
+  chain:
+    middlewares:
+      - name: oauth2-errors
+      - name: auth-admins
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-users
+  namespace: traefik
+spec:
+  chain:
+    middlewares:
+      - name: oauth2-errors
+      - name: auth-users
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-media
+  namespace: traefik
+spec:
+  chain:
+    middlewares:
+      - name: oauth2-errors
+      - name: auth-media
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: chain-infra
+  namespace: traefik
+spec:
+  chain:
+    middlewares:
+      - name: oauth2-errors
+      - name: auth-infra

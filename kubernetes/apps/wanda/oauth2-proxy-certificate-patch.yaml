@@ -1,0 +1,20 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: oauth2-proxy-staging-tls
+  namespace: oauth2-proxy
+spec:
+  commonName: "auth.wanda.heimelska.co.uk"
+  dnsNames:
+    - "auth.wanda.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: oauth2-proxy-tls
+  namespace: oauth2-proxy
+spec:
+  commonName: "auth.wanda.heimelska.co.uk"
+  dnsNames:
+    - "auth.wanda.heimelska.co.uk"
