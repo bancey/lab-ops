@@ -40,6 +40,9 @@ resources:
   - ./headlamp-oidc-secret.sops.yaml
   - ../base/glance
   - ./oauth2-proxy-secret.sops.yaml
+  - ./grafana-oidc-secret.sops.yaml
+  - ./vikunja-oidc-secret.sops.yaml
+  - ./paperless-ngx-oidc-secret.sops.yaml
   - ../base/oauth2-proxy
 patchesStrategicMerge:
   - smokeping-certificate-patch.yaml
