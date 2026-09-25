@@ -59,6 +59,8 @@
       namespace: kube-system
     - kind: ClusterRoleBinding
       name: oidc-cluster-admins
+    - kind: ClusterRoleBinding
+      name: oidc-cluster-viewers
     register: resource_check
     when:
     - run_install | bool

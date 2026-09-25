@@ -168,6 +168,8 @@ parameters:
           - Adguard-Thanos-Username
           - Adguard-Thanos-Password
           - Discord-Gatus-Webhook-URL
+          - Entra-Gatus-Client-ID
+          - Entra-Gatus-Client-Secret
         localEnvironments:
           - thanos
           - gamora
@@ -206,6 +208,20 @@ parameters:
         dependsOn:
           - generate_ansible_inventory
           - nut_server_ansible
+      - deployment: proxmox_oidc_ansible
+        environment: prod
+        playbook: proxmox-oidc.yaml
+        secrets:
+          - Entra-Proxmox-Client-ID
+          - Entra-Proxmox-Client-Secret
+        localEnvironments:
+          - hela
+          - loki
+          - thor
+          - wanda
+        dependsOn:
+          - generate_ansible_inventory
+          - prod_entra
 
 variables:
   - name: agentImage
