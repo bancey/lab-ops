@@ -18,5 +18,7 @@ spec:
       middlewares:
         - name: default-headers
           namespace: traefik
+        - name: chain-media
+          namespace: traefik
   tls:
     secretName: sonarr-tls
