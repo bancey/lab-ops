@@ -27,3 +27,10 @@ rules:
     max-spaces-inside: 10
   hyphens:
     max-spaces-after: 4
+
+# SOPS output is machine-generated and its layout is chosen by sops' own YAML emitter, not by
+# us: sops 3.10 indents nested mappings by four spaces where this config wants two, so every
+# file rendered by terraform/components/entra would fail the indentation rule. The content is
+# ciphertext, so its formatting carries no meaning worth linting.
+ignore: |
+  *.sops.yaml
