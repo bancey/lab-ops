@@ -1,7 +1,4 @@
 ---
-# Restarts workloads when a Secret they reference changes. Env vars from secretKeyRef are fixed at
-# pod creation, so without this a rotated Entra client secret would leave oauth2-proxy running with
-# the dead credential. Opt-in: workloads name the Secret with secret.reloader.stakater.com/reload.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:

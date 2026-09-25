@@ -78,7 +78,6 @@ patchesStrategicMerge:
   - oauth2-proxy-certificate-patch.yaml
   - oauth2-proxy-ingress-route-patch.yaml
 patches:
-  # JSON patch, not strategic merge: a strategic merge replaces extraArgs wholesale.
   - patch: |
       - op: add
         path: /spec/values/extraArgs/-

@@ -1,13 +1,4 @@
 ---
-# Entra ID SSO for app IngressRoutes: attach one of the chain-* middlewares below.
-#
-# oauth2-errors must come first in each chain - it is what turns oauth2-proxy's 401 into a 302 to
-# Entra, and {url} expands to the full absolute URL so deep links survive the round trip. 403
-# (signed in, wrong group) is deliberately not in its status list, so a user in the wrong group
-# sees Forbidden instead of a redirect loop.
-#
-# allowed_groups takes Entra group object IDs, not names:
-#   terraform -chdir=terraform/components/entra output group_ids
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
