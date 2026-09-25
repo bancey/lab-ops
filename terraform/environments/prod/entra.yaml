@@ -91,3 +91,49 @@ applications:
       - User.Read
     secret:
       enabled: true
+
+# Random values owned by Terraform and shared between secrets below. Because both oauth2-proxy
+# entries reference the same key here they are guaranteed to receive the same value, which is
+# what makes a session issued by one cluster valid on the other. Changing `length` regenerates
+# the value and logs everyone out.
+shared_random_secrets:
+  oauth2-proxy-cookie:
+    length: 32
+
+# SOPS-encrypted Kubernetes Secrets, rendered and committed by terraform/components/entra.
+#
+# Terraform holds every value already - the client ID and secret come from the azuread resources
+# and the cookie secret from shared_random_secrets - so nothing is read back from Key Vault and
+# nothing is decrypted. A file is only re-rendered when one of its inputs actually changes.
+kubernetes_secrets:
+  - app: lab-oauth2-proxy
+    target: kubernetes/apps/tiny/oauth2-proxy-secret.sops.yaml
+    name: oauth2-proxy-entra
+    namespace: oauth2-proxy
+    shared_secrets:
+      cookie-secret: oauth2-proxy-cookie
+
+  - app: lab-oauth2-proxy
+    target: kubernetes/apps/wanda/oauth2-proxy-secret.sops.yaml
+    name: oauth2-proxy-entra
+    namespace: oauth2-proxy
+    shared_secrets:
+      cookie-secret: oauth2-proxy-cookie
+
+  - app: lab-grafana
+    target: kubernetes/apps/tiny/grafana-oidc-secret.sops.yaml
+    name: grafana-oidc
+    namespace: monitoring
+
+  - app: lab-vikunja
+    target: kubernetes/apps/tiny/vikunja-oidc-secret.sops.yaml
+    name: vikunja-oidc
+    namespace: vikunja
+
+  - app: lab-paperless
+    target: kubernetes/apps/tiny/paperless-ngx-oidc-secret.sops.yaml
+    name: paperless-oidc
+    namespace: paperless-ngx
+    # Paperless takes the whole provider config, client secret included, as one JSON blob.
+    extra_templates:
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect":{"APPS":[{"provider_id":"entra","name":"Entra ID","client_id":"{client_id}","secret":"{client_secret}","settings":{"server_url":"https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/v2.0/.well-known/openid-configuration"}}]}}'

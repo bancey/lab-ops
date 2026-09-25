@@ -61,6 +61,43 @@ locals {
     for name, app in local.applications :
     name => lookup(app, "key_vault_prefix", trimprefix(name, "lab-"))
   }
+  shared_random_secrets = lookup(local.entra, "shared_random_secrets", {})
+
+  k8s_secrets = {
+    for entry in lookup(local.entra, "kubernetes_secrets", []) : entry.target => entry
+  }
+
+  repo_root = "${path.cwd}/../../.."
+
+  # The plaintext each SOPS file should contain, as JSON, ready to hand to
+  # scripts/render-sops-secret.sh. Built here so the rendering, the change-detection hash and the
+  # committed content all derive from one definition.
+  k8s_secret_specs = {
+    for target, entry in local.k8s_secrets : target => jsonencode({
+      name      = entry.name
+      namespace = entry.namespace
+      stringData = merge(
+        {
+          "client-id"     = azuread_application.this[entry.app].client_id
+          "client-secret" = azuread_application_password.this[entry.app].value
+        },
+        # Values shared between secrets, e.g. the oauth2-proxy cookie secret that both clusters
+        # must agree on. Referencing the same key guarantees the same value.
+        {
+          for key, name in lookup(entry, "shared_secrets", {}) :
+          key => random_bytes.shared[name].base64
+        },
+        # Blobs that embed the credentials, e.g. Paperless' provider JSON.
+        {
+          for key, template in lookup(entry, "extra_templates", {}) :
+          key => replace(
+            replace(template, "{client_id}", azuread_application.this[entry.app].client_id),
+            "{client_secret}", azuread_application_password.this[entry.app].value
+          )
+        },
+      )
+    })
+  }
 }
 
 data "azuread_client_config" "current" {}
@@ -68,4 +105,18 @@ data "azuread_client_config" "current" {}
 data "azurerm_key_vault" "vault" {
   name                = "bancey-vault"
   resource_group_name = "btcs-common-prod"
+}
+
+data "azurerm_key_vault_secret" "github_app_id" {
+  name         = "GitHub-Bot-ID"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "github_installation_id" {
+  name         = "GitHub-Bot-Installation-ID"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "github_repository" "this" {
+  full_name = "bancey/lab-ops"
 }

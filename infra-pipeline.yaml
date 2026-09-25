@@ -75,6 +75,17 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+        preSteps:
+          - template: steps/install-sops-age.yaml@azuredevops-lib
+            parameters:
+              sopsVersion: "v3.10.2"
+          - task: AzureCLI@2
+            displayName: Download GitHub Private Key
+            inputs:
+              azureSubscription: "BTCS-PRODUCTION"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -261,80 +272,6 @@ stages:
               - ${{ if deployment.postStep }}:
                   - ${{ deployment.postStep }}
 
-  - stage: sync_entra_secrets
-    dependsOn: prod_entra
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-    jobs:
-      - job: SyncEntraSecrets
-        pool:
-          vmImage: $(agentImage)
-        steps:
-          - checkout: self
-            persistCredentials: true
-          - template: steps/install-sops-age.yaml@azuredevops-lib
-            parameters:
-              sopsVersion: "v3.10.2"
-          - task: AzureCLI@2
-            displayName: Get Age Key
-            inputs:
-              azureSubscription: "BTCS-PRODUCTION"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                mkdir -p ~/.config/sops/age
-                az keyvault secret download --name Flux-Age-Key --vault-name bancey-vault --file ~/.config/sops/age/keys.txt
-                chmod 600 ~/.config/sops/age/keys.txt
-          - task: AzureCLI@2
-            displayName: Regenerate SOPS secrets from Key Vault
-            inputs:
-              azureSubscription: "BTCS-PRODUCTION"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              workingDirectory: $(System.DefaultWorkingDirectory)
-              inlineScript: |
-                set -euo pipefail
-
-                ./scripts/sync-entra-secret.sh --app lab-oauth2-proxy \
-                  --target kubernetes/apps/tiny/oauth2-proxy-secret.sops.yaml \
-                  --name oauth2-proxy-entra --namespace oauth2-proxy \
-                  --extra-random cookie-secret
-
-                # wanda must use the *same* cookie secret as tiny, otherwise a session issued by
-                # one cluster is not accepted by the other and SSO stops being single sign-on.
-                # Read it back rather than relying on --extra-random preserving an existing value,
-                # which would silently diverge if the wanda file were ever recreated from scratch.
-                COOKIE_SECRET="$(sops -d kubernetes/apps/tiny/oauth2-proxy-secret.sops.yaml \
-                  | python3 -c 'import sys,yaml; print(yaml.safe_load(sys.stdin)["stringData"]["cookie-secret"])')"
-                ./scripts/sync-entra-secret.sh --app lab-oauth2-proxy \
-                  --target kubernetes/apps/wanda/oauth2-proxy-secret.sops.yaml \
-                  --name oauth2-proxy-entra --namespace oauth2-proxy \
-                  --extra "cookie-secret=$COOKIE_SECRET"
-
-                ./scripts/sync-entra-secret.sh --app lab-grafana \
-                  --target kubernetes/apps/tiny/grafana-oidc-secret.sops.yaml \
-                  --name grafana-oidc --namespace monitoring
-
-                ./scripts/sync-entra-secret.sh --app lab-vikunja \
-                  --target kubernetes/apps/tiny/vikunja-oidc-secret.sops.yaml \
-                  --name vikunja-oidc --namespace vikunja
-
-                ./scripts/sync-entra-secret.sh --app lab-paperless \
-                  --target kubernetes/apps/tiny/paperless-ngx-oidc-secret.sops.yaml \
-                  --name paperless-oidc --namespace paperless-ngx \
-                  --extra-template 'PAPERLESS_SOCIALACCOUNT_PROVIDERS={"openid_connect":{"APPS":[{"provider_id":"entra","name":"Entra ID","client_id":"{client_id}","secret":"{client_secret}","settings":{"server_url":"https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/v2.0/.well-known/openid-configuration"}}]}}'
-          - script: |
-              set -euo pipefail
-              if [ -z "$(git status --porcelain kubernetes/)" ]; then
-                echo "No SOPS secret changed - nothing to commit."
-                exit 0
-              fi
-              git config user.email "bot@bancey.xyz"
-              git config user.name "lab-ops bot"
-              git add kubernetes/
-              git commit -m "chore: rotate Entra ID SOPS secrets [skip ci]"
-              git push origin "HEAD:main"
-            displayName: Commit rotated secrets
-            workingDirectory: $(System.DefaultWorkingDirectory)
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:
