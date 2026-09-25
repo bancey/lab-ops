@@ -98,6 +98,7 @@ applications:
 # the value and logs everyone out.
 shared_random_secrets:
   oauth2-proxy-cookie:
+    # oauth2-proxy uses this as an AES key, so it has to stay 16, 24 or 32.
     length: 32
 
 # SOPS-encrypted Kubernetes Secrets, rendered and committed by terraform/components/entra.

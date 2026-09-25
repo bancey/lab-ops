@@ -63,6 +63,16 @@ locals {
   }
   shared_random_secrets = lookup(local.entra, "shared_random_secrets", {})
 
+  # URL-safe, unpadded base64 of the shared random values. oauth2-proxy decodes its cookie secret
+  # with Go's base64.RawURLEncoding and needs 16, 24 or 32 bytes out of it; random_bytes emits
+  # standard base64, whose + and / are not in the URL alphabet, so the decode fails, the value
+  # falls through as a 44 character string and the pod exits with "cookie_secret must be 16, 24,
+  # or 32 bytes to create an AES cipher, but is 44 bytes".
+  shared_random_values = {
+    for name, value in random_bytes.shared :
+    name => replace(replace(replace(value.base64, "+", "-"), "/", "_"), "/=+$/", "")
+  }
+
   k8s_secrets = {
     for entry in lookup(local.entra, "kubernetes_secrets", []) : entry.target => entry
   }
@@ -85,7 +95,7 @@ locals {
         # must agree on. Referencing the same key guarantees the same value.
         {
           for key, name in lookup(entry, "shared_secrets", {}) :
-          key => random_bytes.shared[name].base64
+          key => local.shared_random_values[name]
         },
         # Blobs that embed the credentials, e.g. Paperless' provider JSON.
         {
