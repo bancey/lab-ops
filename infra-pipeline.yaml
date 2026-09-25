@@ -7,7 +7,7 @@ trigger:
     exclude:
       - ansible/hosts.yaml
       - ansible/templates/frr.conf
-      - kubernetes/*
+      - kubernetes/**
 
 pr:
   branches:
@@ -17,7 +17,7 @@ pr:
     exclude:
       - ansible/hosts.yaml
       - ansible/templates/frr.conf
-      - kubernetes/*
+      - kubernetes/**
 
 resources:
   repositories:
