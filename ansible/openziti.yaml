@@ -1,0 +1,99 @@
+---
+- name: Install OpenZiti phase-1 controller + edge router prerequisites
+  hosts: openziti
+  become: true
+  gather_facts: true
+
+  vars:
+    openziti_artifacts_dir: /opt/openziti/artifacts
+    openziti_controller_address: "{{ openziti_controller_address | default('ziti.heimelska.co.uk') }}"
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - jq
+        state: present
+
+    - name: Install OpenZiti apt repository
+      ansible.builtin.shell: |
+        set -euo pipefail
+        curl -sS https://get.openziti.io/install.bash | bash -s openziti
+      args:
+        creates: /etc/apt/sources.list.d/openziti-release.list
+
+    - name: Install OpenZiti controller/router packages
+      ansible.builtin.apt:
+        name:
+          - openziti
+          - openziti-controller
+          - openziti-router
+        state: present
+        update_cache: true
+
+    - name: Ensure artifacts directory exists
+      ansible.builtin.file:
+        path: "{{ openziti_artifacts_dir }}"
+        state: directory
+        mode: '0700'
+
+    - name: Write phase-1 bootstrap variables file
+      ansible.builtin.copy:
+        dest: "{{ openziti_artifacts_dir }}/phase1-vars.env"
+        mode: '0600'
+        content: |
+          OPENZITI_ADMIN_USERNAME={{ openziti_admin_username }}
+          OPENZITI_ADMIN_PASSWORD={{ openziti_admin_password }}
+          OPENZITI_CONTROLLER_ADDRESS={{ openziti_controller_address }}
+          OPENZITI_TEST_IDENTITY_NAME={{ openziti_test_identity_name }}
+          OPENZITI_TEST_SERVICE_NAME={{ openziti_test_service_name }}
+          OPENZITI_TEST_SERVICE_HOST={{ openziti_test_service_host }}
+          OPENZITI_TEST_SERVICE_PORT={{ openziti_test_service_port }}
+
+    - name: Write phase-1 manual bootstrap helper
+      ansible.builtin.copy:
+        dest: "{{ openziti_artifacts_dir }}/phase1-next-steps.sh"
+        mode: '0750'
+        content: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          source "{{ openziti_artifacts_dir }}/phase1-vars.env"
+
+          echo "OpenZiti packages are installed."
+          echo "Next run the official interactive bootstrap scripts:"
+          echo "  sudo /opt/openziti/etc/controller/bootstrap.bash"
+          echo "  sudo /opt/openziti/etc/router/bootstrap.bash"
+          echo
+          echo "After login (ziti edge login \"$OPENZITI_CONTROLLER_ADDRESS:1280\" -u \"$OPENZITI_ADMIN_USERNAME\" -p \"$OPENZITI_ADMIN_PASSWORD\")"
+          echo "use these phase-1 commands:"
+          cat <<'CMDS'
+          ziti edge create identity user "$OPENZITI_TEST_IDENTITY_NAME" -a phase1-test -o "$OPENZITI_TEST_IDENTITY_NAME.jwt"
+
+          ziti edge create config "$OPENZITI_TEST_SERVICE_NAME"-intercept intercept.v1 '{
+            "protocols": ["tcp"],
+            "addresses": ["'$OPENZITI_TEST_SERVICE_NAME'.ziti"],
+            "portRanges": [{"low": '$OPENZITI_TEST_SERVICE_PORT', "high": '$OPENZITI_TEST_SERVICE_PORT'}]
+          }'
+
+          ziti edge create config "$OPENZITI_TEST_SERVICE_NAME"-host host.v1 '{
+            "address": "'$OPENZITI_TEST_SERVICE_HOST'",
+            "port": '$OPENZITI_TEST_SERVICE_PORT',
+            "protocol": "tcp"
+          }'
+
+          ziti edge create service "$OPENZITI_TEST_SERVICE_NAME" -c "$OPENZITI_TEST_SERVICE_NAME"-intercept -c "$OPENZITI_TEST_SERVICE_NAME"-host
+          CMDS
+
+    - name: Show location of generated phase-1 helper artifacts
+      ansible.builtin.debug:
+        msg:
+          - "OpenZiti artifacts: {{ openziti_artifacts_dir }}"
+          - "Run: sudo {{ openziti_artifacts_dir }}/phase1-next-steps.sh"
