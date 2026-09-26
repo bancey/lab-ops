@@ -1,0 +1,140 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-error-pages
+  namespace: oauth2-proxy
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Access denied</title>
+        <style>
+          :root {
+            --bg: #f6f7f9; --card: #ffffff; --fg: #1a1d21; --muted: #5c6670;
+            --line: #e3e6ea; --accent: #b3261e;
+          }
+          @media (prefers-color-scheme: dark) {
+            :root {
+              --bg: #16191d; --card: #1e2227; --fg: #e8eaed; --muted: #9aa4ae;
+              --line: #2e343b; --accent: #f2b8b5;
+            }
+          }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; padding: 24px; background: var(--bg); color: var(--fg);
+            font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+          }
+          main {
+            width: 100%; max-width: 560px; background: var(--card); padding: 32px;
+            border: 1px solid var(--line); border-radius: 12px;
+          }
+          h1 { margin: 0 0 4px; font-size: 22px; color: var(--accent); }
+          p { margin: 0 0 16px; }
+          .host {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px;
+            color: var(--muted); word-break: break-all; margin-bottom: 24px;
+          }
+          table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 14px; }
+          th, td { text-align: left; padding: 7px 0; border-bottom: 1px solid var(--line); }
+          th { width: 108px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+          tr:last-child th, tr:last-child td { border-bottom: 0; }
+          .note {
+            font-size: 14px; color: var(--muted); border-top: 1px solid var(--line);
+            padding-top: 16px; margin: 0;
+          }
+          .note code {
+            display: block; margin-top: 8px; word-break: break-all;
+            font-size: 13px; color: var(--fg);
+          }
+        </style>
+      </head>
+      <body>
+        <main>
+          <h1>Access denied</h1>
+          <p>You are signed in, but this account does not have permission for this page.</p>
+          <p class="host" id="host"></p>
+          <p>Access is granted by Entra ID group membership:</p>
+          <table>
+            <tr><th>lab-admins</th><td>Infrastructure &mdash; Traefik, Proxmox, Home Assistant tooling, BunkerWeb</td></tr>
+            <tr><th>lab-users</th><td>General applications</td></tr>
+            <tr><th>lab-media</th><td>Sonarr, Radarr, Prowlarr, SABnzbd, qBittorrent</td></tr>
+            <tr><th>lab-infra</th><td>Monitoring and diagnostics</td></tr>
+          </table>
+          <!-- No cluster-specific auth host: crm and bunkerweb-mgmt are not named
+               <app>.<cluster>.heimelska.co.uk, so it cannot be derived here. -->
+          <p class="note">
+            Your groups are read from the token issued when you signed in. If you were added to a
+            group recently, sign out and sign in again to pick it up:
+            <code>https://auth.&lt;cluster&gt;.heimelska.co.uk/oauth2/sign_out</code>
+          </p>
+        </main>
+        <script>
+          document.getElementById("host").textContent = location.host + location.pathname;
+        </script>
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy-error-pages
+  namespace: oauth2-proxy
+  labels:
+    app: oauth2-proxy-error-pages
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oauth2-proxy-error-pages
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy-error-pages
+    spec:
+      containers:
+        - name: nginx
+          image: nginxinc/nginx-unprivileged:1.29-alpine
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: content
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      volumes:
+        - name: content
+          configMap:
+            name: oauth2-proxy-error-pages
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy-error-pages
+  namespace: oauth2-proxy
+spec:
+  selector:
+    app: oauth2-proxy-error-pages
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

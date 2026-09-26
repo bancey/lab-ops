@@ -26,9 +26,35 @@ Everything Entra-side is managed as code by `terraform/components/entra`, driven
    follows straight to Entra with no interstitial. Traefik's `{url}` placeholder expands to the
    full `scheme://host/path?query`, so deep links survive.
 4. Signed in but **not** in the group → `403`. Deliberately not in `oauth2-errors`' status list,
-   so the user sees Forbidden instead of a redirect loop.
+   so the user is not bounced into a redirect loop. The `forbidden-errors` middleware catches it
+   instead and serves the page from `kubernetes/apps/base/oauth2-proxy/error-pages.yaml` with the
+   `403` intact.
 
 `oauth2-errors` must come **before** the forwardAuth in each chain, or the 401 is never caught.
+The chain order is `oauth2-errors` → `forbidden-errors` → `auth-<tier>`.
+
+### The Forbidden page
+
+oauth2-proxy's forwardAuth endpoint writes its 403 body with `http.Error`, so it is the literal
+string `Forbidden` and no oauth2-proxy template or flag can change it. Replacing it therefore has
+to happen in Traefik, which is what `forbidden-errors` does: same status code, different body,
+served by a small nginx Deployment alongside oauth2-proxy in each cluster.
+
+Two consequences worth knowing:
+
+- Traefik cannot tell the forwardAuth's 403 apart from a 403 raised by the **application itself**
+  (qBittorrent returns one when its own WebUI session expires, for example). Both get the page, so
+  it is worded to be accurate either way — it names the group tiers rather than asserting which
+  one was missing.
+- The page is deliberately cluster-agnostic. `crm.heimelska.co.uk` and
+  `bunkerweb-mgmt.heimelska.co.uk` are not named `<app>.<cluster>.heimelska.co.uk`, so it cannot
+  derive its own cluster's auth host for a sign-out link; the sign-out URL is given as text with
+  `<cluster>` left for the reader. Either cluster's `/oauth2/sign_out` works, because the cookie
+  is scoped to `.heimelska.co.uk`.
+
+To change the wording, edit the `index.html` key of the `oauth2-proxy-error-pages` ConfigMap. The
+Deployment mounts it, so Flux applying the ConfigMap is enough — nginx re-reads the file per
+request and no restart is needed.
 
 ### Single sign-on across clusters
 

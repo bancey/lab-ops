@@ -16,6 +16,24 @@ spec:
       namespace: oauth2-proxy
       port: 80
 ---
+# Swaps oauth2-proxy's bare "Forbidden" body for an explanatory page, keeping the 403 status.
+# Also catches a 403 from the application itself, which Traefik cannot tell apart from the
+# forwardAuth's, so the page is worded to be accurate either way.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: forbidden-errors
+  namespace: traefik
+spec:
+  errors:
+    status:
+      - "403"
+    query: "/"
+    service:
+      name: oauth2-proxy-error-pages
+      namespace: oauth2-proxy
+      port: 80
+---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -85,6 +103,7 @@ spec:
   chain:
     middlewares:
       - name: oauth2-errors
+      - name: forbidden-errors
       - name: auth-admins
 ---
 apiVersion: traefik.io/v1alpha1
@@ -96,6 +115,7 @@ spec:
   chain:
     middlewares:
       - name: oauth2-errors
+      - name: forbidden-errors
       - name: auth-users
 ---
 apiVersion: traefik.io/v1alpha1
@@ -107,6 +127,7 @@ spec:
   chain:
     middlewares:
       - name: oauth2-errors
+      - name: forbidden-errors
       - name: auth-media
 ---
 apiVersion: traefik.io/v1alpha1
@@ -118,4 +139,5 @@ spec:
   chain:
     middlewares:
       - name: oauth2-errors
+      - name: forbidden-errors
       - name: auth-infra
