@@ -22,6 +22,40 @@ spec:
         - secretName: grafana-tls
           hosts:
             - grafana.tiny.heimelska.co.uk
+    # Grafana reads the mounted secret once at startup, so a rotation needs a restart.
+    annotations:
+      secret.reloader.stakater.com/reload: grafana-oidc
+    # Native OIDC rather than a forwardAuth chain: Grafana can map the Entra groups claim onto
+    # its own Admin/Viewer roles, where a proxy in front could only say yes or no.
+    extraSecretMounts:
+      - name: grafana-oidc
+        secretName: grafana-oidc
+        defaultMode: 0440
+        mountPath: /etc/secrets/oidc
+        readOnly: true
+    grafana.ini:
+      server:
+        root_url: https://grafana.tiny.heimelska.co.uk
+      auth:
+        # Break glass: with auto_login on, the admin form is still reachable at
+        # /login?disableAutoLogin. Credentials remain in grafana-admin-secret.sops.yaml.
+        disable_login_form: false
+      auth.generic_oauth:
+        enabled: true
+        name: Entra ID
+        icon: microsoft
+        allow_sign_up: true
+        auto_login: true
+        client_id: $__file{/etc/secrets/oidc/client-id}
+        client_secret: $__file{/etc/secrets/oidc/client-secret}
+        scopes: openid email profile
+        auth_url: https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/oauth2/v2.0/authorize
+        token_url: https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/oauth2/v2.0/token
+        api_url: https://graph.microsoft.com/oidc/userinfo
+        # The groups claim carries object IDs, not names. c01110e9... is lab-admins.
+        role_attribute_path: "contains(groups[*], 'c01110e9-c46f-40b7-bc58-4832a4b4e11b') && 'Admin' || 'Viewer'"
+        role_attribute_strict: true
+        use_refresh_token: true
     persistence:
       enabled: true
       storageClassName: unas-nfs-csi

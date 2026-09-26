@@ -5,6 +5,21 @@ metadata:
   name: vikunja
   namespace: vikunja
 spec:
+  # Roll the pods when the client secret is rotated - it arrives as an env var, fixed at pod
+  # creation. A post-renderer rather than a chart value, so it works whether or not the chart
+  # exposes Deployment annotations.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: ignored-by-target-selector
+                annotations:
+                  secret.reloader.stakater.com/reload: vikunja-oidc
   values:
     vikunja:
       persistence:
@@ -16,3 +31,25 @@ spec:
             config.yml: |
               service:
                 publicurl: "https://vikunja.tiny.heimelska.co.uk"
+      # Env vars rather than config.yml: Vikunja does not reliably merge env overrides into a
+      # provider list declared in YAML, and this keeps the client secret out of the ConfigMap.
+      # The redirect URI is <publicurl>/auth/openid/<provider key lowercased> and must match
+      # entra.yaml.
+      #
+      # Local login stays enabled deliberately. Disable it (VIKUNJA_AUTH_LOCAL_ENABLED=false)
+      # only once an Entra sign-in has been confirmed to work.
+      env:
+        VIKUNJA_AUTH_OPENID_ENABLED: "true"
+        VIKUNJA_AUTH_OPENID_PROVIDERS_ENTRA_NAME: "Entra ID"
+        VIKUNJA_AUTH_OPENID_PROVIDERS_ENTRA_AUTHURL: "https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/v2.0"
+        VIKUNJA_AUTH_OPENID_PROVIDERS_ENTRA_SCOPE: "openid email profile"
+        VIKUNJA_AUTH_OPENID_PROVIDERS_ENTRA_CLIENTID:
+          valueFrom:
+            secretKeyRef:
+              name: vikunja-oidc
+              key: client-id
+        VIKUNJA_AUTH_OPENID_PROVIDERS_ENTRA_CLIENTSECRET:
+          valueFrom:
+            secretKeyRef:
+              name: vikunja-oidc
+              key: client-secret
