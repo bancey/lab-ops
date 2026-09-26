@@ -242,6 +242,29 @@ what lets a session issued by one be accepted by the other. It is not derived fr
 secret and does not change when one rotates. Changing its `length`, or tainting it, regenerates
 it and signs everyone out.
 
+### Proxmox realm properties that cannot be changed
+
+Proxmox marks `username-claim` as `fixed` in `PVE::Auth::OpenId`, so it is accepted by
+`pveum realm add` and rejected by `pveum realm modify` with
+`Unknown option: username-claim / 400 unable to parse option`. `ansible/proxmox-oidc.yaml`
+therefore only sends it on creation.
+
+A realm created by hand keeps whatever claim it was made with, and when the property is unset
+Proxmox falls back to `sub` — so users are autocreated as `<entra-object-id>@entra` rather than
+`<email>@entra`. The playbook reads the live realm and prints a warning when this differs from
+the declared `proxmox_oidc_username_claim`; it does not fail, because the `Administrator` ACL is
+granted to the group rather than to individual users, so access still works.
+
+To converge it, delete and recreate — this drops the users and groups autocreated in that realm,
+so check `pveum user list` first:
+
+```bash
+pveum realm delete entra
+```
+
+Then re-run the playbook. Every other property the playbook sets (`issuer-url`, `client-id`,
+`client-key`, `scopes`, `groups-*`, `autocreate`) is updatable in place.
+
 ## Break glass
 
 | Situation | Recovery |
