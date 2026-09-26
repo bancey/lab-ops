@@ -138,6 +138,12 @@
     adguard_username: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Username') }}"
     adguard_password: "{{ lookup('ansible.builtin.file', 'Adguard-Thanos-Password') }}"
     gatus_discord_webhook_url: "{{ lookup('ansible.builtin.file', 'Discord-Gatus-Webhook-URL') | trim }}"
+    # If these are absent the template omits the security block entirely and Gatus stays open,
+    # so a missing secret degrades rather than breaks.
+    gatus_oidc_tenant_id: efc9b6c0-5193-43b1-a5a7-2ef3f29cd613
+    gatus_oidc_client_id: "{{ lookup('ansible.builtin.file', 'Entra-Gatus-Client-ID', errors='ignore') | default('', true) | trim }}"
+    gatus_oidc_client_secret: "{{ lookup('ansible.builtin.file', 'Entra-Gatus-Client-Secret', errors='ignore') | default('', true) | trim }}"
+    gatus_oidc_allowed_subjects: []
   roles:
   - role: rpi-monitoring
     tags: [ monitoring ]

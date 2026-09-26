@@ -1,3 +1,6 @@
+# Subjects are the Entra group OBJECT ID prefixed with "entra:", not the display name - the
+# apiserver runs with --oidc-groups-claim=groups --oidc-groups-prefix=entra: (set in
+# terraform/components/inventory/hosts.yaml.tpl).
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -7,6 +10,22 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
+# lab-admins
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: entra:c01110e9-c46f-40b7-bc58-4832a4b4e11b
+---
+# Read-only access for the household.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: oidc-cluster-viewers
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+# lab-users
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: entra:c892030c-ad06-4c0f-98c2-91c64c93aa2c
