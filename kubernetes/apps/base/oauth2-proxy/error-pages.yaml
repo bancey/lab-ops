@@ -79,6 +79,15 @@ data:
       </body>
     </html>
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-error-pages-nginx-conf
+  namespace: oauth2-proxy
+data:
+  large-client-header-buffers.conf: |
+    large_client_header_buffers 4 16k;
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -106,6 +115,10 @@ spec:
             - name: content
               mountPath: /usr/share/nginx/html
               readOnly: true
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/large-client-header-buffers.conf
+              subPath: large-client-header-buffers.conf
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /
@@ -125,6 +138,9 @@ spec:
         - name: content
           configMap:
             name: oauth2-proxy-error-pages
+        - name: nginx-conf
+          configMap:
+            name: oauth2-proxy-error-pages-nginx-conf
 ---
 apiVersion: v1
 kind: Service
