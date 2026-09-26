@@ -61,10 +61,20 @@ spec:
     - patch: |
         - op: add
           path: /spec/routes/0/match
-          value: Host(`traefik.tiny`)
+          value: Host(`traefik.tiny.heimelska.co.uk`)
       target:
         kind: IngressRoute
         name: traefik-dashboard
+    - patch: |
+        - op: replace
+          path: /spec/commonName
+          value: traefik.tiny.heimelska.co.uk
+        - op: replace
+          path: /spec/dnsNames/0
+          value: traefik.tiny.heimelska.co.uk
+      target:
+        kind: Certificate
+        name: traefik-dashboard-(staging-)?tls
     - patch: |
         $patch: delete
         apiVersion: storage.k8s.io/v1

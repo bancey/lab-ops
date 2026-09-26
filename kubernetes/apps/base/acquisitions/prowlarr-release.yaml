@@ -19,6 +19,46 @@ spec:
   install:
     remediation:
       retries: 3
+  # There is no environment variable for the authentication method - it lives in config.xml on
+  # the config PVC, hence the initContainer. AuthenticationMethod=External hands authentication
+  # to the reverse proxy; DisabledForLocalAddresses keeps in-cluster API traffic working
+  # (Prowlarr -> Sonarr/Radarr sync, *arr -> SABnzbd), which never passes through Traefik.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: prowlarr-xarr
+            patch: |
+              - op: add
+                path: /spec/template/spec/initContainers
+                value:
+                  - name: set-external-auth
+                    image: busybox:1.38
+                    command: ["/bin/sh", "-c"]
+                    args:
+                      - |
+                        set -eu
+                        f=/config/config.xml
+                        if [ ! -f "$f" ]; then
+                          echo "no config.xml yet, first run - nothing to do"
+                          exit 0
+                        fi
+                        set_element() {
+                          name=$1
+                          value=$2
+                          if grep -q "<$name>" "$f"; then
+                            sed -i "s#<$name>[^<]*</$name>#<$name>$value</$name>#g" "$f"
+                          else
+                            sed -i "s#</Config>#  <$name>$value</$name>\n</Config>#" "$f"
+                          fi
+                        }
+                        set_element AuthenticationMethod External
+                        set_element AuthenticationRequired DisabledForLocalAddresses
+                        grep -E "Authentication(Method|Required)" "$f"
+                    volumeMounts:
+                      - name: config
+                        mountPath: /config
   values:
     image: linuxserver/prowlarr:2.6.5
     config:

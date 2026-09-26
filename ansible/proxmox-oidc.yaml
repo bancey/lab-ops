@@ -1,0 +1,122 @@
+---
+# Configures an Entra ID OpenID Connect realm on every Proxmox node. The app registration and
+# the client secret are managed by terraform/components/entra; the pipeline downloads the secret
+# from Key Vault into a local file, as in rpi-ha.yaml. root@pam is left alone as break-glass.
+- name: Configure Entra ID OIDC realm on Proxmox
+  hosts: proxmox_tiny:proxmox_wanda
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: false
+  vars:
+    proxmox_oidc_realm: entra
+    proxmox_oidc_tenant_id: efc9b6c0-5193-43b1-a5a7-2ef3f29cd613
+    # Proxmox marks username-claim fixed, so it is only ever sent on realm creation.
+    proxmox_oidc_username_claim: email
+    proxmox_oidc_client_id: "{{ lookup('ansible.builtin.file', 'Entra-Proxmox-Client-ID') | trim }}"
+    proxmox_oidc_client_secret: "{{ lookup('ansible.builtin.file', 'Entra-Proxmox-Client-Secret') | trim }}"
+    # Object ID of the lab-admins Entra group. Proxmox suffixes autocreated group names with
+    # the realm name, so the group becomes "<object-id>-<realm>".
+    proxmox_oidc_admin_group_id: c01110e9-c46f-40b7-bc58-4832a4b4e11b
+  tasks:
+    - name: Check whether the OIDC realm already exists
+      ansible.builtin.command:
+        cmd: "pveum realm list --output-format json"
+      register: proxmox_realms
+      changed_when: false
+      # Read-only, and every task below branches on its output - without this the command is
+      # skipped under --check and the conditionals have nothing to evaluate.
+      check_mode: false
+
+    - name: Record the realms that already exist
+      ansible.builtin.set_fact:
+        proxmox_existing_realms: >-
+          {{ proxmox_realms.stdout | default('[]', true) | from_json | map(attribute='realm') | list }}
+
+    - name: Read the existing realm's configuration
+      ansible.builtin.command:
+        cmd: "pvesh get /access/domains/{{ proxmox_oidc_realm }} --output-format json"
+      register: proxmox_realm_config
+      changed_when: false
+      check_mode: false
+      when: proxmox_oidc_realm in proxmox_existing_realms
+
+    # Not fatal: the ACL below grants Administrator to the group, not to individual users, so a
+    # different claim changes what autocreated users are named rather than who has access.
+    - name: Warn when the realm's username claim cannot be converged
+      ansible.builtin.debug:
+        msg: >-
+          Realm '{{ proxmox_oidc_realm }}' names users from the '{{ proxmox_realm_claim }}' claim,
+          not '{{ proxmox_oidc_username_claim }}'. Proxmox marks username-claim fixed, so
+          'pveum realm modify' cannot change it. To converge, delete the realm and re-run this
+          playbook - that also drops the users and groups autocreated under it.
+      vars:
+        proxmox_realm_claim: "{{ (proxmox_realm_config.stdout | default('{}', true) | from_json)['username-claim'] | default('sub', true) }}"
+      when:
+        - proxmox_oidc_realm in proxmox_existing_realms
+        - proxmox_realm_claim != proxmox_oidc_username_claim
+
+    - name: Create the Entra ID OIDC realm
+      ansible.builtin.command:
+        argv:
+          - pveum
+          - realm
+          - add
+          - "{{ proxmox_oidc_realm }}"
+          - --type=openid
+          - "--issuer-url=https://login.microsoftonline.com/{{ proxmox_oidc_tenant_id }}/v2.0"
+          - "--client-id={{ proxmox_oidc_client_id }}"
+          - "--client-key={{ proxmox_oidc_client_secret }}"
+          - "--username-claim={{ proxmox_oidc_username_claim }}"
+          - --scopes=openid profile email
+          - --groups-claim=groups
+          - --groups-autocreate=1
+          - --groups-overwrite=1
+          - --autocreate=1
+      when: proxmox_oidc_realm not in proxmox_existing_realms
+      no_log: true
+      changed_when: true
+
+    - name: Update the Entra ID OIDC realm
+      ansible.builtin.command:
+        argv:
+          - pveum
+          - realm
+          - modify
+          - "{{ proxmox_oidc_realm }}"
+          - "--issuer-url=https://login.microsoftonline.com/{{ proxmox_oidc_tenant_id }}/v2.0"
+          - "--client-id={{ proxmox_oidc_client_id }}"
+          - "--client-key={{ proxmox_oidc_client_secret }}"
+          - --scopes=openid profile email
+          - --groups-claim=groups
+          - --groups-autocreate=1
+          - --groups-overwrite=1
+          - --autocreate=1
+      when: proxmox_oidc_realm in proxmox_existing_realms
+      no_log: true
+      changed_when: true
+
+    - name: Ensure the lab-admins group exists in Proxmox
+      ansible.builtin.command:
+        argv:
+          - pveum
+          - group
+          - add
+          - "{{ proxmox_oidc_admin_group_id }}-{{ proxmox_oidc_realm }}"
+          - --comment=lab-admins (Entra ID, managed by Ansible)
+      register: proxmox_group_add
+      failed_when:
+        - proxmox_group_add.rc != 0
+        - "'already exists' not in proxmox_group_add.stderr"
+      changed_when: proxmox_group_add.rc == 0
+
+    - name: Grant the lab-admins group Administrator on the root path
+      ansible.builtin.command:
+        argv:
+          - pveum
+          - acl
+          - modify
+          - /
+          - "--group={{ proxmox_oidc_admin_group_id }}-{{ proxmox_oidc_realm }}"
+          - --role=Administrator
+      changed_when: true

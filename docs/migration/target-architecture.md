@@ -265,7 +265,11 @@ The game servers have been decommissioned. This stream requires no active migrat
 
 ### Stream 7: Azure AD / Identity
 
-**Goal:** Remove all Azure AD / Entra ID dependencies.
+**Goal:** Remove the subscription-scoped Azure AD dependencies.
+
+> **Updated:** Entra ID itself is retained — it is the identity provider for lab SSO
+> (`docs/sso-operations.md`). Only the managed identity, KV reader group and `MSDN New`
+> service principal are in scope here.
 
 The managed identity and AAD group dependencies tied to the game server VMs have already been eliminated with the game server decommission. The remaining AAD dependency is:
 

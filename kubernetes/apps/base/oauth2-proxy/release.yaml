@@ -1,0 +1,68 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: oauth2-proxy
+  namespace: oauth2-proxy
+spec:
+  releaseName: oauth2-proxy
+  chart:
+    spec:
+      version: 10.7.0
+      chart: oauth2-proxy
+      sourceRef:
+        kind: HelmRepository
+        name: oauth2-proxy
+        namespace: flux-system
+  interval: 1h0m0s
+  timeout: 10m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    # The chart's own checksum/secret annotation hashes a template that renders nothing while
+    # existingSecret is set, so Reloader is what actually rolls the pods on a secret rotation.
+    deploymentAnnotations:
+      secret.reloader.stakater.com/reload: oauth2-proxy-entra
+    replicaCount: 2
+    config:
+      # client-id / client-secret / cookie-secret, rendered by terraform/components/entra.
+      existingSecret: oauth2-proxy-entra
+      # Fixed rather than defaulted to the release name, so the cookie issued by tiny is
+      # recognised by wanda and one login covers both clusters.
+      cookieName: _lab_oauth2_proxy
+    service:
+      portNumber: 80
+    # A list, not the map form the chart also accepts: repeated flags (cookie-domain,
+    # whitelist-domain) cannot be expressed as a map.
+    extraArgs:
+      - --provider=entra-id
+      - --oidc-issuer-url=https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/v2.0
+      # redirect-url is set per cluster in the overlay patch, and has to be explicit: the errors
+      # middleware proxies here carrying the *protected app's* Host header, so oauth2-proxy would
+      # otherwise infer the wrong callback URL.
+      - --scope=openid profile email offline_access
+      - --reverse-proxy=true
+      - --set-xauthrequest=true
+      - --pass-access-token=true
+      # One cookie across every lab hostname is what makes this single sign-on rather than
+      # sign-on-per-app. whitelist-domain allows rd= redirects back to those same hosts.
+      - --cookie-domain=.heimelska.co.uk
+      - --cookie-domain=.bancey.xyz
+      - --whitelist-domain=.heimelska.co.uk
+      - --whitelist-domain=.bancey.xyz
+      - --cookie-secure=true
+      - --cookie-refresh=1h
+      - --cookie-expire=168h
+      - --skip-provider-button=true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        memory: 256Mi

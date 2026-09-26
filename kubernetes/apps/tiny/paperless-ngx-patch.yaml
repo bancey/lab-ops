@@ -6,8 +6,24 @@ metadata:
   namespace: paperless-ngx
 spec:
   values:
+    # The provider config is an env var, fixed at pod creation, so a rotation needs a restart.
+    controller:
+      annotations:
+        secret.reloader.stakater.com/reload: paperless-oidc
     env:
       PAPERLESS_URL: "https://paperless.tiny.heimelska.co.uk"
+      # allauth wants the whole provider config, client secret included, as one JSON blob, so
+      # the Secret holds the rendered blob rather than the credential on its own.
+      #
+      # The regular Django login stays enabled on purpose. Set PAPERLESS_DISABLE_REGULAR_LOGIN
+      # and PAPERLESS_REDIRECT_LOGIN_TO_SSO to "true" only once an Entra sign-in has worked.
+      PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
+      PAPERLESS_SOCIAL_AUTO_SIGNUP: "true"
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS:
+        valueFrom:
+          secretKeyRef:
+            name: paperless-oidc
+            key: PAPERLESS_SOCIALACCOUNT_PROVIDERS
     persistence:
       data:
         storageClass: unas-nfs-csi

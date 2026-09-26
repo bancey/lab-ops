@@ -18,6 +18,8 @@ spec:
       middlewares:
         - name: default-headers
           namespace: traefik
+        - name: chain-admins
+          namespace: traefik
     - match: Host(`bunkerweb-mgmt.tiny.heimelska.co.uk`)
       kind: Rule
       services:
@@ -25,6 +27,8 @@ spec:
           port: 7000
       middlewares:
         - name: default-headers
+          namespace: traefik
+        - name: chain-admins
           namespace: traefik
   tls:
     secretName: bunkerwebmgmt-ui-tls

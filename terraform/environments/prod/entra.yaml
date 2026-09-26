@@ -1,0 +1,143 @@
+groups:
+  lab-admins:
+    description: "Full lab administration - Kubernetes, Proxmox, Traefik, BunkerWeb"
+    members:
+      - abance@bancey.xyz
+
+  lab-users:
+    description: "Household users - general purpose application access"
+    members:
+      - abance@bancey.xyz
+
+  lab-media:
+    description: "Media stack - Sonarr, Radarr, Prowlarr, SABnzbd"
+    members:
+      - abance@bancey.xyz
+
+  lab-infra:
+    description: "Infrastructure and monitoring UIs"
+    members:
+      - abance@bancey.xyz
+
+applications:
+  lab-oauth2-proxy:
+    display_name: "Lab oauth2-proxy"
+    description: "Traefik forwardAuth gateway for apps without native OIDC support"
+    key_vault_prefix: OAuth2-Proxy
+    redirect_uris:
+      - https://auth.tiny.heimelska.co.uk/oauth2/callback
+      - https://auth.wanda.heimelska.co.uk/oauth2/callback
+    secret:
+      enabled: true
+
+  lab-grafana:
+    display_name: "Lab Grafana"
+    key_vault_prefix: Grafana
+    redirect_uris:
+      - https://grafana.tiny.heimelska.co.uk/login/generic_oauth
+    secret:
+      enabled: true
+
+  lab-proxmox:
+    display_name: "Lab Proxmox VE"
+    key_vault_prefix: Proxmox
+    redirect_uris:
+      # Both routes to the web UI: through the BunkerWeb WAF names and direct on :8006.
+      - https://tiny-pve.heimelska.co.uk/
+      - https://wanda-pve.heimelska.co.uk/
+      - https://hela.heimelska.co.uk:8006/
+      - https://thor.heimelska.co.uk:8006/
+      - https://loki.heimelska.co.uk:8006/
+      - https://wanda.heimelska.co.uk:8006/
+    secret:
+      enabled: true
+
+  lab-vikunja:
+    display_name: "Lab Vikunja"
+    key_vault_prefix: Vikunja
+    redirect_uris:
+      - https://vikunja.tiny.heimelska.co.uk/auth/openid/entra
+    secret:
+      enabled: true
+
+  lab-paperless:
+    display_name: "Lab Paperless-ngx"
+    key_vault_prefix: Paperless
+    redirect_uris:
+      - https://paperless.tiny.heimelska.co.uk/accounts/oidc/entra/login/callback/
+    secret:
+      enabled: true
+
+  lab-gatus:
+    display_name: "Lab Gatus"
+    key_vault_prefix: Gatus
+    redirect_uris:
+      - https://gatus.thanos.heimelska.co.uk/authorization-code/callback
+      - https://gatus.gamora.heimelska.co.uk/authorization-code/callback
+    secret:
+      enabled: true
+
+  lab-kubernetes:
+    display_name: "Lab Kubernetes"
+    description: "K3s API server OIDC and Headlamp"
+    key_vault_prefix: Kubernetes
+    redirect_uris:
+      - https://headlamp.tiny.heimelska.co.uk/oidc-callback
+      - https://headlamp.wanda.heimelska.co.uk/oidc-callback
+      - http://localhost:8000/
+      - http://localhost:18000/
+    graph_scopes:
+      - openid
+      - profile
+      - email
+      - offline_access
+      - User.Read
+    secret:
+      enabled: true
+
+# Random values owned by Terraform and shared between secrets below. Because both oauth2-proxy
+# entries reference the same key here they are guaranteed to receive the same value, which is
+# what makes a session issued by one cluster valid on the other. Changing `length` regenerates
+# the value and logs everyone out.
+shared_random_secrets:
+  oauth2-proxy-cookie:
+    # oauth2-proxy uses this as an AES key, so it has to stay 16, 24 or 32.
+    length: 32
+
+# SOPS-encrypted Kubernetes Secrets, rendered and committed by terraform/components/entra.
+#
+# Terraform holds every value already - the client ID and secret come from the azuread resources
+# and the cookie secret from shared_random_secrets - so nothing is read back from Key Vault and
+# nothing is decrypted. A file is only re-rendered when one of its inputs actually changes.
+kubernetes_secrets:
+  - app: lab-oauth2-proxy
+    target: kubernetes/apps/tiny/oauth2-proxy-secret.sops.yaml
+    name: oauth2-proxy-entra
+    namespace: oauth2-proxy
+    shared_secrets:
+      cookie-secret: oauth2-proxy-cookie
+
+  - app: lab-oauth2-proxy
+    target: kubernetes/apps/wanda/oauth2-proxy-secret.sops.yaml
+    name: oauth2-proxy-entra
+    namespace: oauth2-proxy
+    shared_secrets:
+      cookie-secret: oauth2-proxy-cookie
+
+  - app: lab-grafana
+    target: kubernetes/apps/tiny/grafana-oidc-secret.sops.yaml
+    name: grafana-oidc
+    namespace: monitoring
+
+  - app: lab-vikunja
+    target: kubernetes/apps/tiny/vikunja-oidc-secret.sops.yaml
+    name: vikunja-oidc
+    namespace: vikunja
+
+  - app: lab-paperless
+    target: kubernetes/apps/tiny/paperless-ngx-oidc-secret.sops.yaml
+    name: paperless-oidc
+    namespace: paperless-ngx
+    # Paperless takes the whole provider config, client secret included, as one JSON blob.
+    extra_templates:
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect":{"APPS":[{"provider_id":"entra","name":"Entra ID","client_id":"{client_id}","secret":"{client_secret}","settings":{"server_url":"https://login.microsoftonline.com/efc9b6c0-5193-43b1-a5a7-2ef3f29cd613/v2.0/.well-known/openid-configuration"}}]}}'

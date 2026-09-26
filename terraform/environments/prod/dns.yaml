@@ -236,6 +236,10 @@ dns:
     record: 10.151.24.160
   qb.wanda.heimelska.co.uk:
     record: 10.151.24.160
+  auth.wanda.heimelska.co.uk:
+    record: 10.151.24.160
+  traefik.wanda.heimelska.co.uk:
+    record: 10.151.24.160
   pelican.heimelska.co.uk:
     record: 10.151.14.4
     twingate:
@@ -401,6 +405,10 @@ dns:
   headlamp.tiny.heimelska.co.uk:
     record: 10.151.24.10
   glance.tiny.heimelska.co.uk:
+    record: 10.151.24.10
+  auth.tiny.heimelska.co.uk:
+    record: 10.151.24.10
+  traefik.tiny.heimelska.co.uk:
     record: 10.151.24.10
   hass.heimelska.co.uk:
     record: 10.151.14.4

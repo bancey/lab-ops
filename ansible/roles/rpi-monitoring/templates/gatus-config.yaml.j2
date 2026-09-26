@@ -2,6 +2,9 @@ storage:
   type: sqlite
   path: /data/data.db
 
+web:
+  read-buffer-size: 32768
+
 ui:
   header: BanceTech Service Status
   link: "https://gatus.{{ inventory_hostname }}.heimelska.co.uk"
@@ -11,6 +14,26 @@ ui:
     - name: {{ host }}
       link: "https://gatus.{{ host }}.heimelska.co.uk"
 {% endfor %}
+
+{% set oidc_client_id = gatus_oidc_client_id | default('') | trim %}
+{% set oidc_client_secret = gatus_oidc_client_secret | default('') | trim %}
+{% if oidc_client_id | length > 0 and oidc_client_secret | length > 0 %}
+# Gatus has no group-based authorization, so allowed-subjects is the only gate beyond "is in the
+# tenant" - set gatus_oidc_allowed_subjects to narrow it to specific accounts.
+security:
+  oidc:
+    issuer-url: "https://login.microsoftonline.com/{{ gatus_oidc_tenant_id }}/v2.0"
+    redirect-url: "https://gatus.{{ inventory_hostname }}.heimelska.co.uk/authorization-code/callback"
+    client-id: "{{ oidc_client_id }}"
+    client-secret: "{{ oidc_client_secret }}"
+    scopes: ["openid"]
+{% if gatus_oidc_allowed_subjects | default([]) | length > 0 %}
+    allowed-subjects:
+{% for subject in gatus_oidc_allowed_subjects %}
+      - "{{ subject }}"
+{% endfor %}
+{% endif %}
+{% endif %}
 
 {% set discord_webhook = gatus_discord_webhook_url | default('') | trim %}
 {% set discord_enabled = discord_webhook | length > 0 %}
@@ -157,13 +180,39 @@ endpoints:
       - type: discord
         send-on-resolved: true
 {% endif %}
+  # Behind Entra SSO, so an unauthenticated probe gets redirected rather than served the UI.
+  # The 302 still proves Traefik, the route and oauth2-proxy are alive.
   - name: zigbee2mqtt
     group: services
     url: "https://zigbee2mqtt.tiny.heimelska.co.uk"
     interval: 1m
     conditions:
+      - "[STATUS] == 302"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
+
+  # oauth2-proxy's health endpoint: the thing to check first when every SSO-protected service
+  # starts failing at once.
+  - name: sso tiny
+    group: services
+    url: "https://auth.tiny.heimelska.co.uk/ping"
+    interval: 1m
+    conditions:
       - "[STATUS] == 200"
-      - "[BODY] == pat(*<title>Zigbee2MQTT</title>*)"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
+  - name: sso wanda
+    group: services
+    url: "https://auth.wanda.heimelska.co.uk/ping"
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
 {% if discord_enabled %}
     alerts:
       - type: discord

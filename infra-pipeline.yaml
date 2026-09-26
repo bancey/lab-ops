@@ -7,7 +7,7 @@ trigger:
     exclude:
       - ansible/hosts.yaml
       - ansible/templates/frr.conf
-      - kubernetes/*
+      - kubernetes/**
 
 pr:
   branches:
@@ -17,7 +17,7 @@ pr:
     exclude:
       - ansible/hosts.yaml
       - ansible/templates/frr.conf
-      - kubernetes/*
+      - kubernetes/**
 
 resources:
   repositories:
@@ -69,6 +69,24 @@ parameters:
         destroy: false
         deploy: true
         dependsOn: []
+      - deployment: prod_entra
+        environment: prod
+        component: entra
+        destroy: false
+        deploy: true
+        dependsOn: []
+        preSteps:
+          - template: steps/install-sops-age.yaml@azuredevops-lib
+            parameters:
+              sopsVersion: "v3.10.2"
+          - task: AzureCLI@2
+            displayName: Download GitHub Private Key
+            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+            inputs:
+              azureSubscription: "BTCS-PRODUCTION"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: az keyvault secret download --name GitHub-Bot-Private-Key --vault-name bancey-vault --file $(System.DefaultWorkingDirectory)/private-key.pem
       - deployment: prod_dns
         environment: prod
         component: dns
@@ -150,6 +168,8 @@ parameters:
           - Adguard-Thanos-Username
           - Adguard-Thanos-Password
           - Discord-Gatus-Webhook-URL
+          - Entra-Gatus-Client-ID
+          - Entra-Gatus-Client-Secret
         localEnvironments:
           - thanos
           - gamora
@@ -188,6 +208,20 @@ parameters:
         dependsOn:
           - generate_ansible_inventory
           - nut_server_ansible
+      - deployment: proxmox_oidc_ansible
+        environment: prod
+        playbook: proxmox-oidc.yaml
+        secrets:
+          - Entra-Proxmox-Client-ID
+          - Entra-Proxmox-Client-Secret
+        localEnvironments:
+          - hela
+          - loki
+          - thor
+          - wanda
+        dependsOn:
+          - generate_ansible_inventory
+          - prod_entra
 
 variables:
   - name: agentImage
@@ -254,6 +288,7 @@ stages:
                   runDestroy: ${{ and(eq(deployment.destroy, true), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}
               - ${{ if deployment.postStep }}:
                   - ${{ deployment.postStep }}
+
   - ${{ each ansible_deployment in parameters.ansible_deployments }}:
       - stage: ${{ ansible_deployment.deployment }}
         ${{ if and(ansible_deployment.localEnvironments, gt(length(join('', ansible_deployment.dependsOn)), 0)) }}:

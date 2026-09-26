@@ -1,0 +1,29 @@
+---
+# Host is injected per cluster by the Flux Kustomization in flux/clusters/<cluster>/app-dependencies.yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-dashboard-staging-tls
+  namespace: traefik
+spec:
+  secretName: traefik-dashboard-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "traefik-dashboard-fqdn"
+  dnsNames:
+    - "traefik-dashboard-fqdn"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-dashboard-tls
+  namespace: traefik
+spec:
+  secretName: traefik-dashboard-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "traefik-dashboard-fqdn"
+  dnsNames:
+    - "traefik-dashboard-fqdn"

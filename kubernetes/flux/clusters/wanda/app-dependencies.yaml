@@ -84,6 +84,16 @@ spec:
         kind: IngressRoute
         name: traefik-dashboard
     - patch: |
+        - op: replace
+          path: /spec/commonName
+          value: traefik.wanda.heimelska.co.uk
+        - op: replace
+          path: /spec/dnsNames/0
+          value: traefik.wanda.heimelska.co.uk
+      target:
+        kind: Certificate
+        name: traefik-dashboard-(staging-)?tls
+    - patch: |
         $patch: delete
         apiVersion: storage.k8s.io/v1
         kind: StorageClass

@@ -13,8 +13,12 @@ spec:
     - match: Host(`traefik.local`)
       kind: Rule
       middlewares:
-        - name: dashboard-basicauth
+        - name: default-headers
+          namespace: traefik
+        - name: chain-admins
           namespace: traefik
       services:
         - name: api@internal
           kind: TraefikService
+  tls:
+    secretName: traefik-dashboard-tls
