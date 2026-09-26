@@ -34,7 +34,7 @@ spec:
                 path: /spec/template/spec/initContainers
                 value:
                   - name: set-external-auth
-                    image: busybox:1.37
+                    image: busybox:1.38
                     command: ["/bin/sh", "-c"]
                     args:
                       - |
