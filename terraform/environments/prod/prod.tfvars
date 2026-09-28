@@ -13,7 +13,7 @@ cloudflare_records = {
   "vps01.heimelska.co.uk" = {
     type    = "CNAME"
     value   = "vps-a1b66cea.vps.ovh.net"
-    proxied = true
+    proxied = false
     ttl     = 1
     zone    = "lab"
   }
