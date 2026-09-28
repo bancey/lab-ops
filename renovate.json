@@ -76,7 +76,7 @@
         "/^infra-pipeline.yaml$/"
       ],
       "matchStrings": [
-        "cacheKeyPrefix: ovhcloud-(?<currentValue>v[^\\s]+)",
+        "cacheKeyPrefix: '\\\"ovhcloud-(?<currentValue>v[^\\\"]+)",
         "https://github.com/ovh/ovhcloud-cli/releases/download/(?<currentValue>v[^/]+)/"
       ],
       "depNameTemplate": "ovh/ovhcloud-cli",
