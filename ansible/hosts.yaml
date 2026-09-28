@@ -79,6 +79,12 @@ all:
           ansible_host: 10.151.14.13
         loki:
           ansible_host: 10.151.14.14
+    cloud:
+      vars:
+        ansible_user: ubuntu
+      hosts:
+        vps01.heimelska.co.uk:
+          ansible_host: vps01.heimelska.co.uk
     tiny_k3s_cluster:
       vars:
         k3s_etcd_datastore: true
