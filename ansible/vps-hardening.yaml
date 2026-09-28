@@ -1,0 +1,8 @@
+- name: Harden cloud VPS hosts
+  hosts: cloud
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - role: harden-ubuntu

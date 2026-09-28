@@ -1,0 +1,29 @@
+## {{ ansible_managed }}
+
+# Identity and privilege changes
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers
+
+# Remote access configuration
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd
+-w /root/.ssh/ -p wa -k ssh_keys
+{% for user in harden_ssh_allowed_users %}
+-w /home/{{ user }}/.ssh/ -p wa -k ssh_keys
+{% endfor %}
+
+# Firewall and fail2ban configuration
+-w /etc/ufw/ -p wa -k firewall
+-w /etc/fail2ban/ -p wa -k fail2ban
+
+# Scheduled tasks
+-w /etc/crontab -p wa -k cron
+-w /etc/cron.d/ -p wa -k cron
+-w /etc/systemd/system/ -p wa -k systemd
+
+# Kernel module loading
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k modules
