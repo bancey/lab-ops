@@ -49,6 +49,12 @@ all:
           ansible_host: 10.151.14.13
         loki:
           ansible_host: 10.151.14.14
+    cloud:
+      vars:
+        ansible_user: ubuntu
+      hosts:
+        vps01.heimelska.co.uk:
+          ansible_host: vps01.heimelska.co.uk
 %{ for cluster_key, cluster in k8s ~}
     ${ cluster_key }:
       vars:
