@@ -3,6 +3,8 @@ all:
   vars:
     ansible_user: bancey
   hosts:
+    openziti:
+      ansible_host: 10.151.14.230
     haproxy0:
       ansible_host: 10.151.16.201
       ansible_user: root
@@ -85,6 +87,20 @@ all:
       hosts:
         vps01.heimelska.co.uk:
           ansible_host: vps01.heimelska.co.uk
+    openziti_controller:
+      hosts:
+        vps01.heimelska.co.uk:
+    openziti_public_routers:
+      hosts:
+        vps01.heimelska.co.uk:
+    openziti_private_routers:
+      hosts:
+        openziti:
+        nebula:
+    openziti_routers:
+      children:
+        openziti_public_routers:
+        openziti_private_routers:
     tiny_k3s_cluster:
       vars:
         k3s_etcd_datastore: true

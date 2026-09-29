@@ -1,0 +1,18 @@
+---
+# Records whether this router already holds an enrolled identity, so the controller
+# only issues enrollment tokens for routers that need one. Runs on every router.
+
+- name: Check for router identity
+  ansible.builtin.stat:
+    path: /var/lib/ziti-router/router.cert
+  register: openziti_router_cert
+
+# set_fact rather than role defaults so the controller play can read these through
+# hostvars
+- name: Record router settings and enrollment state
+  ansible.builtin.set_fact:
+    openziti_router_enrolled: "{{ openziti_router_cert.stat.exists }}"
+    openziti_router:
+      name: "{{ openziti_router_name }}"
+      tunneler_enabled: "{{ openziti_router_mode != 'none' }}"
+      role_attributes: "{{ openziti_router_role_attributes }}"

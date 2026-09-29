@@ -571,8 +571,23 @@ dns:
           - AzureDevOps
   sql.heimelska.co.uk:
     record: 10.151.14.219
-  ziti.heimelska.co.uk:
+  openziti.heimelska.co.uk:
     record: 10.151.14.230
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 22
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - all
+        service_accounts:
+          - AzureDevOps
   postgresql0.heimelska.co.uk:
     record: 10.151.14.220
     twingate:

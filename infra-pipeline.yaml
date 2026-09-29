@@ -250,6 +250,42 @@ parameters:
           - script: ./scripts/ovh-firewall-rule.sh close vps-a1b66cea.vps.ovh.net 18
             displayName: Remove Agent SSH Rule From OVH Firewall
             condition: always()
+      - deployment: openziti_ansible
+        environment: prod
+        playbook: openziti.yaml
+        secrets:
+          - OpenZiti-Admin-Username
+          - OpenZiti-Admin-Password
+        localEnvironments:
+          - loki
+          - nebula
+        dependsOn:
+          - generate_ansible_inventory
+          - prod_dns
+          - tiny_virtual_machines
+          - vps_hardening_ansible
+        preSteps:
+          - template: steps/install-tools.yaml@azuredevops-lib
+            parameters:
+              cacheKeyPrefix: '"ovhcloud-v0.15.0"'
+              tools:
+                - name: ovhcloud
+                  downloadUrl: https://github.com/ovh/ovhcloud-cli/releases/download/v0.15.0/ovhcloud-cli_Linux_x86_64.tar.gz
+          - task: AzureCLI@2
+            displayName: Get OVHcloud Credentials
+            inputs:
+              azureSubscription: "BTCS-PRODUCTION"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az keyvault secret download --name ovh-conf --vault-name bancey-vault --file ~/.ovh.conf
+                chmod 600 ~/.ovh.conf
+          - script: ./scripts/ovh-firewall-rule.sh open vps-a1b66cea.vps.ovh.net 18
+            displayName: Allow Agent SSH Through OVH Firewall
+        postSteps:
+          - script: ./scripts/ovh-firewall-rule.sh close vps-a1b66cea.vps.ovh.net 18
+            displayName: Remove Agent SSH Rule From OVH Firewall
+            condition: always()
 
 variables:
   - name: agentImage

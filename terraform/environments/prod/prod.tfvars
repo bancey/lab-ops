@@ -17,6 +17,13 @@ cloudflare_records = {
     ttl     = 1
     zone    = "lab"
   }
+  "ziti.heimelska.co.uk" = {
+    type    = "CNAME"
+    value   = "vps-a1b66cea.vps.ovh.net"
+    proxied = false
+    ttl     = 1
+    zone    = "lab"
+  }
 }
 
 kubernetes_virtual_machines = {
@@ -75,7 +82,7 @@ virtual_machines = {
   openziti = {
     node                = "loki"
     vm_id               = 290
-    vm_description      = "OpenZiti phase 1 controller + edge router"
+    vm_description      = "OpenZiti private edge router"
     cpu_cores           = 2
     memory              = 4096
     ip_address          = "10.151.14.230"
@@ -287,16 +294,6 @@ ansible = {
     nodes    = ["hela", "loki", "thor"]
     playbook = "matter-server.yaml"
     trigger  = "23-02-2026-0830"
-  }
-  "openziti" = {
-    nodes    = ["hela", "loki", "thor"]
-    playbook = "openziti.yaml"
-    secrets = {
-      "openziti_admin_username" = "OpenZiti-Admin-Username"
-      "openziti_admin_password" = "OpenZiti-Admin-Password"
-    }
-    arguments = " -e openziti_controller_address=ziti.heimelska.co.uk -e openziti_test_identity_name=phase1-test-user -e openziti_test_service_name=wanda-pve -e openziti_test_service_host=10.151.14.11 -e openziti_test_service_port=8006"
-    trigger   = "23-09-2026-1458"
   }
   "mariadb" = {
     nodes    = ["hela", "loki", "thor"]

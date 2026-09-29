@@ -1,0 +1,36 @@
+---
+# Runs on the controller. Creates the edge router for every host in
+# openziti_routers that has no identity yet (or re-enrolls it, e.g. after the host
+# was rebuilt) and exposes the one-time JWTs as openziti_enrollment_tokens, keyed by
+# inventory hostname, for the router play to consume.
+
+- name: Issue router enrollment tokens
+  ansible.builtin.shell: |
+    set -euo pipefail
+    jwt="$(mktemp)"
+    trap 'rm -f "$jwt"' EXIT
+    if [ "$(ziti edge list edge-routers {{ ('name="' ~ router.name ~ '"') | quote }} -j | jq '.data | length')" -eq 0 ]; then
+      ziti edge create edge-router {{ router.name | quote }} \
+        {{ '--tunneler-enabled' if router.tunneler_enabled else '' }} \
+        --role-attributes {{ router.role_attributes | join(',') | quote }} \
+        --jwt-output-file "$jwt" >/dev/null
+    else
+      ziti edge re-enroll edge-router {{ router.name | quote }} --jwt-output-file "$jwt" >/dev/null
+    fi
+    cat "$jwt"
+  args:
+    executable: /bin/bash
+  vars:
+    router: "{{ hostvars[item].openziti_router }}"
+  loop: "{{ groups['openziti_routers'] }}"
+  when:
+    - not ansible_check_mode
+    - not hostvars[item].openziti_router_enrolled | default(false)
+  register: openziti_router_tokens
+  changed_when: true
+  no_log: true
+
+- name: Collect router enrollment tokens
+  ansible.builtin.set_fact:
+    openziti_enrollment_tokens: "{{ openziti_router_tokens.results | rejectattr('skipped', 'defined') | items2dict(key_name='item', value_name='stdout') }}"
+  no_log: true
