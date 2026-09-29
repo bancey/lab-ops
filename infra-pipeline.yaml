@@ -225,7 +225,6 @@ parameters:
       - deployment: vps_hardening_ansible
         environment: prod
         playbook: vps-hardening.yaml
-        debug: true
         secrets: []
         dependsOn:
           - generate_ansible_inventory
