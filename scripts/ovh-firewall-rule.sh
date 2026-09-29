@@ -109,6 +109,7 @@ case "$ACTION" in
       --source "${AGENT_IP}/32" \
       --destination-port "$PORT"
     wait_for_state ok
+    sleep 25
     ;;
   close)
     delete_rule
