@@ -247,9 +247,6 @@ parameters:
                 chmod 600 ~/.ovh.conf
           - script: ./scripts/ovh-firewall-rule.sh open vps-a1b66cea.vps.ovh.net 18
             displayName: Allow Agent SSH Through OVH Firewall
-          - script: |
-              dig vps01.heimelska.co.uk
-              ssh ubuntu@vps01.heimelska.co.uk -vvv
         postSteps:
           - script: ./scripts/ovh-firewall-rule.sh close vps-a1b66cea.vps.ovh.net 18
             displayName: Remove Agent SSH Rule From OVH Firewall
