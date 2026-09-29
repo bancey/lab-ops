@@ -52,6 +52,17 @@
   ansible.builtin.command: /usr/sbin/sshd -t
   changed_when: false
 
+- name: Check whether sshd is socket-activated
+  ansible.builtin.command: systemctl is-enabled ssh.socket
+  register: harden_ssh_socket
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Record sshd activation mode
+  ansible.builtin.set_fact:
+    harden_ssh_socket_activated: "{{ harden_ssh_socket.stdout == 'enabled' }}"
+
 - name: Lock root password
   ansible.builtin.user:
     name: root
@@ -71,13 +82,41 @@
     comment: ssh
   when: not ansible_check_mode or 'ufw' not in harden_missing_packages
 
+# Extra ports carry a role-owned comment so that ports dropped from
+# harden_ufw_allowed_ports can be found and removed again, without touching rules
+# added by hand or by anything else
 - name: Allow additional ports through UFW
   community.general.ufw:
     rule: allow
     port: "{{ item.port | string }}"
     proto: "{{ item.proto | default('tcp') }}"
+    comment: "{{ harden_ufw_rule_comment }}"
   loop: "{{ harden_ufw_allowed_ports }}"
   when: not ansible_check_mode or 'ufw' not in harden_missing_packages
+
+- name: List UFW rules
+  ansible.builtin.command: ufw show added
+  register: harden_ufw_added
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode or 'ufw' not in harden_missing_packages
+
+# "ufw show added" prints one line per rule, e.g. ufw allow 443/tcp comment 'harden-ubuntu'
+- name: Work out which role-managed UFW rules are no longer wanted
+  ansible.builtin.set_fact:
+    harden_ufw_stale_rules: "{{ harden_ufw_managed | difference(harden_ufw_wanted) }}"
+  vars:
+    harden_ufw_managed: "{{ harden_ufw_added.stdout | regex_findall(\"^ufw allow (\\S+) comment '\" ~ harden_ufw_rule_comment ~ \"'$\", multiline=True) }}"
+    harden_ufw_wanted: "{{ harden_ufw_allowed_ports | map(attribute='port') | map('string') | zip(harden_ufw_allowed_ports | map(attribute='proto', default='tcp')) | map('join', '/') | list }}"
+  when: harden_ufw_added is not skipped
+
+- name: Remove UFW rules for ports no longer in harden_ufw_allowed_ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.split('/')[0] }}"
+    proto: "{{ item.split('/')[1] }}"
+    delete: true
+  loop: "{{ harden_ufw_stale_rules | default([]) }}"
 
 - name: Enable UFW with default deny incoming
   community.general.ufw:

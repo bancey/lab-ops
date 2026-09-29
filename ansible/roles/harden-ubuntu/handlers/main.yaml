@@ -1,8 +1,22 @@
 ---
-- name: restart ssh
+# Ubuntu 24.04+ socket-activates sshd: sshd-socket-generator derives ssh.socket's
+# ListenStream from sshd's Port at daemon-reload, so a port change only takes effect
+# once the socket itself is restarted. KillMode=process keeps existing sessions alive.
+- name: restart ssh socket
+  ansible.builtin.systemd:
+    name: ssh.socket
+    state: restarted
+    daemon_reload: true
+  listen: restart ssh
+  when:
+    - not ansible_check_mode
+    - harden_ssh_socket_activated
+
+- name: restart ssh service
   ansible.builtin.systemd:
     name: ssh
     state: restarted
+  listen: restart ssh
   when: not ansible_check_mode
 
 - name: restart fail2ban

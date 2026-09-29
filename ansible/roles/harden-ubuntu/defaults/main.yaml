@@ -2,12 +2,17 @@
 # Only these users may log in over SSH (sshd AllowUsers)
 harden_ssh_allowed_users:
   - ubuntu
+# Changing this also needs ansible_port set in the inventory and the OVH edge
+# firewall rules (including the pipeline's, see scripts/ovh-firewall-rule.sh) updated
 harden_ssh_port: 22
 
 # Host firewall (UFW), layered under the OVH edge firewall. SSH is always allowed
-# (rate-limited); list anything else the host should serve here, e.g.
+# (brute force is left to fail2ban, not UFW rate limiting); list anything else the
+# host should serve here, e.g.
 #   - { port: 443, proto: tcp }
+# Removing an entry removes its rule on the next run.
 harden_ufw_allowed_ports: []
+harden_ufw_rule_comment: harden-ubuntu
 
 # fail2ban
 harden_fail2ban_ignoreip:

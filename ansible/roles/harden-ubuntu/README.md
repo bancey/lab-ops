@@ -9,9 +9,13 @@ OVH VPS front door, `vps01`). Applied by `ansible/vps-hardening.yaml`.
   `unattended-upgrades`, `needrestart`
 - **SSH**: drop-in `/etc/ssh/sshd_config.d/00-hardening.conf` — key-only auth, no root
   login, `AllowUsers`, short grace time, no forwarding/X11, verbose logging. Validated
-  with `sshd -t` before the restart handler runs
+  with `sshd -t` before the restart handler runs. On socket-activated hosts (Ubuntu
+  24.04+) the handler also daemon-reloads and restarts `ssh.socket`, which is where the
+  listen port actually comes from
 - Locks the root password
-- **UFW**: default deny incoming, SSH allowed, plus `harden_ufw_allowed_ports`
+- **UFW**: default deny incoming, SSH allowed, plus `harden_ufw_allowed_ports`. Those
+  extra rules are tagged with the `harden-ubuntu` comment, and tagged rules whose port
+  is no longer listed are deleted; untagged rules are never touched
 - **fail2ban**: `sshd` jail (systemd backend, aggressive mode) and `recidive` jail,
   banning via UFW with incremental ban times
 - **unattended-upgrades**: security + updates pockets, optional automatic reboot
@@ -32,7 +36,7 @@ See `defaults/main.yaml`. The ones most likely to change:
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `harden_ssh_allowed_users` | `[ubuntu]` | sshd `AllowUsers` — anyone not listed is locked out |
-| `harden_ssh_port` | `22` | Changing it also needs the OVH edge firewall rules updated |
+| `harden_ssh_port` | `22` | Changing it also needs `ansible_port` in the inventory and the OVH edge firewall rules updated |
 | `harden_ufw_allowed_ports` | `[]` | Extra `{port, proto}` entries to open in UFW |
 | `harden_fail2ban_ignoreip` | loopback | Addresses fail2ban never bans |
 | `harden_auto_reboot` / `harden_auto_reboot_time` | `true` / `04:00` | unattended-upgrades reboot behaviour |
