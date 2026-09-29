@@ -17,6 +17,13 @@ cloudflare_records = {
     ttl     = 1
     zone    = "lab"
   }
+  "ziti.heimelska.co.uk" = {
+    type    = "CNAME"
+    value   = "vps-a1b66cea.vps.ovh.net"
+    proxied = false
+    ttl     = 1
+    zone    = "lab"
+  }
 }
 
 kubernetes_virtual_machines = {
@@ -71,7 +78,23 @@ kubernetes_virtual_machines = {
   }
 }
 
-virtual_machines = {}
+virtual_machines = {
+  openziti = {
+    node                = "loki"
+    vm_id               = 290
+    vm_description      = "OpenZiti private edge router"
+    cpu_cores           = 2
+    memory              = 4096
+    ip_address          = "10.151.14.230"
+    gateway_ip_address  = "10.151.14.1"
+    network_bridge_name = "vmbr0"
+    startup_order       = 3
+    startup_delay       = 10
+    storage             = "local-lvm"
+    disk_size           = 30
+    image               = "noble-server-cloudimg-amd64.img"
+  }
+}
 
 containers = {
   haproxy0 = {

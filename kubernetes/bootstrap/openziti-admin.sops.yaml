@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openziti-admin
+  namespace: flux-system
+stringData:
+  username: ENC[AES256_GCM,data:wPBAyWih2WfASHPOkTw=,iv:a3RKgLs+5rs6tf2Lc4EXji832b0Gt3/sonQ5zkoMM20=,tag:j31D7d/t7oST37tn+C4sWQ==,type:str]
+  password: ENC[AES256_GCM,data:2SeSE3GEygfqSEKb1YEmFkUS6r+ygQMOLVtGOupGzw==,iv:qOBVulx8d8NUCAhkWQZhC++uIEzK79mvyBzqg4kkVv0=,tag:W3yutgcM0Ir23rbCpM5qtg==,type:str]
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  hc_vault: []
+  age:
+  - recipient: age1m604fu0zt3dnypzq4nasx63mzzzcx49dxngwe7aj8vr0x8pm63jqfsjuyq
+    enc: '-----BEGIN AGE ENCRYPTED FILE-----
+
+      YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA0Y1ZqUjBtWTBlWlN2cDA2
+
+      Y3JtTVlIL242a05aNlJTVmFrcjQxOTlaelJRCmNVMnFFM0Y5VHMvQkxtaDVrMTU4
+
+      Q29LaDVDQ3o1akFVWVBxK01CU2JvLzgKLS0tIFRacndYRDVMRlRGSXBtc0ZZM0Nw
+
+      MUh5TkRxbERlMHBLelhkem5LR0ZMK1UK0JJf5ZAwVmJv/2/NMzpLOXoDpSsnE/zQ
+
+      kz1pJ3+ABn/r9kE0B+EVvWqn65YZhy3kudH++odvAgQXBRq7+9EXNA==
+
+      -----END AGE ENCRYPTED FILE-----
+
+      '
+  lastmodified: '2026-09-23T15:01:10Z'
+  mac: ENC[AES256_GCM,data:QU7Xtgyz0qcQ6tv6OQsyukFo3FOIlLWZHbsiFWzdCUl5P8QX30NeL/xBFbqxOGwUX9otCLR5g4GUIAdNFgYS6r5TqebELMzEfy8vL3Gg2obC3/bTewY4XnkLa2wmWef8r7QeFZPyKSgqi+T14v0HjBXvyU62Ek/0B0FYjlo9OTU=,iv:LSc/v9aiyeGkHRuW8kODwCHx48eA3mU8c8DGXDUQI1U=,tag:d/BLLbZ9wWqalLiV9P72kA==,type:str]
+  pgp: []
+  encrypted_regex: ^(data|stringData)$
+  version: 3.9.0

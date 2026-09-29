@@ -1,0 +1,78 @@
+---
+# Bootstraps a single-node controller with the package's own bootstrap.bash, driven
+# non-interactively by environment variables. It runs once: the generated
+# /var/lib/ziti-controller/config.yml is the source of truth afterwards.
+
+# bootstrap.bash writes answers with sed/word-splitting, so characters like spaces,
+# quotes, | or * in the password break it (or end up in the wrong place)
+- name: Check the admin password is bootstrap-safe
+  ansible.builtin.assert:
+    that:
+      - openziti_admin_password is regex('^[A-Za-z0-9!@#%^_+~.=-]{16,}$')
+    fail_msg: >-
+      OpenZiti-Admin-Password must be at least 16 characters from
+      A-Z a-z 0-9 ! @ # % ^ _ + ~ . = -
+    quiet: true
+  no_log: true
+
+- name: Install the web console
+  ansible.builtin.apt:
+    pkg: openziti-console
+    state: present
+  when: openziti_console_enabled and openziti_cli.stat.exists
+
+# service.env values take precedence over the environment in bootstrap.bash, so the
+# console flag has to be set here rather than passed in
+- name: Set console bootstrap flag
+  ansible.builtin.lineinfile:
+    path: /opt/openziti/etc/controller/service.env
+    regexp: '^ZITI_BOOTSTRAP_CONSOLE='
+    line: "ZITI_BOOTSTRAP_CONSOLE='{{ openziti_console_enabled | lower }}'"
+  when: openziti_cli.stat.exists
+
+- name: Bootstrap controller PKI, config and database
+  ansible.builtin.command: /opt/openziti/etc/controller/bootstrap.bash
+  args:
+    creates: /var/lib/ziti-controller/config.yml
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+    ZITI_CTRL_ADVERTISED_ADDRESS: "{{ openziti_ctrl_address }}"
+    ZITI_CTRL_ADVERTISED_PORT: "{{ openziti_ctrl_port | string }}"
+    ZITI_BOOTSTRAP_CLUSTER: "true"
+    ZITI_USER: "{{ openziti_admin_username }}"
+    ZITI_PWD: "{{ openziti_admin_password }}"
+  no_log: true
+  when: openziti_cli.stat.exists
+
+- name: Enable and start controller
+  ansible.builtin.systemd:
+    name: ziti-controller
+    enabled: true
+    state: started
+  when: not ansible_check_mode
+
+- name: Wait for controller API
+  ansible.builtin.wait_for:
+    port: "{{ openziti_ctrl_port }}"
+    host: 127.0.0.1
+    timeout: 120
+  when: not ansible_check_mode
+
+# Log in over loopback against the controller's own root CA so the session doesn't
+# depend on public DNS. The CLI keeps the session in root's config for later tasks.
+- name: Log in to controller
+  ansible.builtin.command: >-
+    ziti edge login localhost:{{ openziti_ctrl_port }}
+    --ca /var/lib/ziti-controller/pki/root/certs/root.cert
+    -u {{ openziti_admin_username | quote }} -p {{ openziti_admin_password | quote }}
+  changed_when: false
+  no_log: true
+  when: not ansible_check_mode
+
+- name: Ensure artifacts directory exists
+  ansible.builtin.file:
+    path: "{{ openziti_artifacts_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'

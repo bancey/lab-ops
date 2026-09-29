@@ -55,6 +55,20 @@ all:
       hosts:
         vps01.heimelska.co.uk:
           ansible_host: vps01.heimelska.co.uk
+    openziti_controller:
+      hosts:
+        vps01.heimelska.co.uk:
+    openziti_public_routers:
+      hosts:
+        vps01.heimelska.co.uk:
+    openziti_private_routers:
+      hosts:
+        openziti:
+        nebula:
+    openziti_routers:
+      children:
+        openziti_public_routers:
+        openziti_private_routers:
 %{ for cluster_key, cluster in k8s ~}
     ${ cluster_key }:
       vars:

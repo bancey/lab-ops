@@ -146,6 +146,7 @@ To create a new logical stack:
 - **`matter-server.yaml`**: Matter smart home server deployment, plus an OpenThread Border Router (OTBR) connecting to the SLZB-MR1U's Thread radio over TCP for Matter-over-Thread
 - **`scansnap.yaml`**: ScanSnap iX500 one-button scan-to-Paperless-ngx workflow (targets `gamora`)
 - **`vps-hardening.yaml`**: Baseline hardening (SSH, UFW, fail2ban, unattended-upgrades, sysctl, auditd) for the OVH VPS front door (targets `cloud`). The pipeline opens OVH edge firewall rule #18 for the hosted agent's IP before the run and removes it afterwards (`scripts/ovh-firewall-rule.sh`)
+- **`openziti.yaml`**: OpenZiti controller + public edge router on the VPS and private (outbound-only) edge routers at home (`openziti_*` inventory groups), via the `openziti` role. See `docs/openziti.md`
 
 ## Roles
 
