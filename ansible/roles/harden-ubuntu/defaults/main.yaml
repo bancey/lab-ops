@@ -1,0 +1,41 @@
+---
+# Only these users may log in over SSH (sshd AllowUsers)
+harden_ssh_allowed_users:
+  - ubuntu
+# Changing this also needs ansible_port set in the inventory and the OVH edge
+# firewall rules (including the pipeline's, see scripts/ovh-firewall-rule.sh) updated
+harden_ssh_port: 22
+
+# Host firewall (UFW), layered under the OVH edge firewall. SSH is always allowed
+# (brute force is left to fail2ban, not UFW rate limiting); list anything else the
+# host should serve here, e.g.
+#   - { port: 443, proto: tcp }
+# Removing an entry removes its rule on the next run.
+harden_ufw_allowed_ports: []
+harden_ufw_rule_comment: harden-ubuntu
+
+# fail2ban
+harden_fail2ban_ignoreip:
+  - 127.0.0.1/8
+  - ::1
+harden_fail2ban_bantime: 1h
+harden_fail2ban_findtime: 10m
+harden_fail2ban_maxretry: 5
+# Repeat offenders get exponentially longer bans, capped at this
+harden_fail2ban_bantime_maxtime: 1w
+
+# unattended-upgrades
+harden_auto_reboot: true
+harden_auto_reboot_time: "04:00"
+
+# Cap on persistent journald storage
+harden_journald_max_use: 500M
+
+harden_packages:
+  - apparmor
+  - auditd
+  - fail2ban
+  - needrestart
+  - python3-systemd
+  - ufw
+  - unattended-upgrades

@@ -222,6 +222,34 @@ parameters:
         dependsOn:
           - generate_ansible_inventory
           - prod_entra
+      - deployment: vps_hardening_ansible
+        environment: prod
+        playbook: vps-hardening.yaml
+        secrets: []
+        dependsOn:
+          - generate_ansible_inventory
+        preSteps:
+          - template: steps/install-tools.yaml@azuredevops-lib
+            parameters:
+              cacheKeyPrefix: '"ovhcloud-v0.15.0"'
+              tools:
+                - name: ovhcloud
+                  downloadUrl: https://github.com/ovh/ovhcloud-cli/releases/download/v0.15.0/ovhcloud-cli_Linux_x86_64.tar.gz
+          - task: AzureCLI@2
+            displayName: Get OVHcloud Credentials
+            inputs:
+              azureSubscription: "BTCS-PRODUCTION"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                az keyvault secret download --name ovh-conf --vault-name bancey-vault --file ~/.ovh.conf
+                chmod 600 ~/.ovh.conf
+          - script: ./scripts/ovh-firewall-rule.sh open vps-a1b66cea.vps.ovh.net 18
+            displayName: Allow Agent SSH Through OVH Firewall
+        postSteps:
+          - script: ./scripts/ovh-firewall-rule.sh close vps-a1b66cea.vps.ovh.net 18
+            displayName: Remove Agent SSH Rule From OVH Firewall
+            condition: always()
 
 variables:
   - name: agentImage
@@ -302,30 +330,37 @@ stages:
               - template: jobs/hosts-online-precheck.yaml@azuredevops-lib
                 parameters:
                   localEnvironments: ${{ ansible_deployment.localEnvironments }}
-              - job: AnsibleCheckRun
-                ${{ if ansible_deployment.localEnvironments }}:
-                  dependsOn: AllHostsOnlinePreCheck
-                  condition: and(succeeded(), eq(dependencies.AllHostsOnlinePreCheck.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
-                ${{ else }}:
-                  condition: succeeded()
-                pool:
-                  vmImage: $(agentImage)
-                steps:
+          - job: AnsibleCheckRun
+            ${{ if ansible_deployment.localEnvironments }}:
+              dependsOn: AllHostsOnlinePreCheck
+              condition: and(succeeded(), eq(dependencies.AllHostsOnlinePreCheck.outputs['consolidate_hosts_online.allHostsOnline'], 'true'))
+            ${{ else }}:
+              condition: succeeded()
+            pool:
+              vmImage: $(agentImage)
+            steps:
+              - ${{ if ansible_deployment.localEnvironments }}:
                   - template: steps/twingate-connect.yaml@azuredevops-lib
                     parameters:
                       keyVaultName: bancey-vault
                       serviceKeySecretName: Twingate-AzureDevOps-SA-Key
                       serviceConnection: $(serviceConnection)
-                  - script: |
-                      git fetch origin main
-                      git checkout FETCH_HEAD -- ansible/hosts.yaml
-                    displayName: Refresh generated Ansible inventory
-                    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-                  - template: steps/ansible.yaml@azuredevops-lib
-                    parameters:
-                      serviceConnection: $(serviceConnection)
-                      keyVaultName: bancey-vault
-                      privateKeySecretName: Packer-Private-Key
-                      playbook: ${{ ansible_deployment.playbook }}
-                      secrets: ${{ ansible_deployment.secrets }}
-                      requirementsFile: ${{ ansible_deployment.requirementsFile }}
+              - script: |
+                  git fetch origin main
+                  git checkout FETCH_HEAD -- ansible/hosts.yaml
+                displayName: Refresh generated Ansible inventory
+                condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+              - ${{ if ansible_deployment.preSteps }}:
+                  - ${{ ansible_deployment.preSteps }}
+              - template: steps/ansible.yaml@azuredevops-lib
+                parameters:
+                  serviceConnection: $(serviceConnection)
+                  keyVaultName: bancey-vault
+                  privateKeySecretName: Packer-Private-Key
+                  playbook: ${{ ansible_deployment.playbook }}
+                  secrets: ${{ ansible_deployment.secrets }}
+                  requirementsFile: ${{ ansible_deployment.requirementsFile }}
+                  ${{ if ansible_deployment.debug }}:
+                    verbosity: -vvv
+              - ${{ if ansible_deployment.postSteps }}:
+                  - ${{ ansible_deployment.postSteps }}
