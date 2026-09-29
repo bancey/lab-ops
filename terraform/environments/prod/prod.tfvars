@@ -10,6 +10,13 @@ cloudflare_records = {
     ttl     = 1
     zone    = "lab"
   }
+  "vps01.heimelska.co.uk" = {
+    type    = "CNAME"
+    value   = "vps-a1b66cea.vps.ovh.net"
+    proxied = false
+    ttl     = 1
+    zone    = "lab"
+  }
 }
 
 kubernetes_virtual_machines = {

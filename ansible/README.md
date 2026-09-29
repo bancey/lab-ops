@@ -145,6 +145,7 @@ To create a new logical stack:
 - **`nut-client.yaml`**: NUT UPS monitoring client setup (targets both proxmox_tiny and proxmox_wanda)
 - **`matter-server.yaml`**: Matter smart home server deployment, plus an OpenThread Border Router (OTBR) connecting to the SLZB-MR1U's Thread radio over TCP for Matter-over-Thread
 - **`scansnap.yaml`**: ScanSnap iX500 one-button scan-to-Paperless-ngx workflow (targets `gamora`)
+- **`vps-hardening.yaml`**: Baseline hardening (SSH, UFW, fail2ban, unattended-upgrades, sysctl, auditd) for the OVH VPS front door (targets `cloud`). The pipeline opens OVH edge firewall rule #18 for the hosted agent's IP before the run and removes it afterwards (`scripts/ovh-firewall-rule.sh`)
 
 ## Roles
 
@@ -160,6 +161,7 @@ Reusable Ansible roles are located in the `roles/` directory:
 - **`setup-nut-server`**: NUT UPS server configuration
 - **`run-ado-agent-container`**: Azure DevOps agent Docker container orchestration
 - **`scansnap-paperless`**: ScanSnap iX500 one-button scan-to-Paperless-ngx (scanbd + scan script + API upload + spool retry)
+- **`harden-ubuntu`**: Baseline hardening for internet-facing Ubuntu hosts (SSH, UFW, fail2ban, unattended-upgrades, sysctl, auditd)
 
 Each role contains its own README with detailed documentation.
 

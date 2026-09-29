@@ -69,6 +69,18 @@
       ],
       "depNameTemplate": "metallb/metallb",
       "datasourceTemplate": "github-tags"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^infra-pipeline.yaml$/"
+      ],
+      "matchStrings": [
+        "cacheKeyPrefix: '\\\"ovhcloud-(?<currentValue>v[^\\\"]+)",
+        "https://github.com/ovh/ovhcloud-cli/releases/download/(?<currentValue>v[^/]+)/"
+      ],
+      "depNameTemplate": "ovh/ovhcloud-cli",
+      "datasourceTemplate": "github-releases"
     }
   ],
   "packageRules": [
