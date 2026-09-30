@@ -108,13 +108,21 @@ OVH Edge Network Firewall in front of it also needs permanent permit rules. Add 
 (OVH console, or `ovhcloud ip firewall rule create`) **before** any deny-all rule and
 not at sequence 18, which the pipeline reserves:
 
-| Action | Protocol | Source | Dest. port |
-| --- | --- | --- | --- |
-| permit | tcp | any | 1280 |
-| permit | tcp | any | 3022 |
+| Action | Protocol | Source | Dest. port | Option |
+| --- | --- | --- | --- | --- |
+| permit | tcp | any | | established |
+| permit | tcp | any | 1280 | |
+| permit | tcp | any | 3022 | |
 
-Without these, home routers can't enroll and clients can't connect. The pipeline's
-own SSH rule doesn't cover them.
+Without the port rules, home routers can't enroll and clients can't connect. The
+pipeline's own SSH rule doesn't cover them.
+
+The edge firewall is stateless. Without the `established` rule, replies to
+connections the VPS opens itself are dropped, so HTTPS to anything outside OVH times
+out. Examples are the OpenZiti apt repo and key, or `curl https://get.openziti.io` on
+the VPS. The Ubuntu mirror still works because it's inside OVH's network, which hides
+the problem until something else needs the internet. OVH recommends putting this rule
+first (sequence 0).
 
 ## Enrolling a client
 
@@ -172,6 +180,66 @@ answers file. These are under `/tmp` and can hold the admin password or enrollme
 token, so delete them after debugging. To re-enroll a router, delete
 `/var/lib/ziti-router/router.cert` on it and re-run the pipeline.
 
+## Backup and restore
+
+A nightly root cron job on the VPS (`/usr/local/bin/openziti-backup.sh`, 02:30,
+logs to `/var/log/openziti-backup.log`) does the following:
+- takes a consistent snapshot of the controller database through the running
+  controller (`ziti agent controller snapshot-db`)
+- tars the snapshot with `config.yml` and `pki/`
+- encrypts the tarball with age, to the repo's SOPS recipient
+- uploads it with azcopy to `banceyprodstor/openziti-backups`
+
+Local copies are kept for 14 days in `/var/backups/openziti`. Retention in the storage
+account is up to its lifecycle policy.
+
+`pki/` holds the root and intermediate CA private keys. That's why the archive is
+encrypted, and why a restore needs the `Flux-Age-Key` secret from Key Vault.
+
+**One-time setup:**
+- Create the `openziti-backups` container in `banceyprodstor`.
+- Create a container-scoped SAS token with create and write permissions, and store it
+  in Key Vault as `OpenZiti-Backup-SAS-Token`, as for the database backups. Store only
+  the token query string (`sv=...&sig=...`), not the container URL. The script adds the
+  URL itself.
+- The pipeline fails if the secret is missing. To run without backups, set
+  `openziti_backup_enabled: false` in `group_vars/openziti_controller.yaml` and remove
+  the secret from the `openziti_ansible` stage in `infra-pipeline.yaml`.
+
+Test the job by hand:
+
+```bash
+sudo /usr/local/bin/openziti-backup.sh && sudo ls -l /var/backups/openziti
+```
+
+### Restore (untested runbook, verify before relying on it)
+
+Restoring the existing PKI means routers and enrolled clients keep trusting the
+controller, so nothing needs re-enrolling. The controller address
+(`ziti.heimelska.co.uk`) must stay the same.
+
+1. Provision and harden the replacement VPS (`vps-hardening.yaml`), and point
+   `ziti.heimelska.co.uk` at it.
+2. Decrypt the archive on a machine that has the age key, and copy it to the VPS:
+   ```bash
+   az keyvault secret download --vault-name bancey-vault --name Flux-Age-Key --file key.txt
+   age -d -i key.txt openziti-controller_<stamp>.tar.gz.age > restore.tar.gz && rm key.txt
+   ```
+3. On the VPS, install the packages but don't bootstrap:
+   ```bash
+   sudo apt install openziti-controller openziti-router
+   ```
+   Then unpack the archive into `/var/lib/ziti-controller` (`config.yml`, `pki/`,
+   `ctrl.db`) and `chown -R ziti-controller:ziti-controller` it.
+4. Start the controller, then initialise its raft cluster from the snapshot:
+   ```bash
+   sudo systemctl start ziti-controller
+   sudo ziti agent cluster init-from-db --pid "$(systemctl show -p MainPID --value ziti-controller)" /var/lib/ziti-controller/ctrl.db
+   ```
+5. Run the pipeline. Controller bootstrap is skipped because `config.yml` exists.
+   The VPS router has no identity locally, so the playbook re-enrolls it.
+   `nebula` and `openziti` reconnect on their own.
+
 ## Teardown
 
 Evaluation only. Everything can be rebuilt from scratch:
@@ -179,6 +247,8 @@ Evaluation only. Everything can be rebuilt from scratch:
 ```bash
 # VPS
 sudo systemctl disable --now ziti-router ziti-controller ziti-controller-cert-renewal.timer
+sudo crontab -l | grep -v openziti-backup | sudo crontab -   # nightly backup job
+sudo rm -f /usr/local/bin/openziti-backup.sh
 sudo apt purge -y openziti-controller openziti-router openziti
 sudo rm -rf /var/lib/ziti-controller /var/lib/ziti-router /opt/openziti /root/.config/ziti
 

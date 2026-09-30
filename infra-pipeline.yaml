@@ -256,6 +256,7 @@ parameters:
         secrets:
           - OpenZiti-Admin-Username
           - OpenZiti-Admin-Password
+          - OpenZiti-Backup-SAS-Token
         localEnvironments:
           - loki
           - nebula

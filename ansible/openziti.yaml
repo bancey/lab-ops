@@ -39,6 +39,14 @@
         name: openziti
         tasks_from: enroll
 
+    - name: Configure controller backup
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: backup
+      vars:
+        openziti_backup_sas_token: "{{ lookup('ansible.builtin.file', 'OpenZiti-Backup-SAS-Token') }}"
+      when: openziti_backup_enabled | default(false)
+
 - name: Bootstrap and enroll edge routers
   hosts: openziti_routers
   become: true

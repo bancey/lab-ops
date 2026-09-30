@@ -1,3 +1,8 @@
+# Nightly encrypted controller backup, see docs/openziti.md. The container and the
+# OpenZiti-Backup-SAS-Token Key Vault secret are created by hand, like the database ones.
+openziti_backup_enabled: true
+openziti_backup_storage_account: banceyprodstor
+
 # Phase 1 test service: wanda's Proxmox UI, hosted by the home routers
 openziti_services:
   - name: wanda-pve
