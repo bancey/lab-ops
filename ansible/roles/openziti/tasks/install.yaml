@@ -6,6 +6,8 @@
     pkg:
       - ca-certificates
       - jq
+      # needed by deb822_repository; missing on Raspberry Pi OS
+      - python3-debian
     state: present
     update_cache: true
     cache_valid_time: 3600

@@ -1,0 +1,83 @@
+---
+# Nightly controller backup: a consistent DB snapshot taken by the running controller,
+# plus config.yml and the PKI, as one age-encrypted tarball uploaded to Azure Blob
+# Storage. Same azcopy + SAS token approach as the PostgreSQL/MariaDB backups.
+
+- name: Check backup settings
+  ansible.builtin.assert:
+    that:
+      - openziti_backup_storage_account | length > 0
+      - openziti_backup_sas_token | length > 0
+    fail_msg: openziti_backup_storage_account and openziti_backup_sas_token are required when backups are enabled
+    quiet: true
+  no_log: true
+
+- name: Install age
+  ansible.builtin.apt:
+    pkg: age
+    state: present
+
+- name: Download azcopy
+  ansible.builtin.get_url:
+    url: https://aka.ms/downloadazcopy-v10-linux
+    dest: /tmp/azcopy.tar.gz
+    mode: '0644'
+  when: not ansible_check_mode
+
+- name: Extract azcopy
+  ansible.builtin.shell:
+    cmd: tar -xzf /tmp/azcopy.tar.gz --strip-components=1 -C /usr/local/bin/ --wildcards '*/azcopy'
+    creates: /usr/local/bin/azcopy
+  when: not ansible_check_mode
+
+- name: Ensure local backup directory exists
+  ansible.builtin.file:
+    path: "{{ openziti_backup_local_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+# Holds the SAS token, hence 0700
+- name: Create backup script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/openziti-backup.sh
+    owner: root
+    group: root
+    mode: '0700'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      ZITI_HOME=/var/lib/ziti-controller
+      LOCAL_DIR="{{ openziti_backup_local_dir }}"
+      DEST="https://{{ openziti_backup_storage_account }}.blob.core.windows.net/{{ openziti_backup_container }}"
+      # Just the token (sv=...&sig=...), not the container URL; a leading ? is tolerated
+      SAS_TOKEN="{{ openziti_backup_sas_token }}"
+      SAS_TOKEN="${SAS_TOKEN#\?}"
+      STAMP=$(date -u +%Y%m%dT%H%M%SZ)
+      ARCHIVE="${LOCAL_DIR}/openziti-controller_${STAMP}.tar.gz.age"
+
+      # The controller process writes the snapshot itself, so it goes in a directory
+      # it owns
+      WORK=$(mktemp -d "${ZITI_HOME}/backup.XXXXXX")
+      trap 'rm -rf "${WORK}"' EXIT
+      chown ziti-controller:ziti-controller "${WORK}"
+      PID=$(systemctl show -p MainPID --value ziti-controller)
+      ziti agent controller snapshot-db --pid "${PID}" "${WORK}/ctrl.db"
+
+      tar -czf - -C "${ZITI_HOME}" config.yml pki -C "${WORK}" ctrl.db \
+        | age -r "{{ openziti_backup_age_recipient }}" > "${ARCHIVE}"
+      chmod 600 "${ARCHIVE}"
+
+      azcopy copy "${ARCHIVE}" "${DEST}/?${SAS_TOKEN}"
+
+      find "${LOCAL_DIR}" -name 'openziti-controller_*.tar.gz.age' -mtime +{{ openziti_backup_retention_days }} -delete
+  no_log: true
+
+- name: Schedule nightly controller backup
+  ansible.builtin.cron:
+    name: OpenZiti controller nightly backup
+    hour: "{{ openziti_backup_cron_hour }}"
+    minute: "{{ openziti_backup_cron_minute }}"
+    job: /usr/local/bin/openziti-backup.sh >> /var/log/openziti-backup.log 2>&1
+    user: root

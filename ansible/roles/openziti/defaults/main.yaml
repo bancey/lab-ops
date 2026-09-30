@@ -76,3 +76,21 @@ openziti_services: []
 openziti_identities: []
 #  - name: alex-laptop
 #    role_attributes: [users]
+
+# Controller backup ------------------------------------------------------------------
+# Nightly DB snapshot + config.yml + PKI (which holds the CA private keys), encrypted
+# with age and uploaded to Azure Blob Storage. See docs/openziti.md for the restore.
+
+openziti_backup_enabled: false
+openziti_backup_storage_account: ""
+openziti_backup_container: openziti-backups
+# Container-scoped SAS token with create/write, as the bare query string
+# (sv=...&sig=...), not the container URL; the playbook supplies it from Key Vault
+openziti_backup_sas_token: ""
+# Encrypt to the repo's SOPS age key (.sops.yaml), so restoring needs Flux-Age-Key
+openziti_backup_age_recipient: age1m604fu0zt3dnypzq4nasx63mzzzcx49dxngwe7aj8vr0x8pm63jqfsjuyq
+openziti_backup_local_dir: /var/backups/openziti
+openziti_backup_retention_days: 14
+# Before the VPS's 04:00 unattended-upgrades reboot window
+openziti_backup_cron_hour: "2"
+openziti_backup_cron_minute: "30"

@@ -9,6 +9,17 @@
   no_log: true
   when: not openziti_router_enrolled
 
+- name: Check an enrollment token was issued
+  ansible.builtin.assert:
+    that: openziti_router_token | length > 0
+    fail_msg: >-
+      No enrollment token for {{ inventory_hostname }}: the controller play on
+      {{ groups['openziti_controller'][0] }} did not complete, check its errors above
+    quiet: true
+  when:
+    - not ansible_check_mode
+    - not openziti_router_enrolled
+
 - name: Bootstrap and enroll router
   ansible.builtin.command: /opt/openziti/etc/router/bootstrap.bash
   environment:

@@ -13,6 +13,7 @@ playbook's play order:
 | `install` | all | OpenZiti apt repo + `openziti` and `openziti_packages` |
 | `router_state` | routers | Records `openziti_router_enrolled` and the `openziti_router` settings as facts |
 | `controller` | controller | Non-interactive `bootstrap.bash` (once), starts the service, logs the CLI in |
+| `backup` | controller | Nightly age-encrypted DB snapshot + PKI + config to Azure Blob (when `openziti_backup_enabled`) |
 | `enroll` | controller | Creates/re-enrolls edge routers for unenrolled routers → `openziti_enrollment_tokens` |
 | `router` | routers | Non-interactive `bootstrap.bash` with the issued token (once), starts the service |
 | `objects` | controller | Creates missing policies, service configs, services, identities; tags router identities |
@@ -37,3 +38,4 @@ See `defaults/main.yaml`. The ones most likely to change:
 | `openziti_services` | `[]` | `{name, role_attributes, intercept_addresses, port, host_address, host_port?}` |
 | `openziti_identities` | `[]` | `{name, role_attributes}`; JWT written to `openziti_artifacts_dir` |
 | `openziti_version` | latest | Pin all hosts to one release |
+| `openziti_backup_enabled` / `openziti_backup_storage_account` | `false` / — | Nightly controller backup; SAS token from Key Vault `OpenZiti-Backup-SAS-Token` |
