@@ -161,7 +161,7 @@ case "$ACTION" in
       --destination-port "$PORT"
     wait_for_state ok
     # OVH reports the rule as "ok" before the edge has actually applied it
-    sleep 60
+    sleep 90
     ;;
   close)
     OWNER_IP="${OVH_RULE_SOURCE:-$(agent_ipv4)}"
