@@ -148,12 +148,33 @@ The pieces:
 - **ext-jwt-signer `entra`**: trusts ID tokens from
   `https://login.microsoftonline.com/<tenant>/v2.0` with `aud` = the client ID, and
   matches identities on the `oid` claim (`claimsProperty: oid`, external IDs).
-- **auth-policy `entra`**: allows primary ext-JWT from that signer and certificate
-  auth.
-- **Auto-enrollment**: the signer has `enrollToCertEnabled`. The first sign-in from a
-  device creates an identity named from the `preferred_username` claim, with external ID
-  = the user's `oid` and auth policy `entra`, and issues it a certificate. Nothing per
-  user is kept in the repo.
+- **auth-policy `entra`**: allows primary ext-JWT from that signer only. Certificate
+  and password auth are off.
+- **Auto-enrollment**: the signer has `enrollToTokenEnabled` (not `enrollToCertEnabled`).
+  The first sign-in creates an identity named from the `preferred_username` claim, with
+  external ID = the user's `oid` and auth policy `entra`. Nothing per user is kept in
+  the repo.
+
+### Token enrollment, not certificates
+
+Every connection is a user session: the client signs in with Entra, and nothing
+long-lived is left on the device. This was chosen over certificate enrollment because:
+
+- **Revocation goes through Entra.** Disabling a user, removing their sign-in or
+  changing sign-in policy takes effect at their next connection. A cert-enrolled device
+  keeps its client cert whatever happens in Entra, so it had to be deleted in Ziti too.
+- **Lost or stolen devices** hold no Ziti credential. They hold whatever Entra
+  sign-in state the browser or app keeps, so a stolen *unlocked* device may still
+  re-authenticate silently. Entra session lifetimes and the device lock limit that.
+- **One identity per user.** Enrollment rejects a second identity with the same
+  external ID (`duplicate identity found for external id`). With token auth, every
+  device just signs in as that one identity.
+- **Mobile.** Ziti Mobile Edge never sent an enrollment request while the signer only
+  allowed cert enrollment. The client API advertises the allowed modes, so it appears
+  to support token enrollment only.
+
+The cost is a sign-in on connect, and sessions that may end when the Entra ID token
+expires (about an hour). Check how the clients handle that.
 
 ### Token type
 
@@ -188,14 +209,21 @@ the playbook never resets them.
 
 - Ziti Desktop Edge for Windows needs **2.5.2 or later** for external providers. Record
   the tested client, OS and OpenZiti versions here once verified.
-- Still to test (from #1535):
-  - Mobile apps: the redirect URI may differ from the desktop callback. Add it to
-    `public_client_redirect_uris` in `entra.yaml` if so.
-  - Silent SSO on repeat opens, and reconnect after a reboot.
-  - Signing in from a **second device** as the same user: whether it collides with the
-    existing identity (same `oid` external ID / `preferred_username` name) or reuses it.
+- Tested so far:
+  - Joining by URL from macOS and Ziti Mobile Edge for Android. A tenant member signs in
+    as their existing identity.
+  - After joining at `join.ziti.heimelska.co.uk`, clients talk to the controller at
+    `ziti.heimelska.co.uk:1280`, so they don't depend on the Let's Encrypt cert after that.
+  - Guest (B2B) users' tokens are accepted. Their `oid` is the guest object in this
+    tenant.
+- Still to test:
+  - That token enrollment creates identities from Ziti Mobile Edge, for example for a
+    guest user who has never enrolled.
+  - Session length: what each client does when the Entra ID token expires.
   - Whether `enrollAttributeClaimsSelector` attributes are refreshed on later logins or
     only set at enrollment. This decides the #1536 approach.
+  - The `tls: bad record MAC` handshake errors that Ziti Mobile Edge produces on `:443`
+    before each sign-in. They aren't blocking.
 
 ### Public join URL
 

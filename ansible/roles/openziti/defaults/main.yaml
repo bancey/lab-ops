@@ -92,8 +92,9 @@ openziti_identities: []
 # otherwise updated to match on every run, so their settings can be iterated on
 # through the pipeline.
 
-# OIDC providers whose JWTs the controller accepts. With enroll_to_cert, the first
-# sign-in creates the identity and issues it a certificate (no JWT file needed).
+# OIDC providers whose JWTs the controller accepts. With enroll_to_token the first
+# sign-in creates the identity with token auth; enroll_to_cert issues it a client
+# certificate instead. Either way, no JWT file is needed.
 openziti_ext_jwt_signers: []
 #  - name: entra
 #    issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
@@ -104,14 +105,15 @@ openziti_ext_jwt_signers: []
 #    scopes: [openid, profile, email, offline_access]
 #    target_token: ID                   # ACCESS or ID
 #    claims_property: oid               # matched against identity external IDs
-#    enroll_to_cert: true
+#    enroll_to_cert: false
+#    enroll_to_token: true
 #    enroll_name_claims_selector: /preferred_username
 #    enroll_attr_claims_selector: ""    # e.g. /groups to copy claims into role attributes
 #    enroll_auth_policy: entra          # auth policy given to auto-enrolled identities
 
 openziti_auth_policies: []
 #  - name: entra
-#    cert_allowed: true                 # certificate auth (enrolled devices)
+#    cert_allowed: false                # certificate auth (cert-enrolled devices)
 #    ext_jwt_allowed: true
 #    ext_jwt_allowed_signers: [entra]   # signer names; resolved to IDs by the role
 #    updb_allowed: false
