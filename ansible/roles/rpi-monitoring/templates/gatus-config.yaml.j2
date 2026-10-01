@@ -70,6 +70,18 @@ endpoints:
       - type: discord
         send-on-resolved: true
 {% endif %}
+  - name: nebula
+    group: hosts
+    url: "tcp://nebula.heimelska.co.uk:22"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[IP] == 10.151.14.7"
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        send-on-resolved: true
+{% endif %}
   - name: thor
     group: hosts
     url: "tcp://thor.heimelska.co.uk:22"
