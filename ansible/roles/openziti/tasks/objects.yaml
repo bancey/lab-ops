@@ -115,6 +115,105 @@
   changed_when: openziti_result.stdout | length > 0
   when: not ansible_check_mode
 
+# External authentication. Unlike everything else here, signers and auth policies
+# are reconciled: created if missing, otherwise patched to match on every run.
+# Changes are detected by comparing the object before and after.
+#
+# The auth policy names its signers and the signer names the auth policy that
+# auto-enrolled identities get, so the enrollment policy is set in a third step.
+- name: Create or update external JWT signers
+  ansible.builtin.shell: |
+    set -euo pipefail
+    state() {
+      ziti edge list ext-jwt-signers {{ ('name="' ~ item.name ~ '"') | quote }} -j \
+        | jq -S '.data[0] // {} | del(.updatedAt, ._links)'
+    }
+    flags=(
+      --jwks-endpoint {{ item.jwks_endpoint | quote }}
+      --external-auth-url {{ item.external_auth_url | default('') | quote }}
+      --client-id {{ item.client_id | default('') | quote }}
+      --audience {{ item.audience | default('') | quote }}
+      --scopes {{ item.scopes | default([]) | join(',') | quote }}
+      --target-token {{ item.target_token | default('ACCESS') | quote }}
+      --claims-property {{ item.claims_property | default('sub') | quote }}
+      --enroll-to-cert={{ item.enroll_to_cert | default(false) | bool | string | lower }}
+      --enroll-to-token={{ item.enroll_to_token | default(false) | bool | string | lower }}
+      --enroll-name-claims-selector {{ item.enroll_name_claims_selector | default('') | quote }}
+      --enroll-attr-claims-selector {{ item.enroll_attr_claims_selector | default('') | quote }}
+    )
+    before="$(state)"
+    if [ "$before" = "{}" ]; then
+      ziti edge create ext-jwt-signer {{ item.name | quote }} {{ item.issuer | quote }} \
+        --external-id=true "${flags[@]}" > /dev/null
+    else
+      ziti edge update ext-jwt-signer {{ item.name | quote }} --issuer {{ item.issuer | quote }} \
+        --use-external-id=true "${flags[@]}" > /dev/null
+    fi
+    [ "$(state)" = "$before" ] || echo changed
+  args:
+    executable: /bin/bash
+  loop: "{{ openziti_ext_jwt_signers }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when: not ansible_check_mode
+
+- name: Create or update auth policies
+  ansible.builtin.shell: |
+    set -euo pipefail
+    state() {
+      ziti edge list auth-policies {{ ('name="' ~ item.name ~ '"') | quote }} -j \
+        | jq -S '.data[0] // {} | del(.updatedAt, ._links)'
+    }
+    # The API takes signer IDs, not names. An empty list would allow any signer.
+    signers=()
+    {% for signer in item.ext_jwt_allowed_signers | default([]) %}
+    id="$(ziti edge list ext-jwt-signers {{ ('name="' ~ signer ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
+    if [ -z "$id" ]; then echo "ext-jwt-signer {{ signer }} not found" >&2; exit 1; fi
+    signers+=(--primary-ext-jwt-allowed-signers "$id")
+    {% endfor %}
+    flags=(
+      --primary-cert-allowed={{ item.cert_allowed | default(true) | bool | string | lower }}
+      --primary-ext-jwt-allowed={{ item.ext_jwt_allowed | default(false) | bool | string | lower }}
+      --primary-updb-allowed={{ item.updb_allowed | default(false) | bool | string | lower }}
+      "${signers[@]}"
+    )
+    before="$(state)"
+    if [ "$before" = "{}" ]; then
+      ziti edge create auth-policy {{ item.name | quote }} "${flags[@]}" > /dev/null
+    else
+      ziti edge update auth-policy {{ item.name | quote }} "${flags[@]}" > /dev/null
+    fi
+    [ "$(state)" = "$before" ] || echo changed
+  args:
+    executable: /bin/bash
+  loop: "{{ openziti_auth_policies }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when: not ansible_check_mode
+
+- name: Set the auth policy for identities enrolled by each signer
+  ansible.builtin.shell: |
+    set -euo pipefail
+    current="$(ziti edge list ext-jwt-signers {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq -r '.data[0].enrollAuthPolicyId // empty')"
+    wanted="$(ziti edge list auth-policies {{ ('name="' ~ item.enroll_auth_policy ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
+    if [ -z "$wanted" ]; then echo "auth-policy {{ item.enroll_auth_policy }} not found" >&2; exit 1; fi
+    if [ "$current" != "$wanted" ]; then
+      ziti edge update ext-jwt-signer {{ item.name | quote }} --enroll-auth-policy "$wanted" > /dev/null
+      echo changed
+    fi
+  args:
+    executable: /bin/bash
+  loop: "{{ openziti_ext_jwt_signers | selectattr('enroll_auth_policy', 'defined') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when: not ansible_check_mode
+
 - name: Create client identities
   ansible.builtin.shell: |
     set -euo pipefail

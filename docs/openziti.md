@@ -42,7 +42,8 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
 | Playbook | `ansible/openziti.yaml` |
 | Role (install/controller/enroll/router/objects) | `ansible/roles/openziti/` |
 | Hosts & groups | `terraform/components/inventory/hosts.yaml.tpl`: `openziti_controller`, `openziti_public_routers`, `openziti_private_routers`, `openziti_routers` |
-| Services & client identities | `ansible/group_vars/openziti_controller.yaml` |
+| Services, client identities, Entra signer & auth policy | `ansible/group_vars/openziti_controller.yaml` |
+| Entra app registration (`lab-openziti`) | `terraform/environments/prod/entra.yaml` |
 | VPS UFW ports | `ansible/group_vars/cloud.yaml` (applied by `vps-hardening.yaml`) |
 | Private router VM | `virtual_machines.openziti` in `terraform/environments/prod/prod.tfvars` |
 | Public DNS `ziti.heimelska.co.uk` → VPS | `cloudflare_records` in `prod.tfvars` (must stay unproxied) |
@@ -51,8 +52,8 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
 
 ## Deployment flow
 
-The `openziti_ansible` stage runs after `vps_hardening_ansible`, `prod_dns` and
-`tiny_virtual_machines`. It reaches the VPS through the temporary OVH rule #18 and
+The `openziti_ansible` stage runs after `vps_hardening_ansible`, `prod_dns`,
+`prod_entra` and `tiny_virtual_machines`. It reaches the VPS through the temporary OVH rule #18 and
 the home hosts through Twingate. The playbook has four plays:
 
 1. **Install** the packages (`openziti-controller` and/or `openziti-router`) from the
@@ -66,12 +67,15 @@ the home hosts through Twingate. The playbook has four plays:
 3. **Routers**: `/opt/openziti/etc/router/bootstrap.bash` generates the config and
    enrolls using that JWT. Already-enrolled routers are left alone.
 4. **Objects**: creates the edge-router/service-edge-router/service policies, tags the
-   router tunneler identities with their role attributes, and creates the services
-   and client identities from group vars.
+   router tunneler identities with their role attributes, reconciles the Entra
+   ext-jwt-signer and auth policy, and creates the services and client identities
+   from group vars.
 
 Re-runs are idempotent. Bootstrap happens once; after that, `config.yml` on each host is
 the source of truth. Objects are only **created** if missing and never updated. To
-change one, delete it (`ziti edge delete ...`) and re-run the playbook.
+change one, delete it (`ziti edge delete ...`) and re-run the playbook. The exceptions
+are ext-jwt-signers and auth policies: they're patched to match group vars on every
+run, so changing e.g. the token type is just a PR.
 
 The pipeline runs Ansible in check mode on PRs. Everything that talks to the
 controller API is skipped in check mode, so a PR run only previews package and file
@@ -84,7 +88,7 @@ changes.
 | `#public-routers` | vps01 router | (informational) |
 | `#home-routers` | home routers + their tunneler identities | Bind policy `home-routers-bind-home-services` |
 | `#home-services` | services | Bind + Dial policies |
-| `#users` | client identities | Dial policy `users-dial-home-services` |
+| `#users` | client identities (granted by hand to Entra users, see below) | Dial policy `users-dial-home-services` |
 
 Every identity may use every router, and every service may traverse every router
 (`#all` edge-router and service-edge-router policies).
@@ -124,21 +128,87 @@ the VPS. The Ubuntu mirror still works because it's inside OVH's network, which 
 the problem until something else needs the internet. OVH recommends putting this rule
 first (sequence 0).
 
-## Enrolling a client
+## Signing in with Entra ID
 
-Add the identity to `openziti_identities` in `ansible/group_vars/openziti_controller.yaml`
-and let the pipeline run. Then fetch the JWT and delete it from the VPS:
+Clients sign in with Microsoft against the personal tenant instead of importing a JWT.
+The pieces:
+
+- **Entra**: the `lab-openziti` app registration (`terraform/environments/prod/entra.yaml`).
+  It's a public client (auth code + PKCE) with the redirect URI
+  `http://localhost:20314/auth/callback`, which is what the OpenZiti tunnelers listen on.
+  There is no client secret. The `entra` component writes the client ID to Key Vault as
+  `Entra-OpenZiti-Client-ID`, and the playbook reads it from there.
+- **ext-jwt-signer `entra`**: trusts ID tokens from
+  `https://login.microsoftonline.com/<tenant>/v2.0` with `aud` = the client ID, and
+  matches identities on the `oid` claim (`claimsProperty: oid`, external IDs).
+- **auth-policy `entra`**: allows primary ext-JWT from that signer and certificate
+  auth.
+- **Auto-enrollment**: the signer has `enrollToCertEnabled`. The first sign-in from a
+  device creates an identity named from the `preferred_username` claim, with external ID
+  = the user's `oid` and auth policy `entra`, and issues it a certificate. Nothing per
+  user is kept in the repo.
+
+### Token type
+
+Clients present the **ID token** (`targetToken: ID`, `audience: <client-id>`). An Entra
+access token requested with only `openid profile email offline_access` is issued for
+Microsoft Graph. Its audience is Graph and it's signed for Graph, so the controller
+can't verify it. Using `ACCESS` would need an exposed API scope (`api://<client-id>/ziti`)
+on the app registration, which the `entra` component doesn't support yet. Change the
+signer only if a client turns out to need an access token.
+
+### Adding a user
+
+1. Add the user to the tenant. App assignment isn't required, so any tenant user can
+   sign in and get an identity, but without a role attribute it can't dial anything.
+2. In Ziti Desktop Edge, add an identity by URL with `https://ziti.heimelska.co.uk:1280`,
+   choose the **entra** provider and sign in with Microsoft. No JWT file is involved.
+3. Grant access on the VPS once the identity exists. It's named after the user's
+   `preferred_username`:
+
+   ```bash
+   sudo ziti edge list identities
+   sudo ziti edge update identity <name> --role-attributes users
+   ```
+
+Role attributes are granted by hand until group-based mapping lands
+([#1536](https://github.com/bancey/lab-ops/issues/1536)). They aren't in group vars, so
+the playbook never resets them.
+
+### Client support and open questions
+
+- Ziti Desktop Edge for Windows needs **2.5.2 or later** for external providers. Record
+  the tested client, OS and OpenZiti versions here once verified.
+- Still to test (from #1535):
+  - Mobile apps: the redirect URI may differ from the desktop callback. Add it to
+    `public_client_redirect_uris` in `entra.yaml` if so.
+  - Silent SSO on repeat opens, and reconnect after a reboot.
+  - Signing in from a **second device** as the same user: whether it collides with the
+    existing identity (same `oid` external ID / `preferred_username` name) or reuses it.
+  - Whether `enrollAttributeClaimsSelector` attributes are refreshed on later logins or
+    only set at enrollment. This decides the #1536 approach.
+
+### JWT identities
+
+`openziti_identities` still creates identities with a one-time JWT, for devices that
+can't do OIDC (e.g. headless `ziti-edge-tunnel`). The JWT is written to
+`/opt/openziti/artifacts/<name>.jwt` on the VPS. Fetch it and delete it:
 
 ```bash
-ssh ubuntu@vps01.heimelska.co.uk sudo cat /opt/openziti/artifacts/phase1-test-user.jwt > phase1-test-user.jwt
-ssh ubuntu@vps01.heimelska.co.uk sudo rm /opt/openziti/artifacts/phase1-test-user.jwt
+ssh ubuntu@vps01.heimelska.co.uk sudo cat /opt/openziti/artifacts/<name>.jwt > <name>.jwt
+ssh ubuntu@vps01.heimelska.co.uk sudo rm /opt/openziti/artifacts/<name>.jwt
 ```
 
-Import it into Ziti Desktop Edge (or `ziti-edge-tunnel add --jwt ...`). JWTs expire
-after 3 hours by default (the controller's `enrollment` duration). To reissue one:
+JWTs expire after 3 hours by default (the controller's `enrollment` duration). To
+reissue one, run `sudo ziti edge delete identity <name>` on the VPS and re-run the
+pipeline.
+
+Removing an entry from `openziti_identities` doesn't delete the identity. The Phase 1
+`phase1-test-user` was removed from group vars, so delete it on the VPS by hand:
 
 ```bash
-sudo ziti edge delete identity phase1-test-user   # on the VPS, then re-run the pipeline
+sudo ziti edge delete identity phase1-test-user
+sudo rm -f /opt/openziti/artifacts/phase1-test-user.jwt
 ```
 
 ## Adding a service
@@ -160,8 +230,9 @@ Append to `openziti_services` in `ansible/group_vars/openziti_controller.yaml`:
    routers online (`ONLINE: true`).
 2. `sudo ziti edge list terminators` shows `wanda-pve` with a terminator from
    both `openziti` and `nebula`.
-3. With the client enrolled, `https://wanda-pve.ziti:8006` loads (cert warning expected:
-   the PVE cert isn't issued for that name).
+3. With a client signed in through Entra and tagged `users`,
+   `https://wanda-pve.ziti:8006` loads (cert warning expected: the PVE cert isn't
+   issued for that name).
 4. Stop `ziti-router` on one home router; the service keeps working through the
    other.
 5. From outside the LAN with the tunneller off, nothing new at home is reachable. The
@@ -269,4 +340,5 @@ from the `openziti_*` inventory groups, the DNS entries (`ziti.heimelska.co.uk` 
   `hass.heimelska.co.uk` record and close the home router's 443 port-forward, so
   Home Assistant is only reachable over Ziti. The pipeline's own access to home hosts
   also needs moving off Twingate, e.g. a ziti-edge-tunnel step on the agent.
-- Entra ID (OIDC) ext-jwt-signer for client auth, and group-based role attributes.
+- Group-based role attributes from the Entra `groups` claim
+  ([#1536](https://github.com/bancey/lab-ops/issues/1536)).

@@ -77,6 +77,35 @@ openziti_identities: []
 #  - name: alex-laptop
 #    role_attributes: [users]
 
+# External authentication ------------------------------------------------------------
+# Unlike the objects above, signers and auth policies are created if missing and
+# otherwise updated to match on every run, so their settings can be iterated on
+# through the pipeline.
+
+# OIDC providers whose JWTs the controller accepts. With enroll_to_cert, the first
+# sign-in creates the identity and issues it a certificate (no JWT file needed).
+openziti_ext_jwt_signers: []
+#  - name: entra
+#    issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
+#    jwks_endpoint: https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys
+#    client_id: <app-client-id>
+#    audience: <app-client-id>
+#    external_auth_url: https://login.microsoftonline.com/<tenant-id>/v2.0
+#    scopes: [openid, profile, email, offline_access]
+#    target_token: ID                   # ACCESS or ID
+#    claims_property: oid               # matched against identity external IDs
+#    enroll_to_cert: true
+#    enroll_name_claims_selector: /preferred_username
+#    enroll_attr_claims_selector: ""    # e.g. /groups to copy claims into role attributes
+#    enroll_auth_policy: entra          # auth policy given to auto-enrolled identities
+
+openziti_auth_policies: []
+#  - name: entra
+#    cert_allowed: true                 # certificate auth (enrolled devices)
+#    ext_jwt_allowed: true
+#    ext_jwt_allowed_signers: [entra]   # signer names; resolved to IDs by the role
+#    updb_allowed: false
+
 # Controller backup ------------------------------------------------------------------
 # Nightly DB snapshot + config.yml + PKI (which holds the CA private keys), encrypted
 # with age and uploaded to Azure Blob Storage. See docs/openziti.md for the restore.

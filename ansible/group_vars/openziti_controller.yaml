@@ -11,7 +11,38 @@ openziti_services:
     port: 8006
     host_address: 10.151.14.11
 
-# Enrollment JWTs land in /opt/openziti/artifacts/<name>.jwt on the controller
-openziti_identities:
-  - name: phase1-test-user
-    role_attributes: [users]
+# Clients sign in with Entra ID instead (below). JWT identities are still supported for
+# devices that can't, e.g. headless tunnelers; their JWT lands in /opt/openziti/artifacts.
+openziti_identities: []
+
+# "Sign in with Microsoft" against the lab-openziti app registration
+# (terraform/environments/prod/entra.yaml). openziti_entra_client_id is supplied by the
+# playbook from the Entra-OpenZiti-Client-ID Key Vault secret.
+openziti_entra_tenant_id: efc9b6c0-5193-43b1-a5a7-2ef3f29cd613
+
+openziti_ext_jwt_signers:
+  - name: entra
+    issuer: "https://login.microsoftonline.com/{{ openziti_entra_tenant_id }}/v2.0"
+    jwks_endpoint: "https://login.microsoftonline.com/{{ openziti_entra_tenant_id }}/discovery/v2.0/keys"
+    external_auth_url: "https://login.microsoftonline.com/{{ openziti_entra_tenant_id }}/v2.0"
+    client_id: "{{ openziti_entra_client_id }}"
+    # Access tokens requested with only Graph scopes are for Graph and can't be verified
+    # by a third party, so clients present the ID token, whose audience is the app itself.
+    target_token: ID
+    audience: "{{ openziti_entra_client_id }}"
+    scopes: [openid, profile, email, offline_access]
+    # Immutable and unique per user, unlike email/preferred_username
+    claims_property: oid
+    enroll_to_cert: true
+    enroll_name_claims_selector: /preferred_username
+    # Role attributes are granted by hand for now (docs/openziti.md); group mapping is #1536
+    enroll_attr_claims_selector: ""
+    enroll_auth_policy: entra
+
+openziti_auth_policies:
+  - name: entra
+    # Auto-enrolled devices authenticate with their certificate after the first sign-in
+    cert_allowed: true
+    ext_jwt_allowed: true
+    ext_jwt_allowed_signers: [entra]
+    updb_allowed: false
