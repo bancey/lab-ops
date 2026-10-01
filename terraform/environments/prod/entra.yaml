@@ -19,6 +19,11 @@ groups:
     members:
       - abance@bancey.xyz
 
+  lab-developers:
+    description: "Developers - database access over OpenZiti (PostgreSQL, MariaDB)"
+    members:
+      - abance@bancey.xyz
+
 applications:
   lab-oauth2-proxy:
     display_name: "Lab oauth2-proxy"

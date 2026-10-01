@@ -8,14 +8,6 @@ openziti_backup_storage_account: banceyprodstor
 openziti_public_api_enabled: true
 openziti_public_api_address: join.ziti.heimelska.co.uk
 
-# Phase 1 test service: wanda's Proxmox UI, hosted by the home routers
-openziti_services:
-  - name: wanda-pve
-    role_attributes: [home-services]
-    intercept_addresses: [wanda-pve.ziti]
-    port: 8006
-    host_address: 10.151.14.11
-
 # Clients sign in with Entra ID instead (below). JWT identities are still supported for
 # devices that can't, e.g. headless tunnelers; their JWT lands in /opt/openziti/artifacts.
 openziti_identities: []
@@ -41,8 +33,9 @@ openziti_ext_jwt_signers:
     enroll_to_cert: false
     enroll_to_token: true
     enroll_name_claims_selector: /preferred_username
-    # Role attributes are granted by hand for now (docs/openziti.md); group mapping is #1536
-    enroll_attr_claims_selector: ""
+    # The groups claim carries Entra group object IDs, which become role attributes that the
+    # Dial policies in terraform/environments/prod/openziti.yaml select (docs/openziti.md)
+    enroll_attr_claims_selector: /groups
     enroll_auth_policy: entra
 
 openziti_auth_policies:

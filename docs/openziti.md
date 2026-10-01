@@ -45,14 +45,15 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
 | Playbook | `ansible/openziti.yaml` |
 | Role (install/controller/enroll/router/objects) | `ansible/roles/openziti/` |
 | Hosts & groups | `terraform/components/inventory/hosts.yaml.tpl`: `openziti_controller`, `openziti_public_routers`, `openziti_private_routers`, `openziti_routers` |
-| Services, client identities, Entra signer & auth policy | `ansible/group_vars/openziti_controller.yaml` |
+| Policies, services, RBAC (the network model) | `terraform/environments/prod/openziti.yaml`, applied by `terraform/components/openziti` |
+| JWT client identities, Entra signer & auth policy | `ansible/group_vars/openziti_controller.yaml` |
 | Entra app registration (`lab-openziti`) | `terraform/environments/prod/entra.yaml` |
 | VPS UFW ports | `ansible/group_vars/cloud.yaml` (applied by `vps-hardening.yaml`) |
 | Private router VM | `virtual_machines.openziti` in `terraform/environments/prod/prod.tfvars` |
 | Public DNS `ziti.heimelska.co.uk`, `join.ziti.heimelska.co.uk` → VPS | `cloudflare_records` in `prod.tfvars` (must stay unproxied) |
 | Public join URL (Let's Encrypt, 443 listener) | `ansible/roles/openziti/tasks/public_api.yaml` |
 | Private DNS/Twingate for the VM | `openziti.heimelska.co.uk` in `terraform/environments/prod/dns.yaml` |
-| Pipeline | `openziti_ansible` stage in `infra-pipeline.yaml` |
+| Pipeline | `openziti_ansible` then `prod_openziti` stages in `infra-pipeline.yaml` |
 
 ## Deployment flow
 
@@ -71,29 +72,54 @@ the home hosts through Twingate. The playbook has four plays:
    re-enrolled instead. The one-time JWTs are passed to the next play in memory.
 3. **Routers**: `/opt/openziti/etc/router/bootstrap.bash` generates the config and
    enrolls using that JWT. Already-enrolled routers are left alone.
-4. **Objects**: creates the edge-router/service-edge-router/service policies, tags the
-   router tunneler identities with their role attributes, reconciles the Entra
-   ext-jwt-signer and auth policy, and creates the services and client identities
-   from group vars.
+4. **Objects**: tags the router tunneler identities with their role attributes,
+   reconciles the Entra ext-jwt-signer and auth policy, and creates JWT client
+   identities from group vars.
+
+Then the `prod_openziti` stage runs `terraform/components/openziti`, which owns the
+network model: edge-router, service-edge-router and service policies, plus every
+service with its `intercept.v1` and `host.v1` configs. It talks to the management API
+on `ziti.heimelska.co.uk:1280`, so it needs neither Twingate nor the OVH SSH rule.
+`terraform plan` on a PR shows the real diff, and removing an entry from
+`openziti.yaml` removes the object from the controller.
 
 Re-runs are idempotent. Bootstrap happens once; after that, `config.yml` on each host is
-the source of truth. Objects are only **created** if missing and never updated. To
-change one, delete it (`ziti edge delete ...`) and re-run the playbook. The exceptions
-are ext-jwt-signers and auth policies: they're patched to match group vars on every
-run, so changing e.g. the token type is just a PR.
+the source of truth. Ansible only creates JWT identities if missing; ext-jwt-signers
+and auth policies are patched to match group vars on every run, so changing e.g. the
+token type is just a PR.
+
+Terraform doesn't own the signer because the provider (`netfoundry/ziti` 2.1.3) has no
+enrollment fields on `ziti_external_jwt_signer` (`enroll_to_token`,
+`enroll_attr_claims_selector`, `enroll_auth_policy`, ...). The auth policy stays with
+it because it references the signer. Moving both is worth revisiting once the
+provider gains those fields. Router tunneler identities are created by router
+enrollment, so their tagging also stays in Ansible.
 
 The pipeline runs Ansible in check mode on PRs. Everything that talks to the
 controller API is skipped in check mode, so a PR run only previews package and file
-changes.
+changes. Terraform plans normally.
 
 ### Role-attribute model
+
+Access follows the Entra groups from `terraform/environments/prod/entra.yaml`. The
+signer has `enroll_attr_claims_selector: /groups`, so an identity auto-enrolled by Entra
+gets the user's **group object IDs** as role attributes (the `groups` claim carries IDs,
+not names). The Terraform component resolves group names to IDs with the `azuread`
+provider, so `openziti.yaml` says `entra_groups: [lab-admins]` and the policy ends up
+selecting `#<object-id>`. There is no ID map to maintain.
 
 | Attribute | On | Used by |
 | --- | --- | --- |
 | `#public-routers` | vps01 router | (informational) |
 | `#home-routers` | home routers + their tunneler identities | Bind policy `home-routers-bind-home-services` |
-| `#home-services` | services | Bind + Dial policies |
-| `#users` | client identities (granted by hand to Entra users, see below) | Dial policy `users-dial-home-services` |
+| `#home-services` | every service | Bind policy |
+| `#home-admin` | Proxmox UIs, Traefik dashboard | Dial policy `admins-dial-home-admin` (`lab-admins`) |
+| `#home-data` | PostgreSQL, MariaDB | Dial policy `developers-dial-home-data` (`lab-admins`, `lab-developers`) |
+| `#<group object ID>` | auto-enrolled identities | the Dial policies above |
+
+`lab-users`, `lab-media` and `lab-infra` aren't used yet. Add a tier by tagging services
+and adding a Dial policy with the group in `entra_groups`. Binding is not per role,
+since RBAC is a Dial concern.
 
 Every identity may use every router, and every service may traverse every router
 (`#all` edge-router and service-edge-router policies).
@@ -101,6 +127,15 @@ Every identity may use every router, and every service may traverse every router
 ## One-time manual setup
 
 ### Key Vault secrets (`bancey-vault`)
+
+- `OpenZiti-Controller-CA`: PEM of the controller's root CA, used by the Terraform
+  provider to verify `ziti.heimelska.co.uk:1280` (whose certificate comes from the
+  controller PKI, not a public CA). It is public material:
+
+  ```bash
+  ssh ubuntu@vps01.heimelska.co.uk 'sudo cat /var/lib/ziti-controller/pki/*-root-ca/certs/*-root-ca.cert' > ziti-ca.pem
+  az keyvault secret set --vault-name bancey-vault --name OpenZiti-Controller-CA --file ziti-ca.pem
+  ```
 
 - `OpenZiti-Admin-Username`, e.g. `admin`
 - `OpenZiti-Admin-Password`: at least 16 characters from `A-Z a-z 0-9 ! @ # % ^ _ + ~ . = -`.
@@ -193,17 +228,16 @@ signer only if a client turns out to need an access token.
    choose the **entra** provider and sign in with Microsoft. No JWT file is involved.
    Don't use `ziti.heimelska.co.uk:1280` for this. Its certificate comes from the
    controller's own PKI, which the OS doesn't trust, so the client rejects it.
-3. Grant access on the VPS once the identity exists. It's named after the user's
-   `preferred_username`:
+3. Add them to the right groups in `entra.yaml`. Their access follows from the groups
+   claim the next time the identity is enrolled.
 
-   ```bash
-   sudo ziti edge list identities
-   sudo ziti edge update identity <name> --role-attributes users
-   ```
-
-Role attributes are granted by hand until group-based mapping lands
-([#1536](https://github.com/bancey/lab-ops/issues/1536)). They aren't in group vars, so
-the playbook never resets them.
+Role attributes come from the groups claim, not from group vars, so the playbook never
+resets them. **Open question:** whether the attributes are refreshed on later sign-ins or
+only set when the identity is first created. If they're only set at enrollment, a group
+change doesn't reach an existing identity: delete the identity
+(`sudo ziti edge delete identity <name>`) so the next sign-in re-enrolls it, or grant by
+hand (`sudo ziti edge update identity <name> --role-attributes <group-object-id>`) until
+a sync job is justified.
 
 ### Client support and open questions
 
@@ -221,7 +255,8 @@ the playbook never resets them.
     guest user who has never enrolled.
   - Session length: what each client does when the Entra ID token expires.
   - Whether `enrollAttributeClaimsSelector` attributes are refreshed on later logins or
-    only set at enrollment. This decides the #1536 approach.
+    only set at enrollment (see [Adding a user](#adding-a-user)). Identities that were
+    enrolled before `/groups` was set have no group attributes, so delete them and sign in again.
   - The `tls: bad record MAC` handshake errors that Ziti Mobile Edge produces on `:443`
     before each sign-in. They aren't blocking.
 
@@ -281,29 +316,62 @@ sudo rm -f /opt/openziti/artifacts/phase1-test-user.jwt
 
 ## Adding a service
 
-Append to `openziti_services` in `ansible/group_vars/openziti_controller.yaml`:
+Append to `services` in `terraform/environments/prod/openziti.yaml`:
 
 ```yaml
   - name: grafana
-    role_attributes: [home-services]
-    intercept_addresses: [grafana.ziti]   # what clients dial
+    role_attributes: [home-services, home-admin]   # home-services + one access tier
+    intercept_addresses: [grafana.tiny.heimelska.co.uk]   # what clients dial
     port: 443
-    host_address: 10.151.16.200           # where the home routers send it
+    host_address: 10.151.24.10            # where the home routers send it
     # host_port: 8443                     # if it differs from port
+```
+
+Intercept the real hostname rather than `*.ziti`, so TLS certificates and OIDC redirect
+URIs keep working. While Twingate runs, a device with both clients conflicts on the same
+name: disconnect Twingate to test, or set `twingate.is_active: false` on the resource in
+`dns.yaml` to move it fully to Ziti.
+
+Both private routers (`openziti` on 10.151.14.0/24, `nebula`) must reach the target.
+Test with `nc -vz <host> <port>` from each before publishing.
+
+### First apply after the Ansible role stopped owning the model
+
+The policies, `wanda-pve` service and its configs predate the Terraform component. The
+three policies are in `openziti.yaml` under the same names, so import them rather than
+recreate them (IDs from `sudo ziti edge list edge-router-policies` etc.):
+
+```bash
+cd terraform/components/openziti
+terraform import -var-file=../../environments/prod/prod.tfvars 'ziti_edge_router_policy.this["all-identities-all-routers"]' <id>
+terraform import -var-file=../../environments/prod/prod.tfvars 'ziti_service_edge_router_policy.this["all-services-all-routers"]' <id>
+terraform import -var-file=../../environments/prod/prod.tfvars 'ziti_service_policy.this["home-routers-bind-home-services"]' <id>
+```
+
+Delete the Phase 1 leftovers, which Terraform doesn't know about:
+
+```bash
+sudo ziti edge delete service wanda-pve
+sudo ziti edge delete config wanda-pve-intercept wanda-pve-host
+sudo ziti edge delete service-policy users-dial-home-services
 ```
 
 ## Validation
 
 1. `ssh ubuntu@vps01.heimelska.co.uk sudo ziti edge list edge-routers`: all three
    routers online (`ONLINE: true`).
-2. `sudo ziti edge list terminators` shows `wanda-pve` with a terminator from
+2. `sudo ziti edge list terminators` shows each service with a terminator from
    both `openziti` and `nebula`.
-3. With a client signed in through Entra and tagged `users`,
-   `https://wanda-pve.ziti:8006` loads (cert warning expected: the PVE cert isn't
-   issued for that name).
-4. Stop `ziti-router` on one home router; the service keeps working through the
+3. Sign in as an identity in `lab-admins`: the Proxmox UIs
+   (`https://hela.heimelska.co.uk:8006` etc.), `traefik.tiny.heimelska.co.uk` and both
+   databases work.
+4. Sign in as a `lab-developers`-only identity: the databases work and the Proxmox UIs and
+   Traefik dashboard don't. `sudo ziti edge policy-advisor identities <name> <service>` shows
+   why.
+5. Remove a service from `openziti.yaml`: the next apply deletes it from the controller.
+6. Stop `ziti-router` on one home router; the services keep working through the
    other.
-5. From outside the LAN with the tunneller off, nothing new at home is reachable. The
+7. From outside the LAN with the tunneller off, nothing new at home is reachable. The
    only new public surface is 443/1280/3022 on the VPS.
 
 ## Troubleshooting
@@ -406,10 +474,14 @@ from the `openziti_*` inventory groups, the DNS entries (`ziti.heimelska.co.uk` 
 
 ## Next phases
 
-- **Cutover**: move the remaining Twingate resources into `openziti_services`, then
+- **Cutover**: move the remaining Twingate resources into `openziti.yaml`, then
   remove the `twingate` component, connectors and k8s release. Remove the public
   `hass.heimelska.co.uk` record and close the home router's 443 port-forward, so
   Home Assistant is only reachable over Ziti. The pipeline's own access to home hosts
   also needs moving off Twingate, e.g. a ziti-edge-tunnel step on the agent.
-- Group-based role attributes from the Entra `groups` claim
-  ([#1536](https://github.com/bancey/lab-ops/issues/1536)).
+- Evaluate a sync job from Entra groups to identity attributes, only if attributes turn
+  out not to refresh on sign-in.
+- Move the signer and auth policy into Terraform once the provider supports enrollment
+  fields. Consider a dedicated mTLS admin identity for the provider instead of the admin
+  password. Identity enrollment tokens would be stored in Terraform state, so keep
+  Terraform off identities.

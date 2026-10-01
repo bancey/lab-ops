@@ -1,0 +1,81 @@
+# OpenZiti network model, applied by terraform/components/openziti. Everything else (install,
+# PKI bootstrap, routers, the Entra signer and its auth policy) stays in ansible/roles/openziti.
+# See docs/openziti.md.
+
+edge_router_policies:
+  # Every identity may connect to every edge router; clients pick the fastest
+  - name: all-identities-all-routers
+    edge_router_roles: ["#all"]
+    identity_roles: ["#all"]
+
+service_edge_router_policies:
+  - name: all-services-all-routers
+    edge_router_roles: ["#all"]
+    service_roles: ["#all"]
+
+# Access model. A service carries #home-services (so the home routers bind it) plus one access
+# tier. Dial policies grant a tier to Entra groups. The signer copies the groups claim into role
+# attributes at enrollment (enroll_attr_claims_selector: /groups), and that claim holds object IDs,
+# so entra_groups takes the group names from entra.yaml and the component resolves them to #<id>.
+#
+#   tier         groups                      services
+#   home-admin   lab-admins                  Proxmox UIs, Traefik dashboard
+#   home-data    lab-admins, lab-developers  PostgreSQL, MariaDB/ProxySQL
+service_policies:
+  # Binding is not per role: the home routers' tunneler identities (tagged by Ansible) host all
+  - name: home-routers-bind-home-services
+    type: Bind
+    identity_roles: ["#home-routers"]
+    service_roles: ["#home-services"]
+  - name: admins-dial-home-admin
+    type: Dial
+    entra_groups: [lab-admins]
+    service_roles: ["#home-admin"]
+  - name: developers-dial-home-data
+    type: Dial
+    entra_groups: [lab-admins, lab-developers]
+    service_roles: ["#home-data"]
+
+# The real hostnames are intercepted rather than *.ziti, so TLS certificates and the Entra redirect
+# URIs (lab-proxmox lists https://<host>.heimelska.co.uk:8006/) keep working through the tunnel.
+# host_address is where the home routers send the traffic, host_port defaults to port.
+# While Twingate still runs, a device running both clients conflicts on these names: turn the
+# resource off first (twingate.is_active: false in dns.yaml) or test with Twingate disconnected.
+services:
+  - name: pve-hela
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [hela.heimelska.co.uk]
+    port: 8006
+    host_address: 10.151.14.12
+  - name: pve-loki
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [loki.heimelska.co.uk]
+    port: 8006
+    host_address: 10.151.14.14
+  - name: pve-thor
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [thor.heimelska.co.uk]
+    port: 8006
+    host_address: 10.151.14.13
+  - name: pve-wanda
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [wanda.heimelska.co.uk]
+    port: 8006
+    host_address: 10.151.14.11
+  # Traefik's LoadBalancer on tiny. TLS passes through and chain-admins forwardAuth still applies.
+  - name: traefik-tiny
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [traefik.tiny.heimelska.co.uk]
+    port: 443
+    host_address: 10.151.24.10
+  # keepalived VIPs
+  - name: postgresql
+    role_attributes: [home-services, home-data]
+    intercept_addresses: [pgsql.heimelska.co.uk]
+    port: 5432
+    host_address: 10.151.14.225
+  - name: mariadb
+    role_attributes: [home-services, home-data]
+    intercept_addresses: [sql.heimelska.co.uk]
+    port: 3306
+    host_address: 10.151.14.219
