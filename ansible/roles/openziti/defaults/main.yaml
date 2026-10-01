@@ -1,0 +1,96 @@
+---
+# Controller -----------------------------------------------------------------------
+
+# Public FQDN clients and routers use to reach the controller. It is baked into the
+# controller's PKI and config at bootstrap, so changing it later means a rebuild.
+openziti_ctrl_address: ziti.heimelska.co.uk
+# Client API and control plane share this port
+openziti_ctrl_port: 1280
+openziti_admin_username: admin
+# Required on the controller host; the playbook supplies it from Key Vault
+openziti_admin_password: ""
+# The web console is served on the (public) controller port when enabled
+openziti_console_enabled: false
+
+# Where JWTs for identities created by the role are written on the controller
+openziti_artifacts_dir: /opt/openziti/artifacts
+
+# Routers --------------------------------------------------------------------------
+
+openziti_router_name: "{{ inventory_hostname_short }}"
+# Edge listener; on a public router it also carries router links
+openziti_router_port: 3022
+# Address clients (and, for public routers, other routers) use to reach this router
+openziti_router_advertised_address: "{{ inventory_hostname }}"
+# Public routers listen for links from the private (home) routers. Private routers
+# only dial out, so nothing at home needs to accept inbound connections.
+openziti_router_public: "{{ inventory_hostname in groups['openziti_public_routers'] | default([]) }}"
+# host = embedded tunneler that can host services (needs --tunneler-enabled on the
+# controller), none = pure edge/fabric router
+openziti_router_mode: "{{ 'none' if openziti_router_public else 'host' }}"
+openziti_router_role_attributes: "{{ ['public-routers'] if openziti_router_public else ['home-routers'] }}"
+
+# Packages -------------------------------------------------------------------------
+
+# Empty installs the latest release. Keep controller and routers on the same version.
+openziti_version: ""
+openziti_apt_repo: https://packages.openziti.org/zitipax-openziti-deb-stable
+openziti_apt_key: https://get.openziti.io/tun/package-repos.gpg
+
+# Network model --------------------------------------------------------------------
+# Created on the controller if missing. Existing objects are not updated: change one
+# by deleting it in the controller (or with the CLI) and re-running the playbook.
+
+openziti_edge_router_policies:
+  # Every identity may connect to every edge router; clients pick the fastest
+  - name: all-identities-all-routers
+    edge_router_roles: ["#all"]
+    identity_roles: ["#all"]
+
+openziti_service_edge_router_policies:
+  - name: all-services-all-routers
+    edge_router_roles: ["#all"]
+    service_roles: ["#all"]
+
+openziti_service_policies:
+  - name: home-routers-bind-home-services
+    type: Bind
+    identity_roles: ["#home-routers"]
+    service_roles: ["#home-services"]
+  - name: users-dial-home-services
+    type: Dial
+    identity_roles: ["#users"]
+    service_roles: ["#home-services"]
+
+# Each service gets an intercept.v1 (what clients dial) and a host.v1 (where the
+# hosting router sends traffic) config named <service>-intercept / <service>-host
+openziti_services: []
+#  - name: wanda-pve
+#    role_attributes: [home-services]
+#    intercept_addresses: [wanda-pve.ziti]
+#    port: 8006
+#    host_address: 10.151.14.11
+
+# Client identities. A one-time enrollment JWT is written to openziti_artifacts_dir
+# on the controller when an identity is created.
+openziti_identities: []
+#  - name: alex-laptop
+#    role_attributes: [users]
+
+# Controller backup ------------------------------------------------------------------
+# Nightly DB snapshot + config.yml + PKI (which holds the CA private keys), encrypted
+# with age and uploaded to Azure Blob Storage. See docs/openziti.md for the restore.
+
+openziti_backup_enabled: false
+openziti_backup_storage_account: ""
+openziti_backup_container: openziti-backups
+# Container-scoped SAS token with create/write, as the bare query string
+# (sv=...&sig=...), not the container URL; the playbook supplies it from Key Vault
+openziti_backup_sas_token: ""
+# Encrypt to the repo's SOPS age key (.sops.yaml), so restoring needs Flux-Age-Key
+openziti_backup_age_recipient: age1m604fu0zt3dnypzq4nasx63mzzzcx49dxngwe7aj8vr0x8pm63jqfsjuyq
+openziti_backup_local_dir: /var/backups/openziti
+openziti_backup_retention_days: 14
+# Before the VPS's 04:00 unattended-upgrades reboot window
+openziti_backup_cron_hour: "2"
+openziti_backup_cron_minute: "30"

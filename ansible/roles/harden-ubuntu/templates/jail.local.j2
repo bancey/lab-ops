@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+[DEFAULT]
+ignoreip = {{ harden_fail2ban_ignoreip | join(' ') }}
+bantime = {{ harden_fail2ban_bantime }}
+findtime = {{ harden_fail2ban_findtime }}
+maxretry = {{ harden_fail2ban_maxretry }}
+bantime.increment = true
+bantime.maxtime = {{ harden_fail2ban_bantime_maxtime }}
+banaction = ufw
+banaction_allports = ufw
+backend = systemd
+
+[sshd]
+enabled = true
+mode = aggressive
+port = {{ harden_ssh_port }}
+
+# Repeat offenders across any jail get banned from all ports for a week
+[recidive]
+enabled = true
+backend = auto
+logpath = /var/log/fail2ban.log
+banaction = %(banaction_allports)s
+bantime = 1w
+findtime = 1d

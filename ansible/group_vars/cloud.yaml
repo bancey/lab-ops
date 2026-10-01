@@ -1,0 +1,7 @@
+# Opened in UFW by harden-ubuntu (vps-hardening.yaml). The OVH edge firewall needs
+# matching permit rules, see docs/openziti.md.
+harden_ufw_allowed_ports:
+  # OpenZiti controller: client API + control plane (openziti_ctrl_port)
+  - { port: 1280, proto: tcp }
+  # OpenZiti public edge router: edge clients + links from home routers (openziti_router_port)
+  - { port: 3022, proto: tcp }

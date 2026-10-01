@@ -1,0 +1,238 @@
+---
+# Packages -------------------------------------------------------------------
+
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: apt
+
+# In check mode nothing gets installed, so config for packages that aren't on the
+# host yet would fail on missing directories. Those tasks are skipped in that case.
+- name: Work out which hardening packages are not installed yet
+  ansible.builtin.set_fact:
+    harden_missing_packages: "{{ harden_packages | difference(ansible_facts.packages.keys()) }}"
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: true
+    cache_valid_time: 3600
+    autoremove: true
+
+- name: Install hardening packages
+  ansible.builtin.apt:
+    pkg: "{{ harden_packages }}"
+    state: present
+
+# SSH --------------------------------------------------------------------------
+
+# On Ubuntu 24.04+ sshd is socket-activated, so this directory may not exist when
+# nothing is connected, and "sshd -t" refuses to run without it
+- name: Ensure sshd privilege separation directory exists
+  ansible.builtin.file:
+    path: /run/sshd
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# sshd uses the first value it sees for each option and Ubuntu's sshd_config includes
+# sshd_config.d/*.conf at the top, so a 00- prefix wins over 50-cloud-init.conf
+- name: Configure sshd hardening
+  ansible.builtin.template:
+    src: sshd-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/00-hardening.conf
+    owner: root
+    group: root
+    mode: '0644'
+    validate: /usr/sbin/sshd -t -f %s
+  notify:
+    - restart ssh
+
+- name: Validate full sshd configuration
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+
+- name: Check whether sshd is socket-activated
+  ansible.builtin.command: systemctl is-enabled ssh.socket
+  register: harden_ssh_socket
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Record sshd activation mode
+  ansible.builtin.set_fact:
+    harden_ssh_socket_activated: "{{ harden_ssh_socket.stdout == 'enabled' }}"
+
+- name: Lock root password
+  ansible.builtin.user:
+    name: root
+    password_lock: true
+
+# Host firewall -----------------------------------------------------------------
+
+# SSH is allowed before the firewall is enabled so the current session survives.
+# Deliberately "allow" rather than "limit": ansible.cfg drops ControlPersist, so every
+# task opens a new connection and would trip UFW's 6-per-30s limit. Brute force is
+# fail2ban's job, and the OVH edge firewall already restricts who can reach port 22.
+- name: Allow SSH through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ harden_ssh_port | string }}"
+    proto: tcp
+    comment: ssh
+  when: not ansible_check_mode or 'ufw' not in harden_missing_packages
+
+# Extra ports carry a role-owned comment so that ports dropped from
+# harden_ufw_allowed_ports can be found and removed again, without touching rules
+# added by hand or by anything else
+- name: Allow additional ports through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port | string }}"
+    proto: "{{ item.proto | default('tcp') }}"
+    comment: "{{ harden_ufw_rule_comment }}"
+  loop: "{{ harden_ufw_allowed_ports }}"
+  when: not ansible_check_mode or 'ufw' not in harden_missing_packages
+
+- name: List UFW rules
+  ansible.builtin.command: ufw show added
+  register: harden_ufw_added
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode or 'ufw' not in harden_missing_packages
+
+# "ufw show added" prints one line per rule, e.g. ufw allow 443/tcp comment 'harden-ubuntu'
+- name: Work out which role-managed UFW rules are no longer wanted
+  ansible.builtin.set_fact:
+    harden_ufw_stale_rules: "{{ harden_ufw_managed | difference(harden_ufw_wanted) }}"
+  vars:
+    harden_ufw_managed: "{{ harden_ufw_added.stdout | regex_findall(\"^ufw allow (\\S+) comment '\" ~ harden_ufw_rule_comment ~ \"'$\", multiline=True) }}"
+    harden_ufw_wanted: "{{ harden_ufw_allowed_ports | map(attribute='port') | map('string') | zip(harden_ufw_allowed_ports | map(attribute='proto', default='tcp')) | map('join', '/') | list }}"
+  when: harden_ufw_added is not skipped
+
+- name: Remove UFW rules for ports no longer in harden_ufw_allowed_ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.split('/')[0] }}"
+    proto: "{{ item.split('/')[1] }}"
+    delete: true
+  loop: "{{ harden_ufw_stale_rules | default([]) }}"
+
+- name: Enable UFW with default deny incoming
+  community.general.ufw:
+    state: enabled
+    default: deny
+    direction: incoming
+    logging: 'low'
+  when: not ansible_check_mode or 'ufw' not in harden_missing_packages
+
+# fail2ban ----------------------------------------------------------------------
+
+- name: Configure fail2ban
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/fail2ban/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - fail2ban.local
+    - jail.local
+  notify:
+    - restart fail2ban
+  when: not ansible_check_mode or 'fail2ban' not in harden_missing_packages
+
+- name: Enable and start fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    enabled: true
+    state: started
+  when: not ansible_check_mode
+
+# Automatic updates -------------------------------------------------------------
+
+- name: Enable periodic unattended upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Download-Upgradeable-Packages "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+
+- name: Configure unattended upgrades
+  ansible.builtin.template:
+    src: unattended-upgrades.conf.j2
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    owner: root
+    group: root
+    mode: '0644'
+
+# Kernel / system -----------------------------------------------------------------
+
+- name: Apply sysctl hardening
+  ansible.builtin.template:
+    src: sysctl-hardening.conf.j2
+    dest: /etc/sysctl.d/99-hardening.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload sysctl
+
+- name: Cap persistent journal size
+  community.general.ini_file:
+    path: /etc/systemd/journald.conf
+    section: Journal
+    option: SystemMaxUse
+    value: "{{ harden_journald_max_use }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart journald
+
+- name: Configure audit rules
+  ansible.builtin.template:
+    src: audit-hardening.rules.j2
+    dest: /etc/audit/rules.d/hardening.rules
+    owner: root
+    group: root
+    mode: '0640'
+  register: harden_audit_rules
+  when: not ansible_check_mode or 'auditd' not in harden_missing_packages
+
+- name: Load audit rules
+  ansible.builtin.command: augenrules --load
+  when: harden_audit_rules is changed and not ansible_check_mode
+  changed_when: true
+
+- name: Enable and start security services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - apparmor
+    - auditd
+    - unattended-upgrades
+  when: not ansible_check_mode
+
+- name: Apply configuration changes
+  ansible.builtin.meta: flush_handlers
+
+# Reboot --------------------------------------------------------------------------
+
+- name: Check if a reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: harden_reboot_required
+
+- name: Reboot to pick up kernel/library updates
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  when: harden_reboot_required.stat.exists and not ansible_check_mode

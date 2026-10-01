@@ -1,0 +1,68 @@
+---
+# OpenZiti overlay: controller + public edge router on the OVH VPS front door, private
+# (outbound-only) edge routers at home hosting services. See docs/openziti.md.
+
+- name: Install OpenZiti and record router state
+  hosts: openziti_controller:openziti_routers
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Install packages
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: install
+      vars:
+        openziti_packages: "{{ (['openziti-controller'] if inventory_hostname in groups['openziti_controller'] else [])
+          + (['openziti-router'] if inventory_hostname in groups['openziti_routers'] else []) }}"
+
+    - name: Record router state
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: router_state
+      when: inventory_hostname in groups['openziti_routers']
+
+- name: Bootstrap controller and issue router enrollment tokens
+  hosts: openziti_controller
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Bootstrap controller
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: controller
+      vars:
+        openziti_admin_username: "{{ lookup('ansible.builtin.file', 'OpenZiti-Admin-Username') }}"
+        openziti_admin_password: "{{ lookup('ansible.builtin.file', 'OpenZiti-Admin-Password') }}"
+
+    - name: Issue enrollment tokens
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: enroll
+
+    - name: Configure controller backup
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: backup
+      vars:
+        openziti_backup_sas_token: "{{ lookup('ansible.builtin.file', 'OpenZiti-Backup-SAS-Token') }}"
+      when: openziti_backup_enabled | default(false)
+
+- name: Bootstrap and enroll edge routers
+  hosts: openziti_routers
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Bootstrap router
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: router
+
+- name: Configure OpenZiti policies, services and identities
+  hosts: openziti_controller
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Configure network model
+      ansible.builtin.include_role:
+        name: openziti
+        tasks_from: objects

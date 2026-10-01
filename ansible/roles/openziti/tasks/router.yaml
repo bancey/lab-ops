@@ -1,0 +1,45 @@
+---
+# Generates the router config and enrolls it with the token issued by the controller
+# play, using the package's bootstrap.bash non-interactively. Runs only while the
+# router has no identity; afterwards /var/lib/ziti-router/config.yml is left alone.
+
+- name: Look up this router's enrollment token
+  ansible.builtin.set_fact:
+    openziti_router_token: "{{ hostvars[groups['openziti_controller'][0]].openziti_enrollment_tokens[inventory_hostname] | default('') }}"
+  no_log: true
+  when: not openziti_router_enrolled
+
+- name: Check an enrollment token was issued
+  ansible.builtin.assert:
+    that: openziti_router_token | length > 0
+    fail_msg: >-
+      No enrollment token for {{ inventory_hostname }}: the controller play on
+      {{ groups['openziti_controller'][0] }} did not complete, check its errors above
+    quiet: true
+  when:
+    - not ansible_check_mode
+    - not openziti_router_enrolled
+
+- name: Bootstrap and enroll router
+  ansible.builtin.command: /opt/openziti/etc/router/bootstrap.bash
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+    ZITI_CTRL_ADVERTISED_ADDRESS: "{{ openziti_ctrl_address }}"
+    ZITI_CTRL_ADVERTISED_PORT: "{{ openziti_ctrl_port | string }}"
+    ZITI_ROUTER_ADVERTISED_ADDRESS: "{{ openziti_router_advertised_address }}"
+    ZITI_ROUTER_PORT: "{{ openziti_router_port | string }}"
+    ZITI_ROUTER_MODE: "{{ openziti_router_mode }}"
+    # --private drops the link listener: the router only dials out to public routers
+    ZITI_BOOTSTRAP_CONFIG_ARGS: "{{ '' if openziti_router_public else '--private' }}"
+    ZITI_ENROLL_TOKEN: "{{ openziti_router_token }}"
+  no_log: true
+  when:
+    - not ansible_check_mode
+    - not openziti_router_enrolled
+
+- name: Enable and start router
+  ansible.builtin.systemd:
+    name: ziti-router
+    enabled: true
+    state: started
+  when: not ansible_check_mode

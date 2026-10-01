@@ -1,0 +1,43 @@
+---
+# Installs the OpenZiti packages. Pass openziti_packages, e.g. [openziti-router].
+
+- name: Install repository prerequisites
+  ansible.builtin.apt:
+    pkg:
+      - ca-certificates
+      - jq
+      # needed by deb822_repository; missing on Raspberry Pi OS
+      - python3-debian
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Add OpenZiti apt repository
+  ansible.builtin.deb822_repository:
+    name: openziti
+    types: deb
+    uris: "{{ openziti_apt_repo }}"
+    suites: debian
+    components: main
+    signed_by: "{{ openziti_apt_key }}"
+  register: openziti_repo
+
+- name: Refresh apt cache after adding the repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: openziti_repo is changed
+
+# openziti provides the ziti CLI; the controller/router packages depend on it
+- name: Install OpenZiti packages
+  ansible.builtin.apt:
+    pkg: "{{ (['openziti'] + openziti_packages) | map('regex_replace', '$', ('=' ~ openziti_version) if openziti_version else '') | list }}"
+    state: present
+  # In check mode the repository isn't really added, so the packages can't be found
+  when: not (ansible_check_mode and openziti_repo is changed)
+
+# False only in check mode before the first real run, when nothing is installed yet;
+# later tasks that need the packages are skipped in that case
+- name: Check for the ziti CLI
+  ansible.builtin.stat:
+    path: /usr/bin/ziti
+  register: openziti_cli
