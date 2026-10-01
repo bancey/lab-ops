@@ -12,6 +12,16 @@ openziti_admin_password: ""
 # The web console is served on the (public) controller port when enabled
 openziti_console_enabled: false
 
+# Public client API: a second listener on a publicly trusted name (Let's Encrypt via
+# Cloudflare DNS-01) so users can join by URL without a JWT. The address must differ
+# from openziti_ctrl_address. See tasks/public_api.yaml.
+openziti_public_api_enabled: false
+openziti_public_api_address: ""
+openziti_public_api_port: 443
+openziti_public_api_cert_dir: /var/lib/ziti-controller/public-tls
+# Cloudflare API token with DNS edit on the zone; the playbook supplies it from Key Vault
+openziti_cloudflare_api_token: ""
+
 # Where JWTs for identities created by the role are written on the controller
 openziti_artifacts_dir: /opt/openziti/artifacts
 

@@ -12,7 +12,7 @@ playbook's play order:
 | --- | --- | --- |
 | `install` | all | OpenZiti apt repo + `openziti` and `openziti_packages` |
 | `router_state` | routers | Records `openziti_router_enrolled` and the `openziti_router` settings as facts |
-| `controller` | controller | Non-interactive `bootstrap.bash` (once), starts the service, logs the CLI in |
+| `controller` | controller | Non-interactive `bootstrap.bash` (once), public join listener (`public_api`), starts the service, logs the CLI in |
 | `backup` | controller | Nightly age-encrypted DB snapshot + PKI + config to Azure Blob (when `openziti_backup_enabled`) |
 | `enroll` | controller | Creates/re-enrolls edge routers for unenrolled routers → `openziti_enrollment_tokens` |
 | `router` | routers | Non-interactive `bootstrap.bash` with the issued token (once), starts the service |
@@ -40,5 +40,6 @@ See `defaults/main.yaml`. The ones most likely to change:
 | `openziti_identities` | `[]` | `{name, role_attributes}`; JWT written to `openziti_artifacts_dir` |
 | `openziti_ext_jwt_signers` | `[]` | OIDC providers for client sign-in, optionally auto-enrolling identities |
 | `openziti_auth_policies` | `[]` | `{name, cert_allowed, ext_jwt_allowed, ext_jwt_allowed_signers, updb_allowed}` |
+| `openziti_public_api_enabled` / `openziti_public_api_address` | `false` / — | Client API on `:443` with a Let's Encrypt cert for join-by-URL; Cloudflare token from Key Vault `Cloudflare-Lab-API-Token` |
 | `openziti_version` | latest | Pin all hosts to one release |
 | `openziti_backup_enabled` / `openziti_backup_storage_account` | `false` / — | Nightly controller backup; SAS token from Key Vault `OpenZiti-Backup-SAS-Token` |

@@ -1,0 +1,167 @@
+---
+# Serves the client API on a second, publicly trusted name and port so users can
+# "join by URL" (https://<openziti_public_api_address>) without a JWT. The OS has to
+# trust the certificate the controller presents there, and the controller's own PKI
+# isn't trusted, so this listener presents a Let's Encrypt certificate instead.
+#
+# The certificate is bound with alt_server_certs, which the controller picks by SNI.
+# Its name must not overlap the PKI server cert's SANs (openziti_ctrl_address), so
+# routers and enrolled clients keep getting the PKI cert on the original address.
+#
+# Runs between bootstrap and service start in controller.yaml, because the listener
+# can only be added once config.yml exists and the controller won't start if a
+# certificate it references is missing.
+
+- name: Check the public API settings
+  ansible.builtin.assert:
+    that:
+      - openziti_public_api_address | length > 0
+      - openziti_public_api_address != openziti_ctrl_address
+      - openziti_cloudflare_api_token | length > 0
+    fail_msg: >-
+      openziti_public_api_address must be set and differ from openziti_ctrl_address,
+      and openziti_cloudflare_api_token (Cloudflare-Lab-API-Token) must be supplied
+    quiet: true
+  no_log: true
+
+- name: Install certbot with the Cloudflare DNS plugin
+  ansible.builtin.apt:
+    pkg:
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+
+- name: Ensure the Let's Encrypt directory exists
+  ansible.builtin.file:
+    path: /etc/letsencrypt
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# DNS-01, so nothing has to listen on port 80 behind the OVH edge firewall
+- name: Write Cloudflare credentials for certbot
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/cloudflare-openziti.ini
+    content: "dns_cloudflare_api_token = {{ openziti_cloudflare_api_token }}\n"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
+# Certbot keeps the private key root-only, so the hook copies the pair somewhere the
+# ziti-controller user can read and restarts the controller to load it. Certbot
+# stores the hook with the certificate, so certbot.timer runs it on every renewal.
+- name: Install the certificate deploy hook
+  ansible.builtin.copy:
+    dest: /usr/local/bin/openziti-public-cert-deploy.sh
+    owner: root
+    group: root
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      # Managed by Ansible (roles/openziti/tasks/public_api.yaml)
+      set -euo pipefail
+      src=/etc/letsencrypt/live/{{ openziti_public_api_address }}
+      dst={{ openziti_public_api_cert_dir }}
+      install -d -o root -g ziti-controller -m 0750 "$dst"
+      install -o root -g ziti-controller -m 0640 "$src/fullchain.pem" "$dst/fullchain.pem"
+      install -o root -g ziti-controller -m 0640 "$src/privkey.pem" "$dst/privkey.pem"
+      if systemctl is-active --quiet ziti-controller; then
+        systemctl restart ziti-controller
+      fi
+
+- name: Obtain the public API certificate
+  ansible.builtin.command: >-
+    certbot certonly --non-interactive --agree-tos --register-unsafely-without-email
+    --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare-openziti.ini
+    --dns-cloudflare-propagation-seconds 30
+    --cert-name {{ openziti_public_api_address | quote }} -d {{ openziti_public_api_address | quote }}
+    --deploy-hook /usr/local/bin/openziti-public-cert-deploy.sh
+  args:
+    creates: /etc/letsencrypt/live/{{ openziti_public_api_address }}/fullchain.pem
+  when: not ansible_check_mode
+
+# Covers a certificate that already existed before the hook did
+- name: Copy the certificate for the controller
+  ansible.builtin.command: /usr/local/bin/openziti-public-cert-deploy.sh
+  args:
+    creates: "{{ openziti_public_api_cert_dir }}/fullchain.pem"
+  when: not ansible_check_mode
+
+# The controller runs as an unprivileged user, so binding below 1024 needs this
+- name: Ensure the controller drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/ziti-controller.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Allow the controller to bind privileged ports
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ziti-controller.service.d/bind-privileged-ports.conf
+    content: |
+      # Managed by Ansible (roles/openziti/tasks/public_api.yaml)
+      [Service]
+      AmbientCapabilities=CAP_NET_BIND_SERVICE
+    owner: root
+    group: root
+    mode: '0644'
+  register: openziti_public_api_dropin
+
+- name: Check for the controller config
+  ansible.builtin.stat:
+    path: /var/lib/ziti-controller/config.yml
+  register: openziti_config_file
+
+- name: Read the controller config
+  ansible.builtin.slurp:
+    src: /var/lib/ziti-controller/config.yml
+  register: openziti_config_raw
+  when: openziti_config_file.stat.exists
+
+# Rebuilt from the bootstrap-generated client-management listener each run, so it
+# follows that listener's identity and options. Management APIs aren't exposed on
+# it. The first run rewrites config.yml without its comments; a backup is kept.
+- name: Add the public client API listener to the controller config
+  ansible.builtin.copy:
+    dest: /var/lib/ziti-controller/config.yml
+    content: "{{ config | combine({'web': web}) | to_nice_yaml(indent=2, sort_keys=false) }}"
+    backup: true
+  vars:
+    config: "{{ openziti_config_raw.content | b64decode | from_yaml }}"
+    base: "{{ config.web | selectattr('name', 'equalto', 'client-management') | first }}"
+    listener:
+      name: client-public
+      bindPoints:
+        - interface: "0.0.0.0:{{ openziti_public_api_port }}"
+          address: "{{ openziti_public_api_address }}:{{ openziti_public_api_port }}"
+      identity: "{{ base.identity | combine({'alt_server_certs': [{'server_cert': openziti_public_api_cert_dir ~ '/fullchain.pem', 'server_key': openziti_public_api_cert_dir ~ '/privkey.pem'}]}) }}"
+      options: "{{ base.options | default({}) }}"
+      apis:
+        - binding: edge-client
+          options: {}
+        - binding: edge-oidc
+          options: {}
+    web: "{{ (config.web | rejectattr('name', 'equalto', 'client-public') | list) + [listener] }}"
+  register: openziti_public_api_config
+  when: openziti_config_file.stat.exists
+
+- name: Restart controller to load the public API listener
+  ansible.builtin.systemd:
+    name: ziti-controller
+    state: restarted
+    daemon_reload: true
+  when:
+    - not ansible_check_mode
+    - openziti_public_api_dropin is changed or openziti_public_api_config is changed
+
+- name: Wait for the public API
+  ansible.builtin.wait_for:
+    port: "{{ openziti_public_api_port }}"
+    host: 127.0.0.1
+    timeout: 120
+  when:
+    - not ansible_check_mode
+    - openziti_public_api_dropin is changed or openziti_public_api_config is changed
