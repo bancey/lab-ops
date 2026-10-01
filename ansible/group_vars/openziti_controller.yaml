@@ -3,6 +3,11 @@
 openziti_backup_enabled: true
 openziti_backup_storage_account: banceyprodstor
 
+# Users join at https://join.ziti.heimelska.co.uk (Let's Encrypt cert, port 443).
+# Routers and enrolled clients stay on ziti.heimelska.co.uk:1280 and the controller PKI.
+openziti_public_api_enabled: true
+openziti_public_api_address: join.ziti.heimelska.co.uk
+
 # Phase 1 test service: wanda's Proxmox UI, hosted by the home routers
 openziti_services:
   - name: wanda-pve

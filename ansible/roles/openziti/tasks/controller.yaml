@@ -44,6 +44,12 @@
   no_log: true
   when: openziti_cli.stat.exists
 
+- name: Configure public client API
+  ansible.builtin.include_tasks: public_api.yaml
+  when:
+    - openziti_public_api_enabled | bool
+    - openziti_cli.stat.exists
+
 - name: Enable and start controller
   ansible.builtin.systemd:
     name: ziti-controller

@@ -33,6 +33,8 @@
       vars:
         openziti_admin_username: "{{ lookup('ansible.builtin.file', 'OpenZiti-Admin-Username') }}"
         openziti_admin_password: "{{ lookup('ansible.builtin.file', 'OpenZiti-Admin-Password') }}"
+        # DNS-01 for the public client API certificate
+        openziti_cloudflare_api_token: "{{ lookup('ansible.builtin.file', 'Cloudflare-Lab-API-Token') | trim }}"
 
     - name: Issue enrollment tokens
       ansible.builtin.include_role:

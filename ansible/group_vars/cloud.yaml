@@ -3,5 +3,7 @@
 harden_ufw_allowed_ports:
   # OpenZiti controller: client API + control plane (openziti_ctrl_port)
   - { port: 1280, proto: tcp }
+  # OpenZiti public client API for join-by-URL (openziti_public_api_port)
+  - { port: 443, proto: tcp }
   # OpenZiti public edge router: edge clients + links from home routers (openziti_router_port)
   - { port: 3022, proto: tcp }

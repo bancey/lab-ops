@@ -8,10 +8,11 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
 
 ```
  Ziti client (laptop/phone)
-        │  tls :1280 (API)  tls :3022 (edge)
+        │  tls :443 (join)  tls :1280 (API)  tls :3022 (edge)
         ▼
  ┌─────────────────────────────── vps01 (OVH) ─┐
- │ ziti-controller   ziti.heimelska.co.uk:1280  │
+ │ ziti-controller   join.ziti.heimelska.co.uk  │  :443, Let's Encrypt, client API only
+ │                   ziti.heimelska.co.uk:1280  │  controller PKI
  │ ziti-router       ziti.heimelska.co.uk:3022  │  public router, mode none
  └──────────────────────────────▲───────────────┘
                                 │ router links, dialled *outbound* from home
@@ -26,6 +27,8 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
   to home. It's a single-node cluster (`ZITI_BOOTSTRAP_CLUSTER=true`) with its own PKI
   under `/var/lib/ziti-controller/pki`. The leaf certs are renewed monthly by
   `ziti-controller-cert-renewal.timer`.
+- **Public client API** (`join.ziti.heimelska.co.uk`, port 443) is a second controller
+  listener for "join by URL". See [Public join URL](#public-join-url).
 - **Public router** (`vps01`) is not tunneler-enabled. It only carries traffic:
   clients connect to it, and the home routers dial their links into it on the same port.
 - **Private routers** (`openziti`, `nebula`) are generated with `--private`, so they
@@ -46,7 +49,8 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
 | Entra app registration (`lab-openziti`) | `terraform/environments/prod/entra.yaml` |
 | VPS UFW ports | `ansible/group_vars/cloud.yaml` (applied by `vps-hardening.yaml`) |
 | Private router VM | `virtual_machines.openziti` in `terraform/environments/prod/prod.tfvars` |
-| Public DNS `ziti.heimelska.co.uk` → VPS | `cloudflare_records` in `prod.tfvars` (must stay unproxied) |
+| Public DNS `ziti.heimelska.co.uk`, `join.ziti.heimelska.co.uk` → VPS | `cloudflare_records` in `prod.tfvars` (must stay unproxied) |
+| Public join URL (Let's Encrypt, 443 listener) | `ansible/roles/openziti/tasks/public_api.yaml` |
 | Private DNS/Twingate for the VM | `openziti.heimelska.co.uk` in `terraform/environments/prod/dns.yaml` |
 | Pipeline | `openziti_ansible` stage in `infra-pipeline.yaml` |
 
@@ -60,9 +64,10 @@ the home hosts through Twingate. The playbook has four plays:
    OpenZiti apt repo. Each router records whether it already has an identity
    (`/var/lib/ziti-router/router.cert`).
 2. **Controller**: on first run, `/opt/openziti/etc/controller/bootstrap.bash` runs
-   non-interactively (PKI, config, database, default admin). The play then logs the CLI
-   in over loopback and creates edge routers in the controller for any router
-   without an identity. If the router already exists in the controller, it's
+   non-interactively (PKI, config, database, default admin). On every run, the play
+   ensures the public join listener and its Let's Encrypt certificate are in
+   `config.yml`. It then logs the CLI in over loopback and creates edge routers in the
+   controller for any router without an identity. If the router already exists in the controller, it's
    re-enrolled instead. The one-time JWTs are passed to the next play in memory.
 3. **Routers**: `/opt/openziti/etc/router/bootstrap.bash` generates the config and
    enrolls using that JWT. Already-enrolled routers are left alone.
@@ -107,7 +112,7 @@ in. Rotating it in Key Vault alone does **not** change it in the controller. Run
 
 ### OVH edge firewall
 
-UFW on the VPS is opened for 1280/tcp and 3022/tcp by `vps-hardening.yaml`, but the
+UFW on the VPS is opened for 443/tcp, 1280/tcp and 3022/tcp by `vps-hardening.yaml`, but the
 OVH Edge Network Firewall in front of it also needs permanent permit rules. Add them
 (OVH console, or `ovhcloud ip firewall rule create`) **before** any deny-all rule and
 not at sequence 18, which the pipeline reserves:
@@ -115,11 +120,13 @@ not at sequence 18, which the pipeline reserves:
 | Action | Protocol | Source | Dest. port | Option |
 | --- | --- | --- | --- | --- |
 | permit | tcp | any | | established |
+| permit | tcp | any | 443 | |
 | permit | tcp | any | 1280 | |
 | permit | tcp | any | 3022 | |
 
-Without the port rules, home routers can't enroll and clients can't connect. The
-pipeline's own SSH rule doesn't cover them.
+Without the port rules, home routers can't enroll and clients can't connect, and
+without 443 the public join URL doesn't work. The pipeline's own SSH rule doesn't
+cover them.
 
 The edge firewall is stateless. Without the `established` rule, replies to
 connections the VPS opens itself are dropped, so HTTPS to anything outside OVH times
@@ -161,8 +168,10 @@ signer only if a client turns out to need an access token.
 
 1. Add the user to the tenant. App assignment isn't required, so any tenant user can
    sign in and get an identity, but without a role attribute it can't dial anything.
-2. In Ziti Desktop Edge, add an identity by URL with `https://ziti.heimelska.co.uk:1280`,
+2. In Ziti Desktop Edge, add an identity by URL with `https://join.ziti.heimelska.co.uk`,
    choose the **entra** provider and sign in with Microsoft. No JWT file is involved.
+   Don't use `ziti.heimelska.co.uk:1280` for this. Its certificate comes from the
+   controller's own PKI, which the OS doesn't trust, so the client rejects it.
 3. Grant access on the VPS once the identity exists. It's named after the user's
    `preferred_username`:
 
@@ -187,6 +196,37 @@ the playbook never resets them.
     existing identity (same `oid` external ID / `preferred_username` name) or reuses it.
   - Whether `enrollAttributeClaimsSelector` attributes are refreshed on later logins or
     only set at enrollment. This decides the #1536 approach.
+
+### Public join URL
+
+Joining by URL has no JWT to carry the controller's CA, so the OS has to trust the
+certificate the controller presents. The controller's own PKI isn't trusted, so a
+second web listener serves the client API (`edge-client`, `edge-oidc`, no management
+APIs) on `join.ziti.heimelska.co.uk:443` with a Let's Encrypt certificate.
+
+- The certificate is bound with `alt_server_certs`, which the controller selects by
+  SNI. The name must not overlap the PKI cert's SANs (`ziti.heimelska.co.uk`), so
+  don't replace it with a `*.heimelska.co.uk` wildcard. Routers and enrolled clients
+  keep using `ziti.heimelska.co.uk:1280` and the PKI.
+- certbot on the VPS issues it with a Cloudflare DNS-01 challenge, using
+  `Cloudflare-Lab-API-Token`. Nothing listens on port 80. `certbot.timer` renews it, and
+  the deploy hook (`/usr/local/bin/openziti-public-cert-deploy.sh`) copies it to
+  `/var/lib/ziti-controller/public-tls` and restarts the controller.
+- The controller is allowed to bind 443 by a systemd drop-in
+  (`ziti-controller.service.d/bind-privileged-ports.conf`, `CAP_NET_BIND_SERVICE`).
+- `bootstrap.bash` only writes `config.yml` once, so the playbook edits it: it rebuilds
+  the `client-public` listener from `client-management` on every run. The first edit
+  rewrites the file without its comments. The previous version is kept next to it as
+  `config.yml.<timestamp>~`.
+
+Check it from anywhere:
+
+```bash
+curl -sf https://join.ziti.heimelska.co.uk/edge/client/v1/version | jq .data.version
+```
+
+A network JWT (`/edge/client/v1/network-jwts`) is the fallback for clients that can't
+join by URL. It's one file for the whole network, not per user, and it isn't secret.
 
 ### JWT identities
 
@@ -236,7 +276,7 @@ Append to `openziti_services` in `ansible/group_vars/openziti_controller.yaml`:
 4. Stop `ziti-router` on one home router; the service keeps working through the
    other.
 5. From outside the LAN with the tunneller off, nothing new at home is reachable. The
-   only new public surface is 1280/3022 on the VPS.
+   only new public surface is 443/1280/3022 on the VPS.
 
 ## Troubleshooting
 
@@ -320,6 +360,9 @@ Evaluation only. Everything can be rebuilt from scratch:
 sudo systemctl disable --now ziti-router ziti-controller ziti-controller-cert-renewal.timer
 sudo crontab -l | grep -v openziti-backup | sudo crontab -   # nightly backup job
 sudo rm -f /usr/local/bin/openziti-backup.sh
+sudo certbot delete --cert-name join.ziti.heimelska.co.uk   # public join URL cert
+sudo rm -f /usr/local/bin/openziti-public-cert-deploy.sh /etc/letsencrypt/cloudflare-openziti.ini
+sudo rm -rf /etc/systemd/system/ziti-controller.service.d
 sudo apt purge -y openziti-controller openziti-router openziti
 sudo rm -rf /var/lib/ziti-controller /var/lib/ziti-router /opt/openziti /root/.config/ziti
 
@@ -329,8 +372,8 @@ sudo apt purge -y openziti-router openziti && sudo rm -rf /var/lib/ziti-router
 ```
 
 For the VM, remove `virtual_machines.openziti` from `prod.tfvars`. Then drop the hosts
-from the `openziti_*` inventory groups, the DNS entries (`ziti.heimelska.co.uk` in
-`cloudflare_records`, `openziti.heimelska.co.uk` in `dns.yaml`), the Ziti ports in
+from the `openziti_*` inventory groups, the DNS entries (`ziti.heimelska.co.uk` and
+`join.ziti.heimelska.co.uk` in `cloudflare_records`, `openziti.heimelska.co.uk` in `dns.yaml`), the Ziti ports in
 `ansible/group_vars/cloud.yaml`, and the OVH firewall rules.
 
 ## Next phases
