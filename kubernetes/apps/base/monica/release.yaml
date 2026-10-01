@@ -22,7 +22,7 @@ spec:
   values:
     image:
       repository: ghcr.io/monicahq/monica-next
-      tag: main@sha256:8be69156acbb1edce2ba82685729f2d4ce79f1b7f749fe967d0a36f78e7ad454
+      tag: main@sha256:8a02508cbdcfcc44d5bb3b456ba30cdc9fe9c0a17b2702043a4dbbd0c55300ed
       pullPolicy: IfNotPresent
 
     monica:
