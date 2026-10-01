@@ -293,7 +293,7 @@ parameters:
 
 variables:
   - name: agentImage
-    value: ubuntu-latest
+    value: ubuntu-26.04
   - name: stateStorageAccount
     value: banceystatestor
   - name: serviceConnection
