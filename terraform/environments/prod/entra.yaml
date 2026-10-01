@@ -95,6 +95,19 @@ applications:
     secret:
       enabled: true
 
+  # "Sign in with Microsoft" for OpenZiti clients, verified by the controller's `entra`
+  # ext-jwt-signer (ansible/group_vars/openziti_controller.yaml). The tunnelers are public clients
+  # doing auth code + PKCE against a fixed localhost callback, so there is no client secret and
+  # nothing for Kubernetes to consume. See docs/openziti.md.
+  lab-openziti:
+    display_name: "Lab OpenZiti"
+    description: "OpenZiti client sign-in (Ziti Desktop Edge, tunnelers)"
+    key_vault_prefix: OpenZiti
+    public_client_redirect_uris:
+      - http://localhost:20314/auth/callback
+    secret:
+      enabled: false
+
 # Random values owned by Terraform and shared between secrets below. Because both oauth2-proxy
 # entries reference the same key here they are guaranteed to receive the same value, which is
 # what makes a session issued by one cluster valid on the other. Changing `length` regenerates

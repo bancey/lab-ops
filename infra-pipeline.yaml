@@ -257,12 +257,14 @@ parameters:
           - OpenZiti-Admin-Username
           - OpenZiti-Admin-Password
           - OpenZiti-Backup-SAS-Token
+          - Entra-OpenZiti-Client-ID
         localEnvironments:
           - loki
           - nebula
         dependsOn:
           - generate_ansible_inventory
           - prod_dns
+          - prod_entra
           - tiny_virtual_machines
           - vps_hardening_ansible
         preSteps:

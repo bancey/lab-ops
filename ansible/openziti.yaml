@@ -66,3 +66,6 @@
       ansible.builtin.include_role:
         name: openziti
         tasks_from: objects
+      vars:
+        # Written to Key Vault by terraform/components/entra (lab-openziti)
+        openziti_entra_client_id: "{{ lookup('ansible.builtin.file', 'Entra-OpenZiti-Client-ID') | trim }}"
