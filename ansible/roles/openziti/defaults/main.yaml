@@ -48,38 +48,9 @@ openziti_apt_repo: https://packages.openziti.org/zitipax-openziti-deb-stable
 openziti_apt_key: https://get.openziti.io/tun/package-repos.gpg
 
 # Network model --------------------------------------------------------------------
-# Created on the controller if missing. Existing objects are not updated: change one
-# by deleting it in the controller (or with the CLI) and re-running the playbook.
-
-openziti_edge_router_policies:
-  # Every identity may connect to every edge router; clients pick the fastest
-  - name: all-identities-all-routers
-    edge_router_roles: ["#all"]
-    identity_roles: ["#all"]
-
-openziti_service_edge_router_policies:
-  - name: all-services-all-routers
-    edge_router_roles: ["#all"]
-    service_roles: ["#all"]
-
-openziti_service_policies:
-  - name: home-routers-bind-home-services
-    type: Bind
-    identity_roles: ["#home-routers"]
-    service_roles: ["#home-services"]
-  - name: users-dial-home-services
-    type: Dial
-    identity_roles: ["#users"]
-    service_roles: ["#home-services"]
-
-# Each service gets an intercept.v1 (what clients dial) and a host.v1 (where the
-# hosting router sends traffic) config named <service>-intercept / <service>-host
-openziti_services: []
-#  - name: wanda-pve
-#    role_attributes: [home-services]
-#    intercept_addresses: [wanda-pve.ziti]
-#    port: 8006
-#    host_address: 10.151.14.11
+# Policies, configs and services are not managed here: they live in
+# terraform/environments/prod/openziti.yaml and are applied by terraform/components/openziti.
+# This role only tags the router tunneler identities that the Bind policy selects.
 
 # Client identities. A one-time enrollment JWT is written to openziti_artifacts_dir
 # on the controller when an identity is created.
@@ -88,9 +59,9 @@ openziti_identities: []
 #    role_attributes: [users]
 
 # External authentication ------------------------------------------------------------
-# Unlike the objects above, signers and auth policies are created if missing and
-# otherwise updated to match on every run, so their settings can be iterated on
-# through the pipeline.
+# Signers and auth policies are created if missing and otherwise updated to match on
+# every run, so their settings can be iterated on through the pipeline. They stay here
+# because the Terraform provider cannot set the signer's enrollment fields.
 
 # OIDC providers whose JWTs the controller accepts. With enroll_to_token the first
 # sign-in creates the identity with token auth; enroll_to_cert issues it a client
