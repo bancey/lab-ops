@@ -108,6 +108,11 @@ not names). The Terraform component resolves group names to IDs with the `azurea
 provider, so `openziti.yaml` says `entra_groups: [lab-admins]` and the policy ends up
 selecting `#<object-id>`. There is no ID map to maintain.
 
+A group that doesn't exist yet (added to `entra.yaml` in the same PR) doesn't fail the plan.
+It's listed in a warning, skipped, and a Dial policy left with no groups isn't created
+until the next apply after the `entra` component has created the group. Group names
+must start with `lab-`.
+
 | Attribute | On | Used by |
 | --- | --- | --- |
 | `#public-routers` | vps01 router | (informational) |

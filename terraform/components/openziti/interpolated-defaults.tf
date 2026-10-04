@@ -12,7 +12,23 @@ locals {
   entra_group_names = toset(flatten([
     for p in values(local.service_policies) : lookup(p, "entra_groups", [])
   ]))
-  entra_group_roles = { for name, g in data.azuread_group.this : name => "#${g.object_id}" }
+
+  # A group added in the same change as the policy using it doesn't exist until the entra component
+  # has applied, so names are matched against a listing instead of looked up one by one (which
+  # fails when missing). Unresolved groups are left out and picked up on the next apply.
+  entra_group_ids      = zipmap(data.azuread_groups.lab.display_names, data.azuread_groups.lab.object_ids)
+  entra_group_roles    = { for name in local.entra_group_names : name => "#${local.entra_group_ids[name]}" if contains(keys(local.entra_group_ids), name) }
+  missing_entra_groups = sort([for name in local.entra_group_names : name if !contains(keys(local.entra_group_ids), name)])
+
+  # Dial identity roles per policy, with unresolved groups skipped. A policy with nothing to select
+  # is not created yet, rather than created matching no one (or, worse, everyone).
+  service_policy_identity_roles = {
+    for name, p in local.service_policies : name => concat(
+      lookup(p, "identity_roles", []),
+      [for group in lookup(p, "entra_groups", []) : local.entra_group_roles[group] if contains(keys(local.entra_group_roles), group)],
+    )
+  }
+  active_service_policies = { for name, p in local.service_policies : name => p if length(local.service_policy_identity_roles[name]) > 0 }
 }
 
 data "azurerm_key_vault" "vault" {
@@ -37,8 +53,15 @@ data "azurerm_key_vault_secret" "controller_ca" {
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
-data "azuread_group" "this" {
-  for_each         = local.entra_group_names
-  display_name     = each.value
-  security_enabled = true
+# All lab-* groups; see entra_group_ids. Group names in openziti.yaml must follow this prefix.
+data "azuread_groups" "lab" {
+  display_name_prefix = "lab-"
+  security_enabled    = true
+}
+
+check "entra_groups_exist" {
+  assert {
+    condition     = length(local.missing_entra_groups) == 0
+    error_message = "Entra groups not found yet, so their Dial policies are skipped or only partly applied until the entra component creates them: ${join(", ", local.missing_entra_groups)}"
+  }
 }
