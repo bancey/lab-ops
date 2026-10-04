@@ -1,58 +1,7 @@
 ---
-# Runs on the controller after the routers have enrolled. Each object is created only
-# if nothing with its name exists yet; see defaults/main.yaml for how to change one.
+# Runs on the controller after the routers have enrolled. Policies, configs and services
+# are owned by terraform/components/openziti, not by this file.
 # Relies on the CLI session from controller.yaml.
-
-- name: Create edge router policies
-  ansible.builtin.shell: |
-    set -euo pipefail
-    if [ "$(ziti edge list edge-router-policies {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq '.data | length')" -eq 0 ]; then
-      ziti edge create edge-router-policy {{ item.name | quote }} \
-        --edge-router-roles {{ item.edge_router_roles | join(',') | quote }} \
-        --identity-roles {{ item.identity_roles | join(',') | quote }}
-    fi
-  args:
-    executable: /bin/bash
-  loop: "{{ openziti_edge_router_policies }}"
-  loop_control:
-    label: "{{ item.name }}"
-  register: openziti_result
-  changed_when: openziti_result.stdout | length > 0
-  when: not ansible_check_mode
-
-- name: Create service edge router policies
-  ansible.builtin.shell: |
-    set -euo pipefail
-    if [ "$(ziti edge list service-edge-router-policies {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq '.data | length')" -eq 0 ]; then
-      ziti edge create service-edge-router-policy {{ item.name | quote }} \
-        --edge-router-roles {{ item.edge_router_roles | join(',') | quote }} \
-        --service-roles {{ item.service_roles | join(',') | quote }}
-    fi
-  args:
-    executable: /bin/bash
-  loop: "{{ openziti_service_edge_router_policies }}"
-  loop_control:
-    label: "{{ item.name }}"
-  register: openziti_result
-  changed_when: openziti_result.stdout | length > 0
-  when: not ansible_check_mode
-
-- name: Create service policies
-  ansible.builtin.shell: |
-    set -euo pipefail
-    if [ "$(ziti edge list service-policies {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq '.data | length')" -eq 0 ]; then
-      ziti edge create service-policy {{ item.name | quote }} {{ item.type | quote }} \
-        --identity-roles {{ item.identity_roles | join(',') | quote }} \
-        --service-roles {{ item.service_roles | join(',') | quote }}
-    fi
-  args:
-    executable: /bin/bash
-  loop: "{{ openziti_service_policies }}"
-  loop_control:
-    label: "{{ item.name }}"
-  register: openziti_result
-  changed_when: openziti_result.stdout | length > 0
-  when: not ansible_check_mode
 
 # The embedded tunneler of a tunneler-enabled router gets an identity with the
 # router's name. Service policies select identities, not routers, so the router's
@@ -78,45 +27,8 @@
     - not ansible_check_mode
     - hostvars[item].openziti_router.tunneler_enabled | bool
 
-- name: Create service configs
-  ansible.builtin.shell: |
-    set -euo pipefail
-    if [ "$(ziti edge list configs {{ ('name="' ~ item.0.name ~ '-' ~ item.1 ~ '"') | quote }} -j | jq '.data | length')" -eq 0 ]; then
-      ziti edge create config {{ (item.0.name ~ '-' ~ item.1) | quote }} {{ item.1 }}.v1 {{ config[item.1] | to_json | quote }}
-    fi
-  args:
-    executable: /bin/bash
-  vars:
-    # Built as whole expressions so the ports stay integers in the JSON
-    config:
-      intercept: "{{ {'protocols': ['tcp'], 'addresses': item.0.intercept_addresses, 'portRanges': [{'low': item.0.port | int, 'high': item.0.port | int}]} }}"
-      host: "{{ {'protocol': 'tcp', 'address': item.0.host_address, 'port': item.0.host_port | default(item.0.port) | int} }}"
-  loop: "{{ openziti_services | product(['intercept', 'host']) | list }}"
-  loop_control:
-    label: "{{ item.0.name }}-{{ item.1 }}"
-  register: openziti_result
-  changed_when: openziti_result.stdout | length > 0
-  when: not ansible_check_mode
-
-- name: Create services
-  ansible.builtin.shell: |
-    set -euo pipefail
-    if [ "$(ziti edge list services {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq '.data | length')" -eq 0 ]; then
-      ziti edge create service {{ item.name | quote }} \
-        --configs {{ (item.name ~ '-intercept,' ~ item.name ~ '-host') | quote }} \
-        --role-attributes {{ item.role_attributes | join(',') | quote }}
-    fi
-  args:
-    executable: /bin/bash
-  loop: "{{ openziti_services }}"
-  loop_control:
-    label: "{{ item.name }}"
-  register: openziti_result
-  changed_when: openziti_result.stdout | length > 0
-  when: not ansible_check_mode
-
-# External authentication. Unlike everything else here, signers and auth policies
-# are reconciled: created if missing, otherwise patched to match on every run.
+# External authentication. Signers and auth policies are reconciled: created if missing,
+# otherwise patched to match on every run.
 # Changes are detected by comparing the object before and after.
 #
 # The auth policy names its signers and the signer names the auth policy that
