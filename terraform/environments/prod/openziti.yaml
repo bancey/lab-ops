@@ -1,7 +1,4 @@
-# OpenZiti network model, applied by terraform/components/openziti. Everything else (install,
-# PKI bootstrap, routers, the Entra signer and its auth policy) stays in ansible/roles/openziti.
-# See docs/openziti.md.
-
+controller_url: https://ziti.heimelska.co.uk:1280
 edge_router_policies:
   # Every identity may connect to every edge router; clients pick the fastest
   - name: all-identities-all-routers
