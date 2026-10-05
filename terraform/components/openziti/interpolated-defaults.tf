@@ -7,16 +7,11 @@ locals {
   service_policies             = { for p in lookup(local.openziti, "service_policies", []) : p.name => p }
   services                     = { for s in lookup(local.openziti, "services", []) : s.name => s }
 
-  # Entra groups named by any policy. Their object IDs become role attributes on auto-enrolled
-  # identities (enroll_attr_claims_selector: /groups), so a policy selects them as #<object-id>.
   entra_group_names = toset(flatten([
     for p in values(local.service_policies) : lookup(p, "entra_groups", [])
   ]))
 
-  # A group added in the same change as the policy using it doesn't exist until the entra component
-  # has applied, so names are matched against a listing instead of looked up one by one (which
-  # fails when missing). Unresolved groups are left out and picked up on the next apply.
-  entra_group_ids      = zipmap(data.azuread_groups.lab.display_names, data.azuread_groups.lab.object_ids)
+  entra_group_ids      = { for g in data.azuread_group.lab : g.display_name => g.object_id }
   entra_group_roles    = { for name in local.entra_group_names : name => "#${local.entra_group_ids[name]}" if contains(keys(local.entra_group_ids), name) }
   missing_entra_groups = sort([for name in local.entra_group_names : name if !contains(keys(local.entra_group_ids), name)])
 
@@ -51,6 +46,11 @@ data "azurerm_key_vault_secret" "admin_password" {
 data "azurerm_key_vault_secret" "controller_ca" {
   name         = "OpenZiti-Controller-CA"
   key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azuread_group" "lab" {
+  for_each  = toset(data.azuread_groups.lab.object_ids)
+  object_id = each.value
 }
 
 # All lab-* groups; see entra_group_ids. Group names in openziti.yaml must follow this prefix.
