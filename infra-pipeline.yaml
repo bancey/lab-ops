@@ -156,6 +156,13 @@ parameters:
         dependsOn:
           - openziti_ansible
           - prod_entra
+        preSteps:
+          - template: steps/install-tools.yaml@azuredevops-lib
+            parameters:
+              cacheKeyPrefix: '"ziti-v2.0.6"'
+              tools:
+                - name: ziti
+                  downloadUrl: https://github.com/openziti/ziti/releases/download/v2.0.6/ziti-linux-amd64-2.0.6.tar.gz
   - name: ansible_deployments
     type: object
     default:

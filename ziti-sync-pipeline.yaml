@@ -1,0 +1,58 @@
+trigger: none
+pr: none
+
+schedules:
+  - cron: "*/15 * * * *"
+    displayName: Every 15 minutes
+    branches:
+      include:
+        - main
+    always: true
+
+parameters:
+  - name: dryRun
+    displayName: Dry run (print changes, change nothing)
+    type: boolean
+    default: false
+
+resources:
+  repositories:
+    - repository: azuredevops-lib
+      type: github
+      ref: refs/heads/main
+      name: bancey/azuredevops-lib
+      endpoint: bancey
+
+variables:
+  - name: agentImage
+    value: ubuntu-26.04
+  - name: serviceConnection
+    value: "BTCS-PRODUCTION"
+
+jobs:
+  - job: SyncZitiIdentityAttributes
+    pool:
+      vmImage: $(agentImage)
+    timeoutInMinutes: 10
+    steps:
+      - template: steps/install-tools.yaml@azuredevops-lib
+        parameters:
+          cacheKeyPrefix: '"ziti-v2.0.6"'
+          tools:
+            - name: ziti
+              downloadUrl: https://github.com/openziti/ziti/releases/download/v2.0.6/ziti-linux-amd64-2.0.6.tar.gz
+      - task: AzureCLI@2
+        displayName: Sync Entra Groups To Ziti Identity Attributes
+        inputs:
+          azureSubscription: $(serviceConnection)
+          scriptType: "bash"
+          scriptLocation: "inlineScript"
+          inlineScript: |
+            set -euo pipefail
+            secret() { az keyvault secret show --vault-name bancey-vault --name "$1" --query value -o tsv; }
+            ZITI_ADMIN_USERNAME="$(secret OpenZiti-Admin-Username)"
+            ZITI_ADMIN_PASSWORD="$(secret OpenZiti-Admin-Password)"
+            ZITI_CONTROLLER_CA="$(secret OpenZiti-Controller-CA)"
+            echo "##vso[task.setsecret]$ZITI_ADMIN_PASSWORD"
+            export ZITI_ADMIN_USERNAME ZITI_ADMIN_PASSWORD ZITI_CONTROLLER_CA
+            ./scripts/sync-ziti-identity-attributes.sh ${{ iif(parameters.dryRun, '--dry-run', '') }}

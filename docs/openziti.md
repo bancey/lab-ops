@@ -54,6 +54,7 @@ point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
 | Public join URL (Let's Encrypt, 443 listener) | `ansible/roles/openziti/tasks/public_api.yaml` |
 | Private DNS/Twingate for the VM | `openziti.heimelska.co.uk` in `terraform/environments/prod/dns.yaml` |
 | Pipeline | `openziti_ansible` then `prod_openziti` stages in `infra-pipeline.yaml` |
+| Entra group → identity attribute sync | `scripts/sync-ziti-identity-attributes.sh`, run by `terraform/components/openziti/sync.tf` and `ziti-sync-pipeline.yaml`. See [Group attribute sync](#group-attribute-sync) |
 
 ## Deployment flow
 
@@ -233,16 +234,14 @@ signer only if a client turns out to need an access token.
    choose the **entra** provider and sign in with Microsoft. No JWT file is involved.
    Don't use `ziti.heimelska.co.uk:1280` for this. Its certificate comes from the
    controller's own PKI, which the OS doesn't trust, so the client rejects it.
-3. Add them to the right groups in `entra.yaml`. Their access follows from the groups
-   claim the next time the identity is enrolled.
+3. Add them to the right groups in `entra.yaml`. A brand-new identity gets its group
+   attributes from the groups claim when it enrolls. After that, the
+   [group attribute sync](#group-attribute-sync) keeps them in line with Entra.
 
-Role attributes come from the groups claim, not from group vars, so the playbook never
-resets them. **Open question:** whether the attributes are refreshed on later sign-ins or
-only set when the identity is first created. If they're only set at enrollment, a group
-change doesn't reach an existing identity: delete the identity
-(`sudo ziti edge delete identity <name>`) so the next sign-in re-enrolls it, or grant by
-hand (`sudo ziti edge update identity <name> --role-attributes <group-object-id>`) until
-a sync job is justified.
+The controller only applies the groups claim at enrollment (verified). Re-authenticating
+doesn't refresh the attributes, and there is no controller setting to make it do so. Without
+the sync, a user added to or removed from a group would keep their old attributes, and a
+removal would leave stale access. The playbook never touches these attributes.
 
 ### Client support and open questions
 
@@ -259,11 +258,127 @@ a sync job is justified.
   - That token enrollment creates identities from Ziti Mobile Edge, for example for a
     guest user who has never enrolled.
   - Session length: what each client does when the Entra ID token expires.
-  - Whether `enrollAttributeClaimsSelector` attributes are refreshed on later logins or
-    only set at enrollment (see [Adding a user](#adding-a-user)). Identities that were
-    enrolled before `/groups` was set have no group attributes, so delete them and sign in again.
   - The `tls: bad record MAC` handshake errors that Ziti Mobile Edge produces on `:443`
     before each sign-in. They aren't blocking.
+- `enrollAttributeClaimsSelector` attributes are only set at enrollment, not on later
+  sign-ins. The [group attribute sync](#group-attribute-sync) corrects them afterwards,
+  including for identities enrolled before `/groups` was set.
+
+### Group attribute sync
+
+`scripts/sync-ziti-identity-attributes.sh` makes the Entra group attributes of every
+OIDC-enrolled identity match the user's current membership:
+
+1. Reads the `lab-*` security groups and their **transitive** user members from Microsoft
+   Graph (nested groups expanded, guest users included).
+2. Logs the CLI in to `ziti.heimelska.co.uk:1280` with the admin credentials and the
+   controller CA, and lists every identity.
+3. Matches identities on `externalId`, which is the user's `oid` (the signer's
+   `claimsProperty`). Identities without one, such as router tunnelers and JWT identities, are
+   skipped.
+4. For each identity, sets the `lab-*` group object IDs to the groups the user is in now. It
+   only adds or removes attributes that are IDs of current `lab-*` groups, and keeps every
+   other attribute (`home-routers`, anything granted by hand). An identity is only updated
+   when its group set differs, so a run with nothing to change does nothing. A user in no
+   groups ends up with no group attributes, but the identity isn't deleted.
+5. Logs one line per changed identity: its name and the groups added and removed.
+
+The signer keeps `enroll_attr_claims_selector: /groups`, so a brand-new identity can dial
+straight away. The sync only corrects drift after that.
+
+**Safety.** The script exits non-zero before changing anything if a Graph call fails,
+Graph returns no `lab-*` security groups, the Ziti login fails, or the identity list is
+incomplete (`totalCount` doesn't match). A bad read never strips everyone's access. The
+admin username, password and CA come only from environment variables, never arguments.
+The script discards the CLI's login output (it contains the session token) and keeps its
+own session in a temporary `ZITI_CONFIG_DIR`, deleted on exit. The `ziti` CLI can only take
+the password as `-p`, so it's briefly in the process list on the agent, as in the Ansible
+role.
+
+An attribute that is the ID of a **deleted** `lab-*` group isn't recognised as a group any
+more, so it's left in place. That's harmless: Terraform only resolves existing groups, so
+no policy selects it.
+
+Entra's groups claim overage (over 200 groups in a token) doesn't matter here. The sync
+reads Graph, not tokens.
+
+#### Run modes
+
+- **On every apply** of `terraform/components/openziti`: `terraform_data.sync_identity_attributes`
+  (`sync.tf`) has `triggers_replace = timestamp()` and runs the script with `local-exec`
+  after the policies, services and configs. A provisioner only runs on apply, so PR plans
+  never run the sync, but **every plan, including PR plans, shows this resource being
+  replaced**. That's expected and not drift. The Key Vault values are passed through the
+  provisioner's `environment` wrapped in `nonsensitive()`. Otherwise Terraform would hide
+  all of the provisioner's output, including the change log and any error. The environment
+  doesn't appear in the plan or the state.
+- **Every 15 minutes** from `ziti-sync-pipeline.yaml` (`trigger: none`, `pr: none`, a
+  `main` schedule with `always: true`), so a removal takes effect without a repo change.
+  It reads the three `OpenZiti-*` secrets from Key Vault inside one `AzureCLI@2` task and runs
+  the script there. It has a `dryRun` parameter for manual runs.
+
+So after a user is **removed** from a group, they keep access for up to 15 minutes, until
+the next scheduled run. Delete their identity, or run the script by hand, if that's too
+long.
+
+Both modes install the `ziti` CLI pinned to **v2.0.6**, the latest release when this was
+written. The controller installs the latest package (`openziti_version: ""`), so bump the
+pin in `infra-pipeline.yaml` (`prod_openziti` `preSteps`) and `ziti-sync-pipeline.yaml`
+together when the controller moves to a new major or minor version. The flags used were
+checked against the v2.0.6 source: `edge login --ca <file>`, `edge list identities -j`
+(the raw API response: `.data[].externalId`, `.data[].roleAttributes`,
+`.meta.pagination.totalCount`) and `edge update identity <id> --role-attributes a,b`. That
+flag replaces the whole list, and an empty value clears it.
+
+#### Azure authentication
+
+The script uses the current `az` session if there is one. Otherwise it runs
+`az login --service-principal` from `ARM_CLIENT_ID`, `ARM_TENANT_ID` and `ARM_CLIENT_SECRET`
+(or `ARM_OIDC_TOKEN`), into a temporary `AZURE_CONFIG_DIR`, so the caller's `az` state is
+left alone.
+
+The reason: what `steps/terraform.yaml@azuredevops-lib` leaves behind can't be seen from
+this repo. What the repo does rely on is the `ARM_*` variables, since the `azuread`
+provider in `entra` and `openziti` authenticates from them (see
+`terraform/components/entra/init.tf`). If the template also leaves `az` logged in, the
+script uses that session. The scheduled pipeline runs inside `AzureCLI@2`, so `az` is logged
+in there.
+
+Reading membership with the `azuread` provider and passing JSON to the script was
+rejected. The scheduled pipeline would still need its own Graph read, which means two
+implementations of the same logic.
+
+#### Prerequisites
+
+- **Graph permissions.** The `BTCS-PRODUCTION` service principal already has
+  `Group.ReadWrite.All` and `User.Read.All` (see `docs/sso-operations.md`). That covers
+  listing groups and their transitive members. The `openziti` component already lists the
+  `lab-*` groups with the same principal. Reading members has only been checked against the
+  documentation, so the first run confirms it.
+- **Key Vault.** No new secrets. It reuses `OpenZiti-Admin-Username`,
+  `OpenZiti-Admin-Password` and `OpenZiti-Controller-CA`.
+- **Azure DevOps.** Register `ziti-sync-pipeline.yaml` as a new pipeline by hand (Pipelines →
+  New pipeline → existing YAML file). Give it access to the `BTCS-PRODUCTION` service
+  connection and the `bancey` GitHub connection on its first run. Schedules only apply once
+  the YAML is on `main`.
+- **Agent minutes.** 96 runs a day on Microsoft-hosted agents add up, at roughly one to two
+  minutes each, mostly the CLI download. If the project is on the free private-project
+  allowance, check usage after the first few days. Widening the cron interval is the
+  simple fix, at the cost of a longer revocation delay.
+
+#### Running it by hand
+
+From a machine logged in to `az` against the lab tenant, with the CLI installed:
+
+```bash
+export ZITI_ADMIN_USERNAME="$(az keyvault secret show --vault-name bancey-vault --name OpenZiti-Admin-Username --query value -o tsv)"
+export ZITI_ADMIN_PASSWORD="$(az keyvault secret show --vault-name bancey-vault --name OpenZiti-Admin-Password --query value -o tsv)"
+export ZITI_CONTROLLER_CA="$(az keyvault secret show --vault-name bancey-vault --name OpenZiti-Controller-CA --query value -o tsv)"
+./scripts/sync-ziti-identity-attributes.sh --dry-run
+```
+
+Drop `--dry-run` to apply. Or run `ziti-sync-pipeline.yaml` manually, with or without the
+`dryRun` parameter.
 
 ### Public join URL
 
@@ -484,8 +599,10 @@ from the `openziti_*` inventory groups, the DNS entries (`ziti.heimelska.co.uk` 
   `hass.heimelska.co.uk` record and close the home router's 443 port-forward, so
   Home Assistant is only reachable over Ziti. The pipeline's own access to home hosts
   also needs moving off Twingate, e.g. a ziti-edge-tunnel step on the agent.
-- Evaluate a sync job from Entra groups to identity attributes, only if attributes turn
-  out not to refresh on sign-in.
+- The group attribute sync is a workaround for attributes only being set at enrollment.
+  Drop it, along with `ziti-sync-pipeline.yaml`, if OpenZiti gains a way to refresh claims
+  on authentication. Until then, consider shortening the 15-minute revocation delay if it
+  matters, for example by also triggering the pipeline from an Entra audit event.
 - Move the signer and auth policy into Terraform once the provider supports enrollment
   fields. Consider a dedicated mTLS admin identity for the provider instead of the admin
   password. Identity enrollment tokens would be stored in Terraform state, so keep
