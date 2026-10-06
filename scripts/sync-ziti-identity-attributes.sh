@@ -197,10 +197,9 @@ while IFS= read -r change; do
   fi
 
   $DRY_RUN && continue
-  # An empty value clears the list, which is what an identity in no groups (and no other
-  # attributes) should end up with.
-  if ! ziti edge update identity "$(jq -r '.id' <<<"$change")" \
-    --role-attributes "$(jq -r '.attributes | join(",")' <<<"$change")" >/dev/null; then
+  if ! ziti edge update identity \
+    --role-attributes "$(jq -r '.attributes | join(",")' <<<"$change")" \
+    -- "$(jq -r '.id' <<<"$change")" >/dev/null; then
     echo "  failed to update $name" >&2
     failed=1
   fi
