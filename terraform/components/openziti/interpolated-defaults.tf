@@ -1,6 +1,7 @@
 locals {
   openziti_yaml_path = var.openziti_yaml_path != null ? var.openziti_yaml_path : "${path.cwd}/../../environments/${var.env}/openziti.yaml"
   openziti           = yamldecode(file(local.openziti_yaml_path))
+  repo_root          = "${path.cwd}/../../.."
 
   edge_router_policies         = { for p in lookup(local.openziti, "edge_router_policies", []) : p.name => p }
   service_edge_router_policies = { for p in lookup(local.openziti, "service_edge_router_policies", []) : p.name => p }
