@@ -15,19 +15,13 @@
     quiet: true
   no_log: true
 
-- name: Install the web console
-  ansible.builtin.apt:
-    pkg: openziti-console
-    state: present
-  when: openziti_console_enabled and openziti_cli.stat.exists
-
-# service.env values take precedence over the environment in bootstrap.bash, so the
-# console flag has to be set here rather than passed in
-- name: Set console bootstrap flag
+# The package defaults this to true, which puts ZAC on the public client-management
+# listener. The console gets its own loopback-only listener instead (console.yaml).
+- name: Keep the console off the bootstrap listener
   ansible.builtin.lineinfile:
     path: /opt/openziti/etc/controller/service.env
     regexp: '^ZITI_BOOTSTRAP_CONSOLE='
-    line: "ZITI_BOOTSTRAP_CONSOLE='{{ openziti_console_enabled | lower }}'"
+    line: "ZITI_BOOTSTRAP_CONSOLE='false'"
   when: openziti_cli.stat.exists
 
 - name: Bootstrap controller PKI, config and database
@@ -49,6 +43,11 @@
   when:
     - openziti_public_api_enabled | bool
     - openziti_cli.stat.exists
+
+# Always included, so disabling the console also removes its listener
+- name: Configure admin console
+  ansible.builtin.include_tasks: console.yaml
+  when: openziti_cli.stat.exists
 
 - name: Enable and start controller
   ansible.builtin.systemd:

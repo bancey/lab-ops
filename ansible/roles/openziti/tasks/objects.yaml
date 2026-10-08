@@ -126,6 +126,67 @@
   changed_when: openziti_result.stdout | length > 0
   when: not ansible_check_mode
 
+# Console administrators (console.yaml). Each is an admin identity matched on the `sub`
+# of the console app's token and allowed to sign in through the console auth policy only,
+# so it is separate from the user's tunneler identity and no tunneler token can act as it.
+# Reconciled every run: an identity that drifted (lost isAdmin, other external ID or auth
+# policy) is deleted and recreated, which loses nothing as it has no authenticators, and
+# its unused one-time enrollment is deleted so no certificate can ever be enrolled for it.
+# Ziti IDs and Entra subs can start with "-", hence `--` and --flag=value.
+- name: Create or update console admin identities
+  ansible.builtin.shell: |
+    set -euo pipefail
+    policy="$(ziti edge list auth-policies {{ ('name="' ~ openziti_console_admin_auth_policy ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
+    if [ -z "$policy" ]; then echo "auth-policy {{ openziti_console_admin_auth_policy }} not found" >&2; exit 1; fi
+    current="$(ziti edge list identities {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq -c '.data[0] // empty')"
+    if [ -n "$current" ]; then
+      if jq -e --arg x {{ item.external_id | quote }} --arg p "$policy" \
+        '.isAdmin == true and .externalId == $x and .authPolicyId == $p' <<<"$current" >/dev/null; then
+        exit 0
+      fi
+      # Never replace someone's tunneler identity that happens to share the name
+      if ! jq -e --arg p "$policy" '.authPolicyId == $p' <<<"$current" >/dev/null; then
+        echo "identity {{ item.name }} exists and is not a console admin, choose another name" >&2
+        exit 1
+      fi
+      ziti edge delete identity -- "$(jq -r '.id' <<<"$current")" > /dev/null
+    fi
+    ziti edge create identity {{ item.name | quote }} --admin \
+      --external-id={{ item.external_id | quote }} --auth-policy="$policy" > /dev/null
+    id="$(ziti edge list identities {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq -r '.data[0].id')"
+    for enrollment in $(ziti edge list enrollments 'limit none' -j | jq -r --arg id "$id" '.data[] | select(.identityId == $id) | .id'); do
+      ziti edge delete enrollment -- "$enrollment" > /dev/null
+    done
+    echo changed
+  args:
+    executable: /bin/bash
+  loop: "{{ openziti_console_admins }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when: not ansible_check_mode
+
+# Removing someone from openziti_console_admins revokes their console access on the next
+# run. Only identities on the console auth policy are considered.
+- name: Delete console admin identities that are no longer listed
+  ansible.builtin.shell: |
+    set -euo pipefail
+    policy="$(ziti edge list auth-policies {{ ('name="' ~ openziti_console_admin_auth_policy ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
+    [ -n "$policy" ] || exit 0
+    ziti edge list identities 'limit none' -j \
+      | jq -r --arg p "$policy" --argjson keep {{ openziti_console_admins | map(attribute='name') | to_json | quote }} \
+        '.data[] | select(.authPolicyId == $p and (.name | IN($keep[]) | not)) | "\(.id) \(.name)"' \
+      | while read -r id name; do
+          ziti edge delete identity -- "$id" > /dev/null
+          echo "deleted $name"
+        done
+  args:
+    executable: /bin/bash
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when: not ansible_check_mode
+
 - name: Create client identities
   ansible.builtin.shell: |
     set -euo pipefail

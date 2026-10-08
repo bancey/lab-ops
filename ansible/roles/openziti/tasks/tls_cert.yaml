@@ -1,0 +1,89 @@
+---
+# Issues a Let's Encrypt certificate for one controller listener with a Cloudflare DNS-01
+# challenge and keeps a copy the ziti-controller user can read. Used by public_api.yaml and
+# console.yaml. Pass:
+#   openziti_tls_domain  certificate name and only SAN
+#   openziti_tls_dir     where the controller reads fullchain.pem/privkey.pem
+#   openziti_tls_hook    deploy hook path; certbot stores it with the certificate, so keep it
+#                        stable once issued
+#
+# The certificate is bound with alt_server_certs, which the controller picks by SNI, so the
+# name must not overlap the PKI server cert's SANs (openziti_ctrl_address).
+
+- name: Check the certificate settings
+  ansible.builtin.assert:
+    that:
+      - openziti_tls_domain | length > 0
+      - openziti_tls_domain != openziti_ctrl_address
+      - openziti_cloudflare_api_token | length > 0
+    fail_msg: >-
+      {{ openziti_tls_domain }} must be set and differ from openziti_ctrl_address,
+      and openziti_cloudflare_api_token (Cloudflare-Lab-API-Token) must be supplied
+    quiet: true
+  no_log: true
+
+- name: Install certbot with the Cloudflare DNS plugin
+  ansible.builtin.apt:
+    pkg:
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+
+- name: Ensure the Let's Encrypt directory exists
+  ansible.builtin.file:
+    path: /etc/letsencrypt
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# DNS-01, so nothing has to listen on port 80 behind the OVH edge firewall, and a name with
+# no public DNS record (the console) can still get a certificate
+- name: Write Cloudflare credentials for certbot
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/cloudflare-openziti.ini
+    content: "dns_cloudflare_api_token = {{ openziti_cloudflare_api_token }}\n"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
+# Certbot keeps the private key root-only, so the hook copies the pair somewhere the
+# ziti-controller user can read and restarts the controller to load it. Certbot
+# stores the hook with the certificate, so certbot.timer runs it on every renewal.
+- name: Install the certificate deploy hook for {{ openziti_tls_domain }}
+  ansible.builtin.copy:
+    dest: "{{ openziti_tls_hook }}"
+    owner: root
+    group: root
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      # Managed by Ansible (roles/openziti/tasks/tls_cert.yaml)
+      set -euo pipefail
+      src=/etc/letsencrypt/live/{{ openziti_tls_domain }}
+      dst={{ openziti_tls_dir }}
+      install -d -o root -g ziti-controller -m 0750 "$dst"
+      install -o root -g ziti-controller -m 0640 "$src/fullchain.pem" "$dst/fullchain.pem"
+      install -o root -g ziti-controller -m 0640 "$src/privkey.pem" "$dst/privkey.pem"
+      if systemctl is-active --quiet ziti-controller; then
+        systemctl restart ziti-controller
+      fi
+
+- name: Obtain the certificate for {{ openziti_tls_domain }}
+  ansible.builtin.command: >-
+    certbot certonly --non-interactive --agree-tos --register-unsafely-without-email
+    --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare-openziti.ini
+    --dns-cloudflare-propagation-seconds 30
+    --cert-name {{ openziti_tls_domain | quote }} -d {{ openziti_tls_domain | quote }}
+    --deploy-hook {{ openziti_tls_hook | quote }}
+  args:
+    creates: /etc/letsencrypt/live/{{ openziti_tls_domain }}/fullchain.pem
+  when: not ansible_check_mode
+
+# Covers a certificate that already existed before the hook did
+- name: Copy the certificate for the controller
+  ansible.builtin.command: "{{ openziti_tls_hook }}"
+  args:
+    creates: "{{ openziti_tls_dir }}/fullchain.pem"
+  when: not ansible_check_mode

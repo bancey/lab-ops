@@ -8,6 +8,19 @@ openziti_backup_storage_account: banceyprodstor
 openziti_public_api_enabled: true
 openziti_public_api_address: join.ziti.heimelska.co.uk
 
+# Ziti Admin Console on a loopback-only listener, published as the ziti-console service
+# (terraform/environments/prod/openziti.yaml) that only lab-admins can dial. No public DNS.
+openziti_console_enabled: true
+openziti_console_address: console.ziti.heimelska.co.uk
+
+# Who can sign in to the console, through the entra-admin signer below. external_id is the
+# `sub` claim of your token for lab-openziti-admin, which only exists after your first
+# sign-in; see "Admin console" in docs/openziti.md for how to read it. Anyone not listed here
+# loses their console identity on the next run.
+openziti_console_admins: []
+#  - name: abance-console
+#    external_id: <sub>
+
 # Clients sign in with Entra ID instead (below). JWT identities are still supported for
 # devices that can't, e.g. headless tunnelers; their JWT lands in /opt/openziti/artifacts.
 openziti_identities: []
@@ -38,9 +51,35 @@ openziti_ext_jwt_signers:
     enroll_attr_claims_selector: /groups
     enroll_auth_policy: entra
 
+  # Ziti Admin Console sign-in against lab-openziti-admin. openziti_entra_admin_client_id is
+  # supplied by the playbook from the Entra-OpenZiti-Admin-Client-ID Key Vault secret.
+  # The controller allows one signer per issuer and `entra` holds the v2 one, so this signer
+  # takes v1 access tokens for the app's own `console` scope (the app pins v1 tokens).
+  - name: entra-admin
+    issuer: "https://sts.windows.net/{{ openziti_entra_tenant_id }}/"
+    jwks_endpoint: "https://login.microsoftonline.com/{{ openziti_entra_tenant_id }}/discovery/v2.0/keys"
+    # ZAC sends the user here and reads clientId/scopes from the signer
+    external_auth_url: "https://login.microsoftonline.com/{{ openziti_entra_tenant_id }}/v2.0"
+    client_id: "{{ openziti_entra_admin_client_id }}"
+    target_token: ACCESS
+    audience: "api://{{ openziti_entra_admin_client_id }}"
+    # No offline_access: a console session should end with the sign-in, not be refreshable
+    scopes: [openid, profile, "api://{{ openziti_entra_admin_client_id }}/console"]
+    # Pairwise per app, so it can't collide with the oid the user's tunneler identity uses
+    claims_property: sub
+    # Admin identities are only ever the ones listed in openziti_console_admins
+    enroll_to_cert: false
+    enroll_to_token: false
+
 openziti_auth_policies:
   - name: entra
     cert_allowed: false
     ext_jwt_allowed: true
     ext_jwt_allowed_signers: [entra]
+    updb_allowed: false
+  # Console admins: Entra through the console app only, never a tunneler's token or a password
+  - name: entra-admin
+    cert_allowed: false
+    ext_jwt_allowed: true
+    ext_jwt_allowed_signers: [entra-admin]
     updb_allowed: false

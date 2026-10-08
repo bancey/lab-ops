@@ -273,6 +273,7 @@ parameters:
           - OpenZiti-Admin-Password
           - OpenZiti-Backup-SAS-Token
           - Entra-OpenZiti-Client-ID
+          - Entra-OpenZiti-Admin-Client-ID
           - Cloudflare-Lab-API-Token
         localEnvironments:
           - loki

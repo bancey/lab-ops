@@ -1,0 +1,103 @@
+---
+# Ziti Admin Console (ZAC), served by the controller on its own web listener that is only
+# bound to loopback. Nothing on the internet can reach it: the router on this host
+# (tunneler-enabled, mode host) binds it as an OpenZiti service, and only lab-admins may
+# dial that service (terraform/environments/prod/openziti.yaml). Sign-in is Entra through
+# the entra-admin ext-jwt-signer, as one of openziti_console_admins (objects.yaml).
+#
+# ZAC must share a listener with the management API, so the listener copies every API
+# binding of the bootstrap-generated client-management listener and adds zac. The zac
+# binding is removed from every other listener, so the console can never end up on the
+# public :1280 or :443 listeners. With openziti_console_enabled false the listener is
+# removed again.
+#
+# Runs between bootstrap and service start in controller.yaml, like public_api.yaml.
+
+- name: Check the console settings
+  ansible.builtin.assert:
+    that:
+      - openziti_console_address | length > 0
+      - openziti_console_address not in [openziti_ctrl_address, openziti_public_api_address]
+      - openziti_console_bind_address in ['127.0.0.1', '::1', 'localhost']
+    fail_msg: >-
+      openziti_console_address must be set and differ from the controller and public API
+      addresses, and the console must only bind to loopback
+    quiet: true
+  when: openziti_console_enabled | bool
+
+- name: Install the web console
+  ansible.builtin.apt:
+    pkg: openziti-console
+    state: present
+  when: openziti_console_enabled | bool
+
+# Browsers have to trust the certificate. The name has no public DNS record (clients
+# resolve it through their tunneler), so it is issued with DNS-01 like the public API one.
+- name: Issue the console certificate
+  ansible.builtin.include_tasks: tls_cert.yaml
+  vars:
+    openziti_tls_domain: "{{ openziti_console_address }}"
+    openziti_tls_dir: "{{ openziti_console_cert_dir }}"
+    openziti_tls_hook: /usr/local/bin/openziti-console-cert-deploy.sh
+  when: openziti_console_enabled | bool
+
+- name: Check for the controller config
+  ansible.builtin.stat:
+    path: /var/lib/ziti-controller/config.yml
+  register: openziti_config_file
+
+- name: Read the controller config
+  ansible.builtin.slurp:
+    src: /var/lib/ziti-controller/config.yml
+  register: openziti_config_raw
+  when: openziti_config_file.stat.exists
+
+# Every listener except the console one, with any zac binding stripped
+- name: Collect the other listeners
+  ansible.builtin.set_fact:
+    openziti_web_others: "{{ openziti_web_others | default([]) + [item | combine({'apis': item.apis | default([]) | rejectattr('binding', 'equalto', 'zac') | list})] }}"
+  loop: "{{ (openziti_config_raw.content | b64decode | from_yaml).web | rejectattr('name', 'equalto', 'console') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: openziti_config_file.stat.exists
+
+- name: Configure the console listener in the controller config
+  ansible.builtin.copy:
+    dest: /var/lib/ziti-controller/config.yml
+    content: "{{ config | combine({'web': web}) | to_nice_yaml(indent=2, sort_keys=false) }}"
+    backup: true
+  vars:
+    config: "{{ openziti_config_raw.content | b64decode | from_yaml }}"
+    base: "{{ config.web | selectattr('name', 'equalto', 'client-management') | first }}"
+    listener:
+      name: console
+      bindPoints:
+        - interface: "{{ openziti_console_bind_address }}:{{ openziti_console_port }}"
+          # What the browser sees: the intercepted name on 443
+          address: "{{ openziti_console_address }}:443"
+      identity: "{{ base.identity | combine({'alt_server_certs': [{'server_cert': openziti_console_cert_dir ~ '/fullchain.pem', 'server_key': openziti_console_cert_dir ~ '/privkey.pem'}]}) }}"
+      options: "{{ base.options | default({}) }}"
+      apis: >-
+        {{ (base.apis | rejectattr('binding', 'equalto', 'zac') | list)
+           + [{'binding': 'zac', 'options': {'location': openziti_console_location, 'indexFile': 'index.html'}}] }}
+    web: "{{ openziti_web_others + ([listener] if openziti_console_enabled | bool else []) }}"
+  register: openziti_console_config
+  when: openziti_config_file.stat.exists
+
+- name: Restart controller to load the console listener
+  ansible.builtin.systemd:
+    name: ziti-controller
+    state: restarted
+  when:
+    - not ansible_check_mode
+    - openziti_console_config is changed
+
+- name: Wait for the console listener
+  ansible.builtin.wait_for:
+    port: "{{ openziti_console_port }}"
+    host: "{{ openziti_console_bind_address }}"
+    timeout: 120
+  when:
+    - not ansible_check_mode
+    - openziti_console_enabled | bool
+    - openziti_console_config is changed
