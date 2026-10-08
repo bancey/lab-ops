@@ -2,7 +2,8 @@
 
 OpenZiti is replacing Twingate for remote access. The long-term aim is to have no inbound
 ports open on the home network at all, with the OVH VPS as the only internet-facing entry
-point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534).
+point. Tracked in [#1534](https://github.com/bancey/lab-ops/issues/1534). The comparison with
+Twingate and the go/no-go decision are in [openziti-vs-twingate.md](openziti-vs-twingate.md).
 
 ## Topology
 
