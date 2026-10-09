@@ -113,6 +113,34 @@ applications:
     secret:
       enabled: false
 
+  # "Sign in with Microsoft" for the Ziti Admin Console, verified by the controller's `entra-admin`
+  # ext-jwt-signer. Kept apart from lab-openziti so a tunneler's token can never act as an admin:
+  #   - ZAC is a browser SPA doing auth code + PKCE, so the redirect is an SPA one and there is no
+  #     client secret.
+  #   - It presents an access token for its own `console` scope. The controller allows one signer
+  #     per issuer and `entra` already holds the v2 issuer, so this API is pinned to v1 tokens
+  #     (issuer https://sts.windows.net/<tenant>/).
+  #   - assignment_required: only users assigned to the enterprise app (by hand, see
+  #     docs/openziti.md) can get a token at all.
+  # The console is only reachable over OpenZiti by lab-admins. See docs/openziti.md.
+  lab-openziti-admin:
+    display_name: "Lab OpenZiti Admin Console"
+    description: "Ziti Admin Console (ZAC) sign-in"
+    key_vault_prefix: OpenZiti-Admin
+    spa_redirect_uris:
+      - https://console.ziti.heimelska.co.uk/zac/callback
+    assignment_required: true
+    group_membership_claims: ["None"]
+    graph_scopes:
+      - openid
+      - profile
+    api:
+      requested_access_token_version: 1
+      scopes:
+        console: "Administer the OpenZiti network through the Ziti Admin Console"
+    secret:
+      enabled: false
+
 # Random values owned by Terraform and shared between secrets below. Because both oauth2-proxy
 # entries reference the same key here they are guaranteed to receive the same value, which is
 # what makes a session issued by one cluster valid on the other. Changing `length` regenerates
