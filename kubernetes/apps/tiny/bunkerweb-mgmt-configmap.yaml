@@ -40,8 +40,10 @@ data:
     }
   tiny-pve.heimelska.co.uk_REVERSE_PROXY_HOST: "https://pve-tiny"
   tiny-pve.heimelska.co.uk_WHITELIST_IP: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+  tiny-pve.heimelska.co.uk_LIMIT_REQ_RATE: "250r/s"
   wanda-pve.heimelska.co.uk_REVERSE_PROXY_HOST: "https://wanda.heimelska.co.uk:8006"
   wanda-pve.heimelska.co.uk_WHITELIST_IP: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+  wanda-pve.heimelska.co.uk_LIMIT_REQ_RATE: "250r/s"
   adguard.gamora.heimelska.co.uk_REVERSE_PROXY_HOST: "http://gamora.heimelska.co.uk:8000"
   adguard.gamora.heimelska.co.uk_REVERSE_PROXY_URL: "/"
   adguard.gamora.heimelska.co.uk_WHITELIST_IP: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
