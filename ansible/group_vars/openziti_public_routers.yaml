@@ -1,2 +1,9 @@
 # Public routers share the controller's name; the ports differ
 openziti_router_advertised_address: ziti.heimelska.co.uk
+
+# Tunneler-enabled in host mode only so it can host the admin console, which listens on the
+# controller's loopback on this host (roles/openziti/tasks/console.yaml). It still has no
+# Bind policy for anything else: #console-hosts is only selected by console-hosts-bind-ziti-console
+# in terraform/environments/prod/openziti.yaml, and home services stay on #home-routers.
+openziti_router_mode: host
+openziti_router_role_attributes: [public-routers, console-hosts]

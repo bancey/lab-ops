@@ -9,8 +9,29 @@ openziti_ctrl_port: 1280
 openziti_admin_username: admin
 # Required on the controller host; the playbook supplies it from Key Vault
 openziti_admin_password: ""
-# The web console is served on the (public) controller port when enabled
+
+# Ziti Admin Console (ZAC). Never on a public listener: it gets its own web listener on
+# loopback, which the controller host's router publishes as an OpenZiti service. See
+# tasks/console.yaml and docs/openziti.md.
 openziti_console_enabled: false
+# Name clients dial over Ziti. It has no public DNS record; the Let's Encrypt certificate
+# (Cloudflare DNS-01) is only there so browsers trust it. Must differ from
+# openziti_ctrl_address and openziti_public_api_address.
+openziti_console_address: ""
+openziti_console_bind_address: 127.0.0.1
+openziti_console_port: 8441
+openziti_console_cert_dir: /var/lib/ziti-controller/console-tls
+openziti_console_location: /opt/openziti/share/console
+
+# Console administrators: identities with isAdmin that can only sign in through
+# openziti_console_admin_auth_policy. external_id is the user's `sub` claim in the console
+# app's token (pairwise per app, so it differs from the oid their tunneler identity uses).
+# Reconciled every run: drifted entries are recreated and identities on that auth policy
+# that are not listed here are deleted.
+openziti_console_admins: []
+#  - name: alex-console
+#    external_id: <sub claim>
+openziti_console_admin_auth_policy: entra-admin
 
 # Public client API: a second listener on a publicly trusted name (Let's Encrypt via
 # Cloudflare DNS-01) so users can join by URL without a JWT. The address must differ

@@ -37,6 +37,40 @@
     - not ansible_check_mode
     - not openziti_router_enrolled
 
+# bootstrap.bash only writes config.yml once, and with mode none it leaves the tunnel
+# listener commented out. A router switched to a hosting mode afterwards gets it added
+# here; the controller play has already flagged it tunneler-enabled (enroll.yaml).
+- name: Read the router config
+  ansible.builtin.slurp:
+    src: /var/lib/ziti-router/config.yml
+  register: openziti_router_config_raw
+  when:
+    - openziti_router_enrolled | bool
+    - openziti_router_mode != 'none'
+
+- name: Add the tunnel listener to the router config
+  ansible.builtin.copy:
+    dest: /var/lib/ziti-router/config.yml
+    content: "{{ config | combine({'listeners': listeners}) | to_nice_yaml(indent=2, sort_keys=false) }}"
+    backup: true
+  vars:
+    config: "{{ openziti_router_config_raw.content | b64decode | from_yaml }}"
+    listeners: "{{ (config.listeners | default([]) | rejectattr('binding', 'equalto', 'tunnel') | list) + [{'binding': 'tunnel', 'options': {'mode': openziti_router_mode}}] }}"
+  register: openziti_router_tunnel_config
+  when:
+    - openziti_router_enrolled | bool
+    - openziti_router_mode != 'none'
+    - (openziti_router_config_raw.content | b64decode | from_yaml).listeners | default([])
+      | selectattr('binding', 'equalto', 'tunnel') | map(attribute='options.mode') | list != [openziti_router_mode]
+
+- name: Restart router to load the tunnel listener
+  ansible.builtin.systemd:
+    name: ziti-router
+    state: restarted
+  when:
+    - not ansible_check_mode
+    - openziti_router_tunnel_config is changed
+
 - name: Enable and start router
   ansible.builtin.systemd:
     name: ziti-router

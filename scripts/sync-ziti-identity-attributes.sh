@@ -14,7 +14,9 @@ this a group change never reaches an existing identity, and a removal leaves sta
   - Entra: reads the lab-* security groups and their transitive user members from Microsoft Graph
     (guest users included). Aborts before changing anything if Graph errors or returns no groups.
   - Ziti: matches identities on externalId (= the user's oid, the signer's claimsProperty).
-    Identities without an externalId (router tunnelers, JWT identities) are skipped.
+    Identities without an externalId (router tunnelers, JWT identities) are skipped, and so are
+    admin identities (console admins, matched on a different claim), which must never get Dial
+    attributes.
   - Only attributes that are lab-* group object IDs are added or removed. Every other attribute
     (home-routers, anything granted by hand) is kept. An identity is only updated when its set of
     group attributes differs, so a run with nothing to do changes nothing.
@@ -162,7 +164,7 @@ jq -e '(.data | type) == "array" and (.meta.pagination.totalCount == (.data | le
 changes="$(jq -c --argjson groups "$membership" '
   ($groups | map({key: .id, value: .name}) | from_entries) as $names
   | [ .data[]
-      | select((.externalId // "") != "")
+      | select((.externalId // "") != "" and .isAdmin != true)
       | .externalId as $oid
       | (.roleAttributes // []) as $current
       | ([$current[] | select($names[.] != null)] | unique) as $have
@@ -177,8 +179,8 @@ changes="$(jq -c --argjson groups "$membership" '
         }
     ]' <<<"$identities")"
 
-checked="$(jq '[.data[] | select((.externalId // "") != "")] | length' <<<"$identities")"
-skipped="$(jq '[.data[] | select((.externalId // "") == "")] | length' <<<"$identities")"
+checked="$(jq '[.data[] | select((.externalId // "") != "" and .isAdmin != true)] | length' <<<"$identities")"
+skipped="$(jq '[.data[] | select((.externalId // "") == "" or .isAdmin == true)] | length' <<<"$identities")"
 change_count="$(jq 'length' <<<"$changes")"
 
 $DRY_RUN && echo "Dry run: no identities will be changed."
@@ -205,5 +207,5 @@ while IFS= read -r change; do
   fi
 done < <(jq -c '.[]' <<<"$changes")
 
-echo "Checked $checked OIDC identities ($skipped without an externalId skipped), $change_count to change$($DRY_RUN && echo ' (dry run)')."
+echo "Checked $checked OIDC identities ($skipped without an externalId or admin skipped), $change_count to change$($DRY_RUN && echo ' (dry run)')."
 exit "$failed"

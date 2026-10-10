@@ -71,3 +71,5 @@
       vars:
         # Written to Key Vault by terraform/components/entra (lab-openziti)
         openziti_entra_client_id: "{{ lookup('ansible.builtin.file', 'Entra-OpenZiti-Client-ID') | trim }}"
+        # Written to Key Vault by terraform/components/entra (lab-openziti-admin)
+        openziti_entra_admin_client_id: "{{ lookup('ansible.builtin.file', 'Entra-OpenZiti-Admin-Client-ID') | trim }}"

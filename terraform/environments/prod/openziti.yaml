@@ -18,6 +18,7 @@ service_edge_router_policies:
 #   tier         groups                      services
 #   home-admin   lab-admins                  Proxmox UIs, Traefik dashboard
 #   home-data    lab-admins, lab-developers  PostgreSQL, MariaDB/ProxySQL
+#   ziti-admin   lab-admins                  Ziti Admin Console (hosted on the VPS, not at home)
 service_policies:
   # Binding is not per role: the home routers' tunneler identities (tagged by Ansible) host all
   - name: home-routers-bind-home-services
@@ -32,6 +33,16 @@ service_policies:
     type: Dial
     entra_groups: [lab-admins, lab-developers]
     service_roles: ["#home-data"]
+  # The admin console listens on the controller's loopback on vps01, so only that router's
+  # tunneler identity (tagged by Ansible, group_vars/openziti_public_routers.yaml) can host it
+  - name: console-hosts-bind-ziti-console
+    type: Bind
+    identity_roles: ["#console-hosts"]
+    service_roles: ["#ziti-console"]
+  - name: admins-dial-ziti-admin
+    type: Dial
+    entra_groups: [lab-admins]
+    service_roles: ["#ziti-admin"]
 
 # The real hostnames are intercepted rather than *.ziti, so TLS certificates and the Entra redirect
 # URIs (lab-proxmox lists https://<host>.heimelska.co.uk:8006/) keep working through the tunnel.
@@ -76,3 +87,12 @@ services:
     intercept_addresses: [sql.heimelska.co.uk]
     port: 3306
     host_address: 10.151.14.219
+  # Ziti Admin Console. Not #home-services: the home routers can't reach the VPS loopback.
+  # There is no public DNS record for the name; the tunneler resolves it. Signing in to the
+  # console is a second, separate Entra check (lab-openziti-admin). See docs/openziti.md.
+  - name: ziti-console
+    role_attributes: [ziti-console, ziti-admin]
+    intercept_addresses: [console.ziti.heimelska.co.uk]
+    port: 443
+    host_address: 127.0.0.1
+    host_port: 8441

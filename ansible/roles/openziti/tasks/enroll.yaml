@@ -34,3 +34,28 @@
   ansible.builtin.set_fact:
     openziti_enrollment_tokens: "{{ openziti_router_tokens.results | rejectattr('skipped', 'defined') | items2dict(key_name='item', value_name='stdout') }}"
   no_log: true
+
+# Edge routers are only created with --tunneler-enabled. A router whose mode changed later
+# (e.g. the public router taking on hosting the admin console) is updated here, before the
+# router play adds its tunnel listener. Enabling it creates the router's tunneler identity.
+# Never disabled automatically, since that deletes the identity and its policies' bindings.
+- name: Enable tunneling on edge routers that host services
+  ansible.builtin.shell: |
+    set -euo pipefail
+    current="$(ziti edge list edge-routers {{ ('name="' ~ router.name ~ '"') | quote }} -j | jq -r '.data[0].isTunnelerEnabled')"
+    if [ "$current" = "false" ]; then
+      ziti edge update edge-router {{ router.name | quote }} --tunneler-enabled > /dev/null
+      echo changed
+    fi
+  args:
+    executable: /bin/bash
+  vars:
+    router: "{{ hostvars[item].openziti_router }}"
+  loop: "{{ groups['openziti_routers'] }}"
+  loop_control:
+    label: "{{ item }}"
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when:
+    - not ansible_check_mode
+    - hostvars[item].openziti_router.tunneler_enabled | bool

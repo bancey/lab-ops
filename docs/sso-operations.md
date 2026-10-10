@@ -103,6 +103,7 @@ by the next apply.
 | Headlamp, kubectl | native OIDC (pre-existing) |
 | Proxmox | native OIDC realm |
 | Gatus | native OIDC |
+| Ziti Admin Console | native OIDC (`entra-admin` ext-jwt-signer, `lab-openziti-admin`); reachable over OpenZiti only, see `docs/openziti.md` |
 
 **Gated, not SSO'd — the app keeps its own login behind the Entra one, so users sign in twice.**
 This is defence in depth, not convenience:
