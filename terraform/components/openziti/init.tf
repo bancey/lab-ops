@@ -11,7 +11,7 @@ terraform {
     }
     ziti = {
       source  = "netfoundry/ziti"
-      version = "2.1.3"
+      version = "2.2.0"
     }
   }
 
