@@ -144,7 +144,7 @@
         '.isAdmin == true and .externalId == $x and .authPolicyId == $p' <<<"$current" >/dev/null; then
         exit 0
       fi
-      # Never replace someone's tunneler identity that happens to share the name
+      # Never replace a tunneler identity that happens to share the name
       if ! jq -e --arg p "$policy" '.authPolicyId == $p' <<<"$current" >/dev/null; then
         echo "identity {{ item.name }} exists and is not a console admin, choose another name" >&2
         exit 1

@@ -42,7 +42,7 @@
 - name: Enable tunneling on edge routers that host services
   ansible.builtin.shell: |
     set -euo pipefail
-    current="$(ziti edge list edge-routers {{ ('name="' ~ router.name ~ '"') | quote }} -j | jq -r '.data[0].isTunnelerEnabled // empty')"
+    current="$(ziti edge list edge-routers {{ ('name="' ~ router.name ~ '"') | quote }} -j | jq -r '.data[0].isTunnelerEnabled')"
     if [ "$current" = "false" ]; then
       ziti edge update edge-router {{ router.name | quote }} --tunneler-enabled > /dev/null
       echo changed
