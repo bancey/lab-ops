@@ -56,7 +56,7 @@ services:
 {% endfor %}
 
   alloy:
-    image: grafana/alloy:v1.17.1
+    image: grafana/alloy:v1.20.1
     volumes:
       - /opt/alloy/config:/etc/alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
