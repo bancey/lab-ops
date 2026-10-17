@@ -29,7 +29,7 @@ services:
 
 {% for gatus_host in rpi_monitoring_gatus_hosts %}
   gatus_{{ gatus_host }}:
-    image: twinproduction/gatus:v5.36.0
+    image: twinproduction/gatus:v5.37.0
     volumes:
       - /opt/gatus/config:/config
       - /opt/gatus/data:/data
