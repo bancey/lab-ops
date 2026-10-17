@@ -22,7 +22,7 @@ services:
     deploy:
       mode: global
       update_config:
-        order: start-first
+        order: stop-first
         failure_action: rollback
       rollback_config:
         order: stop-first
@@ -87,7 +87,7 @@ services:
     deploy:
       mode: global
       update_config:
-        order: start-first
+        order: stop-first
         failure_action: rollback
       rollback_config:
         order: stop-first
