@@ -37,7 +37,7 @@ services:
 {% for connector_name, connector in twingate.items() %}
 {% if connector_name != 'network' %}
   twingate_{{ connector_name }}:
-    image: twingate/connector:1.89.0
+    image: twingate/connector:1.93.0
     sysctls:
       net.ipv4.ping_group_range: "0 2147483647"
     environment:
