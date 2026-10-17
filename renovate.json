@@ -81,9 +81,27 @@
       ],
       "depNameTemplate": "ovh/ovhcloud-cli",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Docker images in Jinja-templated swarm stacks (Jinja breaks the docker-compose manager)",
+      "managerFilePatterns": [
+        "/^stacks/.*\\.stack\\.yml\\.j2$/"
+      ],
+      "matchStrings": [
+        "image:\\s*(?<depName>[^\\s:]+):(?<currentValue>[^\\s@]+)"
+      ],
+      "datasourceTemplate": "docker"
     }
   ],
   "packageRules": [
+    {
+      "description": "BunkerWeb scheduler, UI and instances must run the same version",
+      "matchPackageNames": [
+        "/^bunkerity\\//"
+      ],
+      "groupName": "bunkerweb"
+    },
     {
       "matchDatasources": [
         "docker"
