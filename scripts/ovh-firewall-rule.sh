@@ -15,7 +15,8 @@ current machine (an Azure DevOps hosted agent) can reach it over SSH.
          there after OWNER_WAIT_SECONDS is treated as abandoned and replaced.
   close  Delete the rule at <sequence>, but only if it is ours (its source is this
          machine's IP), and wait for OVH to finish removing it. A missing rule, or
-         one belonging to another run, is left alone and is not an error.
+         one belonging to another run, is left alone and is not an error; so is
+         another run claiming the slot while ours is still being removed.
 
   sequence  Rule priority 0-19 (default: 18). Reserved for this script.
   port      Destination port (default: 22).
@@ -81,13 +82,21 @@ rule_info() {
     <<<"$out"
 }
 
+# Waits for the rule at SEQUENCE to reach state <want> ("" = absent). If <owner> is
+# given and the slot comes to hold a rule from a different source, the rule we were
+# watching is gone (another run has since created its own), so that also counts.
 wait_for_state() {
-  local want="$1" info state
+  local want="$1" owner="${2:-}" info state source
   for ((i = 1; i <= WAIT_ATTEMPTS; i++)); do
     info="$(rule_info)"
     state="${info%% *}"
+    source="${info#* }"
     echo "Rule #${SEQUENCE} state: ${state:-absent} (want: ${want:-absent}, attempt ${i}/${WAIT_ATTEMPTS})"
     if [[ "$state" == "$want" ]]; then
+      return 0
+    fi
+    if [[ -n "$owner" && -n "$info" && "$source" != "$owner" ]]; then
+      echo "Rule #${SEQUENCE} now belongs to ${source}, not ${owner}; the rule we were watching is gone"
       return 0
     fi
     sleep "$WAIT_INTERVAL"
@@ -97,9 +106,10 @@ wait_for_state() {
 }
 
 delete_rule() {
-  local info state
+  local info state source
   info="$(rule_info)"
   state="${info%% *}"
+  source="${info#* }"
   if [[ -z "$state" ]]; then
     echo "No rule at sequence ${SEQUENCE}, nothing to remove"
     return 0
@@ -112,7 +122,9 @@ delete_rule() {
   if [[ "$state" != "removalPending" ]]; then
     ovh ip firewall rule delete "$IP_BLOCK" "$VPS_IP" "$SEQUENCE"
   fi
-  wait_for_state ""
+  # Parallel runs share the slot: once ours is removed another may claim it straight
+  # away, so the slot never reads as absent. A different source means ours is gone.
+  wait_for_state "" "$source"
 }
 
 # Waits for another run's rule to go away. Returns 0 once the slot is free (or
