@@ -15,8 +15,15 @@ service_edge_router_policies:
 # attributes at enrollment (enroll_attr_claims_selector: /groups), and that claim holds object IDs,
 # so entra_groups takes the group names from entra.yaml and the component resolves them to #<id>.
 #
+# The web tiers mirror the forwardAuth chains (chain-admins/users/media/infra), which also allow one
+# group each, so being in lab-admins doesn't grant the other tiers here either.
+#
 #   tier         groups                      services
-#   home-admin   lab-admins                  Proxmox UIs, Traefik dashboard
+#   home-admin   lab-admins                  Proxmox, admin web UIs, AdGuard, BMC, UniFi, NAS, SSH,
+#                                            kube API, Matter/OTBR, MQTT
+#   home-users   lab-users                   Household apps, Home Assistant, Jellyfin, Pelican
+#   home-media   lab-media                   Sonarr, Radarr, Prowlarr, SABnzbd, qBittorrent
+#   home-infra   lab-infra                   Smokeping, Grafana, Victoria*, Gatus
 #   home-data    lab-admins, lab-developers  PostgreSQL, MariaDB/ProxySQL
 #   ziti-admin   lab-admins                  Ziti Admin Console (hosted on the VPS, not at home)
 service_policies:
@@ -29,6 +36,18 @@ service_policies:
     type: Dial
     entra_groups: [lab-admins]
     service_roles: ["#home-admin"]
+  - name: users-dial-home-users
+    type: Dial
+    entra_groups: [lab-users]
+    service_roles: ["#home-users"]
+  - name: media-dial-home-media
+    type: Dial
+    entra_groups: [lab-media]
+    service_roles: ["#home-media"]
+  - name: infra-dial-home-infra
+    type: Dial
+    entra_groups: [lab-infra]
+    service_roles: ["#home-infra"]
   - name: developers-dial-home-data
     type: Dial
     entra_groups: [lab-admins, lab-developers]
@@ -46,7 +65,13 @@ service_policies:
 
 # The real hostnames are intercepted rather than *.ziti, so TLS certificates and the Entra redirect
 # URIs (lab-proxmox lists https://<host>.heimelska.co.uk:8006/) keep working through the tunnel.
-# host_address is where the home routers send the traffic, host_port defaults to port.
+# host_address is where the home routers send the traffic, host_port defaults to port. Without
+# host_address the routers forward to the name (or IP) the client dialled, if it is one of the
+# intercept_addresses. ports takes several ports, and the dialled one is forwarded.
+#
+# BunkerWeb front names (sonarr.heimelska.co.uk, tiny-pve, ...) are left out: through the tunnel the
+# <app>.<cluster> names reach Traefik directly. hass.heimelska.co.uk and plex.bancey.xyz are left
+# out too, so their public and LAN paths (mobile apps, TVs) are untouched.
 # While Twingate still runs, a device running both clients conflicts on these names: turn the
 # resource off first (twingate.is_active: false in dns.yaml) or test with Twingate disconnected.
 services:
@@ -70,12 +95,144 @@ services:
     intercept_addresses: [wanda.heimelska.co.uk]
     port: 8006
     host_address: 10.151.14.11
-  # Traefik's LoadBalancer on tiny. TLS passes through and chain-admins forwardAuth still applies.
-  - name: traefik-tiny
+  # SSH to the hosts Twingate allows it on. The k3s nodes are in k8s-nodes below.
+  - name: ssh
     role_attributes: [home-services, home-admin]
-    intercept_addresses: [traefik.tiny.heimelska.co.uk]
+    intercept_addresses:
+      - wanda.heimelska.co.uk
+      - hela.heimelska.co.uk
+      - thor.heimelska.co.uk
+      - loki.heimelska.co.uk
+      - thanos.heimelska.co.uk
+      - gamora.heimelska.co.uk
+      - nebula.heimelska.co.uk
+      - openziti.heimelska.co.uk
+      - matter.heimelska.co.uk
+      - wings-thor.heimelska.co.uk
+      - mariadb0.heimelska.co.uk
+      - mariadb1.heimelska.co.uk
+      - mariadb2.heimelska.co.uk
+      - proxysql0.heimelska.co.uk
+      - proxysql1.heimelska.co.uk
+      - proxysql2.heimelska.co.uk
+      - postgresql0.heimelska.co.uk
+      - postgresql1.heimelska.co.uk
+      - postgresql2.heimelska.co.uk
+    port: 22
+  # SSH and the API server on the k3s VLANs, as the banceylab-*-k8s Twingate resources. kubectl
+  # still signs in with Entra (the API servers' OIDC). tiny's API is the haproxy VIP 10.151.16.200.
+  - name: k8s-nodes
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [10.151.15.0/24, 10.151.16.0/24]
+    ports: [22, 6443]
+  - name: network-appliances
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [unifi.heimelska.co.uk, storage.heimelska.co.uk]
+    port: 443
+  - name: matter
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [matter.heimelska.co.uk]
+    ports: [5580, 8080, 8081]  # Matter server, OTBR web UI, OTBR REST API
+    host_address: 10.151.14.110
+  # Mosquitto's LoadBalancer (plain MQTT)
+  - name: mqtt
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [mqtt.tiny.heimelska.co.uk]
+    port: 1883
+    host_address: 10.151.24.12
+
+  # Traefik's LoadBalancer on tiny, one service per tier. TLS passes through, so the forwardAuth
+  # chains and the apps' own OIDC still apply. Apps behind forwardAuth redirect to auth.tiny to
+  # sign in, so it carries every tier.
+  - name: tiny-auth
+    role_attributes: [home-services, home-admin, home-users, home-media, home-infra]
+    intercept_addresses: [auth.tiny.heimelska.co.uk]
     port: 443
     host_address: 10.151.24.10
+  - name: tiny-admin
+    role_attributes: [home-services, home-admin]
+    intercept_addresses:
+      - traefik.tiny.heimelska.co.uk
+      - headlamp.tiny.heimelska.co.uk
+      - bunkerweb-mgmt.tiny.heimelska.co.uk
+      - hass-code.tiny.heimelska.co.uk
+      - zigbee2mqtt.tiny.heimelska.co.uk
+      - node-red.tiny.heimelska.co.uk
+    port: 443
+    host_address: 10.151.24.10
+  # crm and pelican.heimelska.co.uk are the apps' own URLs (Monica host, Pelican APP_URL), and Traefik
+  # serves both names directly.
+  - name: tiny-users
+    role_attributes: [home-services, home-users]
+    intercept_addresses:
+      - glance.tiny.heimelska.co.uk
+      - vikunja.tiny.heimelska.co.uk
+      - paperless.tiny.heimelska.co.uk
+      - stirling-pdf.tiny.heimelska.co.uk
+      - hass.tiny.heimelska.co.uk
+      - crm.heimelska.co.uk
+      - pelican.heimelska.co.uk
+      - pelican.tiny.heimelska.co.uk
+    port: 443
+    host_address: 10.151.24.10
+  - name: tiny-infra
+    role_attributes: [home-services, home-infra]
+    intercept_addresses:
+      - smokeping.tiny.heimelska.co.uk
+      - grafana.tiny.heimelska.co.uk
+      - victoria-metrics.tiny.heimelska.co.uk
+      - victoria-logs.tiny.heimelska.co.uk
+    port: 443
+    host_address: 10.151.24.10
+  # The Pelican panel's browser console and file manager talk to Wings directly. 2022 is SFTP.
+  - name: wings-thor
+    role_attributes: [home-services, home-users]
+    intercept_addresses: [wings-thor.heimelska.co.uk]
+    ports: [443, 2022, 8080]
+    host_address: 10.151.14.100
+
+  # Traefik's LoadBalancer on wanda, as for tiny
+  - name: wanda-auth
+    role_attributes: [home-services, home-admin, home-users, home-media, home-infra]
+    intercept_addresses: [auth.wanda.heimelska.co.uk]
+    port: 443
+    host_address: 10.151.24.160
+  - name: wanda-admin
+    role_attributes: [home-services, home-admin]
+    intercept_addresses: [traefik.wanda.heimelska.co.uk, headlamp.wanda.heimelska.co.uk]
+    port: 443
+    host_address: 10.151.24.160
+  - name: wanda-users
+    role_attributes: [home-services, home-users]
+    intercept_addresses: [jellyfin.wanda.bancey.xyz]
+    port: 443
+    host_address: 10.151.24.160
+  - name: wanda-media
+    role_attributes: [home-services, home-media]
+    intercept_addresses:
+      - sonarr.wanda.heimelska.co.uk
+      - radarr.wanda.heimelska.co.uk
+      - prowlarr.wanda.heimelska.co.uk
+      - dl.wanda.heimelska.co.uk
+      - qb.wanda.heimelska.co.uk
+    port: 443
+    host_address: 10.151.24.160
+
+  # Only served by BunkerWeb on the Pi swarm VIP, so these go through it
+  - name: bunkerweb-admin
+    role_attributes: [home-services, home-admin]
+    intercept_addresses:
+      - adguard.thanos.heimelska.co.uk
+      - adguard.gamora.heimelska.co.uk
+      - wanda-mgmt.heimelska.co.uk
+    port: 443
+    host_address: 10.151.14.4
+  - name: bunkerweb-infra
+    role_attributes: [home-services, home-infra]
+    intercept_addresses: [gatus.thanos.heimelska.co.uk, gatus.gamora.heimelska.co.uk]
+    port: 443
+    host_address: 10.151.14.4
+
   # keepalived VIPs
   - name: postgresql
     role_attributes: [home-services, home-data]

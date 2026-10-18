@@ -125,14 +125,21 @@ must start with `lab-`.
 | `#public-routers` | vps01 router | (informational) |
 | `#home-routers` | home routers + their tunneler identities | Bind policy `home-routers-bind-home-services` |
 | `#home-services` | every service | Bind policy |
-| `#home-admin` | Proxmox UIs, Traefik dashboard | Dial policy `admins-dial-home-admin` (`lab-admins`) |
+| `#home-admin` | Proxmox UIs, `chain-admins` web UIs, Headlamp, AdGuard, Wanda BMC, UniFi, NAS, SSH, k3s nodes and API servers, Matter/OTBR, MQTT | Dial policy `admins-dial-home-admin` (`lab-admins`) |
+| `#home-users` | Glance, Vikunja, Paperless, Stirling-PDF, Monica, Home Assistant, Jellyfin, Pelican + Wings | Dial policy `users-dial-home-users` (`lab-users`) |
+| `#home-media` | Sonarr, Radarr, Prowlarr, SABnzbd, qBittorrent | Dial policy `media-dial-home-media` (`lab-media`) |
+| `#home-infra` | Smokeping, Grafana, VictoriaMetrics/Logs, Gatus | Dial policy `infra-dial-home-infra` (`lab-infra`) |
 | `#home-data` | PostgreSQL, MariaDB | Dial policy `developers-dial-home-data` (`lab-admins`, `lab-developers`) |
 | `#console-hosts` | vps01 router + its tunneler identity | Bind policy `console-hosts-bind-ziti-console` |
 | `#ziti-console` | the `ziti-console` service | Bind policy |
 | `#ziti-admin` | the `ziti-console` service | Dial policy `admins-dial-ziti-admin` (`lab-admins`) |
 | `#<group object ID>` | auto-enrolled identities | the Dial policies above |
 
-`lab-users`, `lab-media` and `lab-infra` aren't used yet. Add a tier by tagging services
+The web tiers follow the forwardAuth chains in `docs/sso-operations.md`, which allow one
+group each, so `lab-admins` doesn't get the other tiers. The Kubernetes apps are grouped
+into one service per cluster and tier: each service intercepts several hostnames, all sent to
+that cluster's Traefik LoadBalancer. `auth.tiny` and `auth.wanda` carry every web tier,
+because forwardAuth redirects the browser there to sign in. Add a tier by tagging services
 and adding a Dial policy with the group in `entra_groups`. Binding is not per role,
 since RBAC is a Dial concern.
 
@@ -571,6 +578,19 @@ Append to `services` in `terraform/environments/prod/openziti.yaml`:
     # host_port: 8443                     # if it differs from port
 ```
 
+An app on a cluster that already has a service for its tier (`tiny-users`, `wanda-media`...)
+only needs its hostname added to that service's `intercept_addresses`.
+
+Two variants, used by `ssh`, `k8s-nodes`, `network-appliances` and `matter`:
+
+- **No `host_address`**: the routers forward to whatever the client dialled, but only if it's one of
+  the `intercept_addresses` (hostnames, resolved by the routers, or CIDRs). One service covers many hosts.
+- **`ports: [...]`** instead of `port`: each port is intercepted and the dialled one is forwarded.
+  `host_port` doesn't apply.
+
+The target sees connections from the hosting router (10.151.14.230 or 10.151.14.7), not
+the client, so allow-lists such as `pg_hba.conf` or NAS export rules have to admit those.
+
 Intercept the real hostname rather than `*.ziti`, so TLS certificates and OIDC redirect
 URIs keep working. While Twingate runs, a device with both clients conflicts on the same
 name: disconnect Twingate to test, or set `twingate.is_active: false` on the resource in
@@ -607,8 +627,10 @@ sudo ziti edge delete service-policy users-dial-home-services
 2. `sudo ziti edge list terminators` shows each service with a terminator from
    both `openziti` and `nebula`.
 3. Sign in as an identity in `lab-admins`: the Proxmox UIs
-   (`https://hela.heimelska.co.uk:8006` etc.), `traefik.tiny.heimelska.co.uk` and both
-   databases work.
+   (`https://hela.heimelska.co.uk:8006` etc.), `traefik.tiny.heimelska.co.uk` (sign-in goes
+   through `auth.tiny`), `ssh hela.heimelska.co.uk`, `kubectl` against both clusters and both
+   databases work. Each of `lab-users`, `lab-media` and `lab-infra` reaches its own
+   services and no others.
 4. Sign in as a `lab-developers`-only identity: the databases work and the Proxmox UIs and
    Traefik dashboard don't. `sudo ziti edge policy-advisor identities <name> <service>` shows
    why.
