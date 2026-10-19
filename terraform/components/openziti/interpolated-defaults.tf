@@ -7,6 +7,8 @@ locals {
   service_edge_router_policies = { for p in lookup(local.openziti, "service_edge_router_policies", []) : p.name => p }
   service_policies             = { for p in lookup(local.openziti, "service_policies", []) : p.name => p }
   services                     = { for s in lookup(local.openziti, "services", []) : s.name => s }
+  # A service sets either port or ports
+  service_ports = { for name, s in local.services : name => try(s.ports, [s.port]) }
 
   entra_group_names = toset(flatten([
     for p in values(local.service_policies) : lookup(p, "entra_groups", [])
