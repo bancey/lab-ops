@@ -52,8 +52,8 @@ Twingate and the go/no-go decision are in [openziti-vs-twingate.md](openziti-vs-
 | Hosts & groups | `terraform/components/inventory/hosts.yaml.tpl`: `openziti_controller`, `openziti_public_routers`, `openziti_private_routers`, `openziti_routers` |
 | Policies, services, RBAC (the network model) | `terraform/environments/prod/openziti.yaml`, applied by `terraform/components/openziti` |
 | JWT client identities, Entra signer & auth policy | `ansible/group_vars/openziti_controller.yaml` |
-| Entra app registrations (`lab-openziti`, `lab-openziti-admin`) | `terraform/environments/prod/entra.yaml` |
-| Admin console listener, certificate, admin identities | `ansible/roles/openziti/tasks/console.yaml`, `objects.yaml`; settings in `group_vars/openziti_controller.yaml`. See [Admin console](#admin-console) |
+| Entra app registration (`lab-openziti`, tunnelers and ZAC) | `terraform/environments/prod/entra.yaml` |
+| Admin console listener and certificate, administrators | `ansible/roles/openziti/tasks/console.yaml`, `objects.yaml`; settings (`openziti_admins`) in `group_vars/openziti_controller.yaml`. See [Admin console](#admin-console) |
 | VPS UFW ports | `ansible/group_vars/cloud.yaml` (applied by `vps-hardening.yaml`) |
 | Private router VM | `virtual_machines.openziti` in `terraform/environments/prod/prod.tfvars` |
 | Public DNS `ziti.heimelska.co.uk`, `join.ziti.heimelska.co.uk` → VPS | `cloudflare_records` in `prod.tfvars` (must stay unproxied) |
@@ -80,8 +80,9 @@ the home hosts through Twingate. The playbook has four plays:
 3. **Routers**: `/opt/openziti/etc/router/bootstrap.bash` generates the config and
    enrolls using that JWT. Already-enrolled routers are left alone.
 4. **Objects**: tags the router tunneler identities with their role attributes,
-   reconciles the Entra ext-jwt-signers and auth policies and the console admin identities,
-   and creates JWT client identities from group vars.
+   reconciles the Entra ext-jwt-signer and auth policy, sets `isAdmin` for `openziti_admins`,
+   deletes removed signers and auth policies, and creates JWT client identities from group
+   vars.
 
 Then the `prod_openziti` stage runs `terraform/components/openziti`, which owns the
 network model: edge-router, service-edge-router and service policies, plus every
@@ -199,8 +200,8 @@ The pieces:
 
 - **Entra**: the `lab-openziti` app registration (`terraform/environments/prod/entra.yaml`).
   It's a public client (auth code + PKCE) with the redirect URI
-  `http://localhost:20314/auth/callback`, which is what the OpenZiti tunnelers listen on.
-  There is no client secret. The `entra` component writes the client ID to Key Vault as
+  `http://localhost:20314/auth/callback`, which is what the OpenZiti tunnelers listen on, and an
+  SPA redirect URI for the [admin console](#admin-console). There is no client secret. The `entra` component writes the client ID to Key Vault as
   `Entra-OpenZiti-Client-ID`, and the playbook reads it from there.
 - **ext-jwt-signer `entra`**: trusts ID tokens from
   `https://login.microsoftonline.com/<tenant>/v2.0` with `aud` = the client ID, and
@@ -453,8 +454,8 @@ sudo rm -f /opt/openziti/artifacts/phase1-test-user.jwt
 ## Admin console
 
 The Ziti Admin Console (ZAC) is at `https://console.ziti.heimelska.co.uk/zac/`. It is
-only reachable over OpenZiti, and signing in to it is a separate Entra check. To get in,
-a user passes four layers:
+only reachable over OpenZiti. You sign in with the same **entra** provider as the
+tunnelers, and only listed administrators can do anything once signed in:
 
 1. **Network.** The controller serves ZAC on its own web listener, `console`, which is
    bound to `127.0.0.1:8441` only. The `ziti-console` service intercepts
@@ -462,86 +463,46 @@ a user passes four layers:
    that loopback port. Only `lab-admins` can dial it (`admins-dial-ziti-admin`). The name has
    no public DNS record, and no port was opened for it. The `zac` binding is removed from every
    other listener on every run, so it can't end up on the public `:1280` or `:443` listeners.
-2. **Entra sign-in.** ZAC is a browser app doing auth code + PKCE against the
-   `lab-openziti-admin` app registration, which is separate from the tunnelers' `lab-openziti`.
-   It has an SPA redirect URI only and no client secret. It requires user assignment, so a user
-   who isn't assigned to the enterprise app can't get a token for it at all.
-3. **Signer and auth policy.** The `entra-admin` ext-jwt-signer only accepts access tokens for
-   the app's own `console` scope (`aud` = `api://<client-id>`). The `entra-admin` auth policy
-   allows that signer only: no password, no certificate, and no tunneler token.
-4. **Admin identity.** Each console admin is a separate identity with `isAdmin`, listed in
-   `openziti_console_admins`. It is matched on the token's `sub` claim, not on the `oid` that
-   the user's tunneler identity uses. Ansible deletes any identity on the `entra-admin` auth
-   policy that isn't listed, and the signer never auto-enrolls anyone.
+2. **Entra sign-in.** ZAC is a browser app doing auth code + PKCE against `lab-openziti`, the
+   tunnelers' app registration, which has an SPA redirect URI for it. The ID token goes to the
+   `entra` ext-jwt-signer and signs the user in as their normal identity (matched on `oid`).
+3. **Admin rights.** The management API only accepts identities with `isAdmin`. Ansible sets it
+   on the identities of the users in `openziti_admins` (by `oid`) and clears it from every other
+   Entra-enrolled identity on every run. Everyone else who signs in to ZAC gets "Unauthorized".
 
-So a lost or compromised device that only has a tunneler session holds no admin
-credential. The tunneler identity stays a normal identity, and its Entra token can't
-authenticate as the admin identity.
+### Trade-off
 
-### Why it's built this way
+Admin rights sit on the user's normal identity, so **every session that identity holds is an
+admin session**, including the ones Ziti Desktop/Mobile Edge keep. Anyone who takes over a
+tunneler session on an admin's device can call the management API. That's accepted here to
+keep a single sign-in provider:
 
-- **Why not serve ZAC on `:1280`?** That would put the console on the internet, protected only
-  by its login. Serving it from a loopback listener behind a Ziti service keeps it dark.
-- **Why a second app registration and signer?** The controller lets one identity have one
-  `externalId`, and the `entra` signer already maps the user's `oid` to their tunneler identity.
-  An admin identity on the same signer would have to *be* the tunneler identity, which would
-  make every tunneler session an admin session.
-- **Why v1 access tokens?** The controller has a unique index on signer issuer, and `entra`
-  already holds the v2 issuer (`https://login.microsoftonline.com/<tenant>/v2.0`). An access
-  token for an API whose `requested_access_token_version` is 1 is issued by
-  `https://sts.windows.net/<tenant>/`, a different issuer. Tokens from both are signed with the
-  same tenant keys, so the signer uses the same JWKS. `requested_access_token_version: 1` is
-  pinned in `entra.yaml`. Changing it moves the issuer and breaks console sign-in.
-- **Why `sub`?** In Entra, `sub` is unique per user *per application* and immutable, so it can't
-  collide with an `oid`. Unlike `preferred_username`, it can't be changed or reused. The
-  downside is that Graph doesn't expose it, so it has to be read from a token once (below).
-- **Why are users assigned by hand?** Group assignment to enterprise apps needs Entra ID P1, and
-  assigning users from Terraform needs `AppRoleAssignment.ReadWrite.All`. That permission lets
-  the pipeline grant itself any permission, which would weaken the tenant more than this protects.
+- The controller sends every client the full list of enabled signers, and the tunnelers and
+  ZAC show all of them. A separate admin signer appears as a second provider everywhere, and
+  there's no setting to hide it.
+- A single signer can only map a user to one identity, because `externalId` is unique.
+
+Keep the list short, and remove people as soon as they no longer need it. To keep admin
+apart from daily use without a second provider, give admins a separate cloud-only Entra
+account and list that account's `oid` instead. Its identity is created the first time it signs
+in to ZAC or a tunneler.
 
 ### Setting it up
 
-The pipeline does everything except the following, once per admin:
-
-1. **Assign the user to the enterprise app.** Entra admin center → Enterprise applications →
-   *Lab OpenZiti Admin Console* → Users and groups → Add user. Or, as a Global Admin:
-
-   ```bash
-   SP_ID="$(az ad sp list --display-name 'Lab OpenZiti Admin Console' --query '[0].id' -o tsv)"
-   USER_ID="$(az ad user show --id <upn> --query id -o tsv)"
-   az rest --method POST --uri "https://graph.microsoft.com/v1.0/servicePrincipals/$SP_ID/appRoleAssignedTo" \
-     --body "{\"principalId\":\"$USER_ID\",\"resourceId\":\"$SP_ID\",\"appRoleId\":\"00000000-0000-0000-0000-000000000000\"}"
-   ```
-
-   Remove the assignment when someone leaves `lab-admins`. This list isn't synced from the group.
-2. **Find their `sub`.** With the tunneler connected as a `lab-admins` member, open
-   `https://console.ziti.heimelska.co.uk/zac/`, choose **entra-admin** and sign in with
-   Microsoft. This first sign-in fails with "identity not found", which is expected. In the same
-   tab, open the browser dev tools and decode the access token ZAC kept in session storage:
-
-   ```js
-   JSON.parse(atob(sessionStorage.getItem('access_token').split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub
-   ```
-
-   Decode it locally like this rather than pasting the token into a website: it's a live admin
-   credential until it expires. The `sub` itself isn't secret. Check the decoded token has
-   `iss` = `https://sts.windows.net/<tenant>/` and `aud` = `api://<client-id>`.
-3. **Add them** to `openziti_console_admins` in `ansible/group_vars/openziti_controller.yaml`:
+1. The user signs in with a tunneler (or ZAC) once, so their identity exists.
+2. Add them to `openziti_admins` in `ansible/group_vars/openziti_controller.yaml`:
 
    ```yaml
-   openziti_console_admins:
-     - name: abance-console
-       external_id: <sub>
+   openziti_admins:
+     - name: someone@bancey.xyz          # label only
+       oid: <az ad user show --id <upn> --query id -o tsv>
    ```
 
-   The next pipeline run creates the identity. Sign in again.
+3. After the next pipeline run, they choose **entra** on the ZAC login page.
 
-To revoke access, remove the entry: the next run deletes the identity. Removing the
-enterprise-app assignment or disabling the user in Entra stops new sign-ins straight away.
-A ZAC session that is already signed in lasts until the controller's API session expires.
-
-The `entra` button also shows on the ZAC login page, because ZAC lists every signer. It's the
-tunneler signer and fails with a redirect URI error. Ignore it.
+A listed user who hasn't enrolled yet gets a warning in the run, not a failure. To revoke
+admin, remove the entry. The identity stays, but loses `isAdmin` on the next run. An
+existing ZAC session keeps working until the controller's API session expires.
 
 The default `admin` (password) account still exists, because Ansible, Terraform and the
 group sync use it over the API. It can sign in to ZAC too, but only from inside the console
@@ -562,8 +523,9 @@ sudo ziti edge list terminators 'service.name="ziti-console"'   # one terminator
 sudo ziti edge list identities 'isAdmin=true'
 ```
 
-With the tunneler connected as a `lab-admins` member, the console loads and **entra-admin**
-signs in. As a member of `lab-developers` only, the name doesn't resolve.
+With the tunneler connected as a `lab-admins` member, the console loads and **entra** signs
+in. Signed in as someone not in `openziti_admins`, ZAC says "Unauthorized". As a member of
+`lab-developers` only, the name doesn't resolve.
 
 ## Adding a service
 

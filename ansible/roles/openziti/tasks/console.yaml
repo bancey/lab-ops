@@ -3,7 +3,8 @@
 # bound to loopback. Nothing on the internet can reach it: the router on this host
 # (tunneler-enabled, mode host) binds it as an OpenZiti service, and only lab-admins may
 # dial that service (terraform/environments/prod/openziti.yaml). Sign-in is Entra through
-# the entra-admin ext-jwt-signer, as one of openziti_console_admins (objects.yaml).
+# the same `entra` ext-jwt-signer the tunnelers use; only openziti_admins get admin rights
+# (objects.yaml).
 #
 # ZAC must share a listener with the management API, so the listener copies every API
 # binding of the bootstrap-generated client-management listener and adds zac. The zac

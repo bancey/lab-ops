@@ -126,63 +126,83 @@
   changed_when: openziti_result.stdout | length > 0
   when: not ansible_check_mode
 
-# Console administrators (console.yaml). Each is an admin identity matched on the `sub`
-# of the console app's token and allowed to sign in through the console auth policy only,
-# so it is separate from the user's tunneler identity and no tunneler token can act as it.
-# Reconciled every run: an identity that drifted (lost isAdmin, other external ID or auth
-# policy) is deleted and recreated, which loses nothing as it has no authenticators, and
-# its unused one-time enrollment is deleted so no certificate can ever be enrolled for it.
-# Ziti IDs and Entra subs can start with "-", hence `--` and --flag=value.
-- name: Create or update console admin identities
+# Leftovers from removed configuration. Auth policies go first because they reference
+# signers. Every client lists every enabled signer, so a stale one shows up as an extra
+# provider in the tunnelers and the console.
+- name: Delete removed auth policies
   ansible.builtin.shell: |
     set -euo pipefail
-    policy="$(ziti edge list auth-policies {{ ('name="' ~ openziti_console_admin_auth_policy ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
-    if [ -z "$policy" ]; then echo "auth-policy {{ openziti_console_admin_auth_policy }} not found" >&2; exit 1; fi
-    current="$(ziti edge list identities {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq -c '.data[0] // empty')"
-    if [ -n "$current" ]; then
-      if jq -e --arg x {{ item.external_id | quote }} --arg p "$policy" \
-        '.isAdmin == true and .externalId == $x and .authPolicyId == $p' <<<"$current" >/dev/null; then
-        exit 0
-      fi
-      # Never replace a tunneler identity that happens to share the name
-      if ! jq -e --arg p "$policy" '.authPolicyId == $p' <<<"$current" >/dev/null; then
-        echo "identity {{ item.name }} exists and is not a console admin, choose another name" >&2
-        exit 1
-      fi
-      ziti edge delete identity -- "$(jq -r '.id' <<<"$current")" > /dev/null
+    id="$(ziti edge list auth-policies {{ ('name="' ~ item ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
+    [ -n "$id" ] || exit 0
+    users="$(ziti edge list identities 'limit none' -j | jq -r --arg p "$id" '[.data[] | select(.authPolicyId == $p) | .name] | join(", ")')"
+    if [ -n "$users" ]; then
+      echo "auth-policy {{ item }} is still assigned to: $users. Move or delete them first." >&2
+      exit 1
     fi
-    ziti edge create identity {{ item.name | quote }} --admin \
-      --external-id={{ item.external_id | quote }} --auth-policy="$policy" > /dev/null
-    id="$(ziti edge list identities {{ ('name="' ~ item.name ~ '"') | quote }} -j | jq -r '.data[0].id')"
-    for enrollment in $(ziti edge list enrollments 'limit none' -j | jq -r --arg id "$id" '.data[] | select(.identityId == $id) | .id'); do
-      ziti edge delete enrollment -- "$enrollment" > /dev/null
-    done
+    ziti edge delete auth-policy -- "$id" > /dev/null
     echo changed
   args:
     executable: /bin/bash
-  loop: "{{ openziti_console_admins }}"
-  loop_control:
-    label: "{{ item.name }}"
+  loop: "{{ openziti_removed_auth_policies }}"
   register: openziti_result
   changed_when: openziti_result.stdout | length > 0
   when: not ansible_check_mode
 
-# Removing someone from openziti_console_admins revokes their console access on the next
-# run. Only identities on the console auth policy are considered.
-- name: Delete console admin identities that are no longer listed
+- name: Delete removed external JWT signers
   ansible.builtin.shell: |
     set -euo pipefail
-    policy="$(ziti edge list auth-policies {{ ('name="' ~ openziti_console_admin_auth_policy ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
-    [ -n "$policy" ] || exit 0
-    ziti edge list identities 'limit none' -j \
-      | jq -r --arg p "$policy" --argjson keep {{ openziti_console_admins | map(attribute='name') | to_json | quote }} \
-        '.data[] | select(.authPolicyId == $p and (.name | IN($keep[]) | not)) | "\(.id) \(.name)"' \
-      | while read -r id name; do
-          ziti edge delete identity -- "$id" > /dev/null
-          echo "deleted $name"
+    id="$(ziti edge list ext-jwt-signers {{ ('name="' ~ item ~ '"') | quote }} -j | jq -r '.data[0].id // empty')"
+    [ -n "$id" ] || exit 0
+    ziti edge delete ext-jwt-signer -- "$id" > /dev/null
+    echo changed
+  args:
+    executable: /bin/bash
+  loop: "{{ openziti_removed_ext_jwt_signers }}"
+  register: openziti_result
+  changed_when: openziti_result.stdout | length > 0
+  when: not ansible_check_mode
+
+# Administrators: the listed users' own Entra-enrolled identities get isAdmin, and every
+# other identity with an external ID loses it. Identities without an external ID (the
+# default admin, router tunnelers, JWT identities) are never touched.
+#
+# The CLI can't change isAdmin on an existing identity, so this PATCHes the management API
+# over loopback with its own short-lived session. Credentials go to curl on stdin, never
+# on the command line. Ziti IDs can start with "-", hence the jq-built URLs.
+- name: Reconcile administrator identities
+  ansible.builtin.shell: |
+    set -euo pipefail
+    api=https://localhost:{{ openziti_ctrl_port }}/edge/management/v1
+    ca=/var/lib/ziti-controller/pki/root/certs/root.cert
+    token="$(jq -n '{username: env.ZITI_USER, password: env.ZITI_PWD}' \
+      | curl -sSf --cacert "$ca" -H 'Content-Type: application/json' --data @- "$api/authenticate?method=password" \
+      | jq -r '.data.token // empty')"
+    if [ -z "$token" ]; then echo "could not log in to the management API" >&2; exit 1; fi
+    trap 'curl -sS --cacert "$ca" -H "zt-session: $token" -X DELETE "$api/current-api-session" > /dev/null || true' EXIT
+
+    identities="$(ziti edge list identities 'limit none' -j)"
+    wanted={{ openziti_admins | map(attribute='oid') | list | to_json | quote }}
+
+    # Listed users who haven't enrolled yet can't be made admin; say so but carry on
+    jq -r --argjson want "$wanted" '[.data[].externalId] as $have | $want[] | select(IN($have[]) | not)' <<<"$identities" \
+      | while read -r oid; do echo "no identity has external ID $oid yet; sign in with a tunneler first" >&2; done
+
+    jq -c --argjson want "$wanted" '.data[]
+        | select((.externalId // "") != "")
+        | {id, name, isAdmin: (.isAdmin // false), admin: (.externalId | IN($want[]))}
+        | select(.admin != .isAdmin)' <<<"$identities" \
+      | while read -r change; do
+          url="$(jq -r --arg api "$api" '$api + "/identities/" + (.id | @uri)' <<<"$change")"
+          jq -c '{isAdmin: .admin}' <<<"$change" \
+            | curl -sSf --cacert "$ca" -H "zt-session: $token" -H 'Content-Type: application/json' \
+                -X PATCH --data @- "$url" > /dev/null
+          jq -r '"\(.name): isAdmin=\(.admin)"' <<<"$change"
         done
   args:
     executable: /bin/bash
+  environment:
+    ZITI_USER: "{{ openziti_admin_username }}"
+    ZITI_PWD: "{{ openziti_admin_password }}"
   register: openziti_result
   changed_when: openziti_result.stdout | length > 0
   when: not ansible_check_mode

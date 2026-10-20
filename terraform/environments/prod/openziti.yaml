@@ -246,7 +246,8 @@ services:
     host_address: 10.151.14.219
   # Ziti Admin Console. Not #home-services: the home routers can't reach the VPS loopback.
   # There is no public DNS record for the name; the tunneler resolves it. Signing in to the
-  # console is a second, separate Entra check (lab-openziti-admin). See docs/openziti.md.
+  # console is Entra too, and only openziti_admins (Ansible group vars) can administer. See
+  # docs/openziti.md.
   - name: ziti-console
     role_attributes: [ziti-console, ziti-admin]
     intercept_addresses: [console.ziti.heimelska.co.uk]

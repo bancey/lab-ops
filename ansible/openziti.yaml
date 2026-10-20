@@ -71,5 +71,6 @@
       vars:
         # Written to Key Vault by terraform/components/entra (lab-openziti)
         openziti_entra_client_id: "{{ lookup('ansible.builtin.file', 'Entra-OpenZiti-Client-ID') | trim }}"
-        # Written to Key Vault by terraform/components/entra (lab-openziti-admin)
-        openziti_entra_admin_client_id: "{{ lookup('ansible.builtin.file', 'Entra-OpenZiti-Admin-Client-ID') | trim }}"
+        # For the management API session that reconciles openziti_admins
+        openziti_admin_username: "{{ lookup('ansible.builtin.file', 'OpenZiti-Admin-Username') }}"
+        openziti_admin_password: "{{ lookup('ansible.builtin.file', 'OpenZiti-Admin-Password') }}"

@@ -17,7 +17,7 @@ playbook's play order:
 | `backup` | controller | Nightly age-encrypted DB snapshot + PKI + config to Azure Blob (when `openziti_backup_enabled`) |
 | `enroll` | controller | Creates/re-enrolls edge routers for unenrolled routers → `openziti_enrollment_tokens`; enables tunneling on routers switched to a hosting mode |
 | `router` | routers | Non-interactive `bootstrap.bash` with the issued token (once), adds the tunnel listener if the mode changed later, starts the service |
-| `objects` | controller | Tags router identities; reconciles ext-jwt-signers, auth policies and console admin identities; creates JWT identities |
+| `objects` | controller | Tags router identities; reconciles ext-jwt-signers, auth policies and administrator identities; deletes removed signers and auth policies; creates JWT identities |
 
 `public_api` and `console` share `tls_cert`, which issues a Let's Encrypt certificate with a
 Cloudflare DNS-01 challenge and installs its renewal deploy hook.
@@ -45,6 +45,7 @@ See `defaults/main.yaml`. The ones most likely to change:
 | `openziti_auth_policies` | `[]` | `{name, cert_allowed, ext_jwt_allowed, ext_jwt_allowed_signers, updb_allowed}` |
 | `openziti_public_api_enabled` / `openziti_public_api_address` | `false` / — | Client API on `:443` with a Let's Encrypt cert for join-by-URL; Cloudflare token from Key Vault `Cloudflare-Lab-API-Token` |
 | `openziti_console_enabled` / `openziti_console_address` | `false` / — | Ziti Admin Console on a loopback-only listener (`openziti_console_port`, 8441), published as a Ziti service |
-| `openziti_console_admins` | `[]` | `{name, external_id}`; admin identities matched on the console token's `sub`, pruned when removed |
+| `openziti_admins` | `[]` | `{name, oid}`; these users' Entra-enrolled identities get `isAdmin`, every other Entra identity loses it |
+| `openziti_removed_ext_jwt_signers` / `openziti_removed_auth_policies` | `[]` | Names deleted from the controller if present |
 | `openziti_version` | latest | Pin all hosts to one release |
 | `openziti_backup_enabled` / `openziti_backup_storage_account` | `false` / — | Nightly controller backup; SAS token from Key Vault `OpenZiti-Backup-SAS-Token` |
