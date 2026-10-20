@@ -181,11 +181,13 @@
     ca=/var/lib/ziti-controller/pki/root/certs/root.cert
     redirect=http://localhost:8080/auth/callback
 
-    # OIDC login: authorize (PKCE) -> submit credentials -> follow redirects to the code -> token
+    # OIDC login: authorize (PKCE) -> submit credentials -> follow redirects to the code -> token.
+    # /oidc/authorize redirects (relative, so it stays on loopback) to the login page, and that
+    # response carries the auth request ID, hence -L.
     verifier="$(openssl rand -base64 48 | tr -d '=+/\n' | cut -c1-64)"
     challenge="$(printf '%s' "$verifier" | openssl dgst -binary -sha256 | openssl base64 -A | tr '+/' '-_' | tr -d '=')"
     state="$(openssl rand -hex 16)"
-    request_id="$(curl -sSf --cacert "$ca" -o /dev/null -D - -G "$base/oidc/authorize" \
+    request_id="$(curl -sSfL --cacert "$ca" -o /dev/null -D - -G "$base/oidc/authorize" \
       --data-urlencode client_id=openziti --data-urlencode response_type=code \
       --data-urlencode scope=openid --data-urlencode "state=$state" \
       --data-urlencode "code_challenge=$challenge" --data-urlencode code_challenge_method=S256 \

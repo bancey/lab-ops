@@ -105,8 +105,8 @@ applications:
   # are public clients doing auth code + PKCE against a fixed localhost callback; ZAC is a browser
   # SPA doing the same, so its redirect is an SPA one (Entra only allows the browser to redeem the
   # code for that platform). No client secret, nothing for Kubernetes to consume. ZAC is only
-  # reachable over OpenZiti by lab-admins, and only openziti_admins get admin rights in it. See
-  # docs/openziti.md.
+  # reachable over OpenZiti by openziti_admins (#ziti-admins), who are also the only ones with
+  # admin rights in it. See docs/openziti.md.
   lab-openziti:
     display_name: "Lab OpenZiti"
     description: "OpenZiti client sign-in (Ziti Desktop Edge, tunnelers, Ziti Admin Console)"
