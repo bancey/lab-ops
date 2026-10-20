@@ -133,7 +133,8 @@ must start with `lab-`.
 | `#home-data` | PostgreSQL, MariaDB | Dial policy `developers-dial-home-data` (`lab-admins`, `lab-developers`) |
 | `#console-hosts` | vps01 router + its tunneler identity | Bind policy `console-hosts-bind-ziti-console` |
 | `#ziti-console` | the `ziti-console` service | Bind policy |
-| `#ziti-admin` | the `ziti-console` service | Dial policy `admins-dial-ziti-admin` (`lab-admins`) |
+| `#ziti-admin` | the `ziti-console` service | Dial policy `admins-dial-ziti-admin` (`#ziti-admins`) |
+| `#ziti-admins` | `openziti_admins` identities (set by Ansible, not from a group) | Dial policy `admins-dial-ziti-admin` |
 | `#<group object ID>` | auto-enrolled identities | the Dial policies above |
 
 The web tiers follow the forwardAuth chains in `docs/sso-operations.md`, which allow one
@@ -454,28 +455,35 @@ sudo rm -f /opt/openziti/artifacts/phase1-test-user.jwt
 ## Admin console
 
 The Ziti Admin Console (ZAC) is at `https://console.ziti.heimelska.co.uk/zac/`. It is
-only reachable over OpenZiti. You sign in with the same **entra** provider as the
-tunnelers, and only listed administrators can do anything once signed in:
+only reachable over OpenZiti, and only by the users in `openziti_admins`
+(`ansible/group_vars/openziti_controller.yaml`). They sign in with the same **entra**
+provider as the tunnelers. That one list drives both checks:
 
 1. **Network.** The controller serves ZAC on its own web listener, `console`, which is
    bound to `127.0.0.1:8441` only. The `ziti-console` service intercepts
    `console.ziti.heimelska.co.uk:443`, and the vps01 router's tunneler hosts it by dialling
-   that loopback port. Only `lab-admins` can dial it (`admins-dial-ziti-admin`). The name has
-   no public DNS record, and no port was opened for it. The `zac` binding is removed from every
-   other listener on every run, so it can't end up on the public `:1280` or `:443` listeners.
+   that loopback port. Only identities tagged `#ziti-admins` can dial it
+   (`admins-dial-ziti-admin`), and Ansible gives that attribute to exactly the `openziti_admins`
+   identities. Everyone else can't resolve the name or open a connection to it. There's no
+   public DNS record and no open port. ZAC's `spa` binding is removed from every other listener on
+   every run, so it can't end up on the public `:1280` or `:443` listeners.
 2. **Entra sign-in.** ZAC is a browser app doing auth code + PKCE against `lab-openziti`, the
    tunnelers' app registration, which has an SPA redirect URI for it. The ID token goes to the
    `entra` ext-jwt-signer and signs the user in as their normal identity (matched on `oid`).
 3. **Admin rights.** The management API only accepts identities with `isAdmin`. Ansible sets it
-   on the identities of the users in `openziti_admins` (by `oid`) and clears it from every other
-   Entra-enrolled identity on every run. Everyone else who signs in to ZAC gets "Unauthorized".
+   on the same `openziti_admins` identities and clears it, and `#ziti-admins`, from every other
+   Entra-enrolled identity on every run.
+
+The two checks can't drift apart, because they come from the same list in the same task.
+Membership of `lab-admins` alone doesn't give access to the console.
 
 ### Trade-off
 
 Admin rights sit on the user's normal identity, so **every session that identity holds is an
-admin session**, including the ones Ziti Desktop/Mobile Edge keep. Anyone who takes over a
-tunneler session on an admin's device can call the management API. That's accepted here to
-keep a single sign-in provider:
+admin session**, including the ones Ziti Desktop/Mobile Edge keep. Restricting the service
+doesn't change this: the management API is also on the public `:1280` listener, so a stolen
+tunneler session token from an admin's device could be used against it directly. That's
+accepted here to keep a single sign-in provider:
 
 - The controller sends every client the full list of enabled signers, and the tunnelers and
   ZAC show all of them. A separate admin signer appears as a second provider everywhere, and
@@ -485,12 +493,13 @@ keep a single sign-in provider:
 Keep the list short, and remove people as soon as they no longer need it. To keep admin
 apart from daily use without a second provider, give admins a separate cloud-only Entra
 account and list that account's `oid` instead. Its identity is created the first time it signs
-in to ZAC or a tunneler.
+in to a tunneler. Taking the management API off the public listener (see
+[Next phases](#next-phases)) would also limit a stolen token to the console service.
 
 ### Setting it up
 
-1. The user signs in with a tunneler (or ZAC) once, so their identity exists.
-2. Add them to `openziti_admins` in `ansible/group_vars/openziti_controller.yaml`:
+1. The user signs in with a tunneler once, so their identity exists.
+2. Add them to `openziti_admins`:
 
    ```yaml
    openziti_admins:
@@ -498,34 +507,40 @@ in to ZAC or a tunneler.
        oid: <az ad user show --id <upn> --query id -o tsv>
    ```
 
-3. After the next pipeline run, they choose **entra** on the ZAC login page.
+3. After the next pipeline run (Ansible, then Terraform for the policy), the console resolves
+   in their tunneler. They choose **entra** on the ZAC login page.
 
 A listed user who hasn't enrolled yet gets a warning in the run, not a failure. To revoke
-admin, remove the entry. The identity stays, but loses `isAdmin` on the next run. An
-existing ZAC session keeps working until the controller's API session expires.
+access, remove the entry. The identity stays, but loses `isAdmin` and `#ziti-admins` on the
+next run. An existing ZAC session keeps working until the controller's API session expires.
+
+Ansible changes `isAdmin` through the management API, because the CLI can't. It logs in the
+way the SDKs do, with an OIDC auth code + PKCE flow against the controller's built-in
+`openziti` client. It doesn't use a legacy API session (`zt-session`), which is deprecated
+and will be removed in OpenZiti 3.0.
 
 The default `admin` (password) account still exists, because Ansible, Terraform and the
 group sync use it over the API. It can sign in to ZAC too, but only from inside the console
-service, which only `lab-admins` can dial.
+service, which only `openziti_admins` can dial.
 
 ### Checking it
 
 ```bash
 # On the VPS: listening on loopback only, with the console and its APIs
 sudo ss -ltnp | grep 8441                                   # 127.0.0.1:8441 only
-sudo grep -c 'binding: zac' /var/lib/ziti-controller/config.yml   # 1, the console listener
+sudo grep -c -E 'binding: (spa|zac)' /var/lib/ziti-controller/config.yml   # 1, the console listener
 # Nothing public serves ZAC (expect 404 on both)
 curl -sk -o /dev/null -w '%{http_code}\n' https://ziti.heimelska.co.uk:1280/zac/
 curl -s -o /dev/null -w '%{http_code}\n' https://join.ziti.heimelska.co.uk/zac/
 # The name doesn't resolve publicly (expect no answer)
 dig +short console.ziti.heimelska.co.uk @1.1.1.1
 sudo ziti edge list terminators 'service.name="ziti-console"'   # one terminator, from vps01
-sudo ziti edge list identities 'isAdmin=true'
+sudo ziti edge list identities 'isAdmin=true'                   # default admin + openziti_admins
+sudo ziti edge list identities 'anyOf(roleAttributes)="ziti-admins"'   # openziti_admins only
 ```
 
-With the tunneler connected as a `lab-admins` member, the console loads and **entra** signs
-in. Signed in as someone not in `openziti_admins`, ZAC says "Unauthorized". As a member of
-`lab-developers` only, the name doesn't resolve.
+As someone in `openziti_admins`, the console loads and **entra** signs in. As anyone else,
+including other `lab-admins` members, the name doesn't resolve.
 
 ## Adding a service
 

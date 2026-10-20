@@ -162,39 +162,70 @@
   changed_when: openziti_result.stdout | length > 0
   when: not ansible_check_mode
 
-# Administrators: the listed users' own Entra-enrolled identities get isAdmin, and every
-# other identity with an external ID loses it. Identities without an external ID (the
-# default admin, router tunnelers, JWT identities) are never touched.
+# Administrators: the listed users' own Entra-enrolled identities get isAdmin and the
+# openziti_admin_role_attribute role attribute, which the console's Dial policy selects
+# (terraform/environments/prod/openziti.yaml). Every other identity with an external ID
+# loses both. Identities without one (the default admin, router tunnelers, JWT identities)
+# are never touched. The group sync only manages lab-* group attributes, so it keeps this one.
 #
-# The CLI can't change isAdmin on an existing identity, so this PATCHes the management API
-# over loopback with its own short-lived session. Credentials go to curl on stdin, never
-# on the command line. Ziti IDs can start with "-", hence the jq-built URLs.
+# The CLI can't change isAdmin, so this PATCHes the management API over loopback. It logs
+# in the way the SDKs do, with an OIDC auth code + PKCE flow against the controller's own
+# `openziti` client, rather than a legacy API session (deprecated, removed in OpenZiti 3.0).
+# Credentials and the token go to curl on stdin or a header file, never the command line. Ziti IDs can start with "-",
+# hence the jq-built URLs.
 - name: Reconcile administrator identities
   ansible.builtin.shell: |
     set -euo pipefail
-    api=https://localhost:{{ openziti_ctrl_port }}/edge/management/v1
+    base=https://localhost:{{ openziti_ctrl_port }}
+    api=$base/edge/management/v1
     ca=/var/lib/ziti-controller/pki/root/certs/root.cert
-    token="$(jq -n '{username: env.ZITI_USER, password: env.ZITI_PWD}' \
-      | curl -sSf --cacert "$ca" -H 'Content-Type: application/json' --data @- "$api/authenticate?method=password" \
-      | jq -r '.data.token // empty')"
-    if [ -z "$token" ]; then echo "could not log in to the management API" >&2; exit 1; fi
-    trap 'curl -sS --cacert "$ca" -H "zt-session: $token" -X DELETE "$api/current-api-session" > /dev/null || true' EXIT
+    redirect=http://localhost:8080/auth/callback
+
+    # OIDC login: authorize (PKCE) -> submit credentials -> follow redirects to the code -> token
+    verifier="$(openssl rand -base64 48 | tr -d '=+/\n' | cut -c1-64)"
+    challenge="$(printf '%s' "$verifier" | openssl dgst -binary -sha256 | openssl base64 -A | tr '+/' '-_' | tr -d '=')"
+    state="$(openssl rand -hex 16)"
+    request_id="$(curl -sSf --cacert "$ca" -o /dev/null -D - -G "$base/oidc/authorize" \
+      --data-urlencode client_id=openziti --data-urlencode response_type=code \
+      --data-urlencode scope=openid --data-urlencode "state=$state" \
+      --data-urlencode "code_challenge=$challenge" --data-urlencode code_challenge_method=S256 \
+      --data-urlencode "redirect_uri=$redirect" --data-urlencode "nonce=$(openssl rand -hex 16)" \
+      | tr -d '\r' | awk 'tolower($1) == "auth-request-id:" { print $2 }')"
+    if [ -z "$request_id" ]; then echo "OIDC authorize returned no auth request ID" >&2; exit 1; fi
+    location="$(jq -rn --arg id "$request_id" '"id=\($id | @uri)&username=\(env.ZITI_USER | @uri)&password=\(env.ZITI_PWD | @uri)"' \
+      | curl -sS --cacert "$ca" -o /dev/null -w '%{redirect_url}' --data @- "$base/oidc/login/password")"
+    for _ in 1 2 3 4 5; do
+      case "$location" in "$redirect"*|"") break ;; esac
+      location="$(curl -sS --cacert "$ca" -o /dev/null -w '%{redirect_url}' "$location")"
+    done
+    # Still URL-encoded from the redirect, so it goes in the form body as is
+    code="$(jq -rn --arg u "$location" '$u | capture("[?&]code=(?<c>[^&]+)").c // empty' 2>/dev/null || true)"
+    if [ -z "$code" ]; then echo "OIDC login failed (check the admin credentials)" >&2; exit 1; fi
+    token="$(curl -sSf --cacert "$ca" "$base/oidc/oauth/token" \
+      --data-urlencode grant_type=authorization_code --data-urlencode client_id=openziti \
+      --data "code=$code" --data-urlencode "code_verifier=$verifier" \
+      --data-urlencode "redirect_uri=$redirect" | jq -r '.access_token // empty')"
+    if [ -z "$token" ]; then echo "OIDC token exchange failed" >&2; exit 1; fi
 
     identities="$(ziti edge list identities 'limit none' -j)"
     wanted={{ openziti_admins | map(attribute='oid') | list | to_json | quote }}
+    attr={{ openziti_admin_role_attribute | quote }}
 
     # Listed users who haven't enrolled yet can't be made admin; say so but carry on
     jq -r --argjson want "$wanted" '[.data[].externalId] as $have | $want[] | select(IN($have[]) | not)' <<<"$identities" \
       | while read -r oid; do echo "no identity has external ID $oid yet; sign in with a tunneler first" >&2; done
 
-    jq -c --argjson want "$wanted" '.data[]
+    jq -c --argjson want "$wanted" --arg attr "$attr" '.data[]
         | select((.externalId // "") != "")
-        | {id, name, isAdmin: (.isAdmin // false), admin: (.externalId | IN($want[]))}
-        | select(.admin != .isAdmin)' <<<"$identities" \
+        | (.roleAttributes // []) as $attrs
+        | (.externalId | IN($want[])) as $admin
+        | select($admin != (.isAdmin // false) or $admin != ($attrs | index($attr) != null))
+        | {id, name, admin: $admin, roleAttributes: (($attrs - [$attr]) + (if $admin then [$attr] else [] end))}' \
+        <<<"$identities" \
       | while read -r change; do
           url="$(jq -r --arg api "$api" '$api + "/identities/" + (.id | @uri)' <<<"$change")"
-          jq -c '{isAdmin: .admin}' <<<"$change" \
-            | curl -sSf --cacert "$ca" -H "zt-session: $token" -H 'Content-Type: application/json' \
+          jq -c '{isAdmin: .admin, roleAttributes}' <<<"$change" \
+            | curl -sSf --cacert "$ca" -H @<(printf 'Authorization: Bearer %s\n' "$token") -H 'Content-Type: application/json' \
                 -X PATCH --data @- "$url" > /dev/null
           jq -r '"\(.name): isAdmin=\(.admin)"' <<<"$change"
         done

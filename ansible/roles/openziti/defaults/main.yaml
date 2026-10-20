@@ -23,12 +23,14 @@ openziti_console_port: 8441
 openziti_console_cert_dir: /var/lib/ziti-controller/console-tls
 openziti_console_location: /opt/openziti/share/console
 
-# Users whose Entra-enrolled identity gets isAdmin (matched on external ID = oid), e.g. to
-# use the console. Reconciled every run: identities with an external ID that aren't listed
-# lose isAdmin. Identities without one (the default admin, routers) are never touched.
+# Users whose Entra-enrolled identity gets isAdmin and openziti_admin_role_attribute (matched
+# on external ID = oid), e.g. to use the console. Reconciled every run: identities with an
+# external ID that aren't listed lose both. Identities without one (the default admin, routers) are never touched.
 openziti_admins: []
 #  - name: alex@example.com      # label only
 #    oid: <Entra object ID>
+# Role attribute given to (and only to) those identities; the console's Dial policy selects it
+openziti_admin_role_attribute: ziti-admins
 
 # Public client API: a second listener on a publicly trusted name (Let's Encrypt via
 # Cloudflare DNS-01) so users can join by URL without a JWT. The address must differ

@@ -45,7 +45,7 @@ See `defaults/main.yaml`. The ones most likely to change:
 | `openziti_auth_policies` | `[]` | `{name, cert_allowed, ext_jwt_allowed, ext_jwt_allowed_signers, updb_allowed}` |
 | `openziti_public_api_enabled` / `openziti_public_api_address` | `false` / — | Client API on `:443` with a Let's Encrypt cert for join-by-URL; Cloudflare token from Key Vault `Cloudflare-Lab-API-Token` |
 | `openziti_console_enabled` / `openziti_console_address` | `false` / — | Ziti Admin Console on a loopback-only listener (`openziti_console_port`, 8441), published as a Ziti service |
-| `openziti_admins` | `[]` | `{name, oid}`; these users' Entra-enrolled identities get `isAdmin`, every other Entra identity loses it |
+| `openziti_admins` | `[]` | `{name, oid}`; these users' Entra-enrolled identities get `isAdmin` and `openziti_admin_role_attribute` (`ziti-admins`), every other Entra identity loses both |
 | `openziti_removed_ext_jwt_signers` / `openziti_removed_auth_policies` | `[]` | Names deleted from the controller if present |
 | `openziti_version` | latest | Pin all hosts to one release |
 | `openziti_backup_enabled` / `openziti_backup_storage_account` | `false` / — | Nightly controller backup; SAS token from Key Vault `OpenZiti-Backup-SAS-Token` |

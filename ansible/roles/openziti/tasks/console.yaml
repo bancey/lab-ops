@@ -1,15 +1,15 @@
 ---
 # Ziti Admin Console (ZAC), served by the controller on its own web listener that is only
 # bound to loopback. Nothing on the internet can reach it: the router on this host
-# (tunneler-enabled, mode host) binds it as an OpenZiti service, and only lab-admins may
-# dial that service (terraform/environments/prod/openziti.yaml). Sign-in is Entra through
-# the same `entra` ext-jwt-signer the tunnelers use; only openziti_admins get admin rights
-# (objects.yaml).
+# (tunneler-enabled, mode host) binds it as an OpenZiti service, and only openziti_admins
+# may dial that service (terraform/environments/prod/openziti.yaml). Sign-in is Entra
+# through the same `entra` ext-jwt-signer the tunnelers use, and the same users get admin
+# rights (objects.yaml).
 #
 # ZAC must share a listener with the management API, so the listener copies every API
-# binding of the bootstrap-generated client-management listener and adds zac. The zac
-# binding is removed from every other listener, so the console can never end up on the
-# public :1280 or :443 listeners. With openziti_console_enabled false the listener is
+# binding of the bootstrap-generated client-management listener and adds ZAC as a `spa`
+# binding at /zac (the older `zac` binding is deprecated). Both forms are removed from every
+# other listener, so the console can never end up on the public :1280 or :443 listeners. With openziti_console_enabled false the listener is
 # removed again.
 #
 # Runs between bootstrap and service start in controller.yaml, like public_api.yaml.
@@ -53,10 +53,11 @@
   register: openziti_config_raw
   when: openziti_config_file.stat.exists
 
-# Every listener except the console one, with any zac binding stripped
+# Every listener except the console one, with any console binding stripped. ZAC is the only
+# SPA the controller serves, so every `spa` binding goes.
 - name: Collect the other listeners
   ansible.builtin.set_fact:
-    openziti_web_others: "{{ openziti_web_others | default([]) + [item | combine({'apis': item.apis | default([]) | rejectattr('binding', 'equalto', 'zac') | list})] }}"
+    openziti_web_others: "{{ openziti_web_others | default([]) + [item | combine({'apis': item.apis | default([]) | rejectattr('binding', 'in', ['zac', 'spa']) | list})] }}"
   loop: "{{ (openziti_config_raw.content | b64decode | from_yaml).web | rejectattr('name', 'equalto', 'console') | list }}"
   loop_control:
     label: "{{ item.name }}"
@@ -79,8 +80,8 @@
       identity: "{{ base.identity | combine({'alt_server_certs': [{'server_cert': openziti_console_cert_dir ~ '/fullchain.pem', 'server_key': openziti_console_cert_dir ~ '/privkey.pem'}]}) }}"
       options: "{{ base.options | default({}) }}"
       apis: >-
-        {{ (base.apis | rejectattr('binding', 'equalto', 'zac') | list)
-           + [{'binding': 'zac', 'options': {'location': openziti_console_location, 'indexFile': 'index.html'}}] }}
+        {{ (base.apis | rejectattr('binding', 'in', ['zac', 'spa']) | list)
+           + [{'binding': 'spa', 'options': {'path': 'zac', 'location': openziti_console_location, 'indexFile': 'index.html'}}] }}
     web: "{{ openziti_web_others + ([listener] if openziti_console_enabled | bool else []) }}"
   register: openziti_console_config
   when: openziti_config_file.stat.exists

@@ -13,8 +13,10 @@ openziti_public_api_address: join.ziti.heimelska.co.uk
 openziti_console_enabled: true
 openziti_console_address: console.ziti.heimelska.co.uk
 
-# Ziti administrators: these users' own (Entra-enrolled) identities get isAdmin, so they can
-# use the console after signing in with the same `entra` provider as their tunneler. Matched
+# Ziti administrators: these users' own (Entra-enrolled) identities get isAdmin and the
+# #ziti-admins role attribute. The attribute is the only thing the console service's Dial
+# policy selects, so these users are the only ones who can reach the console, and they sign
+# in to it with the same `entra` provider as their tunneler. Matched
 # on the Entra object ID (`az ad user show --id <upn> --query id -o tsv`), which is the
 # identity's external ID. Anyone removed from this list loses admin on the next run. The
 # user must have signed in with a tunneler once, so their identity exists.
