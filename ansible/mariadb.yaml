@@ -658,7 +658,7 @@
           fi
         done
 
-        if [ ${#FAILURES[@]} -gt 0 ]; then
+        if [ -n "${FAILURES[*]:-}" ]; then
           log "ERROR: backup failed: ${FAILURES[*]}"
           report false "failed: ${FAILURES[*]}"
           exit 1
