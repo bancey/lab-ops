@@ -154,7 +154,7 @@ parameters:
         destroy: false
         deploy: true
         dependsOn:
-          - openziti_ansible
+          - vps_ansible
           - prod_entra
         preSteps:
           - template: steps/install-tools.yaml@azuredevops-lib
