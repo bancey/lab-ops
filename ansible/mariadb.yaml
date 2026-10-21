@@ -307,11 +307,11 @@
       galera_recovered_seqno: "{{ (galera_recovered_pos.split(':') | last) | int(-1) if ':' in galera_recovered_pos else -1 }}"
       galera_recovery_rc: "{{ galera_recovered_position.stdout | regex_search('(?m)^rc=(.*)$', '\\1') | first }}"
       # A node may only be left out of the election when it provably holds no cluster history:
-      # MariaDB not installed, or a zeroed UUID (never joined, or wiped by an interrupted SST).
-      # Any other node without a usable position might hold the newest data, so it blocks
-      # the election rather than being skipped.
+      # MariaDB not installed and no grastate.dat, or a zeroed UUID (never joined, or wiped by
+      # an interrupted SST). Any other node without a usable position might hold the newest
+      # data, so it blocks the election rather than being skipped.
       galera_position_discardable: >-
-        {{ not (galera_node_installed | bool)
+        {{ (not (galera_node_installed | bool) and galera_grastate_uuid | length == 0)
            or galera_grastate_uuid == galera_zero_uuid
            or galera_recovered_pos.split(':')[0] == galera_zero_uuid }}
     vars:
@@ -319,6 +319,16 @@
       galera_recovered_pos: "{{ galera_recovered_position.stdout | regex_search('(?m)^position=(.*)$', '\\1') | first }}"
       galera_grastate_uuid: "{{ galera_recovered_position.stdout | regex_search('(?m)^grastate_uuid=(.*)$', '\\1') | first }}"
     when: galera_recover_full_outage | bool
+  # A host that fails or becomes unreachable during recovery silently leaves ansible_play_hosts,
+  # so the election below would never see its (possibly newest) position. The partial-play
+  # guard ran before recovery, so check again here.
+  - name: Fail if a Galera node dropped out of the play during recovery
+    ansible.builtin.fail:
+      msg: >-
+        Only {{ ansible_play_hosts | join(', ') }} are still in the play after position recovery.
+        A node that dropped out may hold the newest data, so no bootstrap node can be chosen
+        safely - fix it and re-run, or recover manually (see docs/mariadb-operations.md).
+    when: galera_recover_full_outage | bool and ansible_play_hosts | length < galera_nodes | length
   - name: Fail if a node that may hold data has no recoverable Galera position
     ansible.builtin.fail:
       msg: >-
@@ -373,6 +383,25 @@
         Full outage detected but no node has a recoverable Galera position. Refusing to bootstrap
         from a possibly empty datadir - recover manually (see docs/mariadb-operations.md).
     when: galera_bootstrap_required | bool and galera_bootstrap_node | length == 0
+  # The election only needs an InnoDB position, so the chosen node may have no grastate.dat
+  # (e.g. deleted by hand). Seed one from the recovered position; force: false keeps an existing
+  # file untouched.
+  - name: Create grastate.dat on the bootstrap node if it is missing
+    ansible.builtin.copy:
+      dest: /var/lib/mysql/grastate.dat
+      force: false
+      owner: mysql
+      group: mysql
+      mode: '0660'
+      content: |
+        # GALERA saved state
+        version: 2.1
+        uuid:    {{ galera_recovered_uuid }}
+        seqno:   {{ galera_recovered_seqno }}
+        safe_to_bootstrap: 1
+    when:
+    - galera_recover_full_outage | bool
+    - inventory_hostname == galera_bootstrap_node
   - name: Mark the bootstrap node safe_to_bootstrap for full outage recovery
     ansible.builtin.replace:
       path: /var/lib/mysql/grastate.dat
