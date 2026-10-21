@@ -23,7 +23,7 @@ resources:
   repositories:
     - repository: azuredevops-lib
       type: github
-      ref: refs/heads/main
+      ref: refs/heads/feat/support-multiple-playbooks
       name: bancey/azuredevops-lib
       endpoint: bancey
 
@@ -238,37 +238,9 @@ parameters:
         dependsOn:
           - generate_ansible_inventory
           - prod_entra
-      - deployment: vps_hardening_ansible
+      - deployment: vps_ansible
         environment: prod
-        playbook: vps-hardening.yaml
-        secrets: []
-        dependsOn:
-          - generate_ansible_inventory
-        preSteps:
-          - template: steps/install-tools.yaml@azuredevops-lib
-            parameters:
-              cacheKeyPrefix: '"ovhcloud-v0.16.0"'
-              tools:
-                - name: ovhcloud
-                  downloadUrl: https://github.com/ovh/ovhcloud-cli/releases/download/v0.16.0/ovhcloud-cli_Linux_x86_64.tar.gz
-          - task: AzureCLI@2
-            displayName: Get OVHcloud Credentials
-            inputs:
-              azureSubscription: "BTCS-PRODUCTION"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                az keyvault secret download --name ovh-conf --vault-name bancey-vault --file ~/.ovh.conf
-                chmod 600 ~/.ovh.conf
-          - script: ./scripts/ovh-firewall-rule.sh open vps-a1b66cea.vps.ovh.net 18
-            displayName: Allow Agent SSH Through OVH Firewall
-        postSteps:
-          - script: ./scripts/ovh-firewall-rule.sh close vps-a1b66cea.vps.ovh.net 18
-            displayName: Remove Agent SSH Rule From OVH Firewall
-            condition: always()
-      - deployment: openziti_ansible
-        environment: prod
-        playbook: openziti.yaml
+        playbook: vps-hardening.yaml,openziti.yaml
         secrets:
           - OpenZiti-Admin-Username
           - OpenZiti-Admin-Password
@@ -284,7 +256,6 @@ parameters:
           - prod_dns
           - prod_entra
           - tiny_virtual_machines
-          - vps_hardening_ansible
         preSteps:
           - template: steps/install-tools.yaml@azuredevops-lib
             parameters:
