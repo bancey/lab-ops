@@ -19,7 +19,9 @@
     dest: /opt/gatus/config/config.yaml
     owner: root
     group: root
-    mode: '0644'
+    # Holds the Discord webhook, OIDC client secret and external-endpoint token. The Gatus image
+    # is FROM scratch with no USER, so it runs as root and still reads a root-only file.
+    mode: '0600'
 
 - name: Copy Alloy configuration template
   template:

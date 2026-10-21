@@ -396,3 +396,23 @@ endpoints:
       - type: discord
         send-on-resolved: true
 {% endif %}
+
+{% set external_token = gatus_external_endpoint_token | default('') | trim %}
+{% if external_token | length > 0 %}
+# Push-based checks for scheduled jobs: the job POSTs its result to
+# /api/v1/endpoints/<group>_<name>/external with this token. The heartbeat turns a job that
+# silently stops running (host down, cron gone) into a failure, not just one that reports failing.
+external-endpoints:
+  - name: mariadb
+    group: backups
+    token: "{{ external_token }}"
+    heartbeat:
+      interval: 25h
+{% if discord_enabled %}
+    alerts:
+      - type: discord
+        failure-threshold: 1
+        send-on-resolved: true
+        description: "MariaDB nightly backup to Azure Blob failed or did not run - check /var/log/mariadb-backup.log on mariadb0"
+{% endif %}
+{% endif %}

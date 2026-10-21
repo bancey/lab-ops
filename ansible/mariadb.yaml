@@ -20,7 +20,15 @@
     backup_local_dir: "/var/backups/mariadb"
     backup_storage_account: "{{ backup_storage_account_name }}"
     backup_container: "mariadb-backups"
-    backup_retention_days: 14
+    # Local copies are only a staging area - Azure Blob is the backup of record. home-assistant
+    # dumps alone are >3GB each, so long local retention fills the 50G disk shared with the datadir.
+    backup_local_retention_days: 3
+    # Both Gatus instances get the result; each alerts if no successful backup arrives within the
+    # heartbeat interval (external endpoint "backups_mariadb" in the rpi-monitoring Gatus config).
+    backup_gatus_urls:
+    - "https://gatus.thanos.heimelska.co.uk"
+    - "https://gatus.gamora.heimelska.co.uk"
+    backup_gatus_endpoint_key: "backups_mariadb"
     backup_cron_hour: "2"
     backup_cron_minute: "0"
     mariadb_version: "11.4"
@@ -108,69 +116,80 @@
   - set_fact:
       backup_sas_token: "{{ lookup('ansible.builtin.file', 'backup_sas_token') }}"
     when: backup_sas_token is undefined
+  # Optional: without it the backup still runs but reports nothing, so once Gatus has the token
+  # its heartbeat alert fires - the right signal that this side isn't wired up.
+  - set_fact:
+      gatus_external_endpoint_token: "{{ lookup('ansible.builtin.file', 'gatus_external_endpoint_token', errors='ignore') | default('', true) | trim }}"
+    when: gatus_external_endpoint_token is undefined
   - name: Load database passwords from secret files
     set_fact:
       mariadb_databases_resolved: "{{ mariadb_databases_resolved | default([]) + [item | combine({'password': (lookup('ansible.builtin.file', item.password_var) if (item.password_var is defined and item.password_var | length > 0) else item.password)})] }}"
     loop: "{{ mariadb_databases }}"
     no_log: true
+  # Cluster state is assessed on every node, not just mariadb0. A single dead node must never be
+  # read as a full outage: that path stops the healthy nodes and bootstraps from the dead one,
+  # turning a one-node failure into a full outage on stale data.
   - name: Check if MariaDB is already installed
     ansible.builtin.shell:
       cmd: dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null
     register: mariadb_pkg_check
     failed_when: false
     changed_when: false
-    when: inventory_hostname == 'mariadb0'
   - name: Check if MariaDB service is currently active
     ansible.builtin.shell:
       cmd: systemctl is-active mariadb
     register: mariadb_service_check
     failed_when: false
     changed_when: false
-    when: inventory_hostname == 'mariadb0'
   - name: Check Galera cluster status via local MySQL socket
     ansible.builtin.shell:
       cmd: mysql -NBe "SHOW STATUS LIKE 'wsrep_cluster_status';" 2>/dev/null | awk '{print $2}'
     register: galera_cluster_status_check
     failed_when: false
     changed_when: false
-    when: inventory_hostname == 'mariadb0' and (mariadb_service_check.stdout | default('')) == 'active'
-  - name: Determine Galera bootstrap and recovery requirements
+    when: (mariadb_service_check.stdout | default('')) == 'active'
+  - name: Record this node's install and Galera membership state
     set_fact:
-      galera_bootstrap_required: >-
-        {{ ('install ok installed' not in (mariadb_pkg_check.stdout | default('')))
-           or ((mariadb_service_check.stdout | default('')) != 'active')
-           or ((galera_cluster_status_check.stdout | default('') | lower) != 'primary') }}
-      galera_recover_full_outage: >-
-        {{ ('install ok installed' in (mariadb_pkg_check.stdout | default('')))
-           and (((mariadb_service_check.stdout | default('')) != 'active')
-                or ((galera_cluster_status_check.stdout | default('') | lower) != 'primary')) }}
-    when: inventory_hostname == 'mariadb0'
-  - name: Propagate bootstrap and recovery decisions to all nodes
+      galera_node_installed: "{{ 'install ok installed' in (mariadb_pkg_check.stdout | default('')) }}"
+      galera_node_primary: >-
+        {{ (mariadb_service_check.stdout | default('')) == 'active'
+           and (galera_cluster_status_check.stdout | default('') | lower) == 'primary' }}
+  - name: Determine Galera bootstrap and recovery requirements from all nodes
     set_fact:
-      galera_bootstrap_required: "{{ hostvars['mariadb0']['galera_bootstrap_required'] }}"
-      galera_recover_full_outage: "{{ hostvars['mariadb0']['galera_recover_full_outage'] }}"
-    when: inventory_hostname != 'mariadb0'
+      galera_primary_nodes: "{{ ansible_play_hosts | select('in', galera_primary_candidates) | list }}"
+      galera_any_installed: "{{ ansible_play_hosts | map('extract', hostvars, 'galera_node_installed') | map('bool') | select | list | length > 0 }}"
+    vars:
+      galera_primary_candidates: "{{ ansible_play_hosts | zip(ansible_play_hosts | map('extract', hostvars, 'galera_node_primary') | map('bool')) | selectattr(1) | map(attribute=0) | list }}"
+  - name: Refuse to judge cluster health from a partial play
+    ansible.builtin.fail:
+      msg: >-
+        No reachable node in this run is Primary, but only {{ ansible_play_hosts | join(', ') }}
+        took part. Run against all Galera nodes (no --limit) so a healthy node elsewhere isn't
+        mistaken for a full outage - or, for a rebuilt node, for a fresh install that would
+        bootstrap a separate empty cluster.
+    when:
+    - galera_primary_nodes | length == 0
+    - ansible_play_hosts | length < galera_nodes | length
+  - name: Derive bootstrap decisions
+    set_fact:
+      # Bootstrap only when no node is part of a Primary component. Nodes that are down while
+      # others are Primary simply get started below and rejoin via IST/SST.
+      galera_bootstrap_required: "{{ galera_primary_nodes | length == 0 }}"
+      galera_recover_full_outage: "{{ galera_primary_nodes | length == 0 and galera_any_installed | bool }}"
   - name: Check if Galera configuration already exists to detect broken install state
     ansible.builtin.stat:
       path: /etc/mysql/mariadb.conf.d/60-galera.cnf
     register: galera_config_stat
-    when: inventory_hostname == 'mariadb0'
   - name: Check if Galera config dpkg-fix backup exists from a previous failed recovery
     ansible.builtin.stat:
       path: /etc/mysql/mariadb.conf.d/60-galera.cnf.dpkg-fix
     register: galera_config_dpkg_fix_stat
-    when: inventory_hostname == 'mariadb0'
   - name: Determine if packages are in broken dpkg state with existing Galera config
     set_fact:
       galera_dpkg_broken: >-
         {{ ('install ok installed' not in (mariadb_pkg_check.stdout | default('')))
            and ((galera_config_stat.stat.exists | default(false))
                 or (galera_config_dpkg_fix_stat.stat.exists | default(false))) }}
-    when: inventory_hostname == 'mariadb0'
-  - name: Propagate dpkg broken state to all nodes
-    set_fact:
-      galera_dpkg_broken: "{{ hostvars['mariadb0']['galera_dpkg_broken'] }}"
-    when: inventory_hostname != 'mariadb0'
   - name: Stop MariaDB on all nodes before package installation
     ansible.builtin.service:
       name: mariadb
@@ -264,50 +283,164 @@
       state: stopped
     failed_when: false
     when: galera_bootstrap_required | bool
-  - name: Check grastate.dat safe_to_bootstrap flag before bootstrap
+  # After a full outage the node with the highest recovered seqno holds the newest data and must
+  # be the bootstrap node. grastate.dat alone is not enough: after an unclean stop it shows
+  # seqno -1, so ask InnoDB via --wsrep-recover. A node with a zeroed UUID or no recoverable
+  # position (e.g. a datadir wiped by a failed SST) is never a candidate.
+  # The log is kept (not a mktemp that is removed) so a failed recovery can be diagnosed.
+  - name: Recover last committed Galera position on each node
     ansible.builtin.shell:
       cmd: |
-        if [ -f /var/lib/mysql/grastate.dat ]; then
-          grep 'safe_to_bootstrap' /var/lib/mysql/grastate.dat | awk '{print $2}'
-        else
-          echo "-1"
-        fi
-    register: grastate_safe_check
+        log=/var/tmp/wsrep-recover.log
+        rm -f "$log"
+        install -o mysql -g mysql -m 0640 /dev/null "$log"
+        mariadbd --user=mysql --wsrep-recover --log-error="$log" >/dev/null 2>&1
+        echo "rc=$?"
+        echo "position=$(grep -oP 'WSREP: Recovered position: \K\S+' "$log" | tail -n 1)"
+        echo "grastate_uuid=$(awk '/^uuid:/ {print $2}' /var/lib/mysql/grastate.dat 2>/dev/null)"
+    register: galera_recovered_position
     changed_when: false
-    when: (galera_recover_full_outage | bool) or (galera_dpkg_broken | default(false) | bool)
-  - name: Ensure mariadb0 is marked safe_to_bootstrap for full outage recovery
+    when: galera_recover_full_outage | bool
+  - name: Record recovered Galera position
+    set_fact:
+      galera_recovered_uuid: "{{ galera_recovered_pos.split(':')[0] if ':' in galera_recovered_pos else '' }}"
+      galera_recovered_seqno: "{{ (galera_recovered_pos.split(':') | last) | int(-1) if ':' in galera_recovered_pos else -1 }}"
+      galera_recovery_rc: "{{ galera_recovered_position.stdout | regex_search('(?m)^rc=(.*)$', '\\1') | first }}"
+      # A node may only be left out of the election when it provably holds no cluster history:
+      # MariaDB not installed and no grastate.dat, or a zeroed UUID (never joined, or wiped by
+      # an interrupted SST). Any other node without a usable position might hold the newest
+      # data, so it blocks the election rather than being skipped.
+      galera_position_discardable: >-
+        {{ (not (galera_node_installed | bool) and galera_grastate_uuid | length == 0)
+           or galera_grastate_uuid == galera_zero_uuid
+           or galera_recovered_pos.split(':')[0] == galera_zero_uuid }}
+    vars:
+      galera_zero_uuid: "00000000-0000-0000-0000-000000000000"
+      galera_recovered_pos: "{{ galera_recovered_position.stdout | regex_search('(?m)^position=(.*)$', '\\1') | first }}"
+      galera_grastate_uuid: "{{ galera_recovered_position.stdout | regex_search('(?m)^grastate_uuid=(.*)$', '\\1') | first }}"
+    when: galera_recover_full_outage | bool
+  # A host that fails or becomes unreachable during recovery silently leaves ansible_play_hosts,
+  # so the election below would never see its (possibly newest) position. The partial-play
+  # guard ran before recovery, so check again here.
+  - name: Fail if a Galera node dropped out of the play during recovery
+    ansible.builtin.fail:
+      msg: >-
+        Only {{ ansible_play_hosts | join(', ') }} are still in the play after position recovery.
+        A node that dropped out may hold the newest data, so no bootstrap node can be chosen
+        safely - fix it and re-run, or recover manually (see docs/mariadb-operations.md).
+    when: galera_recover_full_outage | bool and ansible_play_hosts | length < galera_nodes | length
+  - name: Fail if a node that may hold data has no recoverable Galera position
+    ansible.builtin.fail:
+      msg: >-
+        Could not recover the last committed position on {{ galera_unknown_position_nodes | join(', ') }}
+        (see /var/tmp/wsrep-recover.log there). Any of them may hold the newest data, so no
+        bootstrap node can be chosen safely - recover manually (see docs/mariadb-operations.md).
+    vars:
+      galera_unknown_position_nodes: >-
+        {{ ansible_play_hosts | zip(
+             ansible_play_hosts | map('extract', hostvars, 'galera_recovered_seqno') | map('int'),
+             ansible_play_hosts | map('extract', hostvars, 'galera_position_discardable') | map('bool'))
+           | rejectattr(1, 'ge', 0) | rejectattr(2) | map(attribute=0) | list }}
+    when: galera_recover_full_outage | bool and galera_unknown_position_nodes | length > 0
+  # Seqnos are only comparable within one cluster UUID. If nodes recovered different histories,
+  # the highest counter may belong to the wrong one, and bootstrapping from it would SST over
+  # the others - that needs a human.
+  - name: Fail if nodes recovered conflicting Galera cluster UUIDs
+    ansible.builtin.fail:
+      msg: >-
+        Nodes recovered different Galera cluster UUIDs ({{ galera_recovered_uuids | join(', ') }}).
+        Refusing to pick a bootstrap node by seqno across histories - recover manually
+        (see docs/mariadb-operations.md).
+    vars:
+      galera_recovered_uuids: >-
+        {{ ansible_play_hosts | map('extract', hostvars, 'galera_recovered_uuid')
+           | reject('in', ['', '00000000-0000-0000-0000-000000000000']) | unique | list }}
+    when: galera_recover_full_outage | bool and galera_recovered_uuids | length > 1
+  - name: Choose Galera bootstrap node
+    set_fact:
+      galera_bootstrap_node: >-
+        {%- if galera_recover_full_outage | bool -%}
+        {%- set ns = namespace(node='', seqno=-1) -%}
+        {%- for h in ansible_play_hosts -%}
+        {%- set uuid = hostvars[h].galera_recovered_uuid | default('') -%}
+        {%- set seqno = hostvars[h].galera_recovered_seqno | default(-1) | int -%}
+        {%- if uuid | length > 0 and uuid != '00000000-0000-0000-0000-000000000000' and seqno > ns.seqno -%}
+        {%- set ns.node = h -%}{%- set ns.seqno = seqno -%}
+        {%- endif -%}
+        {%- endfor -%}
+        {{ ns.node }}
+        {%- else -%}
+        mariadb0
+        {%- endif -%}
+    when: galera_bootstrap_required | bool
+  - name: Report recovered Galera positions
+    ansible.builtin.debug:
+      msg: "Recovered position {{ galera_recovered_uuid }}:{{ galera_recovered_seqno }} (recovery rc={{ galera_recovery_rc }}); bootstrap node: {{ galera_bootstrap_node | default('n/a') }}"
+    when: galera_recover_full_outage | bool
+  - name: Fail if no node has a recoverable Galera position
+    ansible.builtin.fail:
+      msg: >-
+        Full outage detected but no node has a recoverable Galera position. Refusing to bootstrap
+        from a possibly empty datadir - recover manually (see docs/mariadb-operations.md).
+    when: galera_bootstrap_required | bool and galera_bootstrap_node | length == 0
+  # The election only needs an InnoDB position, so the chosen node may have no grastate.dat
+  # (e.g. deleted by hand). Seed one from the recovered position; force: false keeps an existing
+  # file untouched.
+  - name: Create grastate.dat on the bootstrap node if it is missing
+    ansible.builtin.copy:
+      dest: /var/lib/mysql/grastate.dat
+      force: false
+      owner: mysql
+      group: mysql
+      mode: '0660'
+      content: |
+        # GALERA saved state
+        version: 2.1
+        uuid:    {{ galera_recovered_uuid }}
+        seqno:   {{ galera_recovered_seqno }}
+        safe_to_bootstrap: 1
+    when:
+    - galera_recover_full_outage | bool
+    - inventory_hostname == galera_bootstrap_node
+  - name: Mark the bootstrap node safe_to_bootstrap for full outage recovery
     ansible.builtin.replace:
       path: /var/lib/mysql/grastate.dat
       regexp: '^safe_to_bootstrap:.*$'
       replace: 'safe_to_bootstrap: 1'
     when:
-    - inventory_hostname == 'mariadb0'
-    - (galera_recover_full_outage | bool) or (galera_dpkg_broken | default(false) | bool)
-    - (grastate_safe_check.stdout | default('-1')) != '-1'
-  - name: Clear safe_to_bootstrap on non-primary nodes for full outage recovery
+    - galera_recover_full_outage | bool
+    - inventory_hostname == galera_bootstrap_node
+  - name: Clear safe_to_bootstrap on the other nodes for full outage recovery
     ansible.builtin.replace:
       path: /var/lib/mysql/grastate.dat
       regexp: '^safe_to_bootstrap:.*$'
       replace: 'safe_to_bootstrap: 0'
+    failed_when: false
     when:
-    - inventory_hostname != 'mariadb0'
-    - (galera_recover_full_outage | bool) or (galera_dpkg_broken | default(false) | bool)
-    - (grastate_safe_check.stdout | default('0')) == '1'
-  - name: Bootstrap Galera cluster on mariadb0
+    - galera_recover_full_outage | bool
+    - inventory_hostname != galera_bootstrap_node
+  - name: Bootstrap Galera cluster on the chosen node
     ansible.builtin.command: galera_new_cluster
-    when: inventory_hostname == 'mariadb0' and galera_bootstrap_required | bool
-  - name: Wait for MariaDB socket to be available on mariadb0 before user and database tasks
+    when: galera_bootstrap_required | bool and inventory_hostname == galera_bootstrap_node
+  # User and database changes replicate, so they run once on a node that is known to be Primary:
+  # the bootstrap node after an outage, otherwise a healthy member (mariadb0 when it is one).
+  - name: Choose node for user and database management
+    set_fact:
+      galera_admin_node: >-
+        {{ galera_bootstrap_node if galera_bootstrap_required | bool
+           else ('mariadb0' if 'mariadb0' in galera_primary_nodes else galera_primary_nodes | first) }}
+  - name: Wait for MariaDB socket to be available before user and database tasks
     ansible.builtin.wait_for:
       path: /run/mysqld/mysqld.sock
       timeout: 60
-    when: inventory_hostname == 'mariadb0'
+    when: inventory_hostname == galera_admin_node
   - name: Set MariaDB root password
     community.mysql.mysql_user:
       name: root
       password: "{{ mariadb_root_password }}"
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
-    when: inventory_hostname == 'mariadb0'
+    when: inventory_hostname == galera_admin_node
   - name: Write root credentials file
     ansible.builtin.copy:
       dest: /root/.my.cnf
@@ -327,7 +460,7 @@
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
     loop: "{{ galera_nodes + ['localhost'] }}"
-    when: inventory_hostname == 'mariadb0'
+    when: inventory_hostname == galera_admin_node
   - name: Create ProxySQL monitor user
     community.mysql.mysql_user:
       name: proxysql_monitor
@@ -336,22 +469,22 @@
       host: "%"
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
-    when: inventory_hostname == 'mariadb0'
+    when: inventory_hostname == galera_admin_node
   - name: Start MariaDB on secondary nodes and enable after bootstrap
     ansible.builtin.service:
       name: mariadb
       state: started
       enabled: true
-    when: inventory_hostname != 'mariadb0' and galera_bootstrap_required | bool
+    when: galera_bootstrap_required | bool and inventory_hostname != galera_bootstrap_node
   - name: Wait for all Galera nodes to join after bootstrap
     ansible.builtin.shell:
       cmd: mysql -NBe "SHOW STATUS LIKE 'wsrep_cluster_size';" | awk '{print $2}'
     register: galera_cluster_size_check
-    until: galera_cluster_size_check.stdout | int == 3
+    until: galera_cluster_size_check.stdout | int == ansible_play_hosts | length
     retries: 20
     delay: 10
     changed_when: false
-    when: inventory_hostname == 'mariadb0' and galera_bootstrap_required | bool
+    when: galera_bootstrap_required | bool and inventory_hostname == galera_bootstrap_node
   - name: Ensure MariaDB is started and enabled on all nodes (healthy cluster path)
     ansible.builtin.service:
       name: mariadb
@@ -370,7 +503,7 @@
       login_unix_socket: /run/mysqld/mysqld.sock
     loop: "{{ mariadb_databases_resolved }}"
     when:
-    - inventory_hostname == 'mariadb0'
+    - inventory_hostname == galera_admin_node
     - mariadb_databases_resolved | length > 0
   - name: Create application database users
     community.mysql.mysql_user:
@@ -383,7 +516,7 @@
     loop: "{{ mariadb_databases_resolved }}"
     no_log: true
     when:
-    - inventory_hostname == 'mariadb0'
+    - inventory_hostname == galera_admin_node
     - mariadb_databases_resolved | length > 0
   - name: Create Alloy monitoring user
     community.mysql.mysql_user:
@@ -393,7 +526,7 @@
       host: "localhost"
       login_unix_socket: /run/mysqld/mysqld.sock
       state: present
-    when: inventory_hostname == 'mariadb0' and enable_alloy | bool
+    when: inventory_hostname == galera_admin_node and enable_alloy | bool
   - name: Add Grafana Alloy apt key
     ansible.builtin.get_url:
       url: https://apt.grafana.com/gpg.key
@@ -465,27 +598,73 @@
       group: root
       content: |
         #!/bin/bash
-        set -euo pipefail
+        # Every database is dumped and uploaded independently, so one failure doesn't stop the
+        # rest; the overall result is reported to Gatus and reflected in the exit code.
+        set -uo pipefail
         LOCAL_DIR="{{ backup_local_dir }}"
         STORAGE_ACCOUNT="{{ backup_storage_account }}"
         CONTAINER="{{ backup_container }}"
         SAS_TOKEN="{{ backup_sas_token }}"
-        RETENTION_DAYS={{ backup_retention_days }}
+        RETENTION_DAYS={{ backup_local_retention_days }}
+        GATUS_URLS="{{ backup_gatus_urls | join(' ') }}"
+        GATUS_KEY="{{ backup_gatus_endpoint_key }}"
+        GATUS_TOKEN="{{ gatus_external_endpoint_token | default('') }}"
         TIMESTAMP=$(date +%Y%m%d_%H%M%S)
         HOSTNAME=$(hostname)
+        START=$(date +%s)
+        FAILURES=()
+
+        log() { echo "$(date '+%F %T') $*"; }
+
+        report() {
+          local success=$1 error=${2:-}
+          [ -n "${GATUS_TOKEN}" ] || return 0
+          for url in ${GATUS_URLS}; do
+            curl -fsS -m 15 -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" \
+              --data-urlencode "success=${success}" --data-urlencode "error=${error}" \
+              --data-urlencode "duration=$(( $(date +%s) - START ))s" -G \
+              "${url}/api/v1/endpoints/${GATUS_KEY}/external" \
+              || log "WARN: failed to report backup result to ${url}"
+          done
+        }
+
+        # Prune before dumping, so yesterday's leftovers can't leave tonight's dump without room.
+        find "${LOCAL_DIR}" -name '*.sql.gz*' -mtime +${RETENTION_DAYS} -delete
+
+        STATE=$(mariadb -NBe "SHOW STATUS LIKE 'wsrep_local_state_comment';" 2>/dev/null | awk '{print $2}')
+        if [ "${STATE}" != "Synced" ]; then
+          log "ERROR: node is not a synced Galera member (state: '${STATE:-down}'), skipping backup"
+          report false "${HOSTNAME} not synced (state: ${STATE:-down})"
+          exit 1
+        fi
 
         for DB in {{ mariadb_databases_resolved | map(attribute='name') | join(' ') }}; do
+          FILE="${DB}_${HOSTNAME}_${TIMESTAMP}.sql.gz"
           DEST="${LOCAL_DIR}/${DB}"
           mkdir -p "${DEST}"
-          mariadb-dump --single-transaction --routines --triggers \
-            --databases "${DB}" | gzip > "${DEST}/${DB}_${HOSTNAME}_${TIMESTAMP}.sql.gz"
+          log "Dumping ${DB}"
+          if ! mariadb-dump --single-transaction --routines --triggers \
+              --databases "${DB}" | gzip > "${DEST}/${FILE}.partial"; then
+            rm -f "${DEST}/${FILE}.partial"
+            FAILURES+=("dump ${DB}")
+            continue
+          fi
+          mv "${DEST}/${FILE}.partial" "${DEST}/${FILE}"
+          log "Uploading ${FILE}"
+          if ! azcopy copy "${DEST}/${FILE}" \
+              "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/${DB}/${FILE}?${SAS_TOKEN}" \
+              --log-level=ERROR --output-level=essential; then
+            FAILURES+=("upload ${DB}")
+          fi
         done
 
-        # Upload to Azure Blob Storage using SAS token
-        azcopy copy "${LOCAL_DIR}/" "https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER}/?${SAS_TOKEN}" --recursive
-
-        # Prune old local backups
-        find "${LOCAL_DIR}" -name '*.sql.gz' -mtime +${RETENTION_DAYS} -delete
+        if [ ${#FAILURES[@]} -gt 0 ]; then
+          log "ERROR: backup failed: ${FAILURES[*]}"
+          report false "failed: ${FAILURES[*]}"
+          exit 1
+        fi
+        log "Backup completed"
+        report true
     when: inventory_hostname == 'mariadb0'
   - name: Schedule nightly database backup via cron
     ansible.builtin.cron:
@@ -494,6 +673,19 @@
       minute: "{{ backup_cron_minute }}"
       job: "/usr/local/bin/mariadb-backup.sh >> /var/log/mariadb-backup.log 2>&1"
       user: root
+    when: inventory_hostname == 'mariadb0'
+  - name: Rotate backup log
+    ansible.builtin.copy:
+      dest: /etc/logrotate.d/mariadb-backup
+      mode: '0644'
+      content: |
+        /var/log/mariadb-backup.log {
+          weekly
+          rotate 8
+          compress
+          missingok
+          notifempty
+        }
     when: inventory_hostname == 'mariadb0'
   handlers:
   - name: Restart MariaDB
