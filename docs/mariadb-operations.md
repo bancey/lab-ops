@@ -26,10 +26,10 @@
 - Special users: `galera_sst`, `proxysql_monitor`, `root`
 - Backups run on **mariadb0 only** at `02:00`:
   - Script: `/usr/local/bin/mariadb-backup.sh`
-  - Local dir: `/var/backups/mariadb`
-  - Azure Blob: account `banceyprodstor`, container `mariadb-backups`
-  - Retention: `14` days
-  - Log: `/var/log/mariadb-backup.log`
+  - Local dir: `/var/backups/mariadb` (staging only, `2` days retention)
+  - Azure Blob: account `banceyprodstor`, container `mariadb-backups`, path `<db>/<db>_<host>_<timestamp>.sql.gz` (backups from Apr–Oct 2026 also sit under `mariadb/<db>/`)
+  - Log: `/var/log/mariadb-backup.log` (rotated weekly)
+  - Monitoring: the script reports to the Gatus external endpoint `backups/mariadb` on both Gatus instances; Gatus alerts to Discord on a failed run, or if no result arrives within 25h
 
 ## Node Inventory
 
@@ -134,56 +134,58 @@ Only continue when the current node reports `Synced`.
 
 ### Full cluster restart / bootstrap (all nodes down)
 
-> **This scenario is now handled automatically by the Ansible playbook.**
+> **This scenario is handled automatically by the Ansible playbook.**
 >
-> Running `ansible-playbook -i ansible/hosts.yaml ansible/mariadb.yaml -l mariadb0,mariadb1,mariadb2`
-> detects that MariaDB is installed but the cluster has no primary component and performs the
-> recovery bootstrap automatically.  No manual intervention is required unless the automated
-> recovery itself fails (check task output for errors).
+> Run `ansible-playbook -i ansible/hosts.yaml ansible/mariadb.yaml` against **all** Galera nodes
+> (no `--limit`). It only bootstraps when no node is in a Primary component, and then bootstraps
+> from the node with the newest data.
 
 #### How the playbook detects and recovers
 
-Three checks are performed on `mariadb0` and propagated to all nodes as two boolean facts:
+Every node reports whether `mariadb-server` is installed, whether the service is active and its `wsrep_cluster_status`. From those:
 
 | Fact | Condition |
 |---|---|
-| `galera_bootstrap_required` | Fresh install **or** service not active **or** `wsrep_cluster_status != Primary` |
-| `galera_recover_full_outage` | MariaDB is installed **and** (service not active **or** `wsrep_cluster_status != Primary`) |
+| `galera_primary_nodes` | Nodes that are active **and** `Primary` |
+| `galera_bootstrap_required` | `galera_primary_nodes` is empty |
+| `galera_recover_full_outage` | `galera_primary_nodes` is empty **and** MariaDB is installed on at least one node |
 
-The checks, in order:
-1. `dpkg-query` — is the `mariadb-server` package fully installed?
-2. `systemctl is-active mariadb` — is the service currently running? (`failed_when: false` so a missing unit never aborts the play.)
-3. `SHOW STATUS LIKE 'wsrep_cluster_status'` via the local socket — is the cluster in `Primary` state? (Only attempted when the service is active; `failed_when: false` handles an unavailable socket.)
+If **any** node is Primary, the cluster is healthy: nothing is stopped, and nodes that are down are just started so they rejoin via IST/SST. A single dead node, even `mariadb0`, never triggers a bootstrap. (Before October 2026 only `mariadb0` was checked, so a dead `mariadb0` stopped the healthy nodes and bootstrapped from its stale data.)
 
-When `galera_recover_full_outage` is `true`, the playbook runs a recovery sequence **before** the `apt` package tasks.  This is necessary because `apt`'s `mariadb-server` post-install script calls `invoke-rc.d mariadb restart`; when all nodes are down simultaneously Galera cannot form a primary component (`failed to reach primary view`) and the restart fails, leaving packages in `partially configured` state that breaks every subsequent `apt` run.
+If no node is Primary but not every Galera node is in the play (e.g. `--limit`), the playbook fails rather than guess.
+
+When `galera_recover_full_outage` is `true`, the recovery runs **before** the `apt` package tasks. `apt`'s `mariadb-server` post-install script restarts MariaDB, which fails while no primary component exists and leaves packages `partially configured`.
 
 #### Automated recovery sequence
 
-1. Stop `mariadb` on all nodes (`failed_when: false` — idempotent if already stopped).
-2. Run `galera_new_cluster` on `mariadb0` only — this starts MariaDB with an empty `gcomm://` address, forming a new single-node primary component.
-3. Wait for `/run/mysqld/mysqld.sock` to appear on `mariadb0` (up to 60 s).
-4. Start `mariadb` on `mariadb1` and `mariadb2` so they join the new primary.
-5. Poll `wsrep_cluster_size` on `mariadb0` (up to 20 × 10 s retries) until all three nodes have joined.
-6. `apt` package tasks then run against the live cluster; the post-install restart succeeds.
+1. Stop `mariadb` on all nodes.
+2. Run `mariadbd --wsrep-recover` on every node to get the last committed `uuid:seqno` from InnoDB (`grastate.dat` shows `seqno: -1` after an unclean stop, so it can't be trusted on its own).
+3. Pick the node with the highest seqno as `galera_bootstrap_node`. Nodes with a zeroed UUID or no recoverable position (e.g. a datadir left half-wiped by a failed SST) are never candidates. If no node qualifies, the play fails and you recover manually.
+4. Set `safe_to_bootstrap: 1` on that node, `0` on the others, and run `galera_new_cluster` there.
+5. Create/refresh users on the bootstrap node, start `mariadb` on the other nodes, and wait until `wsrep_cluster_size` equals the number of nodes.
+
+User and database tasks always run once on `galera_admin_node`: the bootstrap node after an outage, otherwise `mariadb0` if it is Primary, or else the first Primary node.
 
 #### Fresh install vs healthy cluster
 
-- **Fresh install** (`galera_bootstrap_required=true`, `galera_recover_full_outage=false`): the same stop-all / `galera_new_cluster` / start-secondaries sequence runs, but **after** `apt` (normal path, unchanged from pre-existing behaviour).
-- **Healthy cluster** (`galera_bootstrap_required=false`): no bootstrap; services are simply ensured started and enabled.
+- **Fresh install** (nothing installed anywhere): `apt` runs first, then `mariadb0` is bootstrapped and the others join.
+- **Healthy cluster** (at least one node Primary): no bootstrap; services are ensured started and enabled.
 
-For manual recovery steps, or if the automated path fails, use the commands below:
+For manual recovery steps, or if the automated path fails, use the commands below. Find the newest node first, and bootstrap from **that** node (shown here as mariadb1):
 
 ```bash
-ssh root@10.151.14.210 "systemctl stop mariadb"
-ssh root@10.151.14.211 "systemctl stop mariadb"
-ssh root@10.151.14.212 "systemctl stop mariadb"
+for ip in 10.151.14.210 10.151.14.211 10.151.14.212; do
+  ssh root@$ip "systemctl stop mariadb; mariadbd --user=mysql --wsrep-recover --log-error=/tmp/wsrep-recover.log; grep 'Recovered position' /tmp/wsrep-recover.log"
+done
 
-ssh root@10.151.14.210 "galera_new_cluster"
-ssh root@10.151.14.211 "systemctl start mariadb"
+ssh root@10.151.14.211 "sed -i 's/^safe_to_bootstrap:.*/safe_to_bootstrap: 1/' /var/lib/mysql/grastate.dat && galera_new_cluster"
 ssh root@10.151.14.212 "systemctl start mariadb"
+ssh root@10.151.14.210 "systemctl start mariadb"
 
-ssh root@10.151.14.210 "mysql -e \"SHOW STATUS LIKE 'wsrep_cluster_size';\""
+ssh root@10.151.14.211 "mysql -e \"SHOW STATUS LIKE 'wsrep_cluster_size';\""
 ```
+
+A node whose datadir is damaged (e.g. `ib_logfile0 was not found`, zeroed UUID in `grastate.dat`) won't start or rejoin. Once the cluster is Primary, empty its datadir so it takes a full SST: `systemctl stop mariadb; find /var/lib/mysql -mindepth 1 -delete; systemctl start mariadb`. The SST stages a full copy of the data (~24G as of Oct 2026), so check free disk first.
 
 Expected cluster size: `3`.
 
@@ -282,8 +284,11 @@ ssh root@10.151.14.216 "cat /usr/local/bin/check-proxysql.sh"
 
 ### Backup failures
 
+Gatus (`backups/mariadb`) alerts when a run fails or no result arrives within 25h. The log has one line per dump/upload and an `ERROR: backup failed: ...` summary naming the failed databases. The script exits early without dumping if mariadb0 isn't a `Synced` Galera member.
+
 ```bash
-ssh root@10.151.14.210 "cat /var/log/mariadb-backup.log"
+ssh root@10.151.14.210 "grep -E 'ERROR|WARN|completed' /var/log/mariadb-backup.log | tail"
+ssh root@10.151.14.210 "df -h /"
 ssh root@10.151.14.210 "which azcopy"
 ssh root@10.151.14.210 "azcopy --version"
 ```
@@ -297,5 +302,7 @@ ssh root@10.151.14.210 "curl -I https://banceyprodstor.blob.core.windows.net/mar
 If backup automation drifts, re-run:
 
 ```bash
-ansible-playbook -i ansible/hosts.yaml ansible/mariadb.yaml -l mariadb0
+ansible-playbook -i ansible/hosts.yaml ansible/mariadb.yaml
 ```
+
+Don't `--limit` this to `mariadb0`: cluster health is judged from every node in the run.

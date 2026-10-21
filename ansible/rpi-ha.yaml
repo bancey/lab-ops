@@ -144,6 +144,8 @@
     gatus_oidc_client_id: "{{ lookup('ansible.builtin.file', 'Entra-Gatus-Client-ID', errors='ignore') | default('', true) | trim }}"
     gatus_oidc_client_secret: "{{ lookup('ansible.builtin.file', 'Entra-Gatus-Client-Secret', errors='ignore') | default('', true) | trim }}"
     gatus_oidc_allowed_subjects: []
+    # Shared with the jobs that push results to Gatus external endpoints (e.g. mariadb.yaml backups).
+    gatus_external_endpoint_token: "{{ lookup('ansible.builtin.file', 'Gatus-External-Endpoint-Token', errors='ignore') | default('', true) | trim }}"
   roles:
   - role: rpi-monitoring
     tags: [ monitoring ]

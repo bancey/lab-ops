@@ -185,6 +185,7 @@ parameters:
           - Discord-Gatus-Webhook-URL
           - Entra-Gatus-Client-ID
           - Entra-Gatus-Client-Secret
+          - Gatus-External-Endpoint-Token
         localEnvironments:
           - thanos
           - gamora
