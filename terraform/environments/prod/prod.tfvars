@@ -315,9 +315,10 @@ ansible = {
       "mariadb_homeassistant_password" = "MariaDB-HomeAssistant-Password"
       "mariadb_pelican_password"       = "MariaDB-Pelican-Password"
       "backup_sas_token"               = "MariaDB-Backup-SAS-Token"
+      "gatus_external_endpoint_token"  = "Gatus-External-Endpoint-Token"
     }
     arguments = " -e backup_storage_account_name=banceyprodstor"
-    trigger   = "14-09-2026-0431"
+    trigger   = "21-10-2026-1200"
   }
   "postgresql" = {
     nodes    = ["hela", "loki", "thor"]

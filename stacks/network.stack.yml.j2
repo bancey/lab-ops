@@ -37,7 +37,7 @@ services:
 {% for connector_name, connector in twingate.items() %}
 {% if connector_name != 'network' %}
   twingate_{{ connector_name }}:
-    image: twingate/connector:1.93.0
+    image: twingate/connector:1.94.0
     sysctls:
       net.ipv4.ping_group_range: "0 2147483647"
     environment:
@@ -64,7 +64,7 @@ services:
 {% endif %}
 {% endfor %}
   bunkerweb:
-    image: bunkerity/bunkerweb:1.6.16
+    image: bunkerity/bunkerweb:1.6.17
     ports:
       - target: 8080
         published: 80
