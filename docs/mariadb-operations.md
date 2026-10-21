@@ -26,7 +26,7 @@
 - Special users: `galera_sst`, `proxysql_monitor`, `root`
 - Backups run on **mariadb0 only** at `02:00`:
   - Script: `/usr/local/bin/mariadb-backup.sh`
-  - Local dir: `/var/backups/mariadb` (staging only, `2` days retention)
+  - Local dir: `/var/backups/mariadb` (staging only, `3` days retention)
   - Azure Blob: account `banceyprodstor`, container `mariadb-backups`, path `<db>/<db>_<host>_<timestamp>.sql.gz` (backups from Apr–Oct 2026 also sit under `mariadb/<db>/`)
   - Log: `/var/log/mariadb-backup.log` (rotated weekly)
   - Monitoring: the script reports to the Gatus external endpoint `backups/mariadb` on both Gatus instances; Gatus alerts to Discord on a failed run, or if no result arrives within 25h

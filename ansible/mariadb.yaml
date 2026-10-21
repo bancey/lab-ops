@@ -165,10 +165,10 @@
       msg: >-
         No reachable node in this run is Primary, but only {{ ansible_play_hosts | join(', ') }}
         took part. Run against all Galera nodes (no --limit) so a healthy node elsewhere isn't
-        mistaken for a full outage.
+        mistaken for a full outage - or, for a rebuilt node, for a fresh install that would
+        bootstrap a separate empty cluster.
     when:
     - galera_primary_nodes | length == 0
-    - galera_any_installed | bool
     - ansible_play_hosts | length < galera_nodes | length
   - name: Derive bootstrap decisions
     set_fact:
@@ -291,6 +291,7 @@
     ansible.builtin.shell:
       cmd: |
         log=$(mktemp)
+        chown mysql:mysql "$log"
         mariadbd --user=mysql --wsrep-recover --log-error="$log" >/dev/null 2>&1 || true
         grep -oP 'WSREP: Recovered position: \K\S+' "$log" | tail -n 1
         rm -f "$log"
@@ -304,6 +305,20 @@
         {{ ((galera_recovered_position.stdout | default('')).split(':') | last) | int(-1)
            if ':' in (galera_recovered_position.stdout | default('')) else -1 }}
     when: galera_recover_full_outage | bool
+  # Seqnos are only comparable within one cluster UUID. If nodes recovered different histories,
+  # the highest counter may belong to the wrong one, and bootstrapping from it would SST over
+  # the others - that needs a human.
+  - name: Fail if nodes recovered conflicting Galera cluster UUIDs
+    ansible.builtin.fail:
+      msg: >-
+        Nodes recovered different Galera cluster UUIDs ({{ galera_recovered_uuids | join(', ') }}).
+        Refusing to pick a bootstrap node by seqno across histories - recover manually
+        (see docs/mariadb-operations.md).
+    vars:
+      galera_recovered_uuids: >-
+        {{ ansible_play_hosts | map('extract', hostvars, 'galera_recovered_uuid')
+           | reject('in', ['', '00000000-0000-0000-0000-000000000000']) | unique | list }}
+    when: galera_recover_full_outage | bool and galera_recovered_uuids | length > 1
   - name: Choose Galera bootstrap node
     set_fact:
       galera_bootstrap_node: >-
