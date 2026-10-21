@@ -287,24 +287,51 @@
   # be the bootstrap node. grastate.dat alone is not enough: after an unclean stop it shows
   # seqno -1, so ask InnoDB via --wsrep-recover. A node with a zeroed UUID or no recoverable
   # position (e.g. a datadir wiped by a failed SST) is never a candidate.
+  # The log is kept (not a mktemp that is removed) so a failed recovery can be diagnosed.
   - name: Recover last committed Galera position on each node
     ansible.builtin.shell:
       cmd: |
-        log=$(mktemp)
-        chown mysql:mysql "$log"
-        mariadbd --user=mysql --wsrep-recover --log-error="$log" >/dev/null 2>&1 || true
-        grep -oP 'WSREP: Recovered position: \K\S+' "$log" | tail -n 1
+        log=/var/tmp/wsrep-recover.log
         rm -f "$log"
+        install -o mysql -g mysql -m 0640 /dev/null "$log"
+        mariadbd --user=mysql --wsrep-recover --log-error="$log" >/dev/null 2>&1
+        echo "rc=$?"
+        echo "position=$(grep -oP 'WSREP: Recovered position: \K\S+' "$log" | tail -n 1)"
+        echo "grastate_uuid=$(awk '/^uuid:/ {print $2}' /var/lib/mysql/grastate.dat 2>/dev/null)"
     register: galera_recovered_position
     changed_when: false
     when: galera_recover_full_outage | bool
   - name: Record recovered Galera position
     set_fact:
-      galera_recovered_uuid: "{{ (galera_recovered_position.stdout | default('')).split(':')[0] }}"
-      galera_recovered_seqno: >-
-        {{ ((galera_recovered_position.stdout | default('')).split(':') | last) | int(-1)
-           if ':' in (galera_recovered_position.stdout | default('')) else -1 }}
+      galera_recovered_uuid: "{{ galera_recovered_pos.split(':')[0] if ':' in galera_recovered_pos else '' }}"
+      galera_recovered_seqno: "{{ (galera_recovered_pos.split(':') | last) | int(-1) if ':' in galera_recovered_pos else -1 }}"
+      galera_recovery_rc: "{{ galera_recovered_position.stdout | regex_search('(?m)^rc=(.*)$', '\\1') | first }}"
+      # A node may only be left out of the election when it provably holds no cluster history:
+      # MariaDB not installed, or a zeroed UUID (never joined, or wiped by an interrupted SST).
+      # Any other node without a usable position might hold the newest data, so it blocks
+      # the election rather than being skipped.
+      galera_position_discardable: >-
+        {{ not (galera_node_installed | bool)
+           or galera_grastate_uuid == galera_zero_uuid
+           or galera_recovered_pos.split(':')[0] == galera_zero_uuid }}
+    vars:
+      galera_zero_uuid: "00000000-0000-0000-0000-000000000000"
+      galera_recovered_pos: "{{ galera_recovered_position.stdout | regex_search('(?m)^position=(.*)$', '\\1') | first }}"
+      galera_grastate_uuid: "{{ galera_recovered_position.stdout | regex_search('(?m)^grastate_uuid=(.*)$', '\\1') | first }}"
     when: galera_recover_full_outage | bool
+  - name: Fail if a node that may hold data has no recoverable Galera position
+    ansible.builtin.fail:
+      msg: >-
+        Could not recover the last committed position on {{ galera_unknown_position_nodes | join(', ') }}
+        (see /var/tmp/wsrep-recover.log there). Any of them may hold the newest data, so no
+        bootstrap node can be chosen safely - recover manually (see docs/mariadb-operations.md).
+    vars:
+      galera_unknown_position_nodes: >-
+        {{ ansible_play_hosts | zip(
+             ansible_play_hosts | map('extract', hostvars, 'galera_recovered_seqno') | map('int'),
+             ansible_play_hosts | map('extract', hostvars, 'galera_position_discardable') | map('bool'))
+           | rejectattr(1, 'ge', 0) | rejectattr(2) | map(attribute=0) | list }}
+    when: galera_recover_full_outage | bool and galera_unknown_position_nodes | length > 0
   # Seqnos are only comparable within one cluster UUID. If nodes recovered different histories,
   # the highest counter may belong to the wrong one, and bootstrapping from it would SST over
   # the others - that needs a human.
@@ -338,7 +365,7 @@
     when: galera_bootstrap_required | bool
   - name: Report recovered Galera positions
     ansible.builtin.debug:
-      msg: "Recovered position {{ galera_recovered_position.stdout | default('none') }}; bootstrap node: {{ galera_bootstrap_node | default('n/a') }}"
+      msg: "Recovered position {{ galera_recovered_uuid }}:{{ galera_recovered_seqno }} (recovery rc={{ galera_recovery_rc }}); bootstrap node: {{ galera_bootstrap_node | default('n/a') }}"
     when: galera_recover_full_outage | bool
   - name: Fail if no node has a recoverable Galera position
     ansible.builtin.fail:

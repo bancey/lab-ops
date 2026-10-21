@@ -160,7 +160,10 @@ When `galera_recover_full_outage` is `true`, the recovery runs **before** the `a
 
 1. Stop `mariadb` on all nodes.
 2. Run `mariadbd --wsrep-recover` on every node to get the last committed `uuid:seqno` from InnoDB (`grastate.dat` shows `seqno: -1` after an unclean stop, so it can't be trusted on its own).
-3. Pick the node with the highest seqno as `galera_bootstrap_node`. Nodes with a zeroed UUID or no recoverable position (e.g. a datadir left half-wiped by a failed SST) are never candidates. If no node qualifies, the play fails and you recover manually.
+3. Pick the node with the highest seqno as `galera_bootstrap_node`. The play stops for manual recovery if:
+   - a node that may hold data returns no position. Only nodes that provably have no cluster history are skipped: MariaDB not installed, or a zeroed UUID (never joined, or wiped by an interrupted SST, as with mariadb0 in October 2026). The recovery log is kept at `/var/tmp/wsrep-recover.log` on each node;
+   - nodes recover different cluster UUIDs, because seqnos can't be compared across histories;
+   - no node has a usable position.
 4. Set `safe_to_bootstrap: 1` on that node, `0` on the others, and run `galera_new_cluster` there.
 5. Create/refresh users on the bootstrap node, start `mariadb` on the other nodes, and wait until `wsrep_cluster_size` equals the number of nodes.
 
