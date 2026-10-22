@@ -23,6 +23,8 @@ openziti_console_address: console.ziti.heimelska.co.uk
 openziti_admins:
   - name: abance@bancey.xyz
     oid: d4b62326-42b1-4933-95d3-5b07f797c726
+  - name: alex.bance@live.co.uk
+    oid: c35a716d-45fc-4000-8d13-85a113b60339
 
 # Clients sign in with Entra ID instead (below). JWT identities are still supported for
 # devices that can't, e.g. headless tunnelers; their JWT lands in /opt/openziti/artifacts.
