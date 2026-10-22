@@ -25,7 +25,7 @@ service_edge_router_policies:
 #   home-media   lab-media                   Sonarr, Radarr, Prowlarr, SABnzbd, qBittorrent
 #   home-infra   lab-infra                   Smokeping, Grafana, Victoria*, Gatus
 #   home-data    lab-admins, lab-developers  PostgreSQL, MariaDB/ProxySQL
-#   ziti-admin   lab-admins                  Ziti Admin Console (hosted on the VPS, not at home)
+#   ziti-admin   openziti_admins (Ansible)   Ziti Admin Console (hosted on the VPS, not at home)
 service_policies:
   # Binding is not per role: the home routers' tunneler identities (tagged by Ansible) host all
   - name: home-routers-bind-home-services
@@ -58,9 +58,12 @@ service_policies:
     type: Bind
     identity_roles: ["#console-hosts"]
     service_roles: ["#ziti-console"]
+  # Only Ziti administrators can even reach the console: Ansible tags exactly the identities in
+  # openziti_admins with #ziti-admins (ansible/group_vars/openziti_controller.yaml), the same
+  # list that gets isAdmin. Not an Entra group, so the two can't drift apart.
   - name: admins-dial-ziti-admin
     type: Dial
-    entra_groups: [lab-admins]
+    identity_roles: ["#ziti-admins"]
     service_roles: ["#ziti-admin"]
 
 # The real hostnames are intercepted rather than *.ziti, so TLS certificates and the Entra redirect
@@ -246,7 +249,8 @@ services:
     host_address: 10.151.14.219
   # Ziti Admin Console. Not #home-services: the home routers can't reach the VPS loopback.
   # There is no public DNS record for the name; the tunneler resolves it. Signing in to the
-  # console is a second, separate Entra check (lab-openziti-admin). See docs/openziti.md.
+  # console is Entra too, and only openziti_admins (Ansible group vars) can administer. See
+  # docs/openziti.md.
   - name: ziti-console
     role_attributes: [ziti-console, ziti-admin]
     intercept_addresses: [console.ziti.heimelska.co.uk]
