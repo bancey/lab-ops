@@ -9,8 +9,17 @@
 # ZAC must share a listener with the management API, so the listener copies every API
 # binding of the bootstrap-generated client-management listener and adds ZAC as a `spa`
 # binding at /zac (the older `zac` binding is deprecated). Both forms are removed from every
-# other listener, so the console can never end up on the public :1280 or :443 listeners. With openziti_console_enabled false the listener is
-# removed again.
+# other listener, so the console can never end up on the public :1280 or :443 listeners.
+# With openziti_console_enabled false the listener is removed again.
+#
+# The controller advertises every listener's bind point address for each API it serves (in
+# /version and /controllers), and clients pick their client API endpoint from that list. A
+# console address there sends tunnelers to a name only openziti_admins can resolve, which
+# breaks enrollment for everyone else. So the bind point advertises the public controller
+# address, where the same APIs really are, and the console is dialled on that port
+# (https://<openziti_console_address>:<openziti_ctrl_port>/zac/). OIDC issuers are each cert
+# SAN combined with each bind point port, so the console name on that port stays a valid
+# issuer for ZAC's sign-in.
 #
 # Runs between bootstrap and service start in controller.yaml, like public_api.yaml.
 
@@ -75,8 +84,8 @@
       name: console
       bindPoints:
         - interface: "{{ openziti_console_bind_address }}:{{ openziti_console_port }}"
-          # What the browser sees: the intercepted name on 443
-          address: "{{ openziti_console_address }}:443"
+          # Advertised to clients; see the header comment
+          address: "{{ openziti_ctrl_address }}:{{ openziti_ctrl_port }}"
       identity: "{{ base.identity | combine({'alt_server_certs': [{'server_cert': openziti_console_cert_dir ~ '/fullchain.pem', 'server_key': openziti_console_cert_dir ~ '/privkey.pem'}]}) }}"
       options: "{{ base.options | default({}) }}"
       apis: >-

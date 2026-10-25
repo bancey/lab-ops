@@ -114,7 +114,7 @@ applications:
     public_client_redirect_uris:
       - http://localhost:20314/auth/callback
     spa_redirect_uris:
-      - https://console.ziti.heimelska.co.uk/zac/callback
+      - https://console.ziti.heimelska.co.uk:1280/zac/callback
     secret:
       enabled: false
 
