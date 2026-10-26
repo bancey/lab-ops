@@ -249,11 +249,13 @@ services:
     host_address: 10.151.14.219
   # Ziti Admin Console. Not #home-services: the home routers can't reach the VPS loopback.
   # There is no public DNS record for the name; the tunneler resolves it. Signing in to the
-  # console is Entra too, and only openziti_admins (Ansible group vars) can administer. See
-  # docs/openziti.md.
+  # console is Entra too, and only openziti_admins (Ansible group vars) can administer. Port
+  # 1280, not 443: it has to match the port the console listener advertises (the public
+  # controller's), or ZAC's sign-in fails the OIDC issuer check. See
+  # ansible/roles/openziti/tasks/console.yaml and docs/openziti.md.
   - name: ziti-console
     role_attributes: [ziti-console, ziti-admin]
     intercept_addresses: [console.ziti.heimelska.co.uk]
-    port: 443
+    port: 1280
     host_address: 127.0.0.1
     host_port: 8441

@@ -454,14 +454,14 @@ sudo rm -f /opt/openziti/artifacts/phase1-test-user.jwt
 
 ## Admin console
 
-The Ziti Admin Console (ZAC) is at `https://console.ziti.heimelska.co.uk/zac/`. It is
+The Ziti Admin Console (ZAC) is at `https://console.ziti.heimelska.co.uk:1280/zac/`. It is
 only reachable over OpenZiti, and only by the users in `openziti_admins`
 (`ansible/group_vars/openziti_controller.yaml`). They sign in with the same **entra**
 provider as the tunnelers. That one list drives both checks:
 
 1. **Network.** The controller serves ZAC on its own web listener, `console`, which is
    bound to `127.0.0.1:8441` only. The `ziti-console` service intercepts
-   `console.ziti.heimelska.co.uk:443`, and the vps01 router's tunneler hosts it by dialling
+   `console.ziti.heimelska.co.uk:1280`, and the vps01 router's tunneler hosts it by dialling
    that loopback port. Only identities tagged `#ziti-admins` can dial it
    (`admins-dial-ziti-admin`), and Ansible gives that attribute to exactly the `openziti_admins`
    identities. Everyone else can't resolve the name or open a connection to it. There's no
@@ -476,6 +476,25 @@ provider as the tunnelers. That one list drives both checks:
 
 The two checks can't drift apart, because they come from the same list in the same task.
 Membership of `lab-admins` alone doesn't give access to the console.
+
+### Why port 1280
+
+The controller publishes the address of every web listener for each API it serves, in
+`/version` (`apiBaseUrls`) and `/controllers`. Clients choose their client API endpoint from
+that list. The console listener serves the client API too, because ZAC signs in through it, so its
+address ends up on the list. When it was `console.ziti.heimelska.co.uk:443`, a newly joining
+device could be pointed at a name only `openziti_admins` can resolve, and enrollment failed.
+
+So the console's bind point advertises the public controller address,
+`ziti.heimelska.co.uk:1280`, where the same APIs really are served. The browser has to use the same
+port: the controller accepts as OIDC issuers each certificate SAN combined with each bind point
+port. `console.ziti.heimelska.co.uk:1280` is valid, but `:443` isn't any more. The Entra
+redirect URI includes the port for the same reason.
+
+An overlay bind point, where the controller binds the service itself with an OpenZiti identity,
+isn't advertised at all. It was ruled out because the controller only tries it once at startup.
+If that first attempt fails, for example because the controller's own API isn't up yet, the
+console stays down until the next restart, with nothing reporting it.
 
 ### Trade-off
 
@@ -537,6 +556,9 @@ dig +short console.ziti.heimelska.co.uk @1.1.1.1
 sudo ziti edge list terminators 'service.name="ziti-console"'   # one terminator, from vps01
 sudo ziti edge list identities 'isAdmin=true'                   # default admin + openziti_admins
 sudo ziti edge list identities 'anyOf(roleAttributes)="ziti-admins"'   # openziti_admins only
+# Clients are never pointed at the console name (expect no output from either)
+curl -s https://join.ziti.heimelska.co.uk/edge/client/v1/version | jq -r '.data.apiVersions[][].apiBaseUrls[]?' | grep console
+sudo ziti edge list controllers -j | jq -r '.data[].apiAddresses[][].url' | grep console
 ```
 
 As someone in `openziti_admins`, the console loads and **entra** signs in. As anyone else,
