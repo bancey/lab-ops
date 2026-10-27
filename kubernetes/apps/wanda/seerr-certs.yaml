@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seerr-staging-tls
+  namespace: seerr
+spec:
+  secretName: seerr-staging-tls
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: "requests.wanda.heimelska.co.uk"
+  dnsNames:
+    - "requests.wanda.heimelska.co.uk"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seerr-tls
+  namespace: seerr
+spec:
+  secretName: seerr-tls
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "requests.wanda.heimelska.co.uk"
+  dnsNames:
+    - "requests.wanda.heimelska.co.uk"
