@@ -388,6 +388,25 @@ dns:
           - AzureDevOps
   jellyfin.wanda.bancey.xyz:
     record: 10.151.24.160
+  requests.wanda.heimelska.co.uk:
+    record: 10.151.24.160
+    twingate:
+      network: banceylab
+      protocols:
+        allow_icmp: false
+        tcp:
+          policy: RESTRICTED
+          ports:
+            - 443
+        udp:
+          policy: DENY_ALL
+      access:
+        groups:
+          - wanda_k8s
+          - all
+          - plex
+        service_accounts:
+          - AzureDevOps
   victoria-logs.tiny.heimelska.co.uk:
     record: 10.151.24.10
   victoria-metrics.tiny.heimelska.co.uk:
