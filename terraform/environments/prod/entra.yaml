@@ -8,6 +8,7 @@ groups:
     description: "Household users - general purpose application access"
     members:
       - abance@bancey.xyz
+      - samb@bancey.xyz
 
   lab-media:
     description: "Media stack - Sonarr, Radarr, Prowlarr, SABnzbd"
