@@ -1,0 +1,66 @@
+#!/bin/bash
+# Keepalived role checks for PostgreSQL - keeps the VIP on the primary
+# Managed by Ansible - {{ ansible_managed }}
+#
+# Usage: check-postgresql-role.sh primary|vip
+#   primary  Exit 0 if this node is the primary. Tracked with a positive weight so
+#            the primary always out-ranks the standbys in a VRRP election.
+#   vip      Exit 1 if this node holds the VIP while still a standby, unless the
+#            notify script is part-way through promoting it. Tracked with weight 0,
+#            so a failure puts this node into FAULT, which releases the VIP to the
+#            primary, or to another standby that promotes itself if there is none.
+
+VIP="{{ vip | regex_replace('/.*', '') }}"
+PEERS="{{ postgresql_nodes | reject('equalto', ansible_facts['default_ipv4']['address']) | join(' ') }}"
+# Written by keepalived-postgresql-notify.sh while a promotion is in progress. The grace
+# period must exceed both its 40s promotion wait and its ~35s fence, each timed from a
+# fresh write of the marker.
+PROMOTING_MARKER="/run/keepalived-postgresql-promoting"
+# Written by the notify script if it could not confirm PostgreSQL stopped while fencing a
+# stalled promotion. The VIP stays here until it is removed by hand, so no other standby
+# promotes while this one still might.
+HOLD_VIP_MARKER="/run/keepalived-postgresql-hold-vip"
+PROMOTING_GRACE_SECONDS=60
+
+local_recovery() {
+  su - postgres -c "psql -tAc 'SELECT pg_is_in_recovery()'" 2>/dev/null
+}
+
+# require_auth stops an impersonating server downgrading SCRAM to a cleartext password.
+# timeout bounds the whole query, keeping both peers inside the 4s Keepalived script timeout.
+peer_is_primary() {
+  [ "$(PGPASSWORD='{{ postgresql_replication_password }}' timeout 1.5 psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=1 require_auth=scram-sha-256" -tAc 'SELECT pg_is_in_recovery()' 2>/dev/null)" = "f" ]
+}
+
+case "${1:-}" in
+  primary)
+    [ "$(local_recovery)" = "f" ]
+    ;;
+  vip)
+    # Only the VIP holder has anything to check
+    ip -4 -o addr show | grep -q "inet ${VIP}/" || exit 0
+    if [ -f "$HOLD_VIP_MARKER" ]; then
+      logger -t check-postgresql-role "Fencing failed earlier - holding VIP ${VIP} until ${HOLD_VIP_MARKER} is removed"
+      exit 0
+    fi
+    # A primary, or a node whose PostgreSQL is down (check-postgresql.sh covers that)
+    [ "$(local_recovery)" = "t" ] || exit 0
+    for peer in $PEERS; do
+      if peer_is_primary "$peer"; then
+        logger -t check-postgresql-role "Holding VIP ${VIP} as a standby while ${peer} is primary - releasing VIP"
+        exit 1
+      fi
+    done
+    # No peer answered as primary. Keep the VIP only while a promotion is under way;
+    # a failed, stalled or declined promotion must not leave a read-only VIP holder.
+    if [ -f "$PROMOTING_MARKER" ] && [ $(( $(date +%s) - $(stat -c %Y "$PROMOTING_MARKER") )) -lt "$PROMOTING_GRACE_SECONDS" ]; then
+      exit 0
+    fi
+    logger -t check-postgresql-role "Holding VIP ${VIP} as a standby with no promotion in progress - releasing VIP"
+    exit 1
+    ;;
+  *)
+    echo "usage: $0 primary|vip" >&2
+    exit 2
+    ;;
+esac

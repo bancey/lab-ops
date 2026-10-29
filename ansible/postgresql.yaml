@@ -212,6 +212,121 @@
       mode: '0640'
     register: pg_hba_primary
     when: inventory_hostname == postgresql_primary_hostname
+  # Keepalived for VIP
+  # Runs before the PostgreSQL restart below. Keepalived is stopped on every node before
+  # its scripts or config are replaced, so a running daemon never mixes a new notify
+  # script with an old config, then it is started again primary-first.
+  - name: Ensure /etc/keepalived dir exists
+    file:
+      path: /etc/keepalived
+      state: directory
+  # An upgrade restarts Keepalived with the files already on disk, which still match
+  - name: Install keepalived
+    apt:
+      pkg:
+      - keepalived
+      - libipset13
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  - name: Define Keepalived files
+    set_fact:
+      keepalived_files:
+      - src: templates/check-postgresql.sh.j2
+        dest: /usr/local/bin/check-postgresql.sh
+        mode: '0755'
+      # These embed the replication password, so keep them root-only and out of --diff output
+      - src: templates/check-postgresql-role.sh.j2
+        dest: /usr/local/bin/check-postgresql-role.sh
+        mode: '0700'
+      - src: templates/postgresql-keepalived-notify.sh.j2
+        dest: /usr/local/bin/keepalived-postgresql-notify.sh
+        mode: '0700'
+      - src: templates/keepalived-postgresql.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+  - name: Check which Keepalived files would change
+    check_mode: true
+    diff: false
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode | default(omit) }}"
+    vars:
+      keepalived_pass: "{{ keepalived_postgresql_pass }}"
+    loop: "{{ keepalived_files }}"
+    loop_control:
+      label: "{{ item.dest }}"
+    register: keepalived_files_check
+  - name: Check if Keepalived is running before the ordered restart
+    ansible.builtin.command:
+      cmd: systemctl is-active keepalived
+    register: keepalived_active
+    changed_when: false
+    failed_when: false
+  # Restart in order if any node's files change, or if any node is stopped (e.g. a previous
+  # run failed mid-sequence); otherwise "Start and enable" would start them all at once.
+  # All stopped, primary first so it takes the VIP, then the standbys join as BACKUP
+  # (nopreempt). Restarting them together would let the highest base priority node win.
+  # any_errors_fatal stops every host if the primary fails, so standbys never start without it.
+  - name: Determine if Keepalived needs an ordered restart
+    set_fact:
+      keepalived_restart_needed: >-
+        {{ (ansible_play_hosts | map('extract', hostvars, 'keepalived_files_check') | selectattr('changed') | list | length > 0)
+           or (ansible_play_hosts | map('extract', hostvars, ['keepalived_active', 'rc']) | reject('equalto', 0) | list | length > 0) }}
+  - name: Stop Keepalived on all nodes for ordered restart
+    service:
+      name: keepalived
+      state: stopped
+    when: keepalived_restart_needed | bool
+  - name: Copy Keepalived scripts and configuration
+    diff: false
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: root
+      group: root
+      mode: "{{ item.mode | default(omit) }}"
+    vars:
+      keepalived_pass: "{{ keepalived_postgresql_pass }}"
+    loop: "{{ keepalived_files }}"
+    loop_control:
+      label: "{{ item.dest }}"
+  - name: Start Keepalived on primary
+    any_errors_fatal: true
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+  - name: Wait for primary to hold the VIP
+    any_errors_fatal: true
+    ansible.builtin.command:
+      cmd: ip -4 -o addr show
+    register: primary_vip
+    until: ("inet " ~ vip) in primary_vip.stdout
+    retries: 15
+    delay: 2
+    changed_when: false
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+    - not ansible_check_mode
+  - name: Start Keepalived on standbys
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+  - name: Start and enable Keepalived
+    service:
+      name: keepalived
+      state: started
+      enabled: true
+
   - name: Check if Keepalived is active
     ansible.builtin.command:
       cmd: systemctl is-active keepalived
@@ -252,11 +367,37 @@
       port: 5432
       timeout: 30
     when: inventory_hostname == postgresql_primary_hostname
-  - name: Re-start Keepalived on all nodes after PostgreSQL is confirmed ready
+  # Start the primary's Keepalived alone so it wins the VIP election, then the standbys.
+  # any_errors_fatal stops every host if the primary fails, so standbys never start without it.
+  - name: Re-start Keepalived on primary after PostgreSQL is confirmed ready
+    any_errors_fatal: true
     service:
       name: keepalived
       state: started
     when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_status.rc == 0
+    - pg_conf_primary is changed or pg_auto_conf_primary is changed
+  - name: Wait for primary to hold the VIP after PostgreSQL restart
+    any_errors_fatal: true
+    ansible.builtin.command:
+      cmd: ip -4 -o addr show
+    register: primary_vip_after_pg_restart
+    until: ("inet " ~ vip) in primary_vip_after_pg_restart.stdout
+    retries: 15
+    delay: 2
+    changed_when: false
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_status.rc == 0
+    - pg_conf_primary is changed or pg_auto_conf_primary is changed
+    - not ansible_check_mode
+  - name: Re-start Keepalived on standbys after primary holds the VIP
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname != postgresql_primary_hostname
     - keepalived_status.rc == 0
     - hostvars[postgresql_primary_hostname]['pg_conf_primary'] is changed or hostvars[postgresql_primary_hostname]['pg_auto_conf_primary'] is changed
   - name: Set PostgreSQL superuser password
@@ -452,47 +593,6 @@
     - inventory_hostname == postgresql_primary_hostname
     - postgresql_databases_resolved | length > 0
 
-  # Keepalived for VIP
-  - name: Ensure /etc/keepalived dir exists
-    file:
-      path: /etc/keepalived
-      state: directory
-  - name: Copy PostgreSQL Keepalived health check script
-    template:
-      src: templates/check-postgresql.sh.j2
-      dest: /usr/local/bin/check-postgresql.sh
-      owner: root
-      group: root
-      mode: '0755'
-  - name: Copy PostgreSQL Keepalived notify script
-    template:
-      src: templates/postgresql-keepalived-notify.sh.j2
-      dest: /usr/local/bin/keepalived-postgresql-notify.sh
-      owner: root
-      group: root
-      mode: '0755'
-  - name: Copy Keepalived configuration template
-    template:
-      src: templates/keepalived-postgresql.conf.j2
-      dest: /etc/keepalived/keepalived.conf
-    vars:
-      keepalived_pass: "{{ keepalived_postgresql_pass }}"
-    notify:
-    - Restart Keepalived
-  - name: Install keepalived
-    apt:
-      pkg:
-      - keepalived
-      - libipset13
-      state: latest
-      update_cache: true
-    when: not ansible_check_mode
-  - name: Start and enable Keepalived
-    service:
-      name: keepalived
-      state: started
-      enabled: true
-
   # PgBouncer
   - name: Install PgBouncer
     apt:
@@ -632,10 +732,6 @@
       user: root
     when: inventory_hostname == postgresql_primary_hostname
   handlers:
-  - name: Restart Keepalived
-    service:
-      name: keepalived
-      state: restarted
   - name: Restart PgBouncer
     service:
       name: pgbouncer

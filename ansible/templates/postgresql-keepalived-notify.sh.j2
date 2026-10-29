@@ -13,8 +13,60 @@ PG_CONF="{{ postgresql_conf_dir }}"
 PG_BIN="/usr/lib/postgresql/{{ postgresql_version }}/bin"
 VIP="{{ vip | regex_replace('/.*', '') }}"
 
+PEERS="{{ postgresql_nodes | reject('equalto', ansible_facts['default_ipv4']['address']) | join(' ') }}"
+# Tells check-postgresql-role.sh a promotion is in progress; without it a standby
+# holding the VIP fails the VIP check and Keepalived releases the VIP
+PROMOTING_MARKER="/run/keepalived-postgresql-promoting"
+# Written if fencing a stalled promotion fails; the VIP check then keeps the VIP here
+HOLD_VIP_MARKER="/run/keepalived-postgresql-hold-vip"
+# Promotion wait, and separately the fence, must each finish within the role check's
+# 60s PROMOTING_GRACE_SECONDS (the marker is refreshed before fencing)
+PROMOTE_WAIT_SECONDS=40
+
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') [$STATE] $*" >> "$LOGFILE"
+}
+
+# Prints pg_is_in_recovery() for a remote host ("t"/"f"), or "unknown" if unreachable.
+# require_auth stops an impersonating server downgrading SCRAM to a cleartext password.
+# timeout bounds the whole query: connect_timeout only covers establishing the connection.
+remote_recovery() {
+  PGPASSWORD='{{ postgresql_replication_password }}' timeout 3 psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=2 require_auth=scram-sha-256" -tAc "SELECT pg_is_in_recovery()" 2>/dev/null || echo "unknown"
+}
+
+# Prints the address of the first peer that is running as primary, if any.
+# Best effort only: an unreachable peer counts as "not primary", so this is NOT
+# partition-safe. A standby cut off from a still-writable primary can take the VIP
+# and promote itself. Preventing that needs fencing or quorum, which this setup lacks.
+find_peer_primary() {
+  for peer in $PEERS; do
+    if [ "$(remote_recovery "$peer")" = "f" ]; then
+      echo "$peer"
+      return
+    fi
+  done
+}
+
+# Exits 0 unless pg_ctl reports no server running in the data directory (exit 3).
+# A timed-out or failed status check counts as running.
+postgresql_running() {
+  local rc=0
+  timeout 5 su - postgres -c "${PG_BIN}/pg_ctl status -D ${PG_DATA}" >/dev/null 2>&1 || rc=$?
+  [ "$rc" -ne 3 ]
+}
+
+# Stops PostgreSQL, escalating to an immediate shutdown, and succeeds only once it is
+# confirmed stopped. Bounded to about 35s in total.
+fence_postgresql() {
+  timeout 15 systemctl stop postgresql >> "$LOGFILE" 2>&1 || log "WARNING: systemctl stop postgresql failed or timed out"
+  if postgresql_running; then
+    timeout 10 su - postgres -c "${PG_BIN}/pg_ctl stop -m immediate -D ${PG_DATA}" >> "$LOGFILE" 2>&1 || log "WARNING: pg_ctl stop -m immediate failed or timed out"
+  fi
+  ! postgresql_running
+}
+
+vip_is_local() {
+  ip -4 -o addr show | grep -q "inet ${VIP}/"
 }
 
 log "Transition: type=$TYPE name=$NAME state=$STATE"
@@ -23,19 +75,58 @@ case $STATE in
   "MASTER")
     # Check if this node is currently a standby
     if [ -f "${PG_DATA}/standby.signal" ]; then
+      # Never promote while another node is primary - that is split-brain. The VIP
+      # role check puts this node into FAULT so the VIP goes back to that primary.
+      PEER_PRIMARY=$(find_peer_primary)
+      if [ -n "$PEER_PRIMARY" ]; then
+        log "Not promoting - ${PEER_PRIMARY} is already primary; the VIP check will release the VIP to it"
+        exit 0
+      fi
       log "This node is a standby - promoting to primary"
-      su - postgres -c "${PG_BIN}/pg_ctl promote -D ${PG_DATA}" >> "$LOGFILE" 2>&1
-      # Wait for promotion to complete
-      for i in $(seq 1 30); do
-        if su - postgres -c "${PG_BIN}/pg_isready -q" 2>/dev/null; then
-          IS_RECOVERY=$(su - postgres -c "psql -tAc \"SELECT pg_is_in_recovery()\"" 2>/dev/null || echo "unknown")
-          if [ "$IS_RECOVERY" = "f" ]; then
-            log "Promotion successful - node is now primary"
-            break
-          fi
+      touch "$PROMOTING_MARKER"
+      # -W only signals the promotion, so a failure here means none is pending. Without it
+      # pg_ctl gives up after PGCTLTIMEOUT while the promotion may still go ahead.
+      if ! su - postgres -c "${PG_BIN}/pg_ctl promote -W -D ${PG_DATA}" >> "$LOGFILE" 2>&1; then
+        rm -f "$PROMOTING_MARKER"
+        log "ERROR: pg_ctl promote could not signal a promotion - the VIP check will release the VIP from this read-only node"
+        exit 1
+      fi
+      # Wait for promotion against a wall-clock deadline. Each probe has its own timeout,
+      # so a stalled local PostgreSQL can't stretch the wait past the marker grace period.
+      PROMOTE_DEADLINE=$(( $(date +%s) + PROMOTE_WAIT_SECONDS ))
+      PROMOTED=false
+      while [ "$(date +%s)" -lt "$PROMOTE_DEADLINE" ]; do
+        IS_RECOVERY=$(timeout 2 su - postgres -c "psql -tAc \"SELECT pg_is_in_recovery()\"" 2>/dev/null || echo "unknown")
+        if [ "$IS_RECOVERY" = "f" ]; then
+          log "Promotion successful - node is now primary"
+          PROMOTED=true
+          break
         fi
         sleep 1
       done
+      if [ "$PROMOTED" != "true" ]; then
+        # The signalled promotion may still complete later. Releasing the VIP now would let
+        # another standby promote too, so the VIP is only released once PostgreSQL is
+        # confirmed stopped: a stopped server drops the pending promotion (the signal file
+        # is discarded at startup and standby.signal is still present).
+        log "ERROR: promotion did not complete within ${PROMOTE_WAIT_SECONDS}s - fencing this node"
+        # Fresh grace period for the fence, so the VIP check keeps the VIP here meanwhile
+        touch "$PROMOTING_MARKER"
+        if fence_postgresql; then
+          log "PostgreSQL confirmed stopped - stopping Keepalived to release the VIP. Manual intervention required."
+          rm -f "$PROMOTING_MARKER"
+          # --no-block: this script runs inside keepalived's cgroup and is killed by the stop
+          systemctl stop --no-block keepalived >> "$LOGFILE" 2>&1 || true
+        else
+          # PostgreSQL may still finish promoting, so another node must not take the VIP.
+          # The hold file makes the VIP check keep the VIP on this node indefinitely.
+          touch "$HOLD_VIP_MARKER"
+          rm -f "$PROMOTING_MARKER"
+          log "CRITICAL: could not confirm PostgreSQL stopped - holding the VIP on this node to prevent a second primary. Manual intervention required; remove ${HOLD_VIP_MARKER} once resolved."
+        fi
+        exit 1
+      fi
+      rm -f "$PROMOTING_MARKER"
     else
       log "This node is already a primary - no promotion needed"
     fi
@@ -51,21 +142,32 @@ case $STATE in
       CURRENT_PRIMARY="$VIP"
       log "Current primary is at $CURRENT_PRIMARY"
 
-      # Verify the new primary is actually reachable before doing anything destructive
+      # Verify the VIP is held by another node that is a writable primary before doing
+      # anything destructive. Keepalived reports BACKUP on startup too, and the VIP
+      # may be unassigned, on a standby, or about to land on this very node.
       NEW_PRIMARY_READY=false
       for i in $(seq 1 10); do
-        if su - postgres -c "${PG_BIN}/pg_isready -h ${CURRENT_PRIMARY} -q" 2>/dev/null; then
+        if vip_is_local; then
+          log "This node holds the VIP - it is the primary, aborting demotion"
+          exit 0
+        fi
+        if [ "$(remote_recovery "$CURRENT_PRIMARY")" = "f" ]; then
           NEW_PRIMARY_READY=true
-          log "New primary at $CURRENT_PRIMARY is reachable"
+          log "New primary at $CURRENT_PRIMARY is reachable and writable"
           break
         fi
-        log "Waiting for new primary at $CURRENT_PRIMARY (attempt $i/10)..."
+        log "Waiting for a writable primary at $CURRENT_PRIMARY (attempt $i/10)..."
         sleep 2
       done
 
       if [ "$NEW_PRIMARY_READY" != "true" ]; then
-        log "WARNING: New primary at $CURRENT_PRIMARY is NOT reachable - aborting demotion to avoid data loss"
+        log "WARNING: No writable primary behind $CURRENT_PRIMARY - aborting demotion to avoid data loss"
         log "This node will remain as a primary without the VIP. Manual intervention required."
+        exit 0
+      fi
+
+      if vip_is_local; then
+        log "This node took the VIP while waiting - aborting demotion"
         exit 0
       fi
 
