@@ -14,17 +14,24 @@ PG_BIN="/usr/lib/postgresql/{{ postgresql_version }}/bin"
 VIP="{{ vip | regex_replace('/.*', '') }}"
 
 PEERS="{{ postgresql_nodes | reject('equalto', ansible_facts['default_ipv4']['address']) | join(' ') }}"
+# Tells check-postgresql-role.sh a promotion is in progress; without it a standby
+# holding the VIP fails the VIP check and Keepalived releases the VIP
+PROMOTING_MARKER="/run/keepalived-postgresql-promoting"
 
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') [$STATE] $*" >> "$LOGFILE"
 }
 
-# Prints pg_is_in_recovery() for a remote host ("t"/"f"), or "unknown" if unreachable
+# Prints pg_is_in_recovery() for a remote host ("t"/"f"), or "unknown" if unreachable.
+# require_auth stops an impersonating server downgrading SCRAM to a cleartext password.
 remote_recovery() {
-  PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=2" -tAc "SELECT pg_is_in_recovery()" 2>/dev/null || echo "unknown"
+  PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=2 require_auth=scram-sha-256" -tAc "SELECT pg_is_in_recovery()" 2>/dev/null || echo "unknown"
 }
 
-# Prints the address of the first peer that is running as primary, if any
+# Prints the address of the first peer that is running as primary, if any.
+# Best effort only: an unreachable peer counts as "not primary", so this is NOT
+# partition-safe. A standby cut off from a still-writable primary can take the VIP
+# and promote itself. Preventing that needs fencing or quorum, which this setup lacks.
 find_peer_primary() {
   for peer in $PEERS; do
     if [ "$(remote_recovery "$peer")" = "f" ]; then
@@ -52,8 +59,10 @@ case $STATE in
         exit 0
       fi
       log "This node is a standby - promoting to primary"
+      touch "$PROMOTING_MARKER"
       if ! su - postgres -c "${PG_BIN}/pg_ctl promote -D ${PG_DATA}" >> "$LOGFILE" 2>&1; then
-        log "ERROR: pg_ctl promote failed - this node holds the VIP but is read-only. Manual intervention required."
+        rm -f "$PROMOTING_MARKER"
+        log "ERROR: pg_ctl promote failed - the VIP check will release the VIP from this read-only node"
         exit 1
       fi
       # Wait for promotion to complete
@@ -69,8 +78,9 @@ case $STATE in
         fi
         sleep 1
       done
+      rm -f "$PROMOTING_MARKER"
       if [ "$PROMOTED" != "true" ]; then
-        log "ERROR: promotion did not complete within 30s - this node holds the VIP but is read-only. Manual intervention required."
+        log "ERROR: promotion did not complete within 30s - the VIP check will release the VIP from this read-only node"
       fi
     else
       log "This node is already a primary - no promotion needed"

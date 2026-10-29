@@ -5,19 +5,24 @@
 # Usage: check-postgresql-role.sh primary|vip
 #   primary  Exit 0 if this node is the primary. Tracked with a positive weight so
 #            the primary always out-ranks the standbys in a VRRP election.
-#   vip      Exit 1 if this node holds the VIP while still a standby and another
-#            node is already the primary. Tracked with weight 0, so a failure puts
-#            this node into FAULT, which releases the VIP back to the primary.
+#   vip      Exit 1 if this node holds the VIP while still a standby, unless the
+#            notify script is part-way through promoting it. Tracked with weight 0,
+#            so a failure puts this node into FAULT, which releases the VIP to the
+#            primary, or to another standby that promotes itself if there is none.
 
 VIP="{{ vip | regex_replace('/.*', '') }}"
 PEERS="{{ postgresql_nodes | reject('equalto', ansible_facts['default_ipv4']['address']) | join(' ') }}"
+# Written by keepalived-postgresql-notify.sh while a promotion is in progress
+PROMOTING_MARKER="/run/keepalived-postgresql-promoting"
+PROMOTING_GRACE_SECONDS=60
 
 local_recovery() {
   su - postgres -c "psql -tAc 'SELECT pg_is_in_recovery()'" 2>/dev/null
 }
 
+# require_auth stops an impersonating server downgrading SCRAM to a cleartext password
 peer_is_primary() {
-  [ "$(PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=1" -tAc 'SELECT pg_is_in_recovery()' 2>/dev/null)" = "f" ]
+  [ "$(PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=1 require_auth=scram-sha-256" -tAc 'SELECT pg_is_in_recovery()' 2>/dev/null)" = "f" ]
 }
 
 case "${1:-}" in
@@ -35,8 +40,13 @@ case "${1:-}" in
         exit 1
       fi
     done
-    # No other primary: this node is mid-failover and the notify script is promoting it
-    exit 0
+    # No peer answered as primary. Keep the VIP only while a promotion is under way;
+    # a failed, stalled or declined promotion must not leave a read-only VIP holder.
+    if [ -f "$PROMOTING_MARKER" ] && [ $(( $(date +%s) - $(stat -c %Y "$PROMOTING_MARKER") )) -lt "$PROMOTING_GRACE_SECONDS" ]; then
+      exit 0
+    fi
+    logger -t check-postgresql-role "Holding VIP ${VIP} as a standby with no promotion in progress - releasing VIP"
+    exit 1
     ;;
   *)
     echo "usage: $0 primary|vip" >&2

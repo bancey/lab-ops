@@ -1,3 +1,9 @@
+# The check and notify scripts are root-only (0700) and su to postgres. Without this,
+# Keepalived runs them as keepalived_script whenever that user exists.
+global_defs {
+  script_user root
+}
+
 vrrp_script check_postgresql {
   script "/usr/local/bin/check-postgresql.sh"
   interval 5
