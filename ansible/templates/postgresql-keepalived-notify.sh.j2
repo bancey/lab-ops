@@ -24,8 +24,9 @@ log() {
 
 # Prints pg_is_in_recovery() for a remote host ("t"/"f"), or "unknown" if unreachable.
 # require_auth stops an impersonating server downgrading SCRAM to a cleartext password.
+# timeout bounds the whole query: connect_timeout only covers establishing the connection.
 remote_recovery() {
-  PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=2 require_auth=scram-sha-256" -tAc "SELECT pg_is_in_recovery()" 2>/dev/null || echo "unknown"
+  PGPASSWORD='{{ postgresql_replication_password }}' timeout 3 psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=2 require_auth=scram-sha-256" -tAc "SELECT pg_is_in_recovery()" 2>/dev/null || echo "unknown"
 }
 
 # Prints the address of the first peer that is running as primary, if any.
@@ -60,14 +61,17 @@ case $STATE in
       fi
       log "This node is a standby - promoting to primary"
       touch "$PROMOTING_MARKER"
-      if ! su - postgres -c "${PG_BIN}/pg_ctl promote -D ${PG_DATA}" >> "$LOGFILE" 2>&1; then
+      # -W only signals the promotion, so a failure here means none is pending. Without it
+      # pg_ctl gives up after PGCTLTIMEOUT while the promotion may still go ahead.
+      if ! su - postgres -c "${PG_BIN}/pg_ctl promote -W -D ${PG_DATA}" >> "$LOGFILE" 2>&1; then
         rm -f "$PROMOTING_MARKER"
-        log "ERROR: pg_ctl promote failed - the VIP check will release the VIP from this read-only node"
+        log "ERROR: pg_ctl promote could not signal a promotion - the VIP check will release the VIP from this read-only node"
         exit 1
       fi
-      # Wait for promotion to complete
+      # Wait for promotion to complete. Must stay under PROMOTING_GRACE_SECONDS (60) in
+      # check-postgresql-role.sh, or the VIP check releases the VIP while promotion is pending.
       PROMOTED=false
-      for i in $(seq 1 30); do
+      for i in $(seq 1 50); do
         if su - postgres -c "${PG_BIN}/pg_isready -q" 2>/dev/null; then
           IS_RECOVERY=$(su - postgres -c "psql -tAc \"SELECT pg_is_in_recovery()\"" 2>/dev/null || echo "unknown")
           if [ "$IS_RECOVERY" = "f" ]; then
@@ -78,10 +82,19 @@ case $STATE in
         fi
         sleep 1
       done
-      rm -f "$PROMOTING_MARKER"
       if [ "$PROMOTED" != "true" ]; then
-        log "ERROR: promotion did not complete within 30s - the VIP check will release the VIP from this read-only node"
+        # The signalled promotion may still complete later. Releasing the VIP now would let
+        # another standby promote too, so fence this node first: stopping PostgreSQL drops
+        # the pending promotion (the signal file is discarded at startup), then stopping
+        # Keepalived releases the VIP and keeps this node out of the election.
+        log "ERROR: promotion did not complete within 50s - stopping PostgreSQL and Keepalived on this node. Manual intervention required."
+        systemctl stop postgresql >> "$LOGFILE" 2>&1 || log "ERROR: failed to stop PostgreSQL"
+        rm -f "$PROMOTING_MARKER"
+        # --no-block: this script runs inside keepalived's cgroup and is killed by the stop
+        systemctl stop --no-block keepalived >> "$LOGFILE" 2>&1 || true
+        exit 1
       fi
+      rm -f "$PROMOTING_MARKER"
     else
       log "This node is already a primary - no promotion needed"
     fi

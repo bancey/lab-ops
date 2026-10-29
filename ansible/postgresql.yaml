@@ -212,8 +212,13 @@
       mode: '0640'
     register: pg_hba_primary
     when: inventory_hostname == postgresql_primary_hostname
-  # Install the Keepalived scripts before anything below restarts Keepalived, so the
-  # guarded notify script is in place when the primary re-enters the election
+  # Keepalived for VIP
+  # Scripts, config and the ordered restart run together and before the PostgreSQL
+  # restart below, so Keepalived never runs a new notify script with an old config
+  - name: Ensure /etc/keepalived dir exists
+    file:
+      path: /etc/keepalived
+      state: directory
   - name: Copy PostgreSQL Keepalived health check script
     template:
       src: templates/check-postgresql.sh.j2
@@ -221,8 +226,9 @@
       owner: root
       group: root
       mode: '0755'
-  # Both scripts embed the replication password, so keep them root-only
+  # Both scripts embed the replication password, so keep them root-only and out of --diff output
   - name: Copy PostgreSQL Keepalived role check script
+    diff: false
     template:
       src: templates/check-postgresql-role.sh.j2
       dest: /usr/local/bin/check-postgresql-role.sh
@@ -230,12 +236,75 @@
       group: root
       mode: '0700'
   - name: Copy PostgreSQL Keepalived notify script
+    diff: false
     template:
       src: templates/postgresql-keepalived-notify.sh.j2
       dest: /usr/local/bin/keepalived-postgresql-notify.sh
       owner: root
       group: root
       mode: '0700'
+  - name: Copy Keepalived configuration template
+    diff: false
+    template:
+      src: templates/keepalived-postgresql.conf.j2
+      dest: /etc/keepalived/keepalived.conf
+    vars:
+      keepalived_pass: "{{ keepalived_postgresql_pass }}"
+    register: keepalived_conf
+  - name: Install keepalived
+    apt:
+      pkg:
+      - keepalived
+      - libipset13
+      state: latest
+      update_cache: true
+    when: not ansible_check_mode
+  # A config change on any node restarts Keepalived everywhere in order: all stopped,
+  # primary first so it takes the VIP, then the standbys join as BACKUP (nopreempt).
+  # Restarting them together would let the highest base priority node win instead.
+  # any_errors_fatal stops every host if the primary fails, so standbys never start without it.
+  - name: Determine if Keepalived config changed on any node
+    set_fact:
+      keepalived_restart_needed: "{{ ansible_play_hosts | map('extract', hostvars, 'keepalived_conf') | selectattr('changed') | list | length > 0 }}"
+  - name: Stop Keepalived on all nodes for ordered restart
+    service:
+      name: keepalived
+      state: stopped
+    when: keepalived_restart_needed | bool
+  - name: Start Keepalived on primary
+    any_errors_fatal: true
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+  - name: Wait for primary to hold the VIP
+    any_errors_fatal: true
+    ansible.builtin.command:
+      cmd: ip -4 -o addr show
+    register: primary_vip
+    until: ("inet " ~ vip) in primary_vip.stdout
+    retries: 15
+    delay: 2
+    changed_when: false
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+    - not ansible_check_mode
+  - name: Start Keepalived on standbys
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+  - name: Start and enable Keepalived
+    service:
+      name: keepalived
+      state: started
+      enabled: true
+
   - name: Check if Keepalived is active
     ansible.builtin.command:
       cmd: systemctl is-active keepalived
@@ -501,72 +570,6 @@
     when:
     - inventory_hostname == postgresql_primary_hostname
     - postgresql_databases_resolved | length > 0
-
-  # Keepalived for VIP
-  - name: Ensure /etc/keepalived dir exists
-    file:
-      path: /etc/keepalived
-      state: directory
-  - name: Copy Keepalived configuration template
-    template:
-      src: templates/keepalived-postgresql.conf.j2
-      dest: /etc/keepalived/keepalived.conf
-    vars:
-      keepalived_pass: "{{ keepalived_postgresql_pass }}"
-    register: keepalived_conf
-  - name: Install keepalived
-    apt:
-      pkg:
-      - keepalived
-      - libipset13
-      state: latest
-      update_cache: true
-    when: not ansible_check_mode
-  # A config change on any node restarts Keepalived everywhere in order: all stopped,
-  # primary first so it takes the VIP, then the standbys join as BACKUP (nopreempt).
-  # Restarting them together would let the highest base priority node win instead.
-  # any_errors_fatal stops every host if the primary fails, so standbys never start without it.
-  - name: Determine if Keepalived config changed on any node
-    set_fact:
-      keepalived_restart_needed: "{{ ansible_play_hosts | map('extract', hostvars, 'keepalived_conf') | selectattr('changed') | list | length > 0 }}"
-  - name: Stop Keepalived on all nodes for ordered restart
-    service:
-      name: keepalived
-      state: stopped
-    when: keepalived_restart_needed | bool
-  - name: Start Keepalived on primary
-    any_errors_fatal: true
-    service:
-      name: keepalived
-      state: started
-    when:
-    - inventory_hostname == postgresql_primary_hostname
-    - keepalived_restart_needed | bool
-  - name: Wait for primary to hold the VIP
-    any_errors_fatal: true
-    ansible.builtin.command:
-      cmd: ip -4 -o addr show
-    register: primary_vip
-    until: ("inet " ~ vip) in primary_vip.stdout
-    retries: 15
-    delay: 2
-    changed_when: false
-    when:
-    - inventory_hostname == postgresql_primary_hostname
-    - keepalived_restart_needed | bool
-    - not ansible_check_mode
-  - name: Start Keepalived on standbys
-    service:
-      name: keepalived
-      state: started
-    when:
-    - inventory_hostname != postgresql_primary_hostname
-    - keepalived_restart_needed | bool
-  - name: Start and enable Keepalived
-    service:
-      name: keepalived
-      state: started
-      enabled: true
 
   # PgBouncer
   - name: Install PgBouncer

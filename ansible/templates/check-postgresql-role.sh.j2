@@ -12,7 +12,8 @@
 
 VIP="{{ vip | regex_replace('/.*', '') }}"
 PEERS="{{ postgresql_nodes | reject('equalto', ansible_facts['default_ipv4']['address']) | join(' ') }}"
-# Written by keepalived-postgresql-notify.sh while a promotion is in progress
+# Written by keepalived-postgresql-notify.sh while a promotion is in progress. The grace
+# period must exceed the notify script's 50s promotion wait.
 PROMOTING_MARKER="/run/keepalived-postgresql-promoting"
 PROMOTING_GRACE_SECONDS=60
 
@@ -20,9 +21,10 @@ local_recovery() {
   su - postgres -c "psql -tAc 'SELECT pg_is_in_recovery()'" 2>/dev/null
 }
 
-# require_auth stops an impersonating server downgrading SCRAM to a cleartext password
+# require_auth stops an impersonating server downgrading SCRAM to a cleartext password.
+# timeout bounds the whole query, keeping both peers inside the 4s Keepalived script timeout.
 peer_is_primary() {
-  [ "$(PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=1 require_auth=scram-sha-256" -tAc 'SELECT pg_is_in_recovery()' 2>/dev/null)" = "f" ]
+  [ "$(PGPASSWORD='{{ postgresql_replication_password }}' timeout 1.5 psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=1 require_auth=scram-sha-256" -tAc 'SELECT pg_is_in_recovery()' 2>/dev/null)" = "f" ]
 }
 
 case "${1:-}" in
