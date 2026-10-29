@@ -12,6 +12,8 @@
 - **VIP**: `10.151.14.225` managed by Keepalived (`virtual_router_id=153`)
   - Notify script: `/usr/local/bin/keepalived-postgresql-notify.sh`
   - Keepalived health check: `/usr/local/bin/check-postgresql.sh`
+  - Keepalived role check: `/usr/local/bin/check-postgresql-role.sh` keeps the VIP on the primary. In `primary` mode it adds +60 priority on the primary, so the primary wins any election. In `vip` mode it puts a standby into FAULT if the standby holds the VIP while another node is primary. The notify script won't promote a standby while another primary is reachable, and won't demote a node unless a different, writable node holds the VIP.
+  - `nopreempt` is set, so a recovered node never takes the VIP back by priority. The playbook restarts Keepalived primary-first, so restarting it on every node at once never hands the VIP to a standby.
 - **PgBouncer** runs on every node on port `6432`
   - Config: `/etc/pgbouncer/pgbouncer.ini`
   - User list: `/etc/pgbouncer/userlist.txt`
@@ -358,7 +360,11 @@ ssh root@10.151.14.221 "ip addr show | grep 10.151.14.225"
 ssh root@10.151.14.222 "ip addr show | grep 10.151.14.225"
 ssh root@10.151.14.220 "cat /usr/local/bin/keepalived-postgresql-notify.sh"
 ssh root@10.151.14.220 "journalctl -u keepalived -n 50"
+ssh root@10.151.14.220 "tail -50 /var/log/keepalived-postgresql-notify.log"
+ssh root@10.151.14.220 "journalctl -t check-postgresql-role -n 20"
 ```
+
+Symptom: apps fail with `25006: cannot execute INSERT in a read-only transaction`, meaning the VIP is on a standby. The `vip` role check should release it within about 10s. If it doesn't, check that the standby can reach the primary as `replicator` (`check-postgresql-role.sh vip` returns 1 while the VIP is on a standby). If no node is primary, promote the VIP holder by hand.
 
 ### PgBouncer connection issues
 

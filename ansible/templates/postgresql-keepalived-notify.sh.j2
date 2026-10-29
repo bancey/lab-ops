@@ -13,8 +13,29 @@ PG_CONF="{{ postgresql_conf_dir }}"
 PG_BIN="/usr/lib/postgresql/{{ postgresql_version }}/bin"
 VIP="{{ vip | regex_replace('/.*', '') }}"
 
+PEERS="{{ postgresql_nodes | reject('equalto', ansible_facts['default_ipv4']['address']) | join(' ') }}"
+
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') [$STATE] $*" >> "$LOGFILE"
+}
+
+# Prints pg_is_in_recovery() for a remote host ("t"/"f"), or "unknown" if unreachable
+remote_recovery() {
+  PGPASSWORD='{{ postgresql_replication_password }}' psql "host=$1 port=5432 user=replicator dbname=postgres connect_timeout=2" -tAc "SELECT pg_is_in_recovery()" 2>/dev/null || echo "unknown"
+}
+
+# Prints the address of the first peer that is running as primary, if any
+find_peer_primary() {
+  for peer in $PEERS; do
+    if [ "$(remote_recovery "$peer")" = "f" ]; then
+      echo "$peer"
+      return
+    fi
+  done
+}
+
+vip_is_local() {
+  ip -4 -o addr show | grep -q "inet ${VIP}/"
 }
 
 log "Transition: type=$TYPE name=$NAME state=$STATE"
@@ -23,19 +44,34 @@ case $STATE in
   "MASTER")
     # Check if this node is currently a standby
     if [ -f "${PG_DATA}/standby.signal" ]; then
+      # Never promote while another node is primary - that is split-brain. The VIP
+      # role check puts this node into FAULT so the VIP goes back to that primary.
+      PEER_PRIMARY=$(find_peer_primary)
+      if [ -n "$PEER_PRIMARY" ]; then
+        log "Not promoting - ${PEER_PRIMARY} is already primary; the VIP check will release the VIP to it"
+        exit 0
+      fi
       log "This node is a standby - promoting to primary"
-      su - postgres -c "${PG_BIN}/pg_ctl promote -D ${PG_DATA}" >> "$LOGFILE" 2>&1
+      if ! su - postgres -c "${PG_BIN}/pg_ctl promote -D ${PG_DATA}" >> "$LOGFILE" 2>&1; then
+        log "ERROR: pg_ctl promote failed - this node holds the VIP but is read-only. Manual intervention required."
+        exit 1
+      fi
       # Wait for promotion to complete
+      PROMOTED=false
       for i in $(seq 1 30); do
         if su - postgres -c "${PG_BIN}/pg_isready -q" 2>/dev/null; then
           IS_RECOVERY=$(su - postgres -c "psql -tAc \"SELECT pg_is_in_recovery()\"" 2>/dev/null || echo "unknown")
           if [ "$IS_RECOVERY" = "f" ]; then
             log "Promotion successful - node is now primary"
+            PROMOTED=true
             break
           fi
         fi
         sleep 1
       done
+      if [ "$PROMOTED" != "true" ]; then
+        log "ERROR: promotion did not complete within 30s - this node holds the VIP but is read-only. Manual intervention required."
+      fi
     else
       log "This node is already a primary - no promotion needed"
     fi
@@ -51,21 +87,32 @@ case $STATE in
       CURRENT_PRIMARY="$VIP"
       log "Current primary is at $CURRENT_PRIMARY"
 
-      # Verify the new primary is actually reachable before doing anything destructive
+      # Verify the VIP is held by another node that is a writable primary before doing
+      # anything destructive. Keepalived reports BACKUP on startup too, and the VIP
+      # may be unassigned, on a standby, or about to land on this very node.
       NEW_PRIMARY_READY=false
       for i in $(seq 1 10); do
-        if su - postgres -c "${PG_BIN}/pg_isready -h ${CURRENT_PRIMARY} -q" 2>/dev/null; then
+        if vip_is_local; then
+          log "This node holds the VIP - it is the primary, aborting demotion"
+          exit 0
+        fi
+        if [ "$(remote_recovery "$CURRENT_PRIMARY")" = "f" ]; then
           NEW_PRIMARY_READY=true
-          log "New primary at $CURRENT_PRIMARY is reachable"
+          log "New primary at $CURRENT_PRIMARY is reachable and writable"
           break
         fi
-        log "Waiting for new primary at $CURRENT_PRIMARY (attempt $i/10)..."
+        log "Waiting for a writable primary at $CURRENT_PRIMARY (attempt $i/10)..."
         sleep 2
       done
 
       if [ "$NEW_PRIMARY_READY" != "true" ]; then
-        log "WARNING: New primary at $CURRENT_PRIMARY is NOT reachable - aborting demotion to avoid data loss"
+        log "WARNING: No writable primary behind $CURRENT_PRIMARY - aborting demotion to avoid data loss"
         log "This node will remain as a primary without the VIP. Manual intervention required."
+        exit 0
+      fi
+
+      if vip_is_local; then
+        log "This node took the VIP while waiting - aborting demotion"
         exit 0
       fi
 

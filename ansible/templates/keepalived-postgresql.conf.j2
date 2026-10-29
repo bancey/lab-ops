@@ -6,6 +6,28 @@ vrrp_script check_postgresql {
   rise 2
 }
 
+# The primary gets +60, so it out-ranks every standby (max base priority 150) in any
+# election. nopreempt still stops a returning node from taking the VIP back.
+vrrp_script check_postgresql_primary {
+  script "/usr/local/bin/check-postgresql-role.sh primary"
+  interval 5
+  timeout 4
+  weight 60
+  fall 1
+  rise 1
+  init_fail
+}
+
+# Weight 0: a standby holding the VIP while another node is primary goes to FAULT
+# and releases the VIP, which the primary then wins on priority.
+vrrp_script check_postgresql_vip {
+  script "/usr/local/bin/check-postgresql-role.sh vip"
+  interval 5
+  timeout 4
+  fall 2
+  rise 2
+}
+
 vrrp_instance POSTGRESQL {
   state {{ keepalive[inventory_hostname].state }}
   interface eth0
@@ -29,6 +51,8 @@ vrrp_instance POSTGRESQL {
 
   track_script {
     check_postgresql
+    check_postgresql_primary
+    check_postgresql_vip
   }
 
   notify /usr/local/bin/keepalived-postgresql-notify.sh

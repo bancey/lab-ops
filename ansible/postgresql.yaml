@@ -252,11 +252,34 @@
       port: 5432
       timeout: 30
     when: inventory_hostname == postgresql_primary_hostname
-  - name: Re-start Keepalived on all nodes after PostgreSQL is confirmed ready
+  # Start the primary's Keepalived alone so it wins the VIP election, then the standbys
+  - name: Re-start Keepalived on primary after PostgreSQL is confirmed ready
     service:
       name: keepalived
       state: started
     when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_status.rc == 0
+    - pg_conf_primary is changed or pg_auto_conf_primary is changed
+  - name: Wait for primary to hold the VIP after PostgreSQL restart
+    ansible.builtin.command:
+      cmd: ip -4 -o addr show
+    register: primary_vip_after_pg_restart
+    until: ("inet " ~ vip) in primary_vip_after_pg_restart.stdout
+    retries: 15
+    delay: 2
+    changed_when: false
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_status.rc == 0
+    - pg_conf_primary is changed or pg_auto_conf_primary is changed
+    - not ansible_check_mode
+  - name: Re-start Keepalived on standbys after primary holds the VIP
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname != postgresql_primary_hostname
     - keepalived_status.rc == 0
     - hostvars[postgresql_primary_hostname]['pg_conf_primary'] is changed or hostvars[postgresql_primary_hostname]['pg_auto_conf_primary'] is changed
   - name: Set PostgreSQL superuser password
@@ -464,21 +487,28 @@
       owner: root
       group: root
       mode: '0755'
+  # Both scripts embed the replication password, so keep them root-only
+  - name: Copy PostgreSQL Keepalived role check script
+    template:
+      src: templates/check-postgresql-role.sh.j2
+      dest: /usr/local/bin/check-postgresql-role.sh
+      owner: root
+      group: root
+      mode: '0700'
   - name: Copy PostgreSQL Keepalived notify script
     template:
       src: templates/postgresql-keepalived-notify.sh.j2
       dest: /usr/local/bin/keepalived-postgresql-notify.sh
       owner: root
       group: root
-      mode: '0755'
+      mode: '0700'
   - name: Copy Keepalived configuration template
     template:
       src: templates/keepalived-postgresql.conf.j2
       dest: /etc/keepalived/keepalived.conf
     vars:
       keepalived_pass: "{{ keepalived_postgresql_pass }}"
-    notify:
-    - Restart Keepalived
+    register: keepalived_conf
   - name: Install keepalived
     apt:
       pkg:
@@ -487,6 +517,43 @@
       state: latest
       update_cache: true
     when: not ansible_check_mode
+  # A config change on any node restarts Keepalived everywhere in order: all stopped,
+  # primary first so it takes the VIP, then the standbys join as BACKUP (nopreempt).
+  # Restarting them together would let the highest base priority node win instead.
+  - name: Determine if Keepalived config changed on any node
+    set_fact:
+      keepalived_restart_needed: "{{ ansible_play_hosts | map('extract', hostvars, 'keepalived_conf') | selectattr('changed') | list | length > 0 }}"
+  - name: Stop Keepalived on all nodes for ordered restart
+    service:
+      name: keepalived
+      state: stopped
+    when: keepalived_restart_needed | bool
+  - name: Start Keepalived on primary
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+  - name: Wait for primary to hold the VIP
+    ansible.builtin.command:
+      cmd: ip -4 -o addr show
+    register: primary_vip
+    until: ("inet " ~ vip) in primary_vip.stdout
+    retries: 15
+    delay: 2
+    changed_when: false
+    when:
+    - inventory_hostname == postgresql_primary_hostname
+    - keepalived_restart_needed | bool
+    - not ansible_check_mode
+  - name: Start Keepalived on standbys
+    service:
+      name: keepalived
+      state: started
+    when:
+    - inventory_hostname != postgresql_primary_hostname
+    - keepalived_restart_needed | bool
   - name: Start and enable Keepalived
     service:
       name: keepalived
@@ -632,10 +699,6 @@
       user: root
     when: inventory_hostname == postgresql_primary_hostname
   handlers:
-  - name: Restart Keepalived
-    service:
-      name: keepalived
-      state: restarted
   - name: Restart PgBouncer
     service:
       name: pgbouncer
