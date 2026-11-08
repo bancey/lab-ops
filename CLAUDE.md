@@ -24,6 +24,10 @@ task bootstrap -- <cluster-name>   # cluster-name matches a dir under kubernetes
 # Ansible playbook syntax check (no inventory access needed)
 ansible-playbook -i ansible/hosts.yaml --syntax-check ansible/<playbook>.yaml
 
+# Render every Flux HelmRelease per cluster like helm-controller does: chart schema,
+# duplicate YAML keys, postRenderers (CI: flux-validate.yaml). Needs flux, helm, kubectl, jq.
+./scripts/validate-flux-helmreleases.sh tiny wanda
+
 # Validate Raspberry Pi swarm stack Jinja templates render correctly (CI: swarm-validate.yaml)
 ./scripts/validate-swarm-stack-templates.sh
 
@@ -85,4 +89,5 @@ All secrets originate in Azure Key Vault `bancey-vault` and flow into: Terraform
 1. `yamllint .`
 2. `terraform fmt -check -recursive terraform/components/` (if Terraform touched)
 3. `ansible-playbook --syntax-check` the relevant playbook (if Ansible touched)
-4. `./scripts/validate-swarm-stack-templates.sh` (if `stacks/`, `rpi-ha.yaml`, or the rpi-network/rpi-monitoring roles touched — this is what CI's `swarm-validate.yaml` runs, gated on those paths)
+4. `./scripts/validate-flux-helmreleases.sh tiny wanda` (if anything under `kubernetes/` touched — this is what CI's `flux-validate.yaml` runs; minikube is excluded because its infrastructure Kustomization paths no longer exist)
+5. `./scripts/validate-swarm-stack-templates.sh` (if `stacks/`, `rpi-ha.yaml`, or the rpi-network/rpi-monitoring roles touched — this is what CI's `swarm-validate.yaml` runs, gated on those paths)

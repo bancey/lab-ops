@@ -20,6 +20,9 @@ spec:
     remediation:
       retries: 3
   values:
+    # Chart >=4.60 emits prometheus.io/scrape itself when this is true, which
+    # duplicates the explicit "false" annotation below. Alloy discovers by label.
+    prometheusScrape: false
     service:
       port: 9100
       targetPort: 9100

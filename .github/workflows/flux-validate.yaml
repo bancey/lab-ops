@@ -1,0 +1,41 @@
+---
+# Renders every Flux HelmRelease for each cluster the way helm-controller does
+# (cluster patches -> helm template with chart schema -> strict YAML decode ->
+# kustomize post-render), so chart upgrades that break values fail on the PR
+# instead of in-cluster. See scripts/validate-flux-helmreleases.sh.
+name: flux-validate
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - main
+    paths:
+      - kubernetes/**
+      - scripts/validate-flux-helmreleases.sh
+      - .github/workflows/flux-validate.yaml
+
+jobs:
+  helmreleases:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # minikube is excluded: its infrastructure Kustomizations point at
+        # kubernetes/infrastructure/{controllers,config}, which no longer exist.
+        cluster:
+          - tiny
+          - wanda
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Flux CLI
+        uses: fluxcd/flux2/action@v2.10.0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v4.3.0
+
+      # kubectl and jq come preinstalled on ubuntu-latest.
+      - name: Render HelmReleases (${{ matrix.cluster }})
+        run: ./scripts/validate-flux-helmreleases.sh ${{ matrix.cluster }}
