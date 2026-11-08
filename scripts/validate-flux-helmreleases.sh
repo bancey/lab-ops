@@ -143,50 +143,56 @@ chart_args() {
 }
 
 # Render one HelmRelease job file. Writes <job>.log, and <job>.ok on success.
+#
+# This runs as `render_job ... || true`, where bash ignores `set -e`, so every
+# step that can fail must `|| return 1` explicitly. Otherwise a failed step
+# (e.g. writing values.yaml) would let the chart render with defaults and pass.
 render_job() {
   local job="$1" dir
-  dir="$(mktemp -d "$WORK/render.XXXXXX")"
+  dir="$(mktemp -d "$WORK/render.XXXXXX")" || return 1
   exec >"$job.log" 2>&1
 
   local name namespace release_name
-  name="$(jq -r '.release.metadata.name' "$job")"
-  namespace="$(jq -r '.release.spec.targetNamespace // .release.metadata.namespace' "$job")"
-  release_name="$(jq -r '.release.spec.releaseName // .release.metadata.name' "$job")"
+  name="$(jq -er '.release.metadata.name' "$job")" || return 1
+  namespace="$(jq -er '.release.spec.targetNamespace // .release.metadata.namespace' "$job")" || return 1
+  release_name="$(jq -er '.release.spec.releaseName // .release.metadata.name' "$job")" || return 1
 
   if jq -e '.release.spec.valuesFrom' "$job" >/dev/null; then
     echo "warning: valuesFrom is not resolved; rendering with inline values only"
   fi
 
-  local args=()
-  mapfile -t args < <(chart_args "$job") || return 1
-  [[ ${#args[@]} -gt 0 ]] || return 1
+  # Capture first so a chart_args failure is seen (mapfile itself always succeeds).
+  local chart_out args=()
+  chart_out="$(chart_args "$job")" || return 1
+  mapfile -t args <<<"$chart_out"
+  [[ -n "$chart_out" ]] || { echo "error: no chart arguments resolved"; return 1; }
   if jq -e '.release.spec.install.disableSchemaValidation or .release.spec.upgrade.disableSchemaValidation' "$job" >/dev/null; then
     args+=(--skip-schema-validation)
   fi
 
   # JSON is valid YAML, so values can be handed to helm as-is.
-  jq '.release.spec.values // {}' "$job" >"$dir/values.yaml"
+  jq '.release.spec.values // {}' "$job" >"$dir/values.yaml" || return 1
   helm template "$release_name" "${args[@]}" --namespace "$namespace" \
     --values "$dir/values.yaml" >"$dir/rendered.yaml" || return 1
   find_duplicate_keys "$dir/rendered.yaml" || return 1
 
   # Post-render: one kustomize pass per postRenderers entry (at least one).
   local count i input="$dir/rendered.yaml"
-  count="$(jq '[.release.spec.postRenderers // [] | .[]] | length' "$job")"
+  count="$(jq -e '[.release.spec.postRenderers // [] | .[]] | length' "$job")" || return 1
   for ((i = 0; i < (count > 0 ? count : 1); i++)); do
-    mkdir "$dir/post-render-$i"
-    cp "$input" "$dir/post-render-$i/resources.yaml"
+    mkdir "$dir/post-render-$i" || return 1
+    cp "$input" "$dir/post-render-$i/resources.yaml" || return 1
     jq --argjson i "$i" '
       (.release.spec.postRenderers // [])[$i].kustomize // {}
       | {resources: ["resources.yaml"]} + with_entries(select(.key | IN("patches", "patchesStrategicMerge", "patchesJson6902", "images")))
-    ' "$job" >"$dir/post-render-$i/kustomization.yaml"
+    ' "$job" >"$dir/post-render-$i/kustomization.yaml" || return 1
     kubectl kustomize "$dir/post-render-$i" >"$dir/post-render-$i.yaml" || return 1
     input="$dir/post-render-$i.yaml"
   done
   find_duplicate_keys "$input" || return 1
 
   echo "rendered $namespace/$name"
-  touch "$job.ok"
+  touch "$job.ok" || return 1
 }
 export -f render_job chart_args find_duplicate_keys
 
@@ -223,8 +229,17 @@ collect_jobs() {
   local job hash
   while IFS= read -r job; do
     # Hash only what affects rendering, so per-cluster noise does not split jobs.
-    hash="$(jq -cS '{ns: .release.metadata.namespace, name: .release.metadata.name,
-                     spec: (.release.spec | del(.interval, .timeout))}' <<<"$job" | sha256sum | cut -c1-16)"
+    # That includes the chart source the release points at: the same release
+    # spec against a differently patched HelmRepository/OCIRepository (other
+    # URL, type or ref) must be rendered separately.
+    hash="$(jq -cS '
+      .release as $hr
+      | ($hr.spec.chartRef // $hr.spec.chart.spec.sourceRef) as $ref
+      | {ns: $hr.metadata.namespace, name: $hr.metadata.name,
+         spec: ($hr.spec | del(.interval, .timeout)),
+         source: (.sources["\($ref.kind)/\($ref.namespace // $hr.metadata.namespace)/\($ref.name)"].spec
+                  | {url, type, ref})}
+    ' <<<"$job" | sha256sum | cut -c1-16)"
     [[ -f "$WORK/jobs/$hash.json" ]] || jq '.release |= del(.metadata.annotations["validate-flux-helmreleases"])' <<<"$job" >"$WORK/jobs/$hash.json"
     echo "$cluster" >>"$WORK/jobs/$hash.json.clusters"
   done <"$out/jobs.jsonl"
