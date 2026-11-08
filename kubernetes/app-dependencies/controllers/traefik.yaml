@@ -68,9 +68,7 @@ spec:
 
     service:
       enabled: true
-      type: LoadBalancer
       annotations: {}
       labels: {}
-      spec: {}
-      loadBalancerSourceRanges: []
-      externalIPs: []
+      spec:
+        type: LoadBalancer
