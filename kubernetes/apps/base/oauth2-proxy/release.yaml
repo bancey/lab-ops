@@ -8,7 +8,7 @@ spec:
   releaseName: oauth2-proxy
   chart:
     spec:
-      version: 10.7.2
+      version: 10.7.4
       chart: oauth2-proxy
       sourceRef:
         kind: HelmRepository
