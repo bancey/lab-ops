@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   adguard_exporter:
-    image: ghcr.io/henrywhitaker3/adguard-exporter:v1.2.1
+    image: ghcr.io/henrywhitaker3/adguard-exporter:v1.2.3
     environment:
       ADGUARD_SERVERS: "http://10.151.14.4:8000"
       ADGUARD_USERNAMES: "{{ adguard_username }}"
