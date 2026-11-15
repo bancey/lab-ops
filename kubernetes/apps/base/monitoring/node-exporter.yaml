@@ -8,7 +8,7 @@ spec:
   releaseName: prometheus-node-exporter
   chart:
     spec:
-      version: 5.0.0
+      version: 5.1.0
       chart: prometheus-node-exporter
       sourceRef:
         kind: HelmRepository
