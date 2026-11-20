@@ -258,10 +258,10 @@ parameters:
         preSteps:
           - template: steps/install-tools.yaml@azuredevops-lib
             parameters:
-              cacheKeyPrefix: '"ovhcloud-v0.17.1"'
+              cacheKeyPrefix: '"ovhcloud-v0.17.2"'
               tools:
                 - name: ovhcloud
-                  downloadUrl: https://github.com/ovh/ovhcloud-cli/releases/download/v0.17.1/ovhcloud-cli_Linux_x86_64.tar.gz
+                  downloadUrl: https://github.com/ovh/ovhcloud-cli/releases/download/v0.17.2/ovhcloud-cli_Linux_x86_64.tar.gz
           - task: AzureCLI@2
             displayName: Get OVHcloud Credentials
             inputs:
