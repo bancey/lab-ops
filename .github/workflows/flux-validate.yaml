@@ -34,7 +34,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: v4.3.0
+          version: v4.3.2
 
       # kubectl and jq come preinstalled on ubuntu-latest.
       - name: Render HelmReleases (${{ matrix.cluster }})
